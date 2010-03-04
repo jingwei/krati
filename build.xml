@@ -1,0 +1,136 @@
+<project xmlns:ivy="antlib:org.apache.ivy.ant" name="krati" default="main" basedir=".">
+    <property name="project.name" value="krati"/>
+    <property name="version" value="0.3.2"/>
+    <property name="krati.root" location="."/>
+    
+    <property name="lib.dir" value="lib"/>
+    <property name="test.dir" value="test"/>
+    <property name="build.dir" value="build"/>
+    <property name="config.dir" value="config"/>
+    <property name="dist.dir" value="dist"/>
+    <property name="logs.dir" value="logs"/>
+    
+    <property name="ivy.jar.dir" value="${basedir}/ivy"/>
+    <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar"/>
+    <property name="ivy.install.version" value="2.0.0-beta1"/>
+    
+    <property name="src" value="src"/>
+    <property name="mds.src" value="mds/src"/>
+    
+    <property name="test.src" value="${test.dir}/src"/>
+    <property name="test.build.dir" value="${test.dir}/classes"/>
+    
+    <path id="compile.class.path">
+        <fileset dir="${lib.dir}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+    
+    <path id="java.class.path">
+        <dirset dir="${build.dir}">
+            <include name="**"/>
+        </dirset>
+    </path>
+    
+    <path id="test.class.path">
+        <dirset dir="${test.build.dir}">
+            <include name="**"/>
+        </dirset>
+    </path>
+    
+    <target name="download-ivy" unless="skip.download">
+    <mkdir dir="${ivy.jar.dir}"/>
+        <echo message="installing ivy..."/>
+        <get src="http://repo1.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar" dest="${ivy.jar.file}" usetimestamp="true"/>
+    </target>
+    
+    <target name="install-ivy" depends="download-ivy" description="--> install ivy">
+        <path id="ivy.lib.path">
+            <fileset dir="${ivy.jar.dir}" includes="*.jar"/>
+        </path>
+        <taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpathref="ivy.lib.path"/>
+    </target>
+    
+    <target name="resolve" description="--> retrieve dependencies with ivy" depends="install-ivy">
+        <ivy:retrieve />
+    </target>
+    
+    <target name="clean">
+      <delete dir="${build.dir}"/>
+      <delete dir="${dist.dir}"/>
+      <delete dir="${logs.dir}"/>
+      <delete dir="${test.build.dir}"/>
+    </target>
+    
+    <target name="init" depends="resolve">
+        <mkdir dir="${build.dir}"/>
+        <mkdir dir="${dist.dir}"/>
+    </target>
+    
+    <target name="compile.krati" depends="init">
+        <javac debug="true" destdir="${build.dir}">
+            <src path="${src}"/>
+            <classpath refid="compile.class.path"/>
+        </javac>
+    </target>
+    
+    <target name="compile.mds" depends="compile.krati">
+        <javac debug="true" destdir="${build.dir}">
+            <src path="${mds.src}/api"/>
+            <src path="${mds.src}/impl"/>
+            <classpath refid="java.class.path"/>
+            <classpath refid="compile.class.path"/>
+        </javac>
+    </target>
+    
+    <target name="compile" depends="init">
+        <javac debug="true" destdir="${build.dir}">
+            <src path="${src}"/>
+            <src path="${mds.src}/api"/>
+            <src path="${mds.src}/impl"/>
+            <classpath refid="compile.class.path"/>
+        </javac>
+        <copy todir="${build.dir}">
+            <fileset dir="${config.dir}"/>
+        </copy>
+    </target>
+    
+    <target name="dist" depends="compile">
+            <jar destfile="${dist.dir}/${project.name}-${version}.jar" basedir="${build.dir}" />
+    </target>
+    
+    <target name="test.init" depends="compile">
+        <mkdir dir="${test.build.dir}"/>
+    </target>
+    
+    <target name="test.compile" depends="test.init">
+        <javac debug="true" destdir="${test.build.dir}">
+            <src path="${test.src}"/>
+            <classpath refid="java.class.path"/>
+            <classpath refid="compile.class.path"/>
+        </javac>
+        <copy todir="${test.build.dir}">
+            <fileset dir="${config.dir}"/>
+        </copy>
+    </target>
+    
+    <target name="test" depends="test.compile">
+        <junit printsummary="yes">
+            <jvmarg value="-Dtest.data.dir=${test.dir}/test_data"/>
+            <formatter type="brief" usefile="false"/>
+            
+            <classpath>
+                <path refid="test.class.path"/>
+                <path refid="java.class.path"/>
+                <path refid="compile.class.path"/>
+            </classpath>
+            
+            <batchtest fork="yes">
+                <fileset dir="${test.build.dir}" includes="**/Test*.class"/>
+            </batchtest>
+        </junit>
+    </target>
+    
+    <target name="main" depends="dist">
+    </target>
+</project>
