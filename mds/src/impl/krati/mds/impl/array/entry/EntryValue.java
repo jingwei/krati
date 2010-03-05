@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 
 import krati.io.ChannelWriter;
-import krati.io.DataWriteChannel;
+import krati.io.DataWriter;
 
 /**
  * EntryValue.
@@ -38,7 +38,7 @@ public abstract class EntryValue implements Comparable<EntryValue> {
    * @param writer
    * @throws IOException
    */
-  public abstract void write(DataWriteChannel writer) throws IOException;
+  public abstract void write(DataWriter writer) throws IOException;
   
   /**
    * Writes this EntryValue to an random access file at a given position.

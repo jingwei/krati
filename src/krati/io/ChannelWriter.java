@@ -6,7 +6,7 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
-public class ChannelWriter implements DataWriteChannel {
+public class ChannelWriter implements DataWriter {
     private final File _file;
     private FileChannel _channel;
     private RandomAccessFile _raf;

@@ -6,7 +6,7 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
-public class ChannelReader implements DataReadChannel
+public class ChannelReader implements DataReader
 {
     private final File _file;
     private FileChannel _channel;

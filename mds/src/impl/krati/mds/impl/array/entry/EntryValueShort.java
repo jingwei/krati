@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 
 import krati.io.ChannelWriter;
-import krati.io.DataWriteChannel;
+import krati.io.DataWriter;
 
 public class EntryValueShort extends EntryValue
 {
@@ -54,7 +54,7 @@ public class EntryValueShort extends EntryValue
    * @throws IOException
    */
   @Override
-  public void write(DataWriteChannel writer) throws IOException
+  public void write(DataWriter writer) throws IOException
   {
     writer.writeInt(pos);   /* array position */
     writer.writeShort(val); /* data value     */

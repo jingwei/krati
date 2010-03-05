@@ -61,7 +61,7 @@ public class ArrayRandomAccessFile
     long fileLength = DATA_START_POS + (elementSize * arrayLength);
     
     this._raf = new RandomAccessFile(file, "rw");
-    if (_raf.length() == 0)
+    if(_raf.length() == 0)
     {
       // allocate the total size of the file
       _raf.setLength(fileLength);
@@ -273,9 +273,6 @@ public class ArrayRandomAccessFile
    */
   public void writeInt(int pos, int val) throws IOException
   {
-    assert pos < _arrayLength;
-    assert _elementSize == 4;
-    
     _raf.seek(getPosition(pos));
     _raf.writeInt(val);
   }
@@ -291,9 +288,6 @@ public class ArrayRandomAccessFile
    */
   public void writeLong(int pos, long val) throws IOException
   {
-    assert pos < _arrayLength;
-    assert _elementSize == 8;
-    
     _raf.seek(getPosition(pos));
     _raf.writeLong(val);
   }
@@ -309,9 +303,6 @@ public class ArrayRandomAccessFile
    */
   public void writeShort(int pos, short val) throws IOException
   {
-    assert pos < _arrayLength;
-    assert _elementSize == 2;
-    
     _raf.seek(getPosition(pos));
     _raf.writeShort(val);
   }
@@ -327,9 +318,6 @@ public class ArrayRandomAccessFile
    */
   public void writeBytes(int pos, byte[] val) throws IOException
   {
-    assert pos < _arrayLength;
-    assert _elementSize == val.length;
-    
     _raf.seek(getPosition(pos));
     _raf.write(val);
   }
@@ -370,16 +358,6 @@ public class ArrayRandomAccessFile
     sync();
     log.info("update copySCN:" + maxScn);
     
-    // Write entries data using random seek.
-    /* Random seek is very slow
-    for (T v : values)
-    {
-      v.write(_raf, getPosition(v.pos));
-    }
-    sync();
-    log.info("update " + values.length + " values");
-    */
-    
     // Write entries data using file channel.
     ChannelWriter writer = new ChannelWriter(_file);
     writer.open();
@@ -404,7 +382,7 @@ public class ArrayRandomAccessFile
     return _raf.readLong();
   }
   
-  public void writeMaxSCN(long value) throws IOException
+  protected void writeMaxSCN(long value) throws IOException
   {
     _raf.seek(MAX_SCN_POS * 8);
     _raf.writeLong(value);
@@ -416,7 +394,7 @@ public class ArrayRandomAccessFile
     return _raf.readLong();
   }
   
-  public void writeCopySCN(long v) throws IOException
+  protected void writeCopySCN(long v) throws IOException
   {
     _raf.seek(COPY_SCN_POS * 8);
     _raf.writeLong(v);

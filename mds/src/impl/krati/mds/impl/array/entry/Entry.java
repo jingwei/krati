@@ -8,8 +8,8 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import krati.io.ChannelReader;
-import krati.io.DataWriteChannel;
-import krati.io.FastChannelWriter;
+import krati.io.DataWriter;
+import krati.io.FastDataWriter;
 import krati.util.Chronos;
 
 /**
@@ -174,7 +174,7 @@ public class Entry<T extends EntryValue> implements Comparable<Entry<T>>
       }
     }
     
-    DataWriteChannel out = new FastChannelWriter(file);
+    DataWriter out = new FastDataWriter(file);
     
     try
     {
