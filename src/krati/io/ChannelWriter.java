@@ -6,6 +6,12 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
+/**
+ * A simple data writer based on FileChannel.
+ * 
+ * @author jwu
+ *
+ */
 public class ChannelWriter implements DataWriter {
     private final File _file;
     private FileChannel _channel;

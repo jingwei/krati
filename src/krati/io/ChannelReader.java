@@ -6,6 +6,12 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
+/**
+ * A simple data reader based on FileChannel.
+ * 
+ * @author jwu
+ *
+ */
 public class ChannelReader implements DataReader
 {
     private final File _file;

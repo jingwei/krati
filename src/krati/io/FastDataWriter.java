@@ -9,7 +9,12 @@ import java.nio.channels.WritableByteChannel;
 import java.nio.ByteBuffer;
 
 /**
- * A simple writable channel, which is NOT thread safe.
+ * FastDataWriter: a simple writable channel, which is NOT thread safe.
+ * 
+ * Partially taken from org.xeril.util.io.FastDataWriteChannel.
+ * 
+ * @author jwu
+ * 
  */
 public class FastDataWriter implements DataWriter
 {
@@ -33,13 +38,15 @@ public class FastDataWriter implements DataWriter
      */
     public FastDataWriter(File file, int bufferSize)
     {
-        if(bufferSize < 8)
-            throw new IllegalArgumentException("buffer is too small.. should be at least 8");
+        if(bufferSize < 512)
+        {
+            throw new IllegalArgumentException("bufferSize is too small: at least 512");
+        }
         
         _file = file;
         _buffer = ByteBuffer.allocate(bufferSize);
     }
-
+    
     /**
      * @param b the byte to be written.
      * @throws IOException if an I/O error occurs.
@@ -60,7 +67,7 @@ public class FastDataWriter implements DataWriter
     {
         write(b, 0, b.length);
     }
-
+    
     /**
      * @param b   the data.
      * @param off the start offset in the data.

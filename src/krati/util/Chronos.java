@@ -2,6 +2,12 @@ package krati.util;
 
 import java.io.PrintStream;
 
+/**
+ * Chronos
+ * 
+ * @author jwu
+ *
+ */
 public class Chronos
 {
   /**

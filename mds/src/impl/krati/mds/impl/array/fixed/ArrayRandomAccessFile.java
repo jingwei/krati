@@ -29,7 +29,7 @@ import krati.util.Chronos;
  * |Max SCN            | long |
  * |Copy SCN           | long |
  * |Array Length       | int  |
- * |Element Size       | int  |
+ * |Data Element Size  | int  |
  * |--------------------------|
  * | Array data begins at 1024|
  * |                          |

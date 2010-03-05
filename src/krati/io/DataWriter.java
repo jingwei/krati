@@ -3,6 +3,12 @@ package krati.io;
 import java.io.File;
 import java.io.IOException;
 
+/**
+ * DataWriter
+ * 
+ * @author jwu
+ *
+ */
 public interface DataWriter
 {
     public File getFile();
