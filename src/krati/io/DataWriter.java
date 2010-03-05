@@ -3,7 +3,7 @@ package krati.io;
 import java.io.File;
 import java.io.IOException;
 
-public interface DataWriteChannel
+public interface DataWriter
 {
     public File getFile();
     

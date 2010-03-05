@@ -11,7 +11,7 @@ import java.nio.ByteBuffer;
 /**
  * A simple writable channel, which is NOT thread safe.
  */
-public class FastChannelWriter implements DataWriteChannel
+public class FastDataWriter implements DataWriter
 {
     public  final static int DEFAULT_BUFFER_SIZE = 8 * 1024;
     private final static int MAX_WRITE_ITERATIONS = 10;
@@ -23,7 +23,7 @@ public class FastChannelWriter implements DataWriteChannel
     /**
      * Constructor
      */
-    public FastChannelWriter(File file)
+    public FastDataWriter(File file)
     {
         this(file, DEFAULT_BUFFER_SIZE);
     }
@@ -31,7 +31,7 @@ public class FastChannelWriter implements DataWriteChannel
     /**
      * Constructor
      */
-    public FastChannelWriter(File file, int bufferSize)
+    public FastDataWriter(File file, int bufferSize)
     {
         if(bufferSize < 8)
             throw new IllegalArgumentException("buffer is too small.. should be at least 8");
