@@ -10,7 +10,7 @@ import java.util.Random;
 
 import krati.mds.store.DataStore;
 
-public abstract class TestMDSStore
+public abstract class EvalMDSStore
 {
     protected DataStore<byte[], byte[]> mds;
     

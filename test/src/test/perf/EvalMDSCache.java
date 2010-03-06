@@ -20,7 +20,7 @@ import org.apache.lucene.index.IndexReader;
 import proj.zoie.impl.indexing.DefaultIndexReaderDecorator;
 import proj.zoie.impl.indexing.ZoieSystem;
 
-public class TestMDSCache
+public class EvalMDSCache
 {
     static List<String> _lineSeedData = new ArrayList<String>(3000);
     
@@ -410,7 +410,7 @@ public class TestMDSCache
     
     public static void main(String[] args)
     {
-        TestMDSCache mdsTest = new TestMDSCache();
+        EvalMDSCache mdsTest = new EvalMDSCache();
         
         try
         {

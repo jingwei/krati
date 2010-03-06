@@ -5,7 +5,7 @@ import java.io.File;
 import krati.mds.impl.store.PartitionedDataStore;
 import krati.mds.store.DataStore;
 
-public class TestPartitionedStore extends TestMDSStore
+public class EvalPartitionedStore extends EvalMDSStore
 {
     @Override
     protected DataStore<byte[], byte[]> getDataStore(File mdsStoreDir) throws Exception
@@ -15,7 +15,7 @@ public class TestPartitionedStore extends TestMDSStore
     
     public static void main(String[] args)
     {
-        new TestPartitionedStore().run(4, 2);
+        new EvalPartitionedStore().run(4, 2);
         System.out.println("done");
     }
 }

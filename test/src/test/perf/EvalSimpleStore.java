@@ -7,7 +7,7 @@ import krati.mds.impl.MDSCacheImpl;
 import krati.mds.impl.store.SimpleDataStore;
 import krati.mds.store.DataStore;
 
-public class TestSimpleStore extends TestMDSStore
+public class EvalSimpleStore extends EvalMDSStore
 {
     @Override
     protected DataStore<byte[], byte[]> getDataStore(File mdsStoreDir) throws Exception {
@@ -26,7 +26,7 @@ public class TestSimpleStore extends TestMDSStore
     
     public static void main(String[] args)
     {
-        new TestSimpleStore().run(4, 1);
+        new EvalSimpleStore().run(4, 1);
         System.out.println("done");
     }
 }
