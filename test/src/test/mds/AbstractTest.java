@@ -24,7 +24,9 @@ public class AbstractTest extends TestCase
   }
   
   protected void cleanCacheDir() throws Exception {
+    TEST_DATA_DIR.mkdirs();
     File[] files = TEST_DATA_DIR.listFiles();
+    
     for (File f : files)
     {
       if (f.isFile())
