@@ -136,7 +136,7 @@ public abstract class RecoverableArrayImpl<P, V extends EntryValue>
       // Start recovery based on loaded entries
       if (_entryManager.getEntryList().size() > 0)
       {
-        _entryManager.applyEntries();
+        _entryManager.applyEntries(true);
       }
       
       // Load data from the array file on disk
@@ -193,7 +193,7 @@ public abstract class RecoverableArrayImpl<P, V extends EntryValue>
    */
   public void flush() throws IOException
   {
-    _entryManager.switchEntry();
+    _entryManager.switchEntry(true);
   }
   
   /**

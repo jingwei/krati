@@ -26,6 +26,7 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable
   
   protected RecoverableArray<V>  _array;
   protected List<Entry<V>>       _entryList;      // list of redo entry(s)
+  protected List<Entry<V>>       _clonedEntryList;// list of cloned redo entry(s)
   protected Entry<V>             _currentEntry;   // current redo entry
   protected EntryPersistListener _persistListener;
   
@@ -35,6 +36,7 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable
     this._maxEntries = maxEntries;
     this._maxEntrySize = maxEntrySize;
     this._entryList = new ArrayList<Entry<V>>(maxEntries + 5);
+    this._clonedEntryList = new ArrayList<Entry<V>>(maxEntries + 5);
     
     _log.info("Manage array indexStart=" + array.getIndexStart() + " length=" + array.length());
   }
@@ -95,7 +97,7 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable
     // Switch to a new entry if _currentEntry has reached _maxEntrySize and has seen more than one SCN.
     if (_autoSwitchEntry && _currentEntry.isSwitchable())
     {
-      switchEntry();
+      switchEntry(false);
     }
   }
   
@@ -146,8 +148,8 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable
   @Override
   public void persist() throws IOException
   {
-    switchEntry();
-    applyEntries();
+    switchEntry(true);
+    applyEntries(true);
   }
   
   public void setEntryPersistListener(EntryPersistListener listener)
@@ -212,7 +214,7 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable
    * 
    * @throws IOException
    */
-  protected synchronized void switchEntry() throws IOException
+  protected synchronized void switchEntry(boolean blocking) throws IOException
   {
     if (_currentEntry != null && !_currentEntry.isEmpty())
     {
@@ -243,7 +245,7 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable
     {
       if (_entryList.size() >= _maxEntries)
       {
-        applyEntries();
+        applyEntries(blocking);
       }
     }
   }
@@ -252,16 +254,76 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable
    * Apply accumulated entries to the array file.
    * @throws IOException
    */
-  protected synchronized void applyEntries() throws IOException
+  protected synchronized void applyEntries(boolean blocking) throws IOException
   {
     if (_entryList.size() > 0)
     {
-      // Update underlying array file
-      _array.updateArrayFile(_entryList);
-      
-      // Clean up entry files
-      deleteEntryFiles();
-      _entryList.clear();
+      synchronized(_clonedEntryList)
+      {
+        while(_clonedEntryList.size() > 0)
+        {
+          try
+          { 
+            _clonedEntryList.wait();
+          }
+          catch(InterruptedException ie)
+          {
+            /* Run in blocking mode */
+            
+            // Update underlying array file
+            _array.updateArrayFile(_entryList);
+              
+            // Clean up entry files
+            deleteEntryFiles(_entryList);
+            _entryList.clear();
+            return;
+          }
+        }
+        
+        // Blocking mode
+        if (blocking)
+        {
+          // Update underlying array file
+          _array.updateArrayFile(_entryList);
+          
+          // Clean up entry files
+          deleteEntryFiles(_entryList);
+          _entryList.clear();
+        }
+        // Non-blocking mode
+        else
+        {
+          // Start a separate thread to update the underlying array file
+          for(Entry<V> e: _entryList) { _clonedEntryList.add(e); }
+          new Thread(new UpdateRunner()).run();
+          _entryList.clear();
+        }
+      }
+    }
+  }
+  
+  class UpdateRunner implements Runnable
+  { 
+    @Override
+    public void run()
+    {
+      try
+      {
+        synchronized(_clonedEntryList)
+        {
+          // Update underlying array file
+          _array.updateArrayFile(_clonedEntryList);
+          
+          // Clean up entry files
+          deleteEntryFiles(_clonedEntryList);
+          _clonedEntryList.clear();  
+          _clonedEntryList.notifyAll();
+        }
+      }
+      catch(IOException ioe)
+      {
+        _log.error(ioe.getMessage());
+      }
     }
   }
   
@@ -328,7 +390,30 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable
     }
   }
   
-
+  /**
+   * Delete entry log files on disk.
+   * 
+   * @throws IOException
+   */
+  protected void deleteEntryFiles(List<Entry<V>> list) throws IOException
+  {
+    for(Entry<V> e: list)
+    {
+      File file = new File(getCacheDirectory(), getEntryLogName(e));
+      if(file.exists())
+      {
+        if (file.delete())
+        {
+          _log.info("file " + file.getAbsolutePath() + " deleted");
+        }
+        else 
+        {
+          _log.warn("file " + file.getAbsolutePath() + " not deleted");
+        }
+      }
+    }
+  }
+  
   /**
    * Filter and select entries in _entryList
    * that only have SCNs no less than the specified lower bound minScn and

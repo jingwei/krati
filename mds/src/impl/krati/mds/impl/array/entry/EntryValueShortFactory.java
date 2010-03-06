@@ -2,7 +2,7 @@ package krati.mds.impl.array.entry;
 
 import java.io.IOException;
 
-import krati.io.ChannelReader;
+import krati.io.DataReader;
 
 public class EntryValueShortFactory implements EntryValueFactory<EntryValueShort>
 {
@@ -22,7 +22,7 @@ public class EntryValueShortFactory implements EntryValueFactory<EntryValueShort
    * @return an EntryValueShort read from an input stream.
    * @throws IOException
    */
-  public EntryValueShort newValue(ChannelReader in) throws IOException
+  public EntryValueShort newValue(DataReader in) throws IOException
   {
     return new EntryValueShort(in.readInt(),   /* array position */
                                in.readShort(), /* data value     */
