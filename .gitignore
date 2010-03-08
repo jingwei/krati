@@ -1,0 +1,12 @@
+build
+classes
+lib/commons-logging-1.1.jar
+lib/fastutil-5.0.5.jar
+lib/junit-4.5.jar
+lib/log4j-1.2.15.jar
+lib/lucene-core-3.0.0.jar
+lib/spring-2.5.5.jar
+logs
+test/output
+test/mds_cache
+test/mds_store
