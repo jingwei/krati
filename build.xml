@@ -116,7 +116,7 @@
     
     <target name="test" depends="test.compile">
         <junit printsummary="yes">
-            <jvmarg value="-Dtest.data.dir=${test.dir}/output"/>
+            <jvmarg value="-Dtest.output.dir=${test.dir}/output"/>
             <formatter type="brief" usefile="false"/>
             
             <classpath>

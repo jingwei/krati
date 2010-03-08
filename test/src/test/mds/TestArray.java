@@ -1,6 +1,5 @@
 package test.mds;
 
-import org.junit.Test;
 import java.util.Random;
 
 import krati.mds.array.IntArray;
@@ -10,27 +9,26 @@ import krati.mds.impl.array.DynamicIntArrayImpl;
 import krati.mds.impl.array.DynamicLongArrayImpl;
 import krati.mds.impl.array.DynamicShortArrayImpl;
 
-public class TestDynamicArray extends AbstractTest
+public class TestArray extends AbstractTest
 {
     static long scn = 0;
     static Random random = new Random(System.currentTimeMillis());
     
-    int subArrayShift = 16;
-    int subArraySize = 1 << subArrayShift;
-    int maxEntrySize = 1000;
-    int maxEntries = 10;
-    
-    public TestDynamicArray()
+    public TestArray()
     {
-        super(TestDynamicArray.class.getCanonicalName());
+        super(TestArray.class.getCanonicalName());
     }
     
-    @Test
-    public void testDynamicIntArray() throws Exception
+    public void testIntArray() throws Exception
     {
         cleanTestOutput();
         
         // Create the first long array and do random updates
+        int subArrayShift = 16;
+        int subArraySize = 1 << subArrayShift;
+        int maxEntrySize = 500;
+        int maxEntries = 10;
+        
         IntArray array1 = new DynamicIntArrayImpl(TEST_OUTPUT_DIR,
                                                   subArrayShift,
                                                   maxEntrySize,
@@ -119,12 +117,16 @@ public class TestDynamicArray extends AbstractTest
         cleanTestOutput();
     }
     
-    @Test
-    public void testDynamicLongArray() throws Exception
+    public void testLongArray() throws Exception
     {
         cleanTestOutput();
         
         // Create the first long array and do random updates
+        int subArrayShift = 16;
+        int subArraySize = 1 << subArrayShift;
+        int maxEntrySize = 500;
+        int maxEntries = 10;
+        
         LongArray array1 = new DynamicLongArrayImpl(TEST_OUTPUT_DIR,
                                                     subArrayShift,
                                                     maxEntrySize,
@@ -212,13 +214,18 @@ public class TestDynamicArray extends AbstractTest
         
         cleanTestOutput();
     }
-    
-    @Test
-    public void testDynamicShortArray() throws Exception
+
+
+    public void testShortArray() throws Exception
     {
         cleanTestOutput();
         
         // Create the first long array and do random updates
+        int subArrayShift = 16;
+        int subArraySize = 1 << subArrayShift;
+        int maxEntrySize = 500;
+        int maxEntries = 10;
+        
         ShortArray array1 = new DynamicShortArrayImpl(TEST_OUTPUT_DIR,
                                                       subArrayShift,
                                                       maxEntrySize,

@@ -8,35 +8,39 @@ import junit.framework.TestCase;
 
 public class AbstractTest extends TestCase
 {
-  public static final Logger log    = Logger.getLogger(AbstractTest.class);
-  public static final File   TEST_DATA_DIR;
-  
-  static
-  {
-    TEST_DATA_DIR = new File(System.getProperty("test.data.dir"));
-  }
-  
-  protected String name;
-  
-  public AbstractTest(String name)
-  {
-    this.name = name;
-  }
-  
-  protected void cleanCacheDir() throws Exception {
-    TEST_DATA_DIR.mkdirs();
-    File[] files = TEST_DATA_DIR.listFiles();
+    public static final File TEST_OUTPUT_DIR;
+    public static final Logger log = Logger.getLogger(AbstractTest.class);
     
-    for (File f : files)
+    static
     {
-      if (f.isFile())
-      {
-        boolean deleted = f.delete();
-        if (!deleted)
+        TEST_OUTPUT_DIR = new File(System.getProperty("test.output.dir"));
+        if(!TEST_OUTPUT_DIR.exists())
         {
-          throw new IOException("file:"+f.getAbsolutePath()+" not deleted");
+                TEST_OUTPUT_DIR.mkdirs();
         }
-      }
     }
-  }
+    
+    protected String name;
+    
+    public AbstractTest(String name)
+    {
+        this.name = name;
+    }
+    
+    protected void cleanTestOutput() throws Exception
+    {
+        File[] files = TEST_OUTPUT_DIR.listFiles();
+        
+        for (File f : files)
+        {
+            if (f.isFile())
+            {
+                boolean deleted = f.delete();
+                if (!deleted)
+                {
+                    throw new IOException("file:"+f.getAbsolutePath()+" not deleted");
+                }
+            }
+        }
+    }
 }
