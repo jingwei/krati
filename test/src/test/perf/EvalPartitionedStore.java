@@ -2,15 +2,15 @@ package test.perf;
 
 import java.io.File;
 
-import krati.mds.impl.store.PartitionedDataStore;
-import krati.mds.store.DataStore;
+import krati.cds.impl.store.PartitionedDataStore;
+import krati.cds.store.DataStore;
 
-public class EvalPartitionedStore extends EvalMDSStore
+public class EvalPartitionedStore extends EvalDataStore
 {
     @Override
-    protected DataStore<byte[], byte[]> getDataStore(File mdsStoreDir) throws Exception
+    protected DataStore<byte[], byte[]> getDataStore(File storeDir) throws Exception
     {
-        return new PartitionedDataStore(mdsStoreDir, 5, 1000000, 200000);
+        return new PartitionedDataStore(storeDir, 5, 1000000, 200000);
     }
     
     public static void main(String[] args)

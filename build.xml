@@ -15,7 +15,7 @@
     <property name="ivy.install.version" value="2.0.0-beta1"/>
     
     <property name="src" value="src"/>
-    <property name="mds.src" value="mds/src"/>
+    <property name="cds.src" value="cds/src"/>
     
     <property name="test.src" value="${test.dir}/src"/>
     <property name="test.build.dir" value="${test.dir}/classes"/>
@@ -74,10 +74,10 @@
         </javac>
     </target>
     
-    <target name="compile.mds" depends="compile.krati">
+    <target name="compile.cds" depends="compile.krati">
         <javac debug="true" destdir="${build.dir}">
-            <src path="${mds.src}/api"/>
-            <src path="${mds.src}/impl"/>
+            <src path="${cds.src}/api"/>
+            <src path="${cds.src}/impl"/>
             <classpath refid="java.class.path"/>
             <classpath refid="compile.class.path"/>
         </javac>
@@ -86,8 +86,8 @@
     <target name="compile" depends="init">
         <javac debug="true" destdir="${build.dir}">
             <src path="${src}"/>
-            <src path="${mds.src}/api"/>
-            <src path="${mds.src}/impl"/>
+            <src path="${cds.src}/api"/>
+            <src path="${cds.src}/impl"/>
             <classpath refid="compile.class.path"/>
         </javac>
         <copy todir="${build.dir}">

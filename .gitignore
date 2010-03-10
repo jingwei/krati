@@ -8,5 +8,5 @@ lib/lucene-core-3.0.0.jar
 lib/spring-2.5.5.jar
 logs
 test/output
-test/mds_cache
-test/mds_store
+test/cache
+test/store
