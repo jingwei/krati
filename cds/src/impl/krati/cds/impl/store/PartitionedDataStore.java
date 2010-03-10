@@ -20,17 +20,15 @@ public class PartitionedDataStore implements DataStore<byte[], byte[]>
     private final File _partitionHome;
     private final int  _partitionCount;
     private final int  _partitionCapacity;
-    private final int  _partitionCacheCapacity;
     private final long _totalCapacity;
     private final HashFunction<byte[]> _hashFunction;
-    private List<DataStore<byte[], byte[]>> _subStoreList;
+    private List<DataStore<byte[], byte[]>> _partitionList;
     
-    public PartitionedDataStore(File partitionHome, int partitionCount, int partitionCapacity, int partitionCacheCapacity) throws Exception
+    public PartitionedDataStore(File partitionHome, int partitionCount, int partitionCapacity) throws Exception
     {
         this._partitionHome= partitionHome;
         this._partitionCount = partitionCount;
         this._partitionCapacity = partitionCapacity;
-        this._partitionCacheCapacity = partitionCacheCapacity;
         this._totalCapacity = partitionCount * partitionCapacity;
         this._hashFunction = new FnvHashFunction();
         this.init();
@@ -40,18 +38,17 @@ public class PartitionedDataStore implements DataStore<byte[], byte[]>
     {
         _log.info("partitionHome=" + _partitionHome.getCanonicalPath() +
                   " partitionCount=" + _partitionCount +
-                  " partitionCapacity=" + _partitionCapacity +
-                  " cacheCapactity=" + _partitionCacheCapacity);
+                  " partitionCapacity=" + _partitionCapacity);
         
-        _subStoreList = new ArrayList<DataStore<byte[], byte[]>>(_partitionCount);
+        _partitionList = new ArrayList<DataStore<byte[], byte[]>>(_partitionCount);
         for(int i = 0; i < _partitionCount; i++)
         {
             DataCache cache = new DataCacheImpl(0,
-                                                _partitionCacheCapacity,
+                                                _partitionCapacity,
                                                 new File(_partitionHome, "P" + i),
                                                 new krati.cds.impl.segment.MemorySegmentFactory(),
                                                 256);
-            _subStoreList.add(new SimpleDataStore(cache, _hashFunction));
+            _partitionList.add(new SimpleDataStore(cache, _hashFunction));
         }
         
         _log.info("init done");
@@ -89,7 +86,7 @@ public class PartitionedDataStore implements DataStore<byte[], byte[]>
         long hashCode = hash(key);
         long index = hashCode % _totalCapacity;
         int storeId = (int)(index / _partitionCapacity);
-        return _subStoreList.get(storeId).get(key);
+        return _partitionList.get(storeId).get(key);
     }
     
     @Override
@@ -98,7 +95,7 @@ public class PartitionedDataStore implements DataStore<byte[], byte[]>
         long hashCode = hash(key);
         long index = hashCode % _totalCapacity;
         int storeId = (int)(index / _partitionCapacity);
-        return _subStoreList.get(storeId).put(key, value);
+        return _partitionList.get(storeId).put(key, value);
     }
 
     @Override
@@ -107,13 +104,13 @@ public class PartitionedDataStore implements DataStore<byte[], byte[]>
         long hashCode = hash(key);
         long index = hashCode % _totalCapacity;
         int storeId = (int)(index / _partitionCapacity);
-        return _subStoreList.get(storeId).delete(key);
+        return _partitionList.get(storeId).delete(key);
     }
     
     @Override
     public void persist() throws IOException
     {
-        for(DataStore<byte[], byte[]> storeImpl: _subStoreList)
+        for(DataStore<byte[], byte[]> storeImpl: _partitionList)
         {
             storeImpl.persist();
         }
