@@ -251,6 +251,10 @@ public class DynamicLongArrayImpl implements LongArray, DynamicArray
   
   public void persist() throws IOException
   {
+    // Sync high-water marks
+    saveHWMark(getHWMark());
+      
+    // Persist each sub-array
     for(LongArrayRecoverableImpl implArray : _implArrays)
     {
       try

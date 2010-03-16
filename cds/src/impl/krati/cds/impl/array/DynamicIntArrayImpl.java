@@ -233,6 +233,10 @@ public class DynamicIntArrayImpl implements IntArray, DynamicArray
   
   public void persist() throws IOException
   {
+    // Sync high-water marks
+    saveHWMark(getHWMark());
+    
+    // Persist each sub-array
     for(IntArrayRecoverableImpl implArray : _implArrays)
     {
       try
