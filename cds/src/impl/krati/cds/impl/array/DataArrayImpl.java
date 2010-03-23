@@ -26,8 +26,8 @@ public class DataArrayImpl implements DataArray
 {
     private final static Logger _log = Logger.getLogger(DataArrayImpl.class);
     
-    private Segment _segment;              // current segment to append
-    private boolean _canTriggerCompaction; // current segment can trigger compaction only once
+    protected Segment _segment;              // current segment to append
+    protected boolean _canTriggerCompaction; // current segment can trigger compaction only once
     
     protected volatile LongArray _addressArray;
     protected volatile SegmentManager _segmentManager;
@@ -87,7 +87,7 @@ public class DataArrayImpl implements DataArray
         this._canTriggerCompaction = true;
         
         this._segmentCompactTriggerLowerPosition =
-            (long)(getCurrentSegment().getInitialSize() * getSegmentCompactTrigger() * 0.9);
+            (long)(getCurrentSegment().getInitialSize() * getSegmentCompactTrigger() * 0.5);
         this._segmentCompactTriggerUpperPosition =
             (long)(getCurrentSegment().getInitialSize() * getSegmentCompactTrigger());
         
@@ -116,7 +116,7 @@ public class DataArrayImpl implements DataArray
         this._canTriggerCompaction = false;
         
         this._segmentCompactTriggerLowerPosition =
-            (long)(getCurrentSegment().getInitialSize() * getSegmentCompactTrigger() * 0.9);
+            (long)(getCurrentSegment().getInitialSize() * getSegmentCompactTrigger() * 0.5);
         this._segmentCompactTriggerUpperPosition =
             (long)(getCurrentSegment().getInitialSize() * getSegmentCompactTrigger());
         
@@ -432,39 +432,12 @@ public class DataArrayImpl implements DataArray
         {
             return null;
         }
-        
     }
-
+    
     @Override
     public int getData(int index, byte[] data)
     {
-        try
-        {
-            long address = getAddress(index);
-            int segPos = (int)(address & _offsetMask);
-            int segInd = (int)((address >> _segmentShift) & _segmentMask);
-
-            // no data found
-            if(segPos < Segment.dataStartPosition) return -1;
-            
-            // get data segment
-            Segment seg = _segmentManager.getSegment(segInd);
-            
-            // read data length
-            int len = seg.readInt(segPos);
-            
-            // read data into byte array
-            if (len > 0)
-            {
-                seg.read(segPos + 4, data, 0, len);
-            }
-            
-            return len;
-        }
-        catch(Exception e)
-        {
-            return -1;
-        }
+        return getData(index, data, 0);
     }
     
     @Override

@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 
 import krati.cds.DataCache;
 import krati.cds.array.DataArray;
+import krati.cds.impl.array.CheckedDataArrayImpl;
 import krati.cds.impl.array.DataArrayImpl;
 import krati.cds.impl.array.fixed.LongArrayRecoverableImpl;
 import krati.cds.impl.segment.SegmentFactory;
@@ -31,6 +32,7 @@ public class DataCacheImpl implements DataCache
      *    Segment Compact Factor : 0.5
      *    Redo entry size        : 10000
      *    Number of Redo Entries : 5
+     *    Data integrity check   : No
      * </pre>
      * 
      * @param memberIdStart          Start of memberId
@@ -53,7 +55,8 @@ public class DataCacheImpl implements DataCache
      *    Segment Compact Trigger: 0.2
      *    Segment Compact Factor : 0.5
      *    Redo Entry Size        : 10000
-     *    Number of redo entries : 5 
+     *    Number of redo entries : 5
+     *    Data integrity check   : No
      * </pre>
      * 
      * @param memberIdStart          Start of memberId
@@ -69,7 +72,7 @@ public class DataCacheImpl implements DataCache
                          SegmentFactory segmentFactory,
                          int segmentFileSizeMB) throws Exception
     {
-        this(memberIdStart, memberIdCount, 10000, 5, cacheDirectory, segmentFactory, segmentFileSizeMB);
+        this(memberIdStart, memberIdCount, 10000, 5, cacheDirectory, segmentFactory, segmentFileSizeMB, false);
     }
     
     /**
@@ -82,6 +85,7 @@ public class DataCacheImpl implements DataCache
      * @param cacheDirectory         Cache directory where persistent data will be stored
      * @param segmentFactory         Factory for creating Segment(s)
      * @param segmentFileSizeMB      Segment size in MB
+     * @param checked                whether to apply default checksum (Adler32) to ensure data integrity
      * @throws Exception
      */
     public DataCacheImpl(int memberIdStart,
@@ -90,7 +94,8 @@ public class DataCacheImpl implements DataCache
                          int maxEntries,
                          File cacheDirectory,
                          SegmentFactory segmentFactory,
-                         int segmentFileSizeMB) throws Exception
+                         int segmentFileSizeMB,
+                         boolean checked) throws Exception
     {
         LongArrayRecoverableImpl addressArray =
             new LongArrayRecoverableImpl(memberIdStart,
@@ -104,7 +109,14 @@ public class DataCacheImpl implements DataCache
                                                                segmentHomePath,
                                                                segmentFileSizeMB);
         
-        _dataArray = new DataArrayImpl(addressArray, segManager);
+        if(checked)
+        {
+            _dataArray = new CheckedDataArrayImpl(addressArray, segManager);
+        }
+        else
+        {
+            _dataArray = new DataArrayImpl(addressArray, segManager);
+        }
         
         _log.info("DataCache initiated: " + getStatus());
     }
@@ -121,6 +133,7 @@ public class DataCacheImpl implements DataCache
      * @param segmentFileSizeMB      Segment size in MB
      * @param segmentCompactTrigger  Percentage of segment capacity, which triggers compaction once per segment
      * @param segmentCompactFactor   Load factor of segment, below which a segment is eligible for compaction
+     * @param checked                whether to apply default checksum (Adler32) to ensure data integrity
      * @throws Exception
      */
     public DataCacheImpl(int memberIdStart,
@@ -131,7 +144,8 @@ public class DataCacheImpl implements DataCache
                          SegmentFactory segmentFactory,
                          int segmentFileSizeMB,
                          double segmentCompactTrigger,
-                         double segmentCompactFactor) throws Exception
+                         double segmentCompactFactor,
+                         boolean checked) throws Exception
     {
         LongArrayRecoverableImpl addressArray =
             new LongArrayRecoverableImpl(memberIdStart,
@@ -145,7 +159,14 @@ public class DataCacheImpl implements DataCache
                                                                segmentHomePath,
                                                                segmentFileSizeMB);
         
-        _dataArray = new DataArrayImpl(addressArray, segManager, segmentCompactTrigger, segmentCompactFactor);
+        if (checked)
+        {
+            _dataArray = new CheckedDataArrayImpl(addressArray, segManager, segmentCompactTrigger, segmentCompactFactor);
+        }
+        else
+        {
+            _dataArray = new DataArrayImpl(addressArray, segManager, segmentCompactTrigger, segmentCompactFactor);
+        }
         
         _log.info("DataCache initiated: " + getStatus());
     }

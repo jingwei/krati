@@ -103,20 +103,6 @@ public class DataArrayImplCompactor implements Runnable
         _segTargetList.clear();
         _dataArrayCopy = null;
         
-        // Delete compactor the entry log file after a successful replacement is done.
-        File file = _entryWriter.getFile();
-        if(file != null && file.exists())
-        {
-            try
-            {
-                file.delete();
-            }
-            catch(Exception e)
-            {
-                _log.warn(e.getMessage());
-            }
-        }
-        
         ((LongArrayRecoverableImpl)_dataArray.getAddressArray()).getEntryManager().setAutoApplyEntries(true);
         
         // Reset _state
@@ -258,7 +244,7 @@ public class DataArrayImplCompactor implements Runnable
             _dataArrayCopy._segmentManager.freeSegment(seg);
         }
         
-        // Delete compactor the entry log file after a successful replacement is done.
+        // Delete compactor entry file after a successful replacement is done.
         File file = _entryWriter.getFile();
         if(file != null && file.exists())
         {
