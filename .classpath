@@ -4,6 +4,7 @@
 	<classpathentry kind="src" path="cds/src/api"/>
 	<classpathentry kind="src" path="cds/src/impl"/>
 	<classpathentry kind="src" path="test/src"/>
+	<classpathentry kind="src" path="sos/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
 	<classpathentry kind="lib" path="lib/zookeeper-3.2.2.jar"/>
 	<classpathentry kind="lib" path="lib/xerces-1.4.4.jar"/>

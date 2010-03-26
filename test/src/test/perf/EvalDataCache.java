@@ -381,7 +381,7 @@ public class EvalDataCache
     static DataCache getKratiDataCache(File cacheDir) throws Exception
     {
     	int idStart = 0;
-        int idCount = 500000;
+        int idCount = 5000000;
         int segFileSizeMB = 256;
         
         DataCache cache = new DataCacheImpl(idStart,
@@ -396,7 +396,7 @@ public class EvalDataCache
     static DataCache getZoieDataCacheZoie(File cacheDir) throws Exception
     {
         int idStart = 0;
-        int idCount = 500000;
+        int idCount = 5000000;
         
     	ZoieSystem zs = new ZoieSystem(cacheDir,
     	                               new ZoieInterpreter(),
