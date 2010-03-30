@@ -9,15 +9,22 @@ import junit.framework.TestCase;
 
 public class AbstractTest extends TestCase
 {
+    public static final File TEST_DIR;
     public static final File TEST_OUTPUT_DIR;
     public static final Logger log = Logger.getLogger(AbstractTest.class);
     
     static
     {
+        TEST_DIR = new File(System.getProperty("test.dir"));
+        if(!TEST_DIR.exists())
+        {
+            TEST_DIR.mkdirs();
+        }
+        
         TEST_OUTPUT_DIR = new File(System.getProperty("test.output.dir"));
         if(!TEST_OUTPUT_DIR.exists())
         {
-                TEST_OUTPUT_DIR.mkdirs();
+            TEST_OUTPUT_DIR.mkdirs();
         }
     }
     

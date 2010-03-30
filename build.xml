@@ -125,7 +125,8 @@
     </target>
     
     <target name="test" depends="test.compile">
-        <junit printsummary="yes">
+        <junit printsummary="yes" maxmemory="20G">
+            <jvmarg value="-Dtest.dir=${test.dir}"/>
             <jvmarg value="-Dtest.output.dir=${test.dir}/output"/>
             <formatter type="brief" usefile="false"/>
             
@@ -136,7 +137,7 @@
             </classpath>
             
             <batchtest fork="yes">
-                <fileset dir="${test.build.dir}" includes="**/Test*.class"/>
+                <fileset dir="${test.build.dir}" includes="**/Test*.class" excludes="**/Test*er.class"/>
             </batchtest>
         </junit>
     </target>

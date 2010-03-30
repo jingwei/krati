@@ -24,7 +24,7 @@ public class TestObjectStore extends AbstractTest
         super(TestObjectStore.class.getName());
     }
     
-    protected DataStore<byte[], byte[]> getDataStore(File storeDir) throws Exception {
+    private DataStore<byte[], byte[]> getDataStore(File storeDir) throws Exception {
         int idStart = 0;
         int idCount = 20000;
         int segFileSizeMB = 32;
@@ -42,8 +42,8 @@ public class TestObjectStore extends AbstractTest
     {
         cleanTestOutput();
         
-        DataStore<byte[], byte[]> dataStore =
-            getDataStore(new File("/Users/jwu/workspace/krati-dev/test/output/object_store"));//new File(TEST_OUTPUT_DIR, "object_store"));
+        File objectStoreDir = new File(TEST_OUTPUT_DIR, "object_store");
+        DataStore<byte[], byte[]> dataStore = getDataStore(objectStoreDir);
         ObjectStore<String, MemberProtos.Member> memberStore =
             new SerializableObjectStore<String, MemberProtos.Member>(dataStore, new KeySerializer(), new MemberSerializer());
         
