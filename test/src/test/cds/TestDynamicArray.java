@@ -1,6 +1,9 @@
 package test.cds;
 
 import org.junit.Test;
+
+import test.AbstractTest;
+
 import java.util.Random;
 
 import krati.cds.array.IntArray;

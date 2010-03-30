@@ -2,6 +2,8 @@ package test.cds;
 
 import java.util.Random;
 
+import test.AbstractTest;
+
 import krati.cds.array.IntArray;
 import krati.cds.array.LongArray;
 import krati.cds.array.ShortArray;

@@ -3,6 +3,8 @@ package test.cds;
 import java.io.File;
 import java.util.Random;
 
+import test.AbstractTest;
+
 import krati.cds.impl.array.entry.Entry;
 import krati.cds.impl.array.entry.EntryUtility;
 import krati.cds.impl.array.entry.EntryValueInt;

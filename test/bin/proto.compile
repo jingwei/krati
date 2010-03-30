@@ -1,0 +1,6 @@
+#!/bin/sh
+
+export PROTO_SRC_DIR=$WORKSPACE/krati-dev/test/src
+export PROTO_DST_DIR=$WORKSPACE/krati-dev/test/src
+
+protoc -I=$PROTO_SRC_DIR --java_out=$PROTO_DST_DIR $PROTO_SRC_DIR/test/protos/Member.proto

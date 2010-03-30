@@ -1,9 +1,10 @@
-package test.cds;
+package test;
 
 import java.io.File;
 import java.io.IOException;
 
 import org.apache.log4j.Logger;
+
 import junit.framework.TestCase;
 
 public class AbstractTest extends TestCase
@@ -41,6 +42,37 @@ public class AbstractTest extends TestCase
                     throw new IOException("file:"+f.getAbsolutePath()+" not deleted");
                 }
             }
+            else
+            {
+                deleteDirectory(f);
+            }
+        }
+    }
+    
+    protected void deleteDirectory(File dir) throws IOException
+    {
+        File[] files = dir.listFiles();
+        
+        for (File f : files)
+        {
+            if (f.isDirectory())
+            {
+               deleteDirectory(f);
+            }
+            else
+            {
+                boolean deleted = f.delete();
+                if (!deleted)
+                {
+                    throw new IOException("file:"+f.getAbsolutePath()+" not deleted");
+                }
+            }
+        }
+        
+        boolean deleted = dir.delete();
+        if (!deleted)
+        {
+            throw new IOException("dir:"+dir.getAbsolutePath()+" not deleted");
         }
     }
 }

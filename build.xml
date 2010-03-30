@@ -16,6 +16,7 @@
     
     <property name="src" value="src"/>
     <property name="cds.src" value="cds/src"/>
+    <property name="sos.src" value="sos/src"/>
     
     <property name="test.src" value="${test.dir}/src"/>
     <property name="test.build.dir" value="${test.dir}/classes"/>
@@ -83,11 +84,20 @@
         </javac>
     </target>
     
+    <target name="compile.sos" depends="compile.cds">
+        <javac debug="true" destdir="${build.dir}">
+            <src path="${cds.src}"/>
+            <classpath refid="java.class.path"/>
+            <classpath refid="compile.class.path"/>
+        </javac>
+    </target>
+    
     <target name="compile" depends="init">
         <javac debug="true" destdir="${build.dir}">
             <src path="${src}"/>
             <src path="${cds.src}/api"/>
             <src path="${cds.src}/impl"/>
+            <src path="${sos.src}"/>
             <classpath refid="compile.class.path"/>
         </javac>
         <copy todir="${build.dir}">

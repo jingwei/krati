@@ -1,0 +1,32 @@
+package test.protos;
+
+option java_package = "test.protos";
+option java_outer_classname = "MemberProtos";
+
+message Member {
+	required int32 member_id = 1;
+	optional string last_name = 2;
+	optional string first_name = 3;
+	
+	repeated string email = 4;
+	
+	enum PhoneType {
+	    MOBILE = 0;
+    	HOME = 1;
+    	WORK = 2;
+  	}
+	
+  	message PhoneNumber {
+    	required string number = 1;
+    	optional PhoneType type = 2 [default = HOME];
+  	}
+
+  	repeated PhoneNumber phone = 5;
+  	
+	repeated string job_title = 7;
+	optional string profile = 8 [default = "N/A"];
+}
+
+message MemberBook {
+	repeated Member member = 1;
+}
