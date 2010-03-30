@@ -86,7 +86,7 @@
     
     <target name="compile.sos" depends="compile.cds">
         <javac debug="true" destdir="${build.dir}">
-            <src path="${cds.src}"/>
+            <src path="${sos.src}"/>
             <classpath refid="java.class.path"/>
             <classpath refid="compile.class.path"/>
         </javac>
