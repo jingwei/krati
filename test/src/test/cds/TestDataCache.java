@@ -9,9 +9,7 @@ import java.util.List;
 import java.util.Random;
 
 import krati.cds.DataCache;
-import krati.cds.DataCacheLoader;
 import krati.cds.impl.DataCacheImpl;
-import krati.cds.impl.DataCacheLoaderImpl;
 import krati.zoie.impl.ZoieDataCache;
 import krati.zoie.impl.ZoieInterpreter;
 
@@ -58,7 +56,8 @@ public class TestDataCache extends AbstractTest
         while(index < stopIndex)
         {
             try
-            {   line = _lineSeedData.get(index % lineCnt);
+            {
+                line = _lineSeedData.get(index % lineCnt);
                 cache.setData(index, line.getBytes(), scn++);
             }
             catch(Exception e)
@@ -80,30 +79,30 @@ public class TestDataCache extends AbstractTest
     
     public static void checkData(DataCache cache, int index)
     {
+        String line = _lineSeedData.get(index % _lineSeedData.size());
+        
         byte[] b = cache.getData(index);
         if (b != null)
         {
             String s = new String(b);
-            System.out.printf("[%8d] %s%n", index, s);
+            assertTrue("[" + index + "]=" + s + " expected=" + line, s.equals(line));
         }
         else
         {
-            System.out.printf("[%8d] %s%n", index, null);
+            assertTrue("[" + index + "]=null", line == null);
         }
     }
     
     public static void checkData(DataCache cache)
     {
-        checkData(cache, 0);
-        checkData(cache, 10);
-        checkData(cache, 100);
-        checkData(cache, 1000);
-        checkData(cache, 10000);
-        checkData(cache, 100000);
-        checkData(cache, 1000000);
-        checkData(cache, 2000000);
-        checkData(cache, 3000000);
-        checkData(cache, 4000000);
+        int cacheSize = cache.getIdCount();
+        Random rand = new Random();
+        for(int i = 0; i < 10000; i++)
+        {
+            int index = cache.getIdStart() + rand.nextInt(cacheSize);
+            checkData(cache, index);
+        }
+        System.out.println("OK");
     }
     
     static class Reader implements Runnable
@@ -432,7 +431,6 @@ public class TestDataCache extends AbstractTest
         try
         {
             DataCache cache;
-            DataCacheLoader cacheLoader = new DataCacheLoaderImpl();
             
             File cacheDir = new File(TEST_DIR, "cache");
             
@@ -440,8 +438,6 @@ public class TestDataCache extends AbstractTest
             //cache = getZoieDataCache(cacheDir);
             
             int runTimeSeconds = 60;
-            File initFile = new File(TEST_DIR, "cache.init.dat");
-            File dumpFile = new File(TEST_DIR, "cache.dump.dat");
             
             System.out.println("---checkData---");
             checkData(cache);
@@ -450,9 +446,6 @@ public class TestDataCache extends AbstractTest
             {
                 System.out.println("---populate---");
                 eval.populate(cache);
-                
-                System.out.println("---dump---");
-                cacheLoader.dump(cache, initFile);
                 
                 System.out.println("---checkData---");
                 checkData(cache);
@@ -477,11 +470,6 @@ public class TestDataCache extends AbstractTest
             
             System.out.println("---checkData---");
             checkData(cache);
-            
-            System.out.println("---dump---");
-            cacheLoader.dump(cache, dumpFile);
-            
-            System.out.println("done");
         }
         catch(Exception e)
         {

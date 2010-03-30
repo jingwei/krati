@@ -17,6 +17,12 @@ import test.protos.MemberDataGen;
 import test.protos.MemberProtos;
 import test.protos.MemberSerializer;
 
+/**
+ * Test SerializableObjectStore
+ * 
+ * @author jwu
+ *
+ */
 public class TestObjectStore extends AbstractTest
 {
     public TestObjectStore()
