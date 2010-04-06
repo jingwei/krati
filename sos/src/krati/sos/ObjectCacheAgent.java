@@ -9,7 +9,7 @@ import java.io.IOException;
  *
  * @param <T> Object to be cached
  */
-public class ObjectCacheAgent<T extends Object> implements ObjectCache<T>
+public class ObjectCacheAgent<T> implements ObjectCache<T>
 {
     protected ObjectCache<T> _cache;
     protected ObjectHandler<T> _inboundHandler;

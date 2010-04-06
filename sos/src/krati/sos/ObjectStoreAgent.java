@@ -25,7 +25,7 @@ import java.io.IOException;
  * @param <K> Key 
  * @param <V> Value
  */
-public class ObjectStoreAgent<K extends Object, V extends Object> implements ObjectStore<K, V>
+public class ObjectStoreAgent<K, V> implements ObjectStore<K, V>
 {
     protected ObjectStore<K, V> _store;
     protected ObjectHandler<V> _inboundHandler;

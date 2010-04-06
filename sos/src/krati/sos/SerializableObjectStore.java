@@ -13,7 +13,7 @@ import krati.sos.ObjectSerializer;
  * @param <K> Key (serializable object)
  * @param <V> Value (serializable object)
  */
-public class SerializableObjectStore<K extends Object, V extends Object> implements ObjectStore<K, V>
+public class SerializableObjectStore<K, V> implements ObjectStore<K, V>
 {
     protected final DataStore<byte[], byte[]> _store;
     protected final ObjectSerializer<K> _keySerializer;

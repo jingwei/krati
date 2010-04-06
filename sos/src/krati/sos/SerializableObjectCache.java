@@ -11,7 +11,7 @@ import krati.cds.DataCache;
  *
  * @param <T> Serializable object.
  */
-public class SerializableObjectCache<T extends Object> implements ObjectCache<T>
+public class SerializableObjectCache<T> implements ObjectCache<T>
 {
     protected final DataCache _cache;
     protected final ObjectSerializer<T> _serializer;
