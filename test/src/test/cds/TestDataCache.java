@@ -439,9 +439,6 @@ public class TestDataCache extends AbstractTest
             
             int runTimeSeconds = 60;
             
-            System.out.println("---checkData---");
-            checkData(cache);
-            
             if (cache.getLWMark() == 0)
             {
                 System.out.println("---populate---");
