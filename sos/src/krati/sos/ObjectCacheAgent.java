@@ -52,26 +52,26 @@ public class ObjectCacheAgent<T> implements ObjectCache<T>
     }
     
     @Override
-    public void delete(int objectId, long scn) throws Exception
+    public boolean delete(int objectId, long scn) throws Exception
     {
-        _cache.delete(objectId, scn);
+        return _cache.delete(objectId, scn);
     }
     
     @Override
-    public void set(int objectId, T object, long scn) throws Exception
+    public boolean set(int objectId, T object, long scn) throws Exception
     {
-        if(object != null && _inboundHandler != null)
+        if(object != null && _inboundHandler != null && _inboundHandler.getEnabled())
         {
             _inboundHandler.process(object);
         }
-        _cache.set(objectId, object, scn);
+        return _cache.set(objectId, object, scn);
     }
     
     @Override
     public T get(int objectId)
     {
         T object = _cache.get(objectId);
-        if(object != null && _outboundHandler != null)
+        if(object != null && _outboundHandler != null && _outboundHandler.getEnabled())
         {
             _outboundHandler.process(object);
         }
@@ -82,5 +82,23 @@ public class ObjectCacheAgent<T> implements ObjectCache<T>
     public void persist() throws IOException
     {
         _cache.persist();
+    }
+
+    @Override
+    public long getHWMark()
+    {
+        return _cache.getHWMark();
+    }
+
+    @Override
+    public long getLWMark()
+    {
+        return _cache.getLWMark();
+    }
+
+    @Override
+    public void saveHWMark(long endOfPeriod) throws Exception
+    {
+        _cache.saveHWMark(endOfPeriod);
     }
 }

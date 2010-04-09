@@ -65,7 +65,7 @@ public class ObjectStoreAgent<K, V> implements ObjectStore<K, V>
     public V get(K key)
     {
         V value = _store.get(key);
-        if(value != null && _outboundHandler != null)
+        if(value != null && _outboundHandler != null && _outboundHandler.getEnabled())
         {
             _outboundHandler.process(value);
         }
@@ -75,7 +75,7 @@ public class ObjectStoreAgent<K, V> implements ObjectStore<K, V>
     @Override
     public boolean put(K key, V value) throws Exception
     {
-        if(value != null && _inboundHandler != null)
+        if(value != null && _inboundHandler != null && _inboundHandler.getEnabled())
         {
             _inboundHandler.process(value);
         }

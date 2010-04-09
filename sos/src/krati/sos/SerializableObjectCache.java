@@ -83,9 +83,15 @@ public class SerializableObjectCache<T> implements ObjectCache<T>
      * @throws Exception
      */
     @Override
-    public void set(int objectId, T object, long scn) throws Exception
+    public boolean set(int objectId, T object, long scn) throws Exception
     {
+        if(object == null)
+        {
+            return delete(objectId, scn);
+        }
+        
         _cache.setData(objectId, getSerializer().serialize(object), scn);
+        return true;
     }
     
     /**
@@ -96,9 +102,10 @@ public class SerializableObjectCache<T> implements ObjectCache<T>
      * @throws Exception
      */
     @Override
-    public void delete(int objectId, long scn) throws Exception
+    public boolean delete(int objectId, long scn) throws Exception
     {
         _cache.deleteData(objectId, scn);
+        return true;
     }
 
     /**
@@ -110,5 +117,32 @@ public class SerializableObjectCache<T> implements ObjectCache<T>
     public void persist() throws IOException
     {
         _cache.persist();
+    }
+    
+    /**
+     * @return the high water mark.
+     */
+    @Override
+    public long getHWMark()
+    {
+        return _cache.getHWMark();
+    }
+    
+    /**
+     * @return the low water mark.
+     */
+    @Override
+    public long getLWMark()
+    {
+        return _cache.getLWMark();
+    }
+    
+    /**
+     * Saves the high water mark.
+     */
+    @Override
+    public void saveHWMark(long endOfPeriod) throws Exception
+    {
+        _cache.saveHWMark(endOfPeriod);
     }
 }

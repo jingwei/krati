@@ -2,6 +2,8 @@ package krati.sos;
 
 import java.io.IOException;
 
+import krati.cds.Persistable;
+
 /**
  * An agent that wraps an ObjectCache can have inbound and outbound ObjectHandler(s).
  * The inbound handler is associated with the set method. It is called on an inbound object before the object is passed down to the underlying ObjectCache.
@@ -24,7 +26,7 @@ import java.io.IOException;
  *
  * @param <T> Object to be cached.
  */
-public interface ObjectCache<T>
+public interface ObjectCache<T> extends Persistable
 {
     /**
      * @return the total number of objects in the cache.
@@ -52,7 +54,7 @@ public interface ObjectCache<T>
      * @param scn         the global scn (equivalent to a time stamp).
      * @throws Exception
      */
-    public void set(int objectId, T object, long scn) throws Exception;
+    public boolean set(int objectId, T object, long scn) throws Exception;
     
     /**
      * Deletes an object based on a user-specified object Id.
@@ -61,7 +63,7 @@ public interface ObjectCache<T>
      * @param scn        the global scn (equivalent to a time stamp).
      * @throws Exception
      */
-    public void delete(int objectId, long scn) throws Exception;
+    public boolean delete(int objectId, long scn) throws Exception;
     
     /**
      * Persists this object cache.
