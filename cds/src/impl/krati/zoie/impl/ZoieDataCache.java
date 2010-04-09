@@ -130,4 +130,10 @@ public class ZoieDataCache<R extends IndexReader> implements DataCache {
         
     }
 
+    @Override
+    public void clear() throws IOException {
+        // TODO Auto-generated method stub
+        
+    }
+
 }

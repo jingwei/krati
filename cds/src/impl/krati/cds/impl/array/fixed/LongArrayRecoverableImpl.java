@@ -1,6 +1,7 @@
 package krati.cds.impl.array.fixed;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.apache.log4j.Logger;
 
@@ -85,14 +86,29 @@ public class LongArrayRecoverableImpl extends RecoverableArrayImpl<long[], Entry
     }
   }
   
+  @Override
   public void clear()
   {
+    // Clear in-memory array
     if (_parallelData != null)
     {
       for (int i = 0; i < _parallelData.length; i ++)
       {
         _parallelData[i] = 0;
       }
+    }
+    
+    // Clear the entry manager
+    _entryManager.clear();
+    
+    // Clear the underly array file
+    try
+    {
+      _arrayFile.reset(_parallelData, _entryManager.getLWMark());
+    }
+    catch(IOException e)
+    {
+      log.error(e.getMessage(), e);
     }
   }
   

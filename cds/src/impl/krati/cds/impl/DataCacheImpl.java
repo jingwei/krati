@@ -270,4 +270,10 @@ public class DataCacheImpl implements DataCache
     {
         _dataArray.saveHWMark(endOfPeriod);
     }
+
+    @Override
+    public void clear() throws IOException
+    {
+        _dataArray.clear();
+    }
 }

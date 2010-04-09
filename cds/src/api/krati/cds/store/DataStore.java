@@ -21,4 +21,6 @@ public interface DataStore<K, V>
     public long hash(K key);
     
     public void persist() throws IOException;
+    
+    public void clear() throws IOException;;
 }

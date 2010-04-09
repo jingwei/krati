@@ -130,6 +130,7 @@ public final class SegmentManager implements Cloneable
     public synchronized void clear()
     {
         _segList.clear();
+        _segCurrent = null;
     }
     
     /**

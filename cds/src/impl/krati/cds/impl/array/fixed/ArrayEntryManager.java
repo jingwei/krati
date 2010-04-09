@@ -103,6 +103,8 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable
   
   public synchronized void clear()
   {
+    _lwmScn = 0;
+    _hwmScn = 0;
     _entryList.clear();
     _currentEntry = null;
     

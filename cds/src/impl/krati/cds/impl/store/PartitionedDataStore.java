@@ -117,4 +117,13 @@ public class PartitionedDataStore implements DataStore<byte[], byte[]>
         
         _log.info("store persisted");
     }
+    
+    @Override
+    public void clear() throws IOException
+    {
+        for(DataStore<byte[], byte[]> storeImpl: _partitionList)
+        {
+            storeImpl.clear();
+        }
+    }
 }

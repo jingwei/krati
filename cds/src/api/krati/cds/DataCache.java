@@ -1,5 +1,7 @@
 package krati.cds;
 
+import java.io.IOException;
+
 /**
  * DataCache
  * 
@@ -23,4 +25,6 @@ public interface DataCache extends Persistable
     public void setData(int memberId, byte[] data, int offset, int length, long scn) throws Exception;
 
     public void deleteData(int memberId, long scn) throws Exception;
+    
+    public void clear() throws IOException;
 }

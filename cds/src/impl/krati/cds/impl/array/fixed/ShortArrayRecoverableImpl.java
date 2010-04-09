@@ -1,6 +1,7 @@
 package krati.cds.impl.array.fixed;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.apache.log4j.Logger;
 
@@ -84,7 +85,8 @@ public class ShortArrayRecoverableImpl extends RecoverableArrayImpl<short[], Ent
       }
     }
   }
-  
+
+  @Override
   public void clear()
   {
     if (_parallelData != null)
@@ -93,6 +95,19 @@ public class ShortArrayRecoverableImpl extends RecoverableArrayImpl<short[], Ent
       {
         _parallelData[i] = 0;
       }
+    }
+    
+    // Clear the entry manager
+    _entryManager.clear();
+    
+    // Clear the underly array file
+    try
+    {
+      _arrayFile.reset(_parallelData, _entryManager.getLWMark());
+    }
+    catch(IOException e)
+    {
+      log.error(e.getMessage(), e);
     }
   }
   

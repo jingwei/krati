@@ -270,12 +270,9 @@ public class DynamicLongArrayImpl implements LongArray, DynamicArray
   
   public void clear()
   {
-    for(int i = 0; i < _dataArrays.length; i++)
+    for(LongArrayRecoverableImpl implArray : _implArrays)
     {
-      for(int j = 0; j < _dataArrays[i].length; j++)
-      {
-        _dataArrays[i][j] = 0;
-      }
+      implArray.clear();
     }
   }
   

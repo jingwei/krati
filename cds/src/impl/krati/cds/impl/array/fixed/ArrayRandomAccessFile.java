@@ -424,6 +424,35 @@ public class ArrayRandomAccessFile
     _raf.writeInt(v);
   }
   
+  public synchronized void reset(int[] intArray) throws IOException
+  {
+      FileChannel channel = _raf.getChannel();
+      MappedByteBuffer mmapBuffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, _raf.length());
+      
+      mmapBuffer.position((int)DATA_START_POS);
+      for(int i = 0; i < intArray.length; i++)
+      {
+          mmapBuffer.putInt(intArray[i]);
+      }
+      mmapBuffer.force();
+      channel.close();
+      
+      // need reset
+      _raf.close();
+      _raf = new RandomAccessFile(_file, "rw");
+  }
+  
+  public synchronized void reset(int[] intArray, long maxScn) throws IOException
+  {   
+      reset(intArray);
+      
+      // Write copySCN and maxSCN
+      writeCopySCN(maxScn);
+      writeMaxSCN(maxScn);
+      sync();
+      log.info("update copySCN and maxSCN:" + maxScn);
+  }
+  
   public synchronized void reset(long[] longArray) throws IOException
   {
       FileChannel channel = _raf.getChannel();
@@ -440,5 +469,45 @@ public class ArrayRandomAccessFile
       // need reset
       _raf.close();
       _raf = new RandomAccessFile(_file, "rw");
+  }
+  
+  public synchronized void reset(long[] longArray, long maxScn) throws IOException
+  {   
+      reset(longArray);
+      
+      // Write copySCN and maxSCN
+      writeCopySCN(maxScn);
+      writeMaxSCN(maxScn);
+      sync();
+      log.info("update copySCN and maxSCN:" + maxScn);
+  }
+  
+  public synchronized void reset(short[] shortArray) throws IOException
+  {
+      FileChannel channel = _raf.getChannel();
+      MappedByteBuffer mmapBuffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, _raf.length());
+      
+      mmapBuffer.position((int)DATA_START_POS);
+      for(int i = 0; i < shortArray.length; i++)
+      {
+          mmapBuffer.putShort(shortArray[i]);
+      }
+      mmapBuffer.force();
+      channel.close();
+      
+      // need reset
+      _raf.close();
+      _raf = new RandomAccessFile(_file, "rw");
+  }
+  
+  public synchronized void reset(short[] shortArray, long maxScn) throws IOException
+  {   
+      reset(shortArray);
+      
+      // Write copySCN and maxSCN
+      writeCopySCN(maxScn);
+      writeMaxSCN(maxScn);
+      sync();
+      log.info("update copySCN and maxSCN:" + maxScn);
   }
 }

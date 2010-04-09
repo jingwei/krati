@@ -129,6 +129,12 @@ public class SimpleDataStore implements DataStore<byte[], byte[]>
         return false;
     }
     
+    @Override
+    public synchronized void clear() throws IOException
+    {
+        _cache.clear();
+    }
+    
     protected int removeByKey(byte[] key, byte[] data)
     {
         int offset1 = 0;
