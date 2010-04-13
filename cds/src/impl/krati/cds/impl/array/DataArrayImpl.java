@@ -507,7 +507,14 @@ public class DataArrayImpl implements DataArray
     @Override
     public void setData(int index, byte[] data, long scn) throws Exception
     {
-        setData(index, data, 0, data.length, scn);
+        if(data == null)
+        {
+            setData(index, data, 0, 0, scn);
+        }
+        else
+        {
+            setData(index, data, 0, data.length, scn);
+        }
     }
     
     @Override
