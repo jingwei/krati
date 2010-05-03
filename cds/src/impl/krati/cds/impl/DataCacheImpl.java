@@ -15,7 +15,15 @@ import krati.cds.impl.segment.SegmentFactory;
 import krati.cds.impl.segment.SegmentManager;
 
 /**
- * DataCache: Simple Persistent Content Data Service.
+ * DataCache: Simple Persistent Content Data Service Implementation.
+ * 
+ * This class is not thread-safe by design. It is expected that the conditions below hold within one JVM.
+ * <pre>
+ *    1. There is one and only one instance of DataCacheImpl for a given cacheDirectory.
+ *    2. There is one and only one thread is calling setData methods at any given time. 
+ * </pre>
+ * 
+ * It is expected that this class is used in the case of multiple readers and single writer.
  * 
  * @author jwu
  *
@@ -294,23 +302,23 @@ public class DataCacheImpl implements DataCache
     {
         _dataArray.setData(memberId, null, scn);
     }
-        
+    
     @Override
     public void persist() throws IOException
     {
-        _log.info("DataCache persist: " + getStatus());
+        _log.info("DataCache persist { " + getStatus());
         
         _dataArray.persist();
         
-        _log.info("DataCache persist ended: " + getStatus());
+        _log.info("DataCache persist } " + getStatus());
     }
-
+    
     @Override
     public long getHWMark()
     {
         return _dataArray.getHWMark();
     }
-
+    
     @Override
     public long getLWMark()
     {
@@ -322,7 +330,7 @@ public class DataCacheImpl implements DataCache
     {
         _dataArray.saveHWMark(endOfPeriod);
     }
-
+    
     @Override
     public void clear() throws IOException
     {

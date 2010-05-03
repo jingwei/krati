@@ -7,8 +7,16 @@ import krati.cds.DataCache;
 /**
  * A simple data cache for serializable objects.
  * 
+ * This class is not thread-safe by design. It is expected that the conditions below hold within one JVM.
+ * <pre>
+ *    1. There is one and only one instance of SerializableObjectCache for a given data cache.
+ *    2. There is one and only one thread is calling set and delete methods at any given time. 
+ * </pre>
+ * 
+ * It is expected that this class is used in the case of multiple readers and single writer.
+ * 
  * @author jwu
- *
+ * 
  * @param <T> Serializable object.
  */
 public class SerializableObjectCache<T> implements ObjectCache<T>
@@ -107,7 +115,7 @@ public class SerializableObjectCache<T> implements ObjectCache<T>
         _cache.deleteData(objectId, scn);
         return true;
     }
-
+    
     /**
      * Persists this object cache.
      * 
@@ -116,7 +124,24 @@ public class SerializableObjectCache<T> implements ObjectCache<T>
     @Override
     public void persist() throws IOException
     {
-        _cache.persist();
+        synchronized(_cache)
+        {
+            _cache.persist();
+        }
+    }
+
+    /**
+     * Clears this object cache by removing all the persisted data permanently.
+     * 
+     * @throws IOException
+     */
+    @Override
+    public void clear() throws IOException
+    {
+        synchronized(_cache)
+        {
+            _cache.clear();
+        }
     }
     
     /**

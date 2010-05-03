@@ -45,4 +45,11 @@ public interface ObjectStore<K, V>
      * @throws IOException
      */
     public void persist() throws IOException;
+    
+    /**
+     * Clears this object store by removing all the persisted data permanently.
+     * 
+     * @throws IOException
+     */
+    public void clear() throws IOException;
 }

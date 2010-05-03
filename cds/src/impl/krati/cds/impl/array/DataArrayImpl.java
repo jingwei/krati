@@ -22,6 +22,20 @@ import krati.cds.impl.segment.SegmentException;
 import krati.cds.impl.segment.SegmentManager;
 import krati.cds.impl.segment.SegmentOverflowException;
 
+/**
+ * DataArrayImpl: Simple Persistent DataArray Implementation.
+ * 
+ * This class is not thread-safe by design. It is expected that the conditions below hold within one JVM.
+ * <pre>
+ *    1. There is one and only one instance of DataArrayImpl for a given cacheDirectory.
+ *    2. There is one and only one thread is calling setData methods at any given time. 
+ * </pre>
+ * 
+ * It is expected that this class is used in the case of multiple readers and single writer.
+ * 
+ * @author jwu
+ *
+ */
 public class DataArrayImpl implements DataArray
 {
     private final static Logger _log = Logger.getLogger(DataArrayImpl.class);

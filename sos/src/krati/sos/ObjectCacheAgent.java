@@ -71,7 +71,10 @@ public class ObjectCacheAgent<T> implements ObjectCache<T>
     @Override
     public boolean delete(int objectId, long scn) throws Exception
     {
-        return _cache.delete(objectId, scn);
+        synchronized(_cache)
+        {
+            return _cache.delete(objectId, scn);
+        }
     }
     
     @Override
@@ -81,7 +84,11 @@ public class ObjectCacheAgent<T> implements ObjectCache<T>
         {
             _inboundHandler.process(object);
         }
-        return _cache.set(objectId, object, scn);
+        
+        synchronized(_cache)
+        {
+            return _cache.set(objectId, object, scn);
+        }
     }
     
     @Override
@@ -98,9 +105,21 @@ public class ObjectCacheAgent<T> implements ObjectCache<T>
     @Override
     public void persist() throws IOException
     {
-        _cache.persist();
+        synchronized(_cache)
+        {
+            _cache.persist();
+        }
     }
-
+    
+    @Override
+    public void clear() throws IOException
+    {
+        synchronized(_cache)
+        {
+            _cache.clear();
+        }
+    }
+    
     @Override
     public long getHWMark()
     {

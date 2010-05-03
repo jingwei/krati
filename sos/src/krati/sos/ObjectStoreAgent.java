@@ -60,7 +60,10 @@ public class ObjectStoreAgent<K, V> implements ObjectStore<K, V>
     @Override
     public boolean delete(K key) throws Exception
     {
-        return _store.delete(key);
+        synchronized(_store)
+        {
+            return _store.delete(key);
+        }
     }
     
     @Override
@@ -73,7 +76,7 @@ public class ObjectStoreAgent<K, V> implements ObjectStore<K, V>
         }
         return value;
     }
-
+    
     @Override
     public boolean put(K key, V value) throws Exception
     {
@@ -81,12 +84,37 @@ public class ObjectStoreAgent<K, V> implements ObjectStore<K, V>
         {
             _inboundHandler.process(value);
         }
-        return _store.put(key, value);
+        
+        synchronized(_store)
+        {
+            return _store.put(key, value);
+        }
     }
     
+    /**
+     * Persists this object store.
+     * 
+     * @throws IOException
+     */
     @Override
     public void persist() throws IOException
     {
-        _store.persist();
+        synchronized(_store)
+        {
+            _store.persist();
+        }
+    }
+    
+    /**
+     * Clears this object store by removing all the persisted data permanently.
+     * 
+     * @throws IOException
+     */
+    public void clear() throws IOException
+    {
+        synchronized(_store)
+        {
+            _store.clear();
+        }
     }
 }

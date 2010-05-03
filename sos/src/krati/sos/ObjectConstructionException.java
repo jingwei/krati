@@ -1,5 +1,14 @@
 package krati.sos;
 
+/**
+ * ObjectConstructionException
+ * 
+ * An exception is thrown by <code>ObjectSerializer</code>
+ * if an object cannot be constructed (i.e. de-serialized) from a given byte array.
+ * 
+ * @author jwu
+ *
+ */
 public class ObjectConstructionException extends RuntimeException
 {
     /**

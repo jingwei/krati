@@ -9,6 +9,20 @@ import krati.cds.array.LongArray;
 import krati.cds.impl.array.entry.EntryLongFactory;
 import krati.cds.impl.array.entry.EntryValueLong;
 
+/**
+ * LongArrayRecoverableImpl: Simple Persistent LongArray Implementation.
+ * 
+ * This class is not thread-safe by design. It is expected that the conditions below hold within one JVM.
+ * <pre>
+ *    1. There is one and only one instance of LongArrayRecoverableImpl for a given cacheDirectory.
+ *    2. There is one and only one thread is calling the setData method at any given time. 
+ * </pre>
+ * 
+ * It is expected that this class is used in the case of multiple readers and single writer.
+ * 
+ * @author jwu
+ *
+ */
 public class LongArrayRecoverableImpl extends RecoverableArrayImpl<long[], EntryValueLong> implements LongArray
 {
   private static final Logger log = Logger.getLogger(LongArrayRecoverableImpl.class);

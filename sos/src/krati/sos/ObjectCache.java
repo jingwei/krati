@@ -56,4 +56,11 @@ public interface ObjectCache<T> extends Persistable
      * @throws IOException
      */
     public void persist() throws IOException;
+    
+    /**
+     * Clears this object cache by removing all the persisted data permanently.
+     * 
+     * @throws IOException
+     */
+    public void clear() throws IOException;
 }

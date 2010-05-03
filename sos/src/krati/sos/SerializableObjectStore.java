@@ -8,6 +8,14 @@ import krati.sos.ObjectSerializer;
 /**
  * A key-value store for serializable objects. The store requires that both key and value be serializable objects.
  * 
+ * This class is not thread-safe by design. It is expected that the conditions below hold within one JVM.
+ * <pre>
+ *    1. There is one and only one instance of SerializableObjectStore for a given data store.
+ *    2. There is one and only one thread is calling put and delete methods at any given time. 
+ * </pre>
+ * 
+ * It is expected that this class is used in the case of multiple readers and single writer.
+ * 
  * @author jwu
  *
  * @param <K> Key (serializable object)
@@ -106,6 +114,22 @@ public class SerializableObjectStore<K, V> implements ObjectStore<K, V>
     @Override
     public void persist() throws IOException
     {
-        _store.persist();
+        synchronized(_store)
+        {
+            _store.persist();
+        }
+    }
+    
+    /**
+     * Clears this object store by removing all the persisted data permanently.
+     * 
+     * @throws IOException
+     */
+    public void clear() throws IOException
+    {
+        synchronized(_store)
+        {
+            _store.clear();
+        }
     }
 }
