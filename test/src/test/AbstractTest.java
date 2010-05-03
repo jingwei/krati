@@ -28,6 +28,55 @@ public class AbstractTest extends TestCase
         }
     }
     
+    // Short-Regress Test Params.
+    public static int idStart = 0;
+    public static int idCount = 500000;
+    public static int runTimeSeconds = 30;
+    public static int segFileSizeMB = 256;
+    
+    static
+    {
+        try
+        {
+            idStart = Integer.parseInt(System.getProperty("test.idStart"));
+        }
+        catch(Exception e)
+        {
+            log.error("Failed to get test.idStart: " + System.getProperty("test.idStart"));
+            idStart = 0;
+        }
+        
+        try
+        {
+            idCount = Integer.parseInt(System.getProperty("test.idCount"));
+        }
+        catch(Exception e)
+        {
+            log.error("Failed to get test.idCount: " + System.getProperty("test.idCount"));
+            idCount = 500000;
+        }
+        
+        try
+        {
+            runTimeSeconds = Integer.parseInt(System.getProperty("test.runTimeSeconds"));
+        }
+        catch(Exception e)
+        {
+            log.error("Failed to get test.runTimeSeconds: " + System.getProperty("test.runTimeSeconds"));
+            runTimeSeconds = 30;
+        }
+
+        try
+        {
+            segFileSizeMB = Integer.parseInt(System.getProperty("test.segFileSizeMB"));
+        }
+        catch(Exception e)
+        {
+            log.error("Failed to get test.segFileSizeMB: " + System.getProperty("test.segFileSizeMB"));
+            segFileSizeMB = 256;
+        }
+    }
+    
     protected String name;
     
     public AbstractTest(String name)

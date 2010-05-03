@@ -109,6 +109,13 @@
             <jar destfile="${dist.dir}/${project.name}-${version}.jar" basedir="${build.dir}" />
     </target>
     
+    <target name="test.clean">
+      <delete dir="${logs.dir}"/>
+      <delete dir="${test.build.dir}"/>
+      <delete dir="${test.dir}/cache"/>
+      <delete dir="${test.dir}/output"/>
+    </target>
+    
     <target name="test.init" depends="compile">
         <mkdir dir="${test.build.dir}"/>
     </target>
@@ -125,7 +132,11 @@
     </target>
     
     <target name="test" depends="test.compile">
-        <junit printsummary="yes" maxmemory="20G">
+        <junit printsummary="yes" maxmemory="10G">
+            <jvmarg value="-Dtest.idStart=0"/>
+            <jvmarg value="-Dtest.idCount=500000"/>
+            <jvmarg value="-Dtest.segFileSizeMB=256"/>
+            <jvmarg value="-Dtest.runTimeSeconds=30"/>
             <jvmarg value="-Dtest.dir=${test.dir}"/>
             <jvmarg value="-Dtest.output.dir=${test.dir}/output"/>
             <formatter type="brief" usefile="false"/>
@@ -142,6 +153,28 @@
         </junit>
     </target>
     
+    <target name="stress.test" depends="test.compile">
+        <junit printsummary="yes" maxmemory="20G">
+            <jvmarg value="-Dtest.idStart=0"/>
+            <jvmarg value="-Dtest.idCount=5000000"/>
+            <jvmarg value="-Dtest.segFileSizeMB=512"/>
+            <jvmarg value="-Dtest.runTimeSeconds=60"/>
+            <jvmarg value="-Dtest.dir=${test.dir}"/>
+            <jvmarg value="-Dtest.output.dir=${test.dir}/output"/>
+            <formatter type="brief" usefile="false"/>
+            
+            <classpath>
+                <path refid="test.class.path"/>
+                <path refid="java.class.path"/>
+                <path refid="compile.class.path"/>
+            </classpath>
+            
+            <batchtest fork="yes">
+                <fileset dir="${test.build.dir}" includes="**/Test*.class" excludes="**/Test*er.class"/>
+            </batchtest>
+        </junit>
+    </target>
+
     <target name="main" depends="dist">
     </target>
 </project>

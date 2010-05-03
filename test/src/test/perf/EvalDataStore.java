@@ -184,7 +184,7 @@ public abstract class EvalDataStore
         }
     }
 
-    public void testWrite(DataStore<byte[], byte[]> ds, int writerCnt, int runTimeSeconds) throws Exception
+    public void testWrite(DataStore<byte[], byte[]> ds, int writerCnt, int runDuration) throws Exception
     {
         try
         {
@@ -205,7 +205,7 @@ public abstract class EvalDataStore
             
             long startTime = System.currentTimeMillis();
             long writeCount = 0;
-            int heartBeats = runTimeSeconds/10;
+            int heartBeats = runDuration/10;
             for(int i = 0; i < heartBeats; i++)
             {
                 Thread.sleep(10000);
@@ -251,7 +251,7 @@ public abstract class EvalDataStore
         }
     }
     
-    public void testRead(DataStore<byte[], byte[]> ds, int readerCnt, int runTimeSeconds) throws Exception
+    public void testRead(DataStore<byte[], byte[]> ds, int readerCnt, int runDuration) throws Exception
     {
         try
         {
@@ -273,7 +273,7 @@ public abstract class EvalDataStore
             long startTime = System.currentTimeMillis();
             
             // Sleep until run time is exhausted
-            Thread.sleep(runTimeSeconds * 1000);
+            Thread.sleep(runDuration * 1000);
             
             for(int i = 0; i < readers.length; i++)
             {
@@ -305,7 +305,7 @@ public abstract class EvalDataStore
         }
     }
     
-    public void testReadWrite(DataStore<byte[], byte[]> ds, int readerCnt, int writerCnt, int runTimeSeconds) throws Exception
+    public void testReadWrite(DataStore<byte[], byte[]> ds, int readerCnt, int writerCnt, int runDuration) throws Exception
     {
         try
         {
@@ -343,7 +343,7 @@ public abstract class EvalDataStore
             
             long readCount = 0;
             long writeCount = 0;
-            int heartBeats = runTimeSeconds/10;
+            int heartBeats = runDuration/10;
             for(int i = 0; i < heartBeats; i++)
             {
                 Thread.sleep(10000);

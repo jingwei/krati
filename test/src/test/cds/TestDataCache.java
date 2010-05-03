@@ -201,7 +201,7 @@ public class TestDataCache extends AbstractTest
         }
     }
     
-    public static double evalWrite(DataCache cache, int runTimeSeconds) throws Exception
+    public static double evalWrite(DataCache cache, int runDuration) throws Exception
     {
         try
         {
@@ -213,7 +213,7 @@ public class TestDataCache extends AbstractTest
             
             long startTime = System.currentTimeMillis();
             long writeCount = 0;
-            int heartBeats = runTimeSeconds/10;
+            int heartBeats = runDuration/10;
             for(int i = 0; i < heartBeats; i++)
             {
                 Thread.sleep(10000);
@@ -242,7 +242,7 @@ public class TestDataCache extends AbstractTest
         }
     }
     
-    public static void evalRead(DataCache cache, int readerCnt, int runTimeSeconds) throws Exception
+    public static void evalRead(DataCache cache, int readerCnt, int runDuration) throws Exception
     {
         try
         {
@@ -264,7 +264,7 @@ public class TestDataCache extends AbstractTest
             long startTime = System.currentTimeMillis();
             
             // Sleep until run time is exhausted
-            Thread.sleep(runTimeSeconds * 1000);
+            Thread.sleep(runDuration * 1000);
             
             for(int i = 0; i < readers.length; i++)
             {
@@ -296,7 +296,7 @@ public class TestDataCache extends AbstractTest
         }
     }
     
-    public static void evalReadWrite(DataCache cache, int readerCnt, int runTimeSeconds) throws Exception
+    public static void evalReadWrite(DataCache cache, int readerCnt, int runDuration) throws Exception
     {
         try
         {
@@ -325,7 +325,7 @@ public class TestDataCache extends AbstractTest
             
             long readCount = 0;
             long writeCount = 0;
-            int heartBeats = runTimeSeconds/10;
+            int heartBeats = runDuration/10;
             for(int i = 0; i < heartBeats; i++)
             {
                 Thread.sleep(10000);
@@ -385,8 +385,6 @@ public class TestDataCache extends AbstractTest
     
     static DataCache getKratiDataCache(File cacheDir) throws Exception
     {
-    	int idStart = 0;
-        int idCount = 5000000;
         int segFileSizeMB = 256;
         
         DataCache cache = new DataCacheImpl(idStart,
@@ -400,10 +398,7 @@ public class TestDataCache extends AbstractTest
     @SuppressWarnings("unchecked")
     static DataCache getZoieDataCacheZoie(File cacheDir) throws Exception
     {
-        int idStart = 0;
-        int idCount = 5000000;
-        
-    	ZoieSystem zs = new ZoieSystem(cacheDir,
+        ZoieSystem zs = new ZoieSystem(cacheDir,
     	                               new ZoieInterpreter(),
     	                               new DefaultIndexReaderDecorator(),
     	                               null, null, 10000, 60000, true);
@@ -436,8 +431,6 @@ public class TestDataCache extends AbstractTest
             
             cache = getKratiDataCache(cacheDir);
             //cache = getZoieDataCache(cacheDir);
-            
-            int runTimeSeconds = 60;
             
             if (cache.getLWMark() == 0)
             {

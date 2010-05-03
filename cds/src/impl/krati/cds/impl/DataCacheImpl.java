@@ -298,9 +298,11 @@ public class DataCacheImpl implements DataCache
     @Override
     public void persist() throws IOException
     {
+        _log.info("DataCache persist: " + getStatus());
+        
         _dataArray.persist();
         
-        _log.info("DataCache persisted: " + getStatus());
+        _log.info("DataCache persist ended: " + getStatus());
     }
 
     @Override

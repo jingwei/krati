@@ -29,10 +29,6 @@ public class TestObjectCache extends AbstractTest
     
     private DataCache getDataCache(File cacheDir) throws Exception
     {
-        int idStart = 0;
-        int idCount = 5000000;
-        int segFileSizeMB = 256;
-        
         DataCache cache = new DataCacheImpl(idStart,
                                             idCount,
                                             cacheDir,

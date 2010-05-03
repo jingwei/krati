@@ -196,7 +196,7 @@ public class EvalDataCache
         }
     }
     
-    public static double testWrite(DataCache cache, int runTimeSeconds) throws Exception
+    public static double testWrite(DataCache cache, int runDuration) throws Exception
     {
         try
         {
@@ -208,7 +208,7 @@ public class EvalDataCache
             
             long startTime = System.currentTimeMillis();
             long writeCount = 0;
-            int heartBeats = runTimeSeconds/10;
+            int heartBeats = runDuration/10;
             for(int i = 0; i < heartBeats; i++)
             {
                 Thread.sleep(10000);
@@ -237,7 +237,7 @@ public class EvalDataCache
         }
     }
     
-    public static void testRead(DataCache cache, int readerCnt, int runTimeSeconds) throws Exception
+    public static void testRead(DataCache cache, int readerCnt, int runDuration) throws Exception
     {
         try
         {
@@ -259,7 +259,7 @@ public class EvalDataCache
             long startTime = System.currentTimeMillis();
             
             // Sleep until run time is exhausted
-            Thread.sleep(runTimeSeconds * 1000);
+            Thread.sleep(runDuration * 1000);
             
             for(int i = 0; i < readers.length; i++)
             {
@@ -291,7 +291,7 @@ public class EvalDataCache
         }
     }
     
-    public static void testReadWrite(DataCache cache, int readerCnt, int runTimeSeconds) throws Exception
+    public static void testReadWrite(DataCache cache, int readerCnt, int runDuration) throws Exception
     {
         try
         {
@@ -320,7 +320,7 @@ public class EvalDataCache
             
             long readCount = 0;
             long writeCount = 0;
-            int heartBeats = runTimeSeconds/10;
+            int heartBeats = runDuration/10;
             for(int i = 0; i < heartBeats; i++)
             {
                 Thread.sleep(10000);

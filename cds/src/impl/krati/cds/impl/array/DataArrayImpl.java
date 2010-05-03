@@ -636,6 +636,8 @@ public class DataArrayImpl implements DataArray
                     _metaUpdateOnAppendPosition = Segment.dataStartPosition;
                     _segment = _segmentManager.nextSegment(_segment);
                     _canTriggerCompaction = true;
+                    
+                    _log.info("Segment " + _segment.getSegmentId() + " live");
                 }
             }
             catch(Exception e)
