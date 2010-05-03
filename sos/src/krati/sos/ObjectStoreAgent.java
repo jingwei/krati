@@ -3,6 +3,8 @@ package krati.sos;
 import java.io.IOException;
 
 /**
+ * ObjectStoreAgent:
+ * 
  * An agent that wraps an ObjectStore can have inbound and outbound ObjectHandler(s).
  * The inbound handler is associated with the put method. It is called on an inbound object before the object is passed down to the underlying ObjectStore.
  * The outbound handler is associated with the get method. It is called on an outbound object before the object is returned back to the ObjectStore visitor.
@@ -16,7 +18,7 @@ import java.io.IOException;
  *  
  *    put(K key, V value)
  *      + Call the inbound handler on the value object
- *      + delegate put to the underlying store
+ *      + delegate operation put to the underlying store
  * 
  * </pre>
  *  

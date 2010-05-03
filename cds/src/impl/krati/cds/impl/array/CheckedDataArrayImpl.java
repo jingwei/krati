@@ -9,6 +9,12 @@ import krati.cds.impl.array.fixed.LongArrayRecoverableImpl;
 import krati.cds.impl.segment.Segment;
 import krati.cds.impl.segment.SegmentManager;
 
+/**
+ * CheckedDataArrayImpl.
+ * 
+ * @author jwu
+ *
+ */
 public class CheckedDataArrayImpl extends DataArrayImpl
 {
     private final int _checksumBits = 11;
@@ -16,7 +22,6 @@ public class CheckedDataArrayImpl extends DataArrayImpl
     private byte[] _checkedData = new byte[_checksumBatchLength + 8];
     private ByteBuffer _checkedBuffer = ByteBuffer.wrap(_checkedData);
     
-
     public CheckedDataArrayImpl(LongArrayRecoverableImpl addressArray,
                                 SegmentManager segmentManager)
     {

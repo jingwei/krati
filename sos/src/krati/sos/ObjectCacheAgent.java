@@ -3,11 +3,28 @@ package krati.sos;
 import java.io.IOException;
 
 /**
- * ObjectCacheAgent
+ * ObjectCacheAgent:
+ * 
+ * An agent that wraps an ObjectCache can have inbound and outbound ObjectHandler(s).
+ * The inbound handler is associated with the set method. It is called on an inbound object before the object is passed down to the underlying ObjectCache.
+ * The outbound handler is associated with the get method. It is called on an outbound object before the object is returned back to the ObjectCache visitor.
+ * Either inbound or outbound handlers does not affect the delete method.
+ * 
+ * <pre>
+ *    get(int objectId)
+ *      + get object from the underlying store
+ *      + Call the outbound handler on the object
+ *      + return the object
+ *  
+ *    set(int objectId, T object, long scn)
+ *      + Call the inbound handler on the value object
+ *      + delegate operation set to the underlying store
+ * 
+ * </pre>
  * 
  * @author jwu
  *
- * @param <T> Object to be cached
+ * @param <T> Object to be cached.
  */
 public class ObjectCacheAgent<T> implements ObjectCache<T>
 {
