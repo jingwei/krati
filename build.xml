@@ -158,7 +158,7 @@
             <jvmarg value="-Dtest.idStart=0"/>
             <jvmarg value="-Dtest.idCount=5000000"/>
             <jvmarg value="-Dtest.segFileSizeMB=512"/>
-            <jvmarg value="-Dtest.runTimeSeconds=60"/>
+            <jvmarg value="-Dtest.runTimeSeconds=300"/>
             <jvmarg value="-Dtest.dir=${test.dir}"/>
             <jvmarg value="-Dtest.output.dir=${test.dir}/output"/>
             <formatter type="brief" usefile="false"/>

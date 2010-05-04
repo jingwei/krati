@@ -147,15 +147,15 @@ public class DataArrayImplCompactor implements Runnable
             
             // Compact no more than 3 segments per compaction cycle.
             // The total of segment load factors need to be less than
-            // 0.9 to allow 10% inaccuracy (for safety).
+            // 0.8 to allow 20% inaccuracy (for safety).
             double totalFactor = 0;
             for(int i = 0, len = Math.min(3, recycleList.size()); i < len; i++)
             {
                 Segment seg = recycleList.get(i);
-                if(totalFactor < 0.9)
+                if(totalFactor < 0.8)
                 {
                     totalFactor += seg.getLoadFactor();
-                    if(totalFactor < 0.9)
+                    if(totalFactor < 0.8)
                     {
                         _segSourceList.add(seg);
                     }

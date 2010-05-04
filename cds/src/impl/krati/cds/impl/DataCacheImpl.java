@@ -37,7 +37,7 @@ public class DataCacheImpl implements DataCache
      * Constructs a data cache with default values below.
      * <pre>
      *    Segment File Size      : 512MB
-     *    Segment Compact Trigger: 0.2
+     *    Segment Compact Trigger: 0.1
      *    Segment Compact Factor : 0.5
      *    Redo entry size        : 10000
      *    Number of Redo Entries : 5
@@ -60,7 +60,7 @@ public class DataCacheImpl implements DataCache
     /**
      * Constructs a data cache with default values below.
      * <pre>
-     *    Segment Compact Trigger: 0.2
+     *    Segment Compact Trigger: 0.1
      *    Segment Compact Factor : 0.5
      *    Redo entry size        : 10000
      *    Number of Redo Entries : 5
@@ -86,7 +86,7 @@ public class DataCacheImpl implements DataCache
      * Constructs a data cache with default values below.
      * <pre>
      *    Segment File Size      : 512MB
-     *    Segment Compact Trigger: 0.2
+     *    Segment Compact Trigger: 0.1
      *    Segment Compact Factor : 0.5
      *    Redo entry size        : 10000
      *    Number of Redo Entries : 5
@@ -110,7 +110,7 @@ public class DataCacheImpl implements DataCache
     /**
      * Constructs a data cache with default values below.
      * <pre>
-     *    Segment Compact Trigger: 0.2
+     *    Segment Compact Trigger: 0.1
      *    Segment Compact Factor : 0.5
      *    Redo Entry Size        : 10000
      *    Number of redo entries : 5
@@ -134,7 +134,7 @@ public class DataCacheImpl implements DataCache
     }
     
     /**
-     * Constructs a data cache with Segment Compact Trigger default to 0.2 and Segment Compact Factor default to 0.5.
+     * Constructs a data cache with Segment Compact Trigger default to 0.1 and Segment Compact Factor default to 0.5.
      * 
      * @param memberIdStart          Start of memberId
      * @param memberIdCount          Total of memberId(s)
@@ -306,11 +306,11 @@ public class DataCacheImpl implements DataCache
     @Override
     public void persist() throws IOException
     {
-        _log.info("DataCache persist { " + getStatus());
+        _log.info("DataCache persist start " + getStatus());
         
         _dataArray.persist();
         
-        _log.info("DataCache persist } " + getStatus());
+        _log.info("DataCache persist ended " + getStatus());
     }
     
     @Override

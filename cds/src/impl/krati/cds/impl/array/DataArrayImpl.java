@@ -59,7 +59,7 @@ public class DataArrayImpl implements DataArray
     private long _metaUpdateOnAppendPosition = Segment.dataStartPosition;
     
     /**
-     * Constructs a DataArray with Segment Compact Trigger default to 0.2 and Segment Compact Factor default to 0.5. 
+     * Constructs a DataArray with Segment Compact Trigger default to 0.1 and Segment Compact Factor default to 0.5. 
      * 
      * @param addressArray           Array of addresses (longs) to positions of Segment.
      * @param segmentManager         Segment manager for loading, creating, freeing, maintaining segments.
@@ -67,7 +67,7 @@ public class DataArrayImpl implements DataArray
      */
     public DataArrayImpl(LongArrayRecoverableImpl addressArray, SegmentManager segmentManager)
     {
-        this(addressArray, segmentManager, 0.2, 0.5);
+        this(addressArray, segmentManager, 0.1, 0.5);
     }
     
     /**

@@ -65,7 +65,7 @@ public class AbstractTest extends TestCase
             log.error("Failed to get test.runTimeSeconds: " + System.getProperty("test.runTimeSeconds"));
             runTimeSeconds = 30;
         }
-
+        
         try
         {
             segFileSizeMB = Integer.parseInt(System.getProperty("test.segFileSizeMB"));

@@ -10,7 +10,7 @@ public class EvalPartitionedStore extends EvalDataStore
     @Override
     protected DataStore<byte[], byte[]> getDataStore(File storeDir) throws Exception
     {
-        return new PartitionedDataStore(storeDir, 5, 2000000);
+        return new PartitionedDataStore(storeDir, 5, 1000000);
     }
     
     public static void main(String[] args)
