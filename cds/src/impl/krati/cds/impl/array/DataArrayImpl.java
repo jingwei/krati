@@ -49,8 +49,8 @@ public class DataArrayImpl implements DataArray
     
     protected final double _segmentCompactFactor;
     protected final double _segmentCompactTrigger;
-    protected final long _segmentCompactTriggerLowerPosition;
-    protected final long _segmentCompactTriggerUpperPosition;
+    protected long _segmentCompactTriggerLowerPosition;
+    protected long _segmentCompactTriggerUpperPosition;
     
     protected final int _offsetMask;
     protected final int _segmentMask;
@@ -99,11 +99,7 @@ public class DataArrayImpl implements DataArray
 
         this._compactor = new DataArrayImplCompactor(this, getSegmentCompactFactor());
         this._canTriggerCompaction = true;
-        
-        this._segmentCompactTriggerLowerPosition =
-            (long)(getCurrentSegment().getInitialSize() * getSegmentCompactTrigger() * 0.5);
-        this._segmentCompactTriggerUpperPosition =
-            (long)(getCurrentSegment().getInitialSize() * getSegmentCompactTrigger());
+        this.updateCompactTriggerBounds();
         
         this._metaUpdateOnAppendPosition = Segment.dataStartPosition;
     }
@@ -128,11 +124,7 @@ public class DataArrayImpl implements DataArray
         
         this._compactor = null;
         this._canTriggerCompaction = false;
-        
-        this._segmentCompactTriggerLowerPosition =
-            (long)(getCurrentSegment().getInitialSize() * getSegmentCompactTrigger() * 0.5);
-        this._segmentCompactTriggerUpperPosition =
-            (long)(getCurrentSegment().getInitialSize() * getSegmentCompactTrigger());
+        this.updateCompactTriggerBounds();
         
         this._metaUpdateOnAppendPosition = Segment.dataStartPosition;
         
@@ -333,6 +325,26 @@ public class DataArrayImpl implements DataArray
         {
             _log.error(ioe.getMessage(), ioe);
             throw new SegmentException("Instantiation failed due to " + ioe.getMessage());
+        }
+    }
+    
+    protected void updateCompactTriggerBounds()
+    {
+        long size = getCurrentSegment().getInitialSize();
+        long incr = (long)(size * 0.05);
+        
+        long compactTriggerLowerPosition = (long)(size * getSegmentCompactTrigger());
+        _segmentCompactTriggerLowerPosition = compactTriggerLowerPosition - incr;
+        _segmentCompactTriggerUpperPosition = compactTriggerLowerPosition + incr;
+        
+        if(_segmentCompactTriggerLowerPosition < Segment.dataStartPosition)
+        {
+            _segmentCompactTriggerLowerPosition = Segment.dataStartPosition;
+        }
+        
+        if(_segmentCompactTriggerUpperPosition > size)
+        {
+            _segmentCompactTriggerUpperPosition = size;
         }
     }
     

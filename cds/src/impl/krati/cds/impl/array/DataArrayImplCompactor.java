@@ -327,6 +327,7 @@ public class DataArrayImplCompactor implements Runnable
     
     public void start() throws InterruptedException
     {
+        _state = State.INIT;
         new Thread(this).start();
     }
     
