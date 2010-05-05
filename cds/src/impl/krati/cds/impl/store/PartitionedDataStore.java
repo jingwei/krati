@@ -75,7 +75,9 @@ public class PartitionedDataStore implements DataStore<byte[], byte[]>
     {
         _log.info("partitionHome=" + _partitionHome.getCanonicalPath() +
                   " partitionCount=" + _partitionCount +
-                  " partitionCapacity=" + _partitionCapacity);
+                  " partitionCapacity=" + _partitionCapacity +
+                  " segmentFactory=" + segFactory.getClass().getName() +
+                  " segmentFileSizeMB=" + segFileSizeMB + "MB");
         
         _partitionList = new ArrayList<DataStore<byte[], byte[]>>(_partitionCount);
         for(int i = 0; i < _partitionCount; i++)
