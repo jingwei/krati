@@ -31,7 +31,7 @@ public class AbstractTest extends TestCase
     // Short-Regress Test Params.
     public static int idStart = 0;
     public static int idCount = 500000;
-    public static int runTimeSeconds = 30;
+    public static int runTimeSeconds = 120;
     public static int segFileSizeMB = 256;
     
     static
@@ -63,7 +63,7 @@ public class AbstractTest extends TestCase
         catch(Exception e)
         {
             log.error("Failed to get test.runTimeSeconds: " + System.getProperty("test.runTimeSeconds"));
-            runTimeSeconds = 30;
+            runTimeSeconds = 120;
         }
         
         try
