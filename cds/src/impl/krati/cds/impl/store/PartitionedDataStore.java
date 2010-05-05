@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 
 import krati.cds.DataCache;
 import krati.cds.impl.DataCacheImpl;
+import krati.cds.impl.segment.SegmentFactory;
 import krati.cds.store.DataStore;
 import krati.util.FnvHashFunction;
 import krati.util.HashFunction;
@@ -24,17 +25,53 @@ public class PartitionedDataStore implements DataStore<byte[], byte[]>
     private final HashFunction<byte[]> _hashFunction;
     private List<DataStore<byte[], byte[]>> _partitionList;
     
-    public PartitionedDataStore(File partitionHome, int partitionCount, int partitionCapacity) throws Exception
+    /**
+     * Creates a new <code>PartitionedDataStore</code> with the following default configurations.
+     * 
+     * <pre>
+     *   Segment Factory:        MemorySegmentFactory
+     *   Segment File Size:      256MB
+     * </pre>
+     * 
+     * @param partitionHome      partition home directory.
+     * @param partitionCount     the count of all partitions.
+     * @param partitionCapacity  the capacity of each partition.
+     * @throws Exception         if the store cannot be initiated.
+     */
+    public PartitionedDataStore(File partitionHome,
+                                int partitionCount, int partitionCapacity) throws Exception
     {
         this._partitionHome= partitionHome;
         this._partitionCount = partitionCount;
         this._partitionCapacity = partitionCapacity;
         this._totalCapacity = partitionCount * partitionCapacity;
         this._hashFunction = new FnvHashFunction();
-        this.init();
+        this.init(new krati.cds.impl.segment.MemorySegmentFactory(), 256);
     }
     
-    protected void init() throws Exception
+    /**
+     * Creates a new <code>PartitionedDataStore</code>.
+     * 
+     * @param partitionHome      partition home directory.
+     * @param partitionCount     the count of all partitions.
+     * @param partitionCapacity  the capacity of each partition.
+     * @param segFactory         the segment factory.
+     * @param segFileSizeMB      the size of segment.
+     * @throws Exception         if the store cannot be initiated.
+     */
+    public PartitionedDataStore(File partitionHome,
+                                int partitionCount, int partitionCapacity,
+                                SegmentFactory segFactory, int segFileSizeMB) throws Exception
+    {
+        this._partitionHome= partitionHome;
+        this._partitionCount = partitionCount;
+        this._partitionCapacity = partitionCapacity;
+        this._totalCapacity = partitionCount * partitionCapacity;
+        this._hashFunction = new FnvHashFunction();
+        this.init(segFactory, segFileSizeMB);
+    }
+    
+    protected void init(SegmentFactory segFactory, int segFileSizeMB) throws Exception
     {
         _log.info("partitionHome=" + _partitionHome.getCanonicalPath() +
                   " partitionCount=" + _partitionCount +
@@ -46,8 +83,7 @@ public class PartitionedDataStore implements DataStore<byte[], byte[]>
             DataCache cache = new DataCacheImpl(0,
                                                 _partitionCapacity,
                                                 new File(_partitionHome, "P" + i),
-                                                new krati.cds.impl.segment.MemorySegmentFactory(),
-                                                256);
+                                                segFactory, segFileSizeMB);
             _partitionList.add(new SimpleDataStore(cache, _hashFunction));
         }
         

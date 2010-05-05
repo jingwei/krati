@@ -385,8 +385,6 @@ public class TestDataCache extends AbstractTest
     
     static DataCache getKratiDataCache(File cacheDir) throws Exception
     {
-        int segFileSizeMB = 256;
-        
         DataCache cache = new DataCacheImpl(idStart,
                                             idCount,
                                             cacheDir,

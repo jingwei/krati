@@ -36,7 +36,7 @@ public class DataCacheImpl implements DataCache
     /**
      * Constructs a data cache with default values below.
      * <pre>
-     *    Segment File Size      : 512MB
+     *    Segment File Size      : 256MB
      *    Segment Compact Trigger: 0.1
      *    Segment Compact Factor : 0.5
      *    Redo entry size        : 10000
@@ -54,7 +54,7 @@ public class DataCacheImpl implements DataCache
                          int memberIdCount,
                          File cacheDirectory) throws Exception
     {
-        this(memberIdStart, memberIdCount, cacheDirectory, new MemorySegmentFactory(), 512);
+        this(memberIdStart, memberIdCount, cacheDirectory, new MemorySegmentFactory(), 256);
     }
     
     /**
@@ -85,7 +85,7 @@ public class DataCacheImpl implements DataCache
     /**
      * Constructs a data cache with default values below.
      * <pre>
-     *    Segment File Size      : 512MB
+     *    Segment File Size      : 256MB
      *    Segment Compact Trigger: 0.1
      *    Segment Compact Factor : 0.5
      *    Redo entry size        : 10000
@@ -104,7 +104,7 @@ public class DataCacheImpl implements DataCache
                          File cacheDirectory,
                          SegmentFactory segmentFactory) throws Exception
     {
-        this(memberIdStart, memberIdCount, cacheDirectory, segmentFactory, 512);
+        this(memberIdStart, memberIdCount, cacheDirectory, segmentFactory, 256);
     }
     
     /**
@@ -306,11 +306,11 @@ public class DataCacheImpl implements DataCache
     @Override
     public void persist() throws IOException
     {
-        _log.info("DataCache persist start " + getStatus());
+        _log.info("DataCache prior-persist: " + getStatus());
         
         _dataArray.persist();
         
-        _log.info("DataCache persist ended " + getStatus());
+        _log.info("DataCache after-persist: " + getStatus());
     }
     
     @Override
