@@ -150,8 +150,10 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable
   @Override
   public void persist() throws IOException
   {
-    switchEntry(true);
-    applyEntries(true);
+    /* ************************* *
+     * Run in non-blocking mode  *
+     * ************************* */
+    switchEntry(false);
   }
   
   public void setEntryPersistListener(EntryPersistListener listener)
