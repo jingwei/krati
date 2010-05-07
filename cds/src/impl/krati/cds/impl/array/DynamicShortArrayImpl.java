@@ -7,7 +7,7 @@ import org.apache.log4j.Logger;
 
 import krati.cds.array.DynamicArray;
 import krati.cds.array.ShortArray;
-import krati.cds.impl.array.fixed.ShortArrayRecoverableImpl;
+import krati.cds.impl.array.basic.ShortArrayRecoverableImpl;
 
 public class DynamicShortArrayImpl implements ShortArray, DynamicArray
 {

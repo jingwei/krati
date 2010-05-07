@@ -7,7 +7,7 @@ import org.apache.log4j.Logger;
 
 import krati.cds.array.DynamicArray;
 import krati.cds.array.IntArray;
-import krati.cds.impl.array.fixed.IntArrayRecoverableImpl;
+import krati.cds.impl.array.basic.IntArrayRecoverableImpl;
 
 public class DynamicIntArrayImpl implements IntArray, DynamicArray
 {

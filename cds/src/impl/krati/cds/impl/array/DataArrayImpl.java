@@ -10,12 +10,12 @@ import org.apache.log4j.Logger;
 
 import krati.cds.array.DataArray;
 import krati.cds.array.LongArray;
+import krati.cds.impl.array.basic.LongArrayMemoryImpl;
+import krati.cds.impl.array.basic.LongArrayRecoverableImpl;
 import krati.cds.impl.array.entry.Entry;
 import krati.cds.impl.array.entry.EntryFileWriter;
 import krati.cds.impl.array.entry.EntryPersistAdapter;
 import krati.cds.impl.array.entry.EntryValue;
-import krati.cds.impl.array.fixed.LongArrayMemoryImpl;
-import krati.cds.impl.array.fixed.LongArrayRecoverableImpl;
 import krati.cds.impl.segment.AddressFormat;
 import krati.cds.impl.segment.Segment;
 import krati.cds.impl.segment.SegmentException;

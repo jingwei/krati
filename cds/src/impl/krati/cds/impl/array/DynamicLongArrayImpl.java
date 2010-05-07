@@ -7,7 +7,7 @@ import org.apache.log4j.Logger;
 
 import krati.cds.array.DynamicArray;
 import krati.cds.array.LongArray;
-import krati.cds.impl.array.fixed.LongArrayRecoverableImpl;
+import krati.cds.impl.array.basic.LongArrayRecoverableImpl;
 
 public class DynamicLongArrayImpl implements LongArray, DynamicArray
 {

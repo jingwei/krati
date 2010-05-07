@@ -9,7 +9,7 @@ import krati.cds.DataCache;
 import krati.cds.array.DataArray;
 import krati.cds.impl.array.CheckedDataArrayImpl;
 import krati.cds.impl.array.DataArrayImpl;
-import krati.cds.impl.array.fixed.LongArrayRecoverableImpl;
+import krati.cds.impl.array.basic.LongArrayRecoverableImpl;
 import krati.cds.impl.segment.MemorySegmentFactory;
 import krati.cds.impl.segment.SegmentFactory;
 import krati.cds.impl.segment.SegmentManager;

@@ -9,9 +9,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.log4j.Logger;
 
+import krati.cds.impl.array.basic.LongArrayMemoryImpl;
+import krati.cds.impl.array.basic.LongArrayRecoverableImpl;
 import krati.cds.impl.array.entry.EntryFileWriter;
-import krati.cds.impl.array.fixed.LongArrayMemoryImpl;
-import krati.cds.impl.array.fixed.LongArrayRecoverableImpl;
 import krati.cds.impl.segment.Segment;
 import krati.cds.impl.segment.SegmentManager;
 

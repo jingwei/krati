@@ -5,7 +5,7 @@ import java.nio.ByteBuffer;
 import java.util.zip.Adler32;
 import java.util.zip.Checksum;
 
-import krati.cds.impl.array.fixed.LongArrayRecoverableImpl;
+import krati.cds.impl.array.basic.LongArrayRecoverableImpl;
 import krati.cds.impl.segment.Segment;
 import krati.cds.impl.segment.SegmentManager;
 

@@ -1,4 +1,4 @@
-package krati.cds.impl.array.fixed;
+package krati.cds.impl.array.basic;
 
 import java.io.File;
 import java.io.IOException;

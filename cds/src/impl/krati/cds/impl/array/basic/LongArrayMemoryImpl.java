@@ -1,16 +1,16 @@
-package krati.cds.impl.array.fixed;
+package krati.cds.impl.array.basic;
 
 import java.io.IOException;
 
-import krati.cds.array.IntArray;
+import krati.cds.array.LongArray;
 import krati.cds.parallel.AbstractParallelDataStore;
 
-public class IntArrayMemoryImpl extends AbstractParallelDataStore<int[]> implements IntArray
+public class LongArrayMemoryImpl extends AbstractParallelDataStore<long[]> implements LongArray
 {
     protected long _lwmScn = 0; // Low water mark SCN starts from 0
     protected long _hwmScn = 0; // High water mark SCN starts from 0
     
-    public IntArrayMemoryImpl(int memberIdStart, int memberIdCount)
+    public LongArrayMemoryImpl(int memberIdStart, int memberIdCount)
     {
         super(memberIdStart, memberIdCount);
     }
@@ -18,17 +18,17 @@ public class IntArrayMemoryImpl extends AbstractParallelDataStore<int[]> impleme
     @Override
     protected void init() 
     { 
-        _parallelData = new int[_memberIdCount];
+        _parallelData = new long[_memberIdCount];
     }
-
+    
     @Override
-    public int getData(int index)
+    public long getData(int index)
     {
       return _parallelData[index - _memberIdStart];
     }
-
+    
     @Override
-    public void setData(int index, int value, long scn) throws Exception
+    public void setData(int index, long value, long scn) throws Exception
     {
       _parallelData[index - _memberIdStart] = value;
       _hwmScn = Math.max(_hwmScn, scn);
@@ -79,20 +79,20 @@ public class IntArrayMemoryImpl extends AbstractParallelDataStore<int[]> impleme
     @Override
     public void persist() throws IOException
     {
-        // not supported for memory-based IntArray implementation
+        // not supported for memory-based LongArray implementation
     }
-
+    
     @Override
     public void saveHWMark(long endOfPeriod) throws Exception
     {
         _hwmScn = endOfPeriod;
         _lwmScn = endOfPeriod;
     }
-
+    
     @Override
     public Object memoryClone()
     {
-        IntArrayMemoryImpl memClone = new IntArrayMemoryImpl(getIndexStart(), length());
+        LongArrayMemoryImpl memClone = new LongArrayMemoryImpl(getIndexStart(), length());
         
         System.arraycopy(_parallelData, 0, memClone.getParallelData(), 0, _parallelData.length);
         memClone._lwmScn = getLWMark(); 
