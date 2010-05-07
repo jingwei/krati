@@ -17,8 +17,8 @@ import org.apache.lucene.index.IndexReader;
 
 import proj.zoie.impl.indexing.DefaultIndexReaderDecorator;
 import proj.zoie.impl.indexing.ZoieSystem;
-import test.zoie.impl.ZoieDataCache;
-import test.zoie.impl.ZoieInterpreter;
+import test.zoie.ZoieDataCache;
+import test.zoie.ZoieInterpreter;
 
 public class EvalDataCache
 {

@@ -1,4 +1,4 @@
-package test.zoie.impl;
+package test.zoie;
 
 public class ZoieData {
 	public final byte[] data;

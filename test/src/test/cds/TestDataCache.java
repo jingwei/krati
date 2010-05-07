@@ -11,13 +11,7 @@ import java.util.Random;
 import krati.cds.DataCache;
 import krati.cds.impl.DataCacheImpl;
 
-import org.apache.lucene.index.IndexReader;
-
-import proj.zoie.impl.indexing.DefaultIndexReaderDecorator;
-import proj.zoie.impl.indexing.ZoieSystem;
 import test.AbstractTest;
-import test.zoie.impl.ZoieDataCache;
-import test.zoie.impl.ZoieInterpreter;
 
 public class TestDataCache extends AbstractTest
 {
@@ -383,26 +377,13 @@ public class TestDataCache extends AbstractTest
         }
     }
     
-    static DataCache getKratiDataCache(File cacheDir) throws Exception
+    static DataCache getDataCache(File cacheDir) throws Exception
     {
         DataCache cache = new DataCacheImpl(idStart,
                                             idCount,
                                             cacheDir,
                                             new krati.cds.impl.segment.MemorySegmentFactory(),
                                             segFileSizeMB);
-        return cache;
-    }
-    
-    @SuppressWarnings("unchecked")
-    static DataCache getZoieDataCacheZoie(File cacheDir) throws Exception
-    {
-        ZoieSystem zs = new ZoieSystem(cacheDir,
-    	                               new ZoieInterpreter(),
-    	                               new DefaultIndexReaderDecorator(),
-    	                               null, null, 10000, 60000, true);
-    	zs.start();
-    	
-    	DataCache cache = new ZoieDataCache<IndexReader>(zs, idStart, idCount);
         return cache;
     }
     
@@ -427,8 +408,7 @@ public class TestDataCache extends AbstractTest
             
             File cacheDir = new File(TEST_OUTPUT_DIR, getClass().getSimpleName());
             
-            cache = getKratiDataCache(cacheDir);
-            //cache = getZoieDataCache(cacheDir);
+            cache = getDataCache(cacheDir);
             
             if (cache.getLWMark() == 0)
             {

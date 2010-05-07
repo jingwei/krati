@@ -1,4 +1,4 @@
-package test.zoie.impl;
+package test.zoie;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
