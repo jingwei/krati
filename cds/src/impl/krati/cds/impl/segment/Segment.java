@@ -5,14 +5,39 @@ import java.io.IOException;
 import java.nio.channels.WritableByteChannel;
 
 /**
- * Segment.
+ * Segment Storage Version: 1
  * 
- * The segment header uses the first 128 bytes.
- * Currently, only the first 16 bytes are used.
- * <pre>
- *   long    -- 8 bytes for lastForcedTime
- *   long    -- 8 bytes for storageVersion
- * </pre>
+ * The segment header section uses the first 128 bytes, but only the first 16 bytes are used.
+ * The segment data section stores varying-length data in the format of repeated [length][data ... ...].
+ * 
+ * Header Section:
+ * <code>
+ *   0x00  long    -- 8 bytes lastForcedTime
+ *   0x08  long    -- 8 bytes storageVersion
+ *   0x10  long    -- 8 bytes reserved
+ *   0x18  long    -- 8 bytes reserved
+ *   0x20  long    -- 8 bytes reserved
+ *   0x28  long    -- 8 bytes reserved
+ *   0x30  long    -- 8 bytes reserved
+ *   0x38  long    -- 8 bytes reserved
+ *   0x40  long    -- 8 bytes reserved
+ *   0x48  long    -- 8 bytes reserved
+ *   0x50  long    -- 8 bytes reserved
+ *   0x58  long    -- 8 bytes reserved
+ *   0x60  long    -- 8 bytes reserved
+ *   0x68  long    -- 8 bytes reserved
+ *   0x70  long    -- 8 bytes reserved
+ *   0x78  long    -- 8 bytes reserved
+ * </code>
+ * 
+ * Data Section:
+ * <code>
+ *   [length1][data1 ... ...]
+ *   [length2][data2 ... ... ... ... ... ...]
+ *   [length3][data3 ... ... ... ...]
+ *   [length4][data4 ...]
+ *   ...
+ * </code>
  * 
  * @author jwu
  *
