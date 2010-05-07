@@ -1,4 +1,4 @@
-package krati.zoie.impl;
+package test.zoie.impl;
 
 public class ZoieData {
 	public final byte[] data;

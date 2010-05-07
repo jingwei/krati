@@ -12,13 +12,13 @@ import krati.cds.DataCache;
 import krati.cds.DataCacheLoader;
 import krati.cds.impl.DataCacheImpl;
 import krati.cds.impl.DataCacheLoaderImpl;
-import krati.zoie.impl.ZoieDataCache;
-import krati.zoie.impl.ZoieInterpreter;
 
 import org.apache.lucene.index.IndexReader;
 
 import proj.zoie.impl.indexing.DefaultIndexReaderDecorator;
 import proj.zoie.impl.indexing.ZoieSystem;
+import test.zoie.impl.ZoieDataCache;
+import test.zoie.impl.ZoieInterpreter;
 
 public class EvalDataCache
 {

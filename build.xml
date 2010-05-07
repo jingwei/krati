@@ -5,6 +5,7 @@
     
     <property name="lib.dir" value="lib"/>
     <property name="test.dir" value="test"/>
+    <property name="test.lib.dir" value="${test.dir}/lib"/>
     <property name="build.dir" value="build"/>
     <property name="config.dir" value="config"/>
     <property name="dist.dir" value="dist"/>
@@ -23,6 +24,12 @@
     
     <path id="compile.class.path">
         <fileset dir="${lib.dir}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+    
+    <path id="test.compile.class.path">
+        <fileset dir="${test.lib.dir}">
             <include name="*.jar"/>
         </fileset>
     </path>
@@ -125,6 +132,7 @@
             <src path="${test.src}"/>
             <classpath refid="java.class.path"/>
             <classpath refid="compile.class.path"/>
+            <classpath refid="test.compile.class.path"/>
         </javac>
         <copy todir="${test.build.dir}">
             <fileset dir="${config.dir}"/>
@@ -145,6 +153,7 @@
                 <path refid="test.class.path"/>
                 <path refid="java.class.path"/>
                 <path refid="compile.class.path"/>
+                <path refid="test.compile.class.path"/>
             </classpath>
             
             <batchtest fork="yes">
@@ -167,6 +176,7 @@
                 <path refid="test.class.path"/>
                 <path refid="java.class.path"/>
                 <path refid="compile.class.path"/>
+                <path refid="test.compile.class.path"/>
             </classpath>
             
             <batchtest fork="yes">

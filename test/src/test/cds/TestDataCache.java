@@ -10,14 +10,14 @@ import java.util.Random;
 
 import krati.cds.DataCache;
 import krati.cds.impl.DataCacheImpl;
-import krati.zoie.impl.ZoieDataCache;
-import krati.zoie.impl.ZoieInterpreter;
 
 import org.apache.lucene.index.IndexReader;
 
 import proj.zoie.impl.indexing.DefaultIndexReaderDecorator;
 import proj.zoie.impl.indexing.ZoieSystem;
 import test.AbstractTest;
+import test.zoie.impl.ZoieDataCache;
+import test.zoie.impl.ZoieInterpreter;
 
 public class TestDataCache extends AbstractTest
 {
