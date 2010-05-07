@@ -5,17 +5,33 @@ import java.io.IOException;
 import java.nio.channels.WritableByteChannel;
 
 /**
- * Segment
+ * Segment.
+ * 
+ * The segment header uses the first 128 bytes.
+ * Currently, only the first 16 bytes are used.
+ * <pre>
+ *   long    -- 8 bytes for lastForcedTime
+ *   long    -- 8 bytes for storageVersion
+ * </pre>
  * 
  * @author jwu
  *
  */
 public interface Segment
 {
-    public final static int defaultSegmentFileSizeMB = 1024;
+    public final static long STORAGE_VERSION = 1;
+    
+    public final static int defaultSegmentFileSizeMB = 512;
     public final static int maxSegmentFileSizeMB = 2048;
     public final static int minSegmentFileSizeMB = 32;
-    public final static int dataStartPosition = 8;
+    
+    public final static int posLastForcedTime = 0;
+    public final static int posStorageVersion = 8;
+    
+    /**
+     * The data section starts at offset 128.
+     */
+    public final static int dataStartPosition = 128;
     
     public Mode getMode();
     
@@ -72,9 +88,14 @@ public interface Segment
     public void close(boolean force) throws IOException;
     
     /**
-     * @return last forced time in milliseconds since the epoch, January 01, 1970, 00:00:00 GMT.
+     * @return the last forced time in milliseconds since the epoch, January 01, 1970, 00:00:00 GMT.
      */
     public long getLastForcedTime();
+    
+    /**
+     * @return the storage version of this segment.
+     */
+    public long getStorageVersion();
     
     public static enum Mode
     {

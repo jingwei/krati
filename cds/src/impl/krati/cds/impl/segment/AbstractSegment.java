@@ -2,6 +2,7 @@ package krati.cds.impl.segment;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 
 /**
  * AbstractSegment
@@ -19,6 +20,8 @@ public abstract class AbstractSegment implements Segment
     protected volatile long _lastForcedTime;
     protected volatile Segment.Mode _segMode;
     
+    protected long _storageVersion;
+    
     protected AbstractSegment(int segmentId, File segmentFile, int initialSizeMB, Segment.Mode mode) throws IOException
     {
         this._segId = segmentId;
@@ -30,6 +33,43 @@ public abstract class AbstractSegment implements Segment
     }
     
     protected abstract void init() throws IOException;
+    
+    protected void initHeader() throws IOException
+    {
+        // update the time stamp of segment
+        _lastForcedTime = System.currentTimeMillis();
+        _storageVersion = Segment.STORAGE_VERSION;
+        
+        setAppendPosition(0);
+        appendLong(getLastForcedTime());
+        appendLong(getStorageVersion());
+        force();
+        
+        setAppendPosition(Segment.dataStartPosition);
+    }
+    
+    protected void loadHeader() throws IOException
+    {
+        _lastForcedTime = readLong(posLastForcedTime);
+        _storageVersion = readLong(posStorageVersion);
+    }
+    
+    protected String getHeader()
+    {
+        StringBuffer b = new StringBuffer();
+        
+        b.append("lastForcedTime");
+        b.append('=');
+        b.append(new Date(getLastForcedTime()));
+        
+        b.append(' ');
+        
+        b.append("storageVersion");
+        b.append('=');
+        b.append(getStorageVersion());
+        
+        return b.toString();
+    }
     
     @Override
     public Mode getMode()
@@ -64,6 +104,12 @@ public abstract class AbstractSegment implements Segment
     public long getLastForcedTime()
     {
         return _lastForcedTime;
+    }
+    
+    @Override
+    public long getStorageVersion()
+    {
+        return _storageVersion;
     }
     
     @Override

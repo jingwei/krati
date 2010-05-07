@@ -7,7 +7,6 @@ import java.nio.BufferOverflowException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.Date;
 
 import org.apache.log4j.Logger;
 
@@ -62,9 +61,10 @@ public class MappedSegment extends AbstractSegment
             
             _channel = _raf.getChannel();
             _mmapBuffer = _channel.map(FileChannel.MapMode.READ_ONLY, 0, bufferLength);
-            _lastForcedTime = readLong(0);
             
-            _log.info("Segment " + getSegmentId() + " loaded as " + getMode() + " lastForcedTime=" + new Date(_lastForcedTime));
+            loadHeader();
+            
+            _log.info("Segment " + getSegmentId() + " loaded as " + getMode() + ": " + getHeader());
         }
         else
         {
@@ -80,11 +80,9 @@ public class MappedSegment extends AbstractSegment
             _channel = _raf.getChannel();
             _mmapBuffer = _channel.map(FileChannel.MapMode.READ_WRITE, 0, bufferLength);
             
-            // update the time stamp of segment
-            _lastForcedTime = System.currentTimeMillis(); 
-            appendLong(_lastForcedTime);
+            initHeader();
             
-            _log.info("Segment " + getSegmentId() + " initialized as " + getMode() + " at " + new Date(_lastForcedTime));
+            _log.info("Segment " + getSegmentId() + " initialized as " + getMode() + ": " + getHeader());
         }
     }
     

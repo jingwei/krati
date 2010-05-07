@@ -7,7 +7,6 @@ import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.Date;
 
 import org.apache.log4j.Logger;
 
@@ -66,9 +65,10 @@ public class MemorySegment extends AbstractSegment
             
             // read into memory buffer
             _channel.read(_buffer);
-            _lastForcedTime = readLong(0);
             
-            _log.info("Segment " + getSegmentId() + " loaded as " + getMode() + " lastForcedTime=" + new Date(_lastForcedTime));
+            loadHeader();
+            
+            _log.info("Segment " + getSegmentId() + " loaded as " + getMode() + ": " + getHeader());
         }
         else
         {
@@ -83,12 +83,9 @@ public class MemorySegment extends AbstractSegment
             _channel = _raf.getChannel();
             _channel.position(0);
             
-            // update the time stamp of segment
-            _lastForcedTime = System.currentTimeMillis(); 
-            appendLong(_lastForcedTime);
-            force();
+            initHeader();
             
-            _log.info("Segment " + getSegmentId() + " initialized as " + getMode() + " at " + new Date(_lastForcedTime));
+            _log.info("Segment " + getSegmentId() + " initialized as " + getMode() + ": " + getHeader());
         }
     }
     
