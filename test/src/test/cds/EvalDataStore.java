@@ -189,6 +189,8 @@ public abstract class EvalDataStore extends AbstractTest
                 }
             }
         }
+        
+        System.out.println("OK");
     }
 
     public void evalWrite(DataStore<byte[], byte[]> ds, int writerCnt, int runDuration) throws Exception
@@ -455,7 +457,7 @@ public abstract class EvalDataStore extends AbstractTest
         {
             int timeAllocated = runDuration/3;
             
-            File DataStoreDir = new File(TEST_OUTPUT_DIR, getClass().getName());
+            File DataStoreDir = new File(TEST_OUTPUT_DIR, getClass().getSimpleName());
             _store = getDataStore(DataStoreDir);
             
             System.out.println("---populate---");

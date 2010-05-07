@@ -425,7 +425,7 @@ public class TestDataCache extends AbstractTest
         {
             DataCache cache;
             
-            File cacheDir = new File(TEST_OUTPUT_DIR, getClass().getName());
+            File cacheDir = new File(TEST_OUTPUT_DIR, getClass().getSimpleName());
             
             cache = getKratiDataCache(cacheDir);
             //cache = getZoieDataCache(cacheDir);
