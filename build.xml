@@ -143,9 +143,9 @@
     <target name="test" depends="test.compile">
         <junit printsummary="yes" maxmemory="10G">
             <jvmarg value="-Dtest.idStart=0"/>
-            <jvmarg value="-Dtest.idCount=500000"/>
-            <jvmarg value="-Dtest.segFileSizeMB=256"/>
-            <jvmarg value="-Dtest.runTimeSeconds=120"/>
+            <jvmarg value="-Dtest.idCount=100000"/>
+            <jvmarg value="-Dtest.segFileSizeMB=128"/>
+            <jvmarg value="-Dtest.runTimeSeconds=30"/>
             <jvmarg value="-Dtest.dir=${test.dir}"/>
             <jvmarg value="-Dtest.output.dir=${test.dir}/output"/>
             <formatter type="brief" usefile="false"/>
