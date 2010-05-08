@@ -73,6 +73,7 @@
     <target name="init" depends="resolve">
         <mkdir dir="${build.dir}"/>
         <mkdir dir="${dist.dir}"/>
+        <mkdir dir="${logs.dir}"/>
     </target>
     
     <target name="compile.krati" depends="init">
