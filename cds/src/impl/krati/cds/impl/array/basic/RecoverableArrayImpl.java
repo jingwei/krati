@@ -9,10 +9,9 @@ import org.apache.log4j.Logger;
 import krati.cds.impl.array.entry.Entry;
 import krati.cds.impl.array.entry.EntryFactory;
 import krati.cds.impl.array.entry.EntryValue;
-import krati.cds.parallel.AbstractParallelDataStore;
 
 public abstract class RecoverableArrayImpl<P, V extends EntryValue>
-       extends AbstractParallelDataStore<P> implements RecoverableArray<V>
+       extends AbstractArray<P> implements RecoverableArray<V>
 {
   private static final Logger log = Logger.getLogger(RecoverableArrayImpl.class);
   
@@ -66,7 +65,7 @@ public abstract class RecoverableArrayImpl<P, V extends EntryValue>
     }
     
     boolean newFile = true;
-    File file = new File(cacheDirectory, "parallel_" + getMemberIdStart() + "_" + getMemberIdCount() + ".dat");
+    File file = new File(cacheDirectory, "parallel_" + getIndexStart() + "_" + length() + ".dat");
     if (file.exists())
     {
       newFile = false;
@@ -231,7 +230,7 @@ public abstract class RecoverableArrayImpl<P, V extends EntryValue>
    *
    * @param <T> Basic value contained in a redo entry.
    */
-  public static class Config<T extends EntryValue> extends AbstractParallelDataStore.Config
+  public static class Config<T extends EntryValue> extends AbstractArray.Config
   {
     private EntryFactory<T> _entryFactory;
     private File            _cacheDirectory;

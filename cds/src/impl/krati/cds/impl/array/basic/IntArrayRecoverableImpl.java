@@ -128,7 +128,7 @@ public class IntArrayRecoverableImpl extends RecoverableArrayImpl<int[], EntryVa
   {
       IntArrayMemoryImpl memClone = new IntArrayMemoryImpl(getIndexStart(), length());
       
-      System.arraycopy(_parallelData, 0, memClone.getParallelData(), 0, _parallelData.length);
+      System.arraycopy(_parallelData, 0, memClone.getInternalArray(), 0, _parallelData.length);
       memClone._lwmScn = getLWMark(); 
       memClone._hwmScn = getHWMark();
       

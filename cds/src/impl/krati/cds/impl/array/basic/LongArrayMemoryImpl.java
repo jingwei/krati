@@ -3,9 +3,8 @@ package krati.cds.impl.array.basic;
 import java.io.IOException;
 
 import krati.cds.array.LongArray;
-import krati.cds.parallel.AbstractParallelDataStore;
 
-public class LongArrayMemoryImpl extends AbstractParallelDataStore<long[]> implements LongArray
+public class LongArrayMemoryImpl extends AbstractArray<long[]> implements LongArray
 {
     protected long _lwmScn = 0; // Low water mark SCN starts from 0
     protected long _hwmScn = 0; // High water mark SCN starts from 0
@@ -94,7 +93,7 @@ public class LongArrayMemoryImpl extends AbstractParallelDataStore<long[]> imple
     {
         LongArrayMemoryImpl memClone = new LongArrayMemoryImpl(getIndexStart(), length());
         
-        System.arraycopy(_parallelData, 0, memClone.getParallelData(), 0, _parallelData.length);
+        System.arraycopy(_parallelData, 0, memClone.getInternalArray(), 0, _parallelData.length);
         memClone._lwmScn = getLWMark(); 
         memClone._hwmScn = getHWMark();
         

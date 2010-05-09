@@ -1,7 +1,6 @@
 package krati.cds.array;
 
 import krati.cds.MemoryCloneable;
-import krati.cds.parallel.ParallelDataStore;
 
 /**
  * Integer Array
@@ -9,7 +8,7 @@ import krati.cds.parallel.ParallelDataStore;
  * @author jwu
  *
  */
-public interface IntArray extends Array, MemoryCloneable, ParallelDataStore<int[]>
+public interface IntArray extends BasicArray<int[]>, MemoryCloneable
 {
   /**
    * Gets data at a specified index.

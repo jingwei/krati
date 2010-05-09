@@ -214,7 +214,7 @@ public class DynamicLongArrayImpl implements LongArray, DynamicArray
     long[][] tempDataArrays = new long[tempArrays.length][];
     for(i = 0; i < _implArrays.length; i++)
     {
-      tempDataArrays[i] = tempArrays[i].getParallelData();
+      tempDataArrays[i] = tempArrays[i].getInternalArray();
     }
     _dataArrays = tempDataArrays;
   }
@@ -276,22 +276,7 @@ public class DynamicLongArrayImpl implements LongArray, DynamicArray
     }
   }
   
-  public int getMemberIdCount()
-  {
-    return length();
-  }
-  
-  public int getMemberIdStart()
-  {
-    return 0;
-  }
-  
-  public boolean hasMemberId(int memberId)
-  {
-    return indexInRange(memberId);
-  }
-  
-  public long[] getParallelData()
+  public long[] getInternalArray()
   {
     long[] result = new long[length()];
     for(int i = 0; i < _dataArrays.length; i++)

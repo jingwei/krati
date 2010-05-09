@@ -1,14 +1,12 @@
 package krati.cds.array;
 
-import krati.cds.parallel.ParallelDataStore;
-
 /**
  * Short Array
  * 
  * @author jwu
  *
  */
-public interface ShortArray extends Array, ParallelDataStore<short[]>
+public interface ShortArray extends BasicArray<short[]>
 {
   /**
    * Gets data at a specified index.

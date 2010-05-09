@@ -1,7 +1,6 @@
 package krati.cds.array;
 
 import krati.cds.MemoryCloneable;
-import krati.cds.parallel.ParallelDataStore;
 
 /**
  * Long Array
@@ -9,7 +8,7 @@ import krati.cds.parallel.ParallelDataStore;
  * @author jwu
  *
  */
-public interface LongArray extends Array, MemoryCloneable, ParallelDataStore<long[]>
+public interface LongArray extends BasicArray<long[]>, MemoryCloneable
 {
   /**
    * Gets data at a specified index.

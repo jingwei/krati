@@ -145,7 +145,7 @@ public class LongArrayRecoverableImpl extends RecoverableArrayImpl<long[], Entry
   {
       LongArrayMemoryImpl memClone = new LongArrayMemoryImpl(getIndexStart(), length());
       
-      System.arraycopy(_parallelData, 0, memClone.getParallelData(), 0, _parallelData.length);
+      System.arraycopy(_parallelData, 0, memClone.getInternalArray(), 0, _parallelData.length);
       memClone._lwmScn = getLWMark(); 
       memClone._hwmScn = getHWMark();
       
@@ -159,7 +159,7 @@ public class LongArrayRecoverableImpl extends RecoverableArrayImpl<long[], Entry
          throw new ArrayIndexOutOfBoundsException();
      }
      
-     _parallelData = newArray.getParallelData();
+     _parallelData = newArray.getInternalArray();
      _arrayFile.reset(_parallelData);
      _entryManager.clear();
   }

@@ -1,20 +1,20 @@
-package krati.cds.parallel;
+package krati.cds.impl.array.basic;
 
-import krati.cds.parallel.ParallelDataStore;
+import krati.cds.array.BasicArray;
 
-public abstract class AbstractParallelDataStore<T> implements ParallelDataStore<T>
+public abstract class AbstractArray<T> implements BasicArray<T>
 {
   public final int _memberIdCount;
   public final int _memberIdStart; // Inclusive memberId in parallel data store
   public final int _memberIdEnd;   // Exclusive memberId not in parallel data store
   protected T      _parallelData;
   
-  public AbstractParallelDataStore(Config config)
+  public AbstractArray(Config config)
   {
     this(config.getMemberIdStart(), config.getMemberIdCount());
   }
   
-  public AbstractParallelDataStore(int memberIdStart, int memberIdCount)
+  public AbstractArray(int memberIdStart, int memberIdCount)
   {
     _memberIdCount = memberIdCount;
     _memberIdStart = memberIdStart;
@@ -22,27 +22,10 @@ public abstract class AbstractParallelDataStore<T> implements ParallelDataStore<
     init();
   }
   
-  protected void init()
-  {
-    // Subclass of AbstractParallellDataStore should override this method
-  }
+  protected abstract void init();
   
-  public boolean hasMemberId(int memberId)
-  {
-    return (_memberIdStart <= memberId && memberId < _memberIdEnd) ;
-  }
-  
-  public int getMemberIdStart()
-  {
-    return _memberIdStart;
-  }
-  
-  public int getMemberIdCount()
-  {
-    return _memberIdCount;
-  }
-  
-  public T getParallelData()
+  @Override
+  public T getInternalArray()
   {
     return _parallelData;
   }

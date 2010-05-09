@@ -196,7 +196,7 @@ public class DynamicShortArrayImpl implements ShortArray, DynamicArray
     short[][] tempDataArrays = new short[tempArrays.length][];
     for(i = 0; i < _implArrays.length; i++)
     {
-      tempDataArrays[i] = tempArrays[i].getParallelData();
+      tempDataArrays[i] = tempArrays[i].getInternalArray();
     }
     _dataArrays = tempDataArrays;
   }
@@ -258,22 +258,7 @@ public class DynamicShortArrayImpl implements ShortArray, DynamicArray
     }
   }
   
-  public int getMemberIdCount()
-  {
-    return length();
-  }
-  
-  public int getMemberIdStart()
-  {
-    return 0;
-  }
-  
-  public boolean hasMemberId(int memberId)
-  {
-    return indexInRange(memberId);
-  }
-  
-  public short[] getParallelData()
+  public short[] getInternalArray()
   {
     short[] result = new short[length()];
     for(int i = 0; i < _dataArrays.length; i++)

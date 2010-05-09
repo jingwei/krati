@@ -196,7 +196,7 @@ public class DynamicIntArrayImpl implements IntArray, DynamicArray
     int[][] tempDataArrays = new int[tempArrays.length][];
     for(i = 0; i < _implArrays.length; i++)
     {
-      tempDataArrays[i] = tempArrays[i].getParallelData();
+      tempDataArrays[i] = tempArrays[i].getInternalArray();
     }
     _dataArrays = tempDataArrays;
   }
@@ -258,22 +258,7 @@ public class DynamicIntArrayImpl implements IntArray, DynamicArray
     }
   }
   
-  public int getMemberIdCount()
-  {
-    return length();
-  }
-  
-  public int getMemberIdStart()
-  {
-    return 0;
-  }
-  
-  public boolean hasMemberId(int memberId)
-  {
-    return indexInRange(memberId);
-  }
-  
-  public int[] getParallelData()
+  public int[] getInternalArray()
   {
     int[] result = new int[length()];
     for(int i = 0; i < _dataArrays.length; i++)
