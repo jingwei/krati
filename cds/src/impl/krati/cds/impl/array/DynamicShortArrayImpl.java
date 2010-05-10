@@ -11,7 +11,7 @@ import krati.cds.impl.array.basic.ShortArrayRecoverableImpl;
 
 public class DynamicShortArrayImpl implements ShortArray, DynamicArray
 {
-  protected static final Logger log = Logger.getLogger(DynamicShortArrayImpl.class);
+  protected static final Logger _log = Logger.getLogger(DynamicShortArrayImpl.class);
 
   protected long _lwmScn = 0;
   protected long _hwmScn = 0;
@@ -55,7 +55,7 @@ public class DynamicShortArrayImpl implements ShortArray, DynamicArray
       _cacheDirectory.mkdirs();
     }
     
-    log.info("start to load cache ... _subArraySize="+_subArraySize);
+    _log.info("start to load cache ... _subArraySize="+_subArraySize);
     
     String prefix = "parallel_";
     String suffix = _subArraySize + ".dat";
@@ -69,7 +69,7 @@ public class DynamicShortArrayImpl implements ShortArray, DynamicArray
       String fileName = file.getName();
       if (fileName.startsWith(prefix) && fileName.endsWith(suffix))
       {
-        log.info("found parallel data " + fileName);
+        _log.info("found parallel data " + fileName);
         
         int fromIndex = fileName.indexOf('_');
         int endIndex = fileName.indexOf('_', fromIndex + 1);
@@ -79,12 +79,12 @@ public class DynamicShortArrayImpl implements ShortArray, DynamicArray
           try
           {
             indexStart = Math.max(indexStart, Integer.parseInt(num));
-            log.info("parallel data index starts at " + indexStart);
+            _log.info("parallel data index starts at " + indexStart);
             foundParallel = true;
           }
           catch(Exception e)
           {
-            log.error(e.getMessage());
+            _log.error(e.getMessage());
           }
         }
       }
@@ -106,7 +106,7 @@ public class DynamicShortArrayImpl implements ShortArray, DynamicArray
       }
       
       _lwmScn = getLWMark();
-      log.info("cache loaded successfully: _lwmScn=" + _lwmScn + " _hwmScn=" + _hwmScn);
+      _log.info("cache loaded successfully: _lwmScn=" + _lwmScn + " _hwmScn=" + _hwmScn);
     }
   }
   
@@ -155,7 +155,7 @@ public class DynamicShortArrayImpl implements ShortArray, DynamicArray
       }
       catch(Exception e)
       {
-        log.warn(e.getMessage());
+        _log.warn(e.getMessage());
       }
     }
     
@@ -245,7 +245,7 @@ public class DynamicShortArrayImpl implements ShortArray, DynamicArray
       }
       catch(IOException e)
       {
-        log.error(e.getMessage());
+        _log.error(e.getMessage());
       }
     }
   }

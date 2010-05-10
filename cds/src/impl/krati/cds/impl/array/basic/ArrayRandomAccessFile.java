@@ -46,7 +46,7 @@ public class ArrayRandomAccessFile
   private static final int ELEMENT_SIZE_POS = 4;
   private static final long DATA_START_POS  = 1024;
   
-  private static final Logger log = Logger.getLogger(ArrayRandomAccessFile.class);
+  private static final Logger _log = Logger.getLogger(ArrayRandomAccessFile.class);
   
   private RandomAccessFile _raf;
   private final File       _file;
@@ -124,8 +124,8 @@ public class ArrayRandomAccessFile
       throw new IOException("array file " + _file.getAbsolutePath() + " is being updated. Read maxSCN:" + maxSCN + " copySCN:" + copySCN);
     }
     
-    log.info("read maxSCN:" + maxSCN);
-    log.info("read copySCN:" + copySCN);
+    _log.info("read maxSCN:" + maxSCN);
+    _log.info("read copySCN:" + copySCN);
     
     int arrayLength = readArrayLength();
     assert arrayLength == _arrayLength;
@@ -165,8 +165,8 @@ public class ArrayRandomAccessFile
         array[i] = in.readInt();
       }
       
-      log.info("load array file " + _file.getAbsolutePath());
-      log.info("data cache length:" + _arrayLength + " loaded in " + c.getElapsedTime());
+      _log.info("load array file " + _file.getAbsolutePath());
+      _log.info("data cache length:" + _arrayLength + " loaded in " + c.getElapsedTime());
       return array;
     }
     finally
@@ -206,8 +206,8 @@ public class ArrayRandomAccessFile
         array[i] = in.readLong();
       }
       
-      log.info("load array file " + _file.getAbsolutePath());
-      log.info("data cache length:" + _arrayLength + " loaded in " + c.getElapsedTime());
+      _log.info("load array file " + _file.getAbsolutePath());
+      _log.info("data cache length:" + _arrayLength + " loaded in " + c.getElapsedTime());
       return array;
     }
     finally
@@ -247,8 +247,8 @@ public class ArrayRandomAccessFile
         array[i] = in.readShort();
       }
       
-      log.info("load array file " + _file.getAbsolutePath());
-      log.info("data cache length:" + _arrayLength + " loaded in " + c.getElapsedTime());
+      _log.info("load array file " + _file.getAbsolutePath());
+      _log.info("data cache length:" + _arrayLength + " loaded in " + c.getElapsedTime());
       return array;
     }
     finally
@@ -349,14 +349,14 @@ public class ArrayRandomAccessFile
     
     if(maxScn == -1)
     {
-      log.info("update aborted: maxScn=" + maxScn);
+      _log.info("update aborted: maxScn=" + maxScn);
       return;
     }
     
     // Write copySCN
     writeCopySCN(maxScn); 
     sync();
-    log.info("update copySCN:" + maxScn);
+    _log.info("update copySCN:" + maxScn);
     
     // Write entries data using file channel.
     ChannelWriter writer = new ChannelWriter(_file);
@@ -370,9 +370,9 @@ public class ArrayRandomAccessFile
     // Write maxSCN
     writeMaxSCN(maxScn);
     sync(); 
-    log.info("update maxSCN:" + maxScn);
+    _log.info("update maxSCN:" + maxScn);
     
-    log.info(entryList.size() + " entries flushed to array file " + 
+    _log.info(entryList.size() + " entries flushed to array file " + 
              _file.getAbsolutePath() + " in " + chronos.getElapsedTime());
   }
   
@@ -450,7 +450,7 @@ public class ArrayRandomAccessFile
       writeCopySCN(maxScn);
       writeMaxSCN(maxScn);
       sync();
-      log.info("update copySCN and maxSCN:" + maxScn);
+      _log.info("update copySCN and maxSCN:" + maxScn);
   }
   
   public synchronized void reset(long[] longArray) throws IOException
@@ -479,7 +479,7 @@ public class ArrayRandomAccessFile
       writeCopySCN(maxScn);
       writeMaxSCN(maxScn);
       sync();
-      log.info("update copySCN and maxSCN:" + maxScn);
+      _log.info("update copySCN and maxSCN:" + maxScn);
   }
   
   public synchronized void reset(short[] shortArray) throws IOException
@@ -508,6 +508,6 @@ public class ArrayRandomAccessFile
       writeCopySCN(maxScn);
       writeMaxSCN(maxScn);
       sync();
-      log.info("update copySCN and maxSCN:" + maxScn);
+      _log.info("update copySCN and maxSCN:" + maxScn);
   }
 }

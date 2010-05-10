@@ -25,7 +25,7 @@ import krati.cds.impl.array.entry.EntryValueLong;
  */
 public class LongArrayRecoverableImpl extends RecoverableArrayImpl<long[], EntryValueLong> implements LongArray
 {
-  private static final Logger log = Logger.getLogger(LongArrayRecoverableImpl.class);
+  private static final Logger _log = Logger.getLogger(LongArrayRecoverableImpl.class);
   
   public LongArrayRecoverableImpl(Config config) throws Exception
   {
@@ -60,11 +60,11 @@ public class LongArrayRecoverableImpl extends RecoverableArrayImpl<long[], Entry
         _parallelData = new long[_memberIdCount];
         clear();
         
-        log.warn("Allocated _parallelData due to invalid length");
+        _log.warn("Allocated _parallelData due to invalid length");
       }
       else
       {
-        log.info("Data loaded successfully from file " + _arrayFile.getName());
+        _log.info("Data loaded successfully from file " + _arrayFile.getName());
       }
     }
     catch(Exception e)
@@ -73,7 +73,7 @@ public class LongArrayRecoverableImpl extends RecoverableArrayImpl<long[], Entry
       _parallelData = new long[_memberIdCount];
       clear();
       
-      log.warn("Allocated _parallelData due to a thrown exception: " + e.getMessage());
+      _log.warn("Allocated _parallelData due to a thrown exception: " + e.getMessage());
     }
     
     _entryManager.setWaterMarks(maxScn, maxScn);
@@ -95,7 +95,7 @@ public class LongArrayRecoverableImpl extends RecoverableArrayImpl<long[], Entry
       }
       catch(Exception e)
       {
-        log.error(e);
+        _log.error(e);
       }
     }
   }
@@ -122,7 +122,7 @@ public class LongArrayRecoverableImpl extends RecoverableArrayImpl<long[], Entry
     }
     catch(IOException e)
     {
-      log.error(e.getMessage(), e);
+      _log.error(e.getMessage(), e);
     }
   }
   

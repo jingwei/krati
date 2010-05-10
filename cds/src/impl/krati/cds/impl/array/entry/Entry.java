@@ -22,7 +22,7 @@ import krati.util.Chronos;
 public class Entry<T extends EntryValue> implements Comparable<Entry<T>>
 {
   public static final long STORAGE_VERSION = 0;
-  private static final Logger log = Logger.getLogger(Entry.class);
+  private static final Logger _log = Logger.getLogger(Entry.class);
   
   private final int _initialCapacity;
   private final ArrayList<T> _valArray;
@@ -166,11 +166,11 @@ public class Entry<T extends EntryValue> implements Comparable<Entry<T>>
       try
       {
         load(file);
-        log.info("overwriting entry file " + file.getAbsolutePath());
+        _log.info("overwriting entry file " + file.getAbsolutePath());
       }
       catch(IOException e)
       {
-        log.warn("overwriting corrupted entry file " + file.getAbsolutePath());
+        _log.warn("overwriting corrupted entry file " + file.getAbsolutePath());
       }
     }
     
@@ -198,7 +198,7 @@ public class Entry<T extends EntryValue> implements Comparable<Entry<T>>
       out.close();
     }
     
-    log.info("Saved entry minScn:" + _minScn + " maxScn:" + _maxScn + " size:" + _valArray.size() + " file:" + file.getAbsolutePath() + " in " + c.getElapsedTime());
+    _log.info("Saved entry minScn:" + _minScn + " maxScn:" + _maxScn + " size:" + _valArray.size() + " file:" + file.getAbsolutePath() + " in " + c.getElapsedTime());
   }
   
   /**

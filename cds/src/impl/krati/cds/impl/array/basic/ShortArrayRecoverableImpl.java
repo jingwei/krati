@@ -11,7 +11,7 @@ import krati.cds.impl.array.entry.EntryValueShort;
 
 public class ShortArrayRecoverableImpl extends RecoverableArrayImpl<short[], EntryValueShort> implements ShortArray
 {
-  private static final Logger log = Logger.getLogger(ShortArrayRecoverableImpl.class);
+  private static final Logger _log = Logger.getLogger(ShortArrayRecoverableImpl.class);
   
   public ShortArrayRecoverableImpl(Config config) throws Exception
   {
@@ -46,11 +46,11 @@ public class ShortArrayRecoverableImpl extends RecoverableArrayImpl<short[], Ent
         _parallelData = new short[_memberIdCount];
         clear();
         
-        log.warn("Allocated _parallelData due to invalid length");
+        _log.warn("Allocated _parallelData due to invalid length");
       }
       else
       {
-        log.info("Data loaded successfully from file " + _arrayFile.getName());
+        _log.info("Data loaded successfully from file " + _arrayFile.getName());
       }
     }
     catch(Exception e)
@@ -59,7 +59,7 @@ public class ShortArrayRecoverableImpl extends RecoverableArrayImpl<short[], Ent
       _parallelData = new short[_memberIdCount];
       clear();
       
-      log.warn("Allocated _parallelData due to a thrown exception: " + e.getMessage());
+      _log.warn("Allocated _parallelData due to a thrown exception: " + e.getMessage());
     }
     
     _entryManager.setWaterMarks(maxScn, maxScn);
@@ -81,7 +81,7 @@ public class ShortArrayRecoverableImpl extends RecoverableArrayImpl<short[], Ent
       }
       catch(Exception e)
       {
-        log.error(e);
+        _log.error(e);
       }
     }
   }
@@ -107,7 +107,7 @@ public class ShortArrayRecoverableImpl extends RecoverableArrayImpl<short[], Ent
     }
     catch(IOException e)
     {
-      log.error(e.getMessage(), e);
+      _log.error(e.getMessage(), e);
     }
   }
   

@@ -13,7 +13,7 @@ import krati.cds.impl.array.entry.EntryValue;
 public abstract class RecoverableArrayImpl<P, V extends EntryValue>
        extends AbstractArray<P> implements RecoverableArray<V>
 {
-  private static final Logger log = Logger.getLogger(RecoverableArrayImpl.class);
+  private static final Logger _log = Logger.getLogger(RecoverableArrayImpl.class);
   
   protected final File            _cacheDirectory; // cache directory for entry redo logs
   protected EntryFactory<V>       _entryFactory;   // factory for creating Entry
@@ -78,7 +78,7 @@ public abstract class RecoverableArrayImpl<P, V extends EntryValue>
       initArrayFileData();
     }
     
-    log.info("indexStart:" + memberIdStart +
+    _log.info("indexStart:" + memberIdStart +
              " length:" + memberIdCount +
              " maxEntrySize:" + maxEntrySize +
              " maxEntries:" + maxEntries +
@@ -127,7 +127,7 @@ public abstract class RecoverableArrayImpl<P, V extends EntryValue>
           if(_entryManager.getEntryList().size() == 0)
           {
             _entryManager.deleteEntryFiles();
-            log.error("entry files for recovery not found");
+            _log.error("entry files for recovery not found");
           }
         }
       }
@@ -143,7 +143,7 @@ public abstract class RecoverableArrayImpl<P, V extends EntryValue>
     }
     catch (IOException ioe)
     {
-      log.error(ioe.getMessage());
+      _log.error(ioe.getMessage());
       
       // Load data from the array file on disk, which may not contain correct data
       loadArrayFileData();
@@ -202,7 +202,7 @@ public abstract class RecoverableArrayImpl<P, V extends EntryValue>
   public void persist() throws IOException
   {
     _entryManager.persist();
-    log.info("array persisted: indexStart=" + getIndexStart());
+    _log.info("array persisted: indexStart=" + getIndexStart());
   }
   
   @Override
