@@ -190,7 +190,7 @@ public class DataArrayImpl implements DataArray
                         /* It should never require more than 2 segments.
                          * If it does happen, some kind of data corruption may have occurred.
                          * Should abort data transfer now and try compaction at another time.
-                         */  
+                         */
                         if (segTargetCnt >= 2)
                         {
                             throw new CompactionAbortedException();
@@ -401,6 +401,24 @@ public class DataArrayImpl implements DataArray
             }
         }
         catch(IOException e) {}
+    }
+    
+    private void tryFlowControl()
+    {
+        Segment compactTarget;
+        
+        compactTarget = _segmentManager.getCurrentSegment();
+        if(_segment != null && compactTarget != null && _segment != compactTarget) 
+        {
+            if(_segment.getLoadSize() > compactTarget.getLoadSize())
+            {
+                try
+                {
+                    Thread.sleep(1); // Slow down for 1 millisecond.
+                }
+                catch(InterruptedException e) {}
+            }
+        }
     }
     
     @Override
@@ -625,6 +643,12 @@ public class DataArrayImpl implements DataArray
                 if(_compactor.isStarted())
                 {
                    _compactor.addressUpdated(index, address, scn);
+                   
+                   /*
+                    * Flow-control the writer and average-out write latency.
+                    * Give the compactor a chance to catch up with the writer.
+                    */
+                   tryFlowControl();
                 }
                 
                 /*

@@ -105,6 +105,11 @@ public final class SegmentManager implements Cloneable
         return _segFactory;
     }
     
+    public Segment getCurrentSegment()
+    {
+        return _segCurrent;
+    }
+    
     public Segment getSegment(int index)
     {
         return _segList.get(index);
