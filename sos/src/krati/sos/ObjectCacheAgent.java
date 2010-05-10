@@ -103,6 +103,15 @@ public class ObjectCacheAgent<T> implements ObjectCache<T>
     }
     
     @Override
+    public void sync() throws IOException
+    {
+        synchronized(_cache)
+        {
+            _cache.sync();
+        }
+    }
+    
+    @Override
     public void persist() throws IOException
     {
         synchronized(_cache)

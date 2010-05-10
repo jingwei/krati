@@ -304,6 +304,16 @@ public class DataCacheImpl implements DataCache
     }
     
     @Override
+    public void sync() throws IOException
+    {
+        _log.info("DataCache prior-sync: " + getStatus());
+        
+        _dataArray.sync();
+        
+        _log.info("DataCache after-sync: " + getStatus());
+    }
+    
+    @Override
     public void persist() throws IOException
     {
         _log.info("DataCache prior-persist: " + getStatus());

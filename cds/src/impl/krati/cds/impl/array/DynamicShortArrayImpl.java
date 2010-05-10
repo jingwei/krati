@@ -231,6 +231,26 @@ public class DynamicShortArrayImpl implements ShortArray, DynamicArray
     _hwmScn = mark;
   }
   
+  public void sync() throws IOException
+  {
+    // Sync high-water marks
+    saveHWMark(getHWMark());
+      
+    // Persist each sub-array
+    for(ShortArrayRecoverableImpl implArray : _implArrays)
+    {
+      try
+      {
+        implArray.sync();
+      }
+      catch(IOException e)
+      {
+        _log.error(e.getMessage());
+      }
+    }
+  }
+  
+  @Override
   public void persist() throws IOException
   {
     // Sync high-water marks

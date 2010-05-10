@@ -74,6 +74,12 @@ public class LongArrayMemoryImpl extends AbstractArray<long[]> implements LongAr
     {
         return _lwmScn;
     }
+
+    @Override
+    public void sync() throws IOException
+    {
+        // not supported for memory-based LongArray implementation
+    }
     
     @Override
     public void persist() throws IOException

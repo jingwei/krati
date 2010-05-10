@@ -148,6 +148,16 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable
   }
   
   @Override
+  public void sync() throws IOException
+  {
+    /* ************************* *
+     * Run in the blocking mode  *
+     * ************************* */
+    switchEntry(true);
+    applyEntries(true);
+  }
+  
+  @Override
   public void persist() throws IOException
   {
     /* ************************* *

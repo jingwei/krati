@@ -719,6 +719,24 @@ public class DataArrayImpl implements DataArray
     }
     
     @Override
+    public synchronized void sync() throws IOException
+    {
+        /* The "persist" must be synchronized with data array compactor because
+         * the compactor runs in a separate thread and will re-write the address
+         * array file at the end of compaction.  
+         */
+        
+        /* CALLS ORDERED:
+         * Need force _segment first and then persist _addressArray.
+         * During recovery, the _addressArray can always point to addresses
+         * which are valid though may not reflect the most recent address update.
+         */
+        _segment.force();
+        _addressArray.sync();
+        _segmentManager.updateMeta();
+    }
+    
+    @Override
     public synchronized void persist() throws IOException
     {
         /* The "persist" must be synchronized with data array compactor because

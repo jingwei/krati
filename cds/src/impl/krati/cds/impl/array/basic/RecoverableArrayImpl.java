@@ -188,11 +188,13 @@ public abstract class RecoverableArrayImpl<P, V extends EntryValue>
   }
   
   /**
-   * Flushes the current entry to log file.
+   * Sync array file with all entry logs. The writer will be blocked until all entry logs are applied.
    */
-  public void flush() throws IOException
+  @Override
+  public void sync() throws IOException
   {
-    _entryManager.switchEntry(true);
+    _entryManager.sync();
+    _log.info("array synced: indexStart=" + getIndexStart());
   }
   
   /**

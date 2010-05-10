@@ -115,6 +115,20 @@ public class SerializableObjectCache<T> implements ObjectCache<T>
         _cache.deleteData(objectId, scn);
         return true;
     }
+
+    /**
+     * Sync this object cache.
+     * 
+     * @throws IOException
+     */
+    @Override
+    public void sync() throws IOException
+    {
+        synchronized(_cache)
+        {
+            _cache.sync();
+        }
+    }
     
     /**
      * Persists this object cache.
@@ -129,7 +143,7 @@ public class SerializableObjectCache<T> implements ObjectCache<T>
             _cache.persist();
         }
     }
-
+    
     /**
      * Clears this object cache by removing all the persisted data permanently.
      * 

@@ -249,6 +249,27 @@ public class DynamicLongArrayImpl implements LongArray, DynamicArray
     _hwmScn = mark;
   }
   
+  @Override
+  public void sync() throws IOException
+  {
+    // Sync high-water marks
+    saveHWMark(getHWMark());
+      
+    // Persist each sub-array
+    for(LongArrayRecoverableImpl implArray : _implArrays)
+    {
+      try
+      {
+        implArray.sync();
+      }
+      catch(IOException e)
+      {
+        _log.error(e.getMessage());
+      }
+    }
+  }
+  
+  @Override
   public void persist() throws IOException
   {
     // Sync high-water marks

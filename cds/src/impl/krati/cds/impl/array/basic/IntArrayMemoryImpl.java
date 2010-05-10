@@ -74,13 +74,19 @@ public class IntArrayMemoryImpl extends AbstractArray<int[]> implements IntArray
     {
         return _lwmScn;
     }
+
+    @Override
+    public void sync() throws IOException
+    {
+        // not supported for memory-based IntArray implementation
+    }
     
     @Override
     public void persist() throws IOException
     {
         // not supported for memory-based IntArray implementation
     }
-
+    
     @Override
     public void saveHWMark(long endOfPeriod) throws Exception
     {
