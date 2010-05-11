@@ -146,6 +146,17 @@ public class PartitionedDataStore implements DataStore<byte[], byte[]>
     }
     
     @Override
+    public void sync() throws IOException
+    {
+        for(DataStore<byte[], byte[]> storeImpl: _partitionList)
+        {
+            storeImpl.sync();
+        }
+        
+        _log.info("store saved");
+    }
+    
+    @Override
     public void persist() throws IOException
     {
         for(DataStore<byte[], byte[]> storeImpl: _partitionList)

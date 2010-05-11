@@ -11,14 +11,15 @@ import java.io.IOException;
 public interface Persistable
 {
     /**
-     * Sync all updates with the underlying persistent file in blocking mode.
+     * Force all updates from memory buffer and redo log files to synchronize with
+     * the underlying persistent file in blocking mode.
      *  
      * @throws IOException
      */
     public void sync() throws IOException;
     
     /**
-     * Persist all updates into redo log files in non-blocking mode.
+     * Persist all updates from memory buffer into redo log files in non-blocking mode.
      *  
      * @throws IOException
      */

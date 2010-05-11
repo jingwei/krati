@@ -194,7 +194,7 @@ public abstract class RecoverableArrayImpl<P, V extends EntryValue>
   public void sync() throws IOException
   {
     _entryManager.sync();
-    _log.info("array synced: indexStart=" + getIndexStart());
+    _log.info("array saved: indexStart=" + getIndexStart());
   }
   
   /**

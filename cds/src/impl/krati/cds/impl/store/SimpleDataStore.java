@@ -43,6 +43,12 @@ public class SimpleDataStore implements DataStore<byte[], byte[]>
     }
     
     @Override
+    public void sync() throws IOException
+    {
+        _cache.sync();
+    }
+    
+    @Override
     public void persist() throws IOException
     {
         _cache.persist();
