@@ -412,30 +412,33 @@ public class DataArrayImpl implements DataArray
         }
         
         DataArrayImpl dataArrayCopy = _compactor.getDataArrayCopy();
-        if(dataArrayCopy != null)
+        if(dataArrayCopy == null)
         {
-            SegmentManager segManagerCopy = dataArrayCopy.getSegmentManager();
-            if(segManagerCopy != null)
+            return;
+        }
+        
+        SegmentManager segManagerCopy = dataArrayCopy.getSegmentManager();
+        if(segManagerCopy == null)
+        {
+            return;
+        }
+        
+        Segment compactSegment = segManagerCopy.getCurrentSegment();
+        if(compactSegment == null || compactSegment == liveSegment)
+        {
+            return;
+        }
+        
+        /*
+         * Slow down the writer for 1 millisecond so that the compactor has a chance to catch up.
+         */
+        if(compactSegment.getLoadSize() < liveSegment.getLoadSize()) 
+        {
+            try
             {
-                Segment compactSegment = segManagerCopy.getCurrentSegment();
-                
-                if(compactSegment == null || compactSegment == liveSegment)
-                {
-                    return;
-                }
-                
-                /*
-                 * Slow down the writer for 1 millisecond so that the compactor has a chance to catch up.
-                 */
-                if(compactSegment.getLoadSize() < liveSegment.getLoadSize()) 
-                {
-                    try
-                    {
-                        Thread.sleep(1);
-                    }
-                    catch(Exception e) {}
-                }
+                Thread.sleep(1);
             }
+            catch(Exception e) {}
         }
     }
     
