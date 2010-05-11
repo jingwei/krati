@@ -405,18 +405,36 @@ public class DataArrayImpl implements DataArray
     
     private void tryFlowControl()
     {
-        Segment compactTarget;
-        
-        compactTarget = _segmentManager.getCurrentSegment();
-        if(_segment != null && compactTarget != null && _segment != compactTarget) 
+        Segment liveSegment = _segment;
+        if(liveSegment == null)
         {
-            if(_segment.getLoadSize() > compactTarget.getLoadSize())
+            return;
+        }
+        
+        DataArrayImpl dataArrayCopy = _compactor.getDataArrayCopy();
+        if(dataArrayCopy != null)
+        {
+            SegmentManager segManagerCopy = dataArrayCopy.getSegmentManager();
+            if(segManagerCopy != null)
             {
-                try
+                Segment compactSegment = segManagerCopy.getCurrentSegment();
+                
+                if(compactSegment == null || compactSegment == liveSegment)
                 {
-                    Thread.sleep(1); // Slow down for 1 millisecond.
+                    return;
                 }
-                catch(InterruptedException e) {}
+                
+                /*
+                 * Slow down the writer for 1 millisecond so that the compactor has a chance to catch up.
+                 */
+                if(compactSegment.getLoadSize() < liveSegment.getLoadSize()) 
+                {
+                    try
+                    {
+                        Thread.sleep(1);
+                    }
+                    catch(Exception e) {}
+                }
             }
         }
     }

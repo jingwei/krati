@@ -96,6 +96,11 @@ public class DataArrayImplCompactor implements Runnable
         }
     };
     
+    protected DataArrayImpl getDataArrayCopy()
+    {
+        return _dataArrayCopy;
+    }
+    
     private void reset()
     {
         _updateQueue.clear();
@@ -213,8 +218,7 @@ public class DataArrayImplCompactor implements Runnable
         for(Segment seg : _segTargetList)
         {
             seg.load();
-            _log.info("bytes transferred to   " + seg.getSegmentId() + ": " +
-                      (seg.getLoadSize() - Segment.dataStartPosition));
+            _log.info("bytes transferred to   " + seg.getSegmentId() + ": " + seg.getLoadSize());
         }
         
         _state = State.COMPACT_DONE;

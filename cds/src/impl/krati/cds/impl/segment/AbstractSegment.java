@@ -42,7 +42,9 @@ public abstract class AbstractSegment implements Segment
         
         setAppendPosition(0);
         appendLong(getLastForcedTime());
+        decrLoadSize(8);
         appendLong(getStorageVersion());
+        decrLoadSize(8);
         force();
         
         setAppendPosition(Segment.dataStartPosition);
