@@ -39,14 +39,14 @@ public class IntArrayRecoverableImpl extends RecoverableArrayImpl<int[], EntryVa
     try
     {
       maxScn = _arrayFile.readMaxSCN();
-      _parallelData = _arrayFile.loadIntArray();
-      if (_parallelData.length != _memberIdCount)
+      _internalArray = _arrayFile.loadIntArray();
+      if (_internalArray.length != _memberIdCount)
       {
         maxScn = 0;
-        _parallelData = new int[_memberIdCount];
+        _internalArray = new int[_memberIdCount];
         clear();
         
-        _log.warn("Allocated _parallelData due to invalid length");
+        _log.warn("Allocated _internalArray due to invalid length");
       }
       else
       {
@@ -56,10 +56,10 @@ public class IntArrayRecoverableImpl extends RecoverableArrayImpl<int[], EntryVa
     catch(Exception e)
     {
       maxScn = 0;
-      _parallelData = new int[_memberIdCount];
+      _internalArray = new int[_memberIdCount];
       clear();
       
-      _log.warn("Allocated _parallelData due to a thrown exception: " + e.getMessage());
+      _log.warn("Allocated _internalArray due to a thrown exception: " + e.getMessage());
     }
     
     _entryManager.setWaterMarks(maxScn, maxScn);
@@ -89,11 +89,11 @@ public class IntArrayRecoverableImpl extends RecoverableArrayImpl<int[], EntryVa
   @Override
   public void clear()
   {
-    if (_parallelData != null)
+    if (_internalArray != null)
     {
-      for (int i = 0; i < _parallelData.length; i ++)
+      for (int i = 0; i < _internalArray.length; i ++)
       {
-        _parallelData[i] = 0;
+        _internalArray[i] = 0;
       }
     }
 
@@ -103,7 +103,7 @@ public class IntArrayRecoverableImpl extends RecoverableArrayImpl<int[], EntryVa
     // Clear the underly array file
     try
     {
-      _arrayFile.reset(_parallelData, _entryManager.getLWMark());
+      _arrayFile.reset(_internalArray, _entryManager.getLWMark());
     }
     catch(IOException e)
     {
@@ -113,13 +113,13 @@ public class IntArrayRecoverableImpl extends RecoverableArrayImpl<int[], EntryVa
   
   public int getData(int index)
   {
-    return _parallelData[index - _memberIdStart];
+    return _internalArray[index - _memberIdStart];
   }
   
   public void setData(int index, int value, long scn) throws Exception
   {
     int pos = index - _memberIdStart;
-    _parallelData[pos] = value;
+    _internalArray[pos] = value;
     _entryManager.addToEntry(new EntryValueInt(pos, value, scn));  
   }
   
@@ -128,7 +128,7 @@ public class IntArrayRecoverableImpl extends RecoverableArrayImpl<int[], EntryVa
   {
       IntArrayMemoryImpl memClone = new IntArrayMemoryImpl(getIndexStart(), length());
       
-      System.arraycopy(_parallelData, 0, memClone.getInternalArray(), 0, _parallelData.length);
+      System.arraycopy(_internalArray, 0, memClone.getInternalArray(), 0, _internalArray.length);
       memClone._lwmScn = getLWMark(); 
       memClone._hwmScn = getHWMark();
       

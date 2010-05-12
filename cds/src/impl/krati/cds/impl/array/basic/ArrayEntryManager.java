@@ -178,7 +178,7 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable
   
   public File getEntryLogFile(String tag)
   {
-    // trentry_<id>_<tag>.log
+    // history_<id>_<tag>.idx
     return new File(getCacheDirectory(), getEntryLogPrefix() + "_" + tag + getEntryLogSuffix());
   }
   
@@ -204,7 +204,7 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable
    */
   protected final String getEntryLogPrefix()
   {
-    return "trentry_" + _array.getIndexStart();
+    return "history_" + _array.getIndexStart();
   }
   
   /**
@@ -212,7 +212,7 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable
    */
   protected final String getEntryLogSuffix()
   {
-    return ".log";
+    return ".idx";
   }
   
   /**

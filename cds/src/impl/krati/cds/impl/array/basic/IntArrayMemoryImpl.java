@@ -17,30 +17,30 @@ public class IntArrayMemoryImpl extends AbstractArray<int[]> implements IntArray
     @Override
     protected void init() 
     { 
-        _parallelData = new int[_memberIdCount];
+        _internalArray = new int[_memberIdCount];
     }
 
     @Override
     public int getData(int index)
     {
-      return _parallelData[index - _memberIdStart];
+      return _internalArray[index - _memberIdStart];
     }
 
     @Override
     public void setData(int index, int value, long scn) throws Exception
     {
-      _parallelData[index - _memberIdStart] = value;
+      _internalArray[index - _memberIdStart] = value;
       _hwmScn = Math.max(_hwmScn, scn);
     }
     
     @Override
     public void clear()
     {
-        if (_parallelData != null)
+        if (_internalArray != null)
         {
-          for (int i = 0; i < _parallelData.length; i ++)
+          for (int i = 0; i < _internalArray.length; i ++)
           {
-            _parallelData[i] = 0;
+            _internalArray[i] = 0;
           }
         }
     }
@@ -99,7 +99,7 @@ public class IntArrayMemoryImpl extends AbstractArray<int[]> implements IntArray
     {
         IntArrayMemoryImpl memClone = new IntArrayMemoryImpl(getIndexStart(), length());
         
-        System.arraycopy(_parallelData, 0, memClone.getInternalArray(), 0, _parallelData.length);
+        System.arraycopy(_internalArray, 0, memClone.getInternalArray(), 0, _internalArray.length);
         memClone._lwmScn = getLWMark(); 
         memClone._hwmScn = getHWMark();
         

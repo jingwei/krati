@@ -2,12 +2,19 @@ package krati.cds.impl.array.basic;
 
 import krati.cds.array.BasicArray;
 
+/**
+ * AbstractArray
+ * 
+ * @author jwu
+ *
+ * @param <T> Primitive Java Array (e.g., int[], long[]).
+ */
 public abstract class AbstractArray<T> implements BasicArray<T>
 {
   public final int _memberIdCount;
-  public final int _memberIdStart; // Inclusive memberId in parallel data store
-  public final int _memberIdEnd;   // Exclusive memberId not in parallel data store
-  protected T      _parallelData;
+  public final int _memberIdStart; // Inclusive memberId
+  public final int _memberIdEnd;   // Exclusive memberId (not in the array)
+  protected T      _internalArray;
   
   public AbstractArray(Config config)
   {
@@ -27,7 +34,7 @@ public abstract class AbstractArray<T> implements BasicArray<T>
   @Override
   public T getInternalArray()
   {
-    return _parallelData;
+    return _internalArray;
   }
   
   public static class Config

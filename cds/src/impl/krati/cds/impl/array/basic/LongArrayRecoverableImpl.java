@@ -53,14 +53,14 @@ public class LongArrayRecoverableImpl extends RecoverableArrayImpl<long[], Entry
     try
     {
       maxScn = _arrayFile.readMaxSCN();
-      _parallelData = _arrayFile.loadLongArray();
-      if (_parallelData.length != _memberIdCount)
+      _internalArray = _arrayFile.loadLongArray();
+      if (_internalArray.length != _memberIdCount)
       {
         maxScn = 0;
-        _parallelData = new long[_memberIdCount];
+        _internalArray = new long[_memberIdCount];
         clear();
         
-        _log.warn("Allocated _parallelData due to invalid length");
+        _log.warn("Allocated _internalArray due to invalid length");
       }
       else
       {
@@ -70,10 +70,10 @@ public class LongArrayRecoverableImpl extends RecoverableArrayImpl<long[], Entry
     catch(Exception e)
     {
       maxScn = 0;
-      _parallelData = new long[_memberIdCount];
+      _internalArray = new long[_memberIdCount];
       clear();
       
-      _log.warn("Allocated _parallelData due to a thrown exception: " + e.getMessage());
+      _log.warn("Allocated _internalArray due to a thrown exception: " + e.getMessage());
     }
     
     _entryManager.setWaterMarks(maxScn, maxScn);
@@ -104,11 +104,11 @@ public class LongArrayRecoverableImpl extends RecoverableArrayImpl<long[], Entry
   public void clear()
   {
     // Clear in-memory array
-    if (_parallelData != null)
+    if (_internalArray != null)
     {
-      for (int i = 0; i < _parallelData.length; i ++)
+      for (int i = 0; i < _internalArray.length; i ++)
       {
-        _parallelData[i] = 0;
+        _internalArray[i] = 0;
       }
     }
     
@@ -118,7 +118,7 @@ public class LongArrayRecoverableImpl extends RecoverableArrayImpl<long[], Entry
     // Clear the underly array file
     try
     {
-      _arrayFile.reset(_parallelData, _entryManager.getLWMark());
+      _arrayFile.reset(_internalArray, _entryManager.getLWMark());
     }
     catch(IOException e)
     {
@@ -129,14 +129,14 @@ public class LongArrayRecoverableImpl extends RecoverableArrayImpl<long[], Entry
   @Override
   public long getData(int index)
   {
-    return _parallelData[index - _memberIdStart];
+    return _internalArray[index - _memberIdStart];
   }
   
   @Override
   public void setData(int index, long value, long scn) throws Exception
   {
     int pos = index - _memberIdStart;
-    _parallelData[pos] = value;
+    _internalArray[pos] = value;
     _entryManager.addToEntry(new EntryValueLong(pos, value, scn));  
   }
   
@@ -145,7 +145,7 @@ public class LongArrayRecoverableImpl extends RecoverableArrayImpl<long[], Entry
   {
       LongArrayMemoryImpl memClone = new LongArrayMemoryImpl(getIndexStart(), length());
       
-      System.arraycopy(_parallelData, 0, memClone.getInternalArray(), 0, _parallelData.length);
+      System.arraycopy(_internalArray, 0, memClone.getInternalArray(), 0, _internalArray.length);
       memClone._lwmScn = getLWMark(); 
       memClone._hwmScn = getHWMark();
       
@@ -159,8 +159,8 @@ public class LongArrayRecoverableImpl extends RecoverableArrayImpl<long[], Entry
          throw new ArrayIndexOutOfBoundsException();
      }
      
-     _parallelData = newArray.getInternalArray();
-     _arrayFile.reset(_parallelData);
+     _internalArray = newArray.getInternalArray();
+     _arrayFile.reset(_internalArray);
      _entryManager.clear();
   }
   

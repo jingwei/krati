@@ -55,21 +55,21 @@ public class DynamicShortArrayImpl implements ShortArray, DynamicArray
       _cacheDirectory.mkdirs();
     }
     
-    _log.info("start to load cache ... _subArraySize="+_subArraySize);
+    _log.info("start to load array ... _subArraySize="+_subArraySize);
     
-    String prefix = "parallel_";
+    String prefix = "indexes_";
     String suffix = _subArraySize + ".dat";
     File[] files = _cacheDirectory.listFiles();
     
     // Find the maximum indexStart of all sub-arrays
     int indexStart = 0;
-    boolean foundParallel = false;
+    boolean foundIndexes = false;
     for (File file : files)
     {
       String fileName = file.getName();
       if (fileName.startsWith(prefix) && fileName.endsWith(suffix))
       {
-        _log.info("found parallel data " + fileName);
+        _log.info("found indexes " + fileName);
         
         int fromIndex = fileName.indexOf('_');
         int endIndex = fileName.indexOf('_', fromIndex + 1);
@@ -79,8 +79,8 @@ public class DynamicShortArrayImpl implements ShortArray, DynamicArray
           try
           {
             indexStart = Math.max(indexStart, Integer.parseInt(num));
-            _log.info("parallel data index starts at " + indexStart);
-            foundParallel = true;
+            _log.info("indexes data index starts at " + indexStart);
+            foundIndexes = true;
           }
           catch(Exception e)
           {
@@ -90,7 +90,7 @@ public class DynamicShortArrayImpl implements ShortArray, DynamicArray
       }
     }
     
-    if (foundParallel)
+    if (foundIndexes)
     {
       // Expand capacity to include the maximum indexStart of sub-arrays
       this.expandCapacity(indexStart);
@@ -106,7 +106,7 @@ public class DynamicShortArrayImpl implements ShortArray, DynamicArray
       }
       
       _lwmScn = getLWMark();
-      _log.info("cache loaded successfully: _lwmScn=" + _lwmScn + " _hwmScn=" + _hwmScn);
+      _log.info("array loaded successfully: _lwmScn=" + _lwmScn + " _hwmScn=" + _hwmScn);
     }
   }
   

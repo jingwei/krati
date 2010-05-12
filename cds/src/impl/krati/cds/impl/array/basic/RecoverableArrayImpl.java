@@ -65,7 +65,7 @@ public abstract class RecoverableArrayImpl<P, V extends EntryValue>
     }
     
     boolean newFile = true;
-    File file = new File(cacheDirectory, "parallel_" + getIndexStart() + "_" + length() + ".dat");
+    File file = new File(cacheDirectory, "indexes_" + getIndexStart() + "_" + length() + ".dat");
     if (file.exists())
     {
       newFile = false;
@@ -152,7 +152,7 @@ public abstract class RecoverableArrayImpl<P, V extends EntryValue>
   
   protected void initArrayFileData()
   {
-    // Subclasses need to initialize parallel data in ArrayFile
+    // Subclasses need to initialize ArrayFile
   }
   
   protected abstract void loadArrayFileData();
