@@ -430,13 +430,13 @@ public class DataArrayImpl implements DataArray
         }
         
         /*
-         * Slow down the writer for 1 millisecond so that the compactor has a chance to catch up.
+         * Slow down the writer for 0.2 milliseconds so that the compactor has a chance to catch up.
          */
         if(compactSegment.getLoadSize() < liveSegment.getLoadSize()) 
         {
             try
             {
-                Thread.sleep(1);
+                Thread.sleep(0, 200000);
             }
             catch(Exception e) {}
         }
