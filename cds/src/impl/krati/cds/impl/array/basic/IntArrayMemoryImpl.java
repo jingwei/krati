@@ -19,13 +19,13 @@ public class IntArrayMemoryImpl extends AbstractArray<int[]> implements IntArray
     { 
         _internalArray = new int[_memberIdCount];
     }
-
+    
     @Override
     public int getData(int index)
     {
       return _internalArray[index - _memberIdStart];
     }
-
+    
     @Override
     public void setData(int index, int value, long scn) throws Exception
     {
@@ -50,7 +50,7 @@ public class IntArrayMemoryImpl extends AbstractArray<int[]> implements IntArray
     {
         return _memberIdStart;
     }
-
+    
     @Override
     public boolean indexInRange(int index)
     {
@@ -93,7 +93,7 @@ public class IntArrayMemoryImpl extends AbstractArray<int[]> implements IntArray
         _hwmScn = endOfPeriod;
         _lwmScn = endOfPeriod;
     }
-
+    
     @Override
     public Object memoryClone()
     {

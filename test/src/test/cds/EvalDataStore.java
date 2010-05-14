@@ -455,7 +455,7 @@ public abstract class EvalDataStore extends AbstractTest
         
         try
         {
-            int timeAllocated = runDuration/3;
+            int timeAllocated = runDuration/2;
             
             File DataStoreDir = new File(TEST_OUTPUT_DIR, getClass().getSimpleName());
             _store = getDataStore(DataStoreDir);
@@ -474,7 +474,7 @@ public abstract class EvalDataStore extends AbstractTest
             validate(_store);
             
             System.out.println("---testRead---");
-            evalRead(_store, numOfReaders, timeAllocated);
+            evalRead(_store, numOfReaders, 10);
             
             System.out.println("---testReadWrite---");
             evalReadWrite(_store, numOfReaders, numOfWriters, timeAllocated);

@@ -145,7 +145,7 @@
             <jvmarg value="-Dtest.idStart=0"/>
             <jvmarg value="-Dtest.idCount=500000"/>
             <jvmarg value="-Dtest.segFileSizeMB=128"/>
-            <jvmarg value="-Dtest.runTimeSeconds=30"/>
+            <jvmarg value="-Dtest.runTimeSeconds=20"/>
             <jvmarg value="-Dtest.dir=${test.dir}"/>
             <jvmarg value="-Dtest.output.dir=${test.dir}/output"/>
             <formatter type="brief" usefile="false"/>
@@ -182,6 +182,29 @@
             
             <batchtest fork="yes">
                 <fileset dir="${test.build.dir}" includes="**/Test*.class" excludes="**/Test*er.class"/>
+            </batchtest>
+        </junit>
+    </target>
+
+    <target name="store.test" depends="test.compile">
+        <junit printsummary="yes" maxmemory="20G">
+            <jvmarg value="-Dtest.idStart=0"/>
+            <jvmarg value="-Dtest.idCount=5000000"/>
+            <jvmarg value="-Dtest.segFileSizeMB=256"/>
+            <jvmarg value="-Dtest.runTimeSeconds=3600"/>
+            <jvmarg value="-Dtest.dir=${test.dir}"/>
+            <jvmarg value="-Dtest.output.dir=${test.dir}/output"/>
+            <formatter type="brief" usefile="false"/>
+            
+            <classpath>
+                <path refid="test.class.path"/>
+                <path refid="java.class.path"/>
+                <path refid="compile.class.path"/>
+                <path refid="test.compile.class.path"/>
+            </classpath>
+            
+            <batchtest fork="yes">
+                <fileset dir="${test.build.dir}" includes="**/Test*Store*.class"/>
             </batchtest>
         </junit>
     </target>

@@ -50,7 +50,7 @@ public class LongArrayMemoryImpl extends AbstractArray<long[]> implements LongAr
     {
         return _memberIdStart;
     }
-
+    
     @Override
     public boolean indexInRange(int index)
     {

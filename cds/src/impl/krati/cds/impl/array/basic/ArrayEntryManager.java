@@ -230,13 +230,15 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable
    */
   protected synchronized void switchEntry(boolean blocking) throws IOException
   {
+    _log.info("switchEntry ...");
+    
     if (_currentEntry != null && !_currentEntry.isEmpty())
     {
       if(_persistListener != null)
       {
           _persistListener.priorPersisting(_currentEntry);
       }
-
+      
       // Create entry log and persist in-memory data
       File file = new File(getCacheDirectory(), getEntryLogName(_currentEntry));
       _currentEntry.save(file);
@@ -262,6 +264,8 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable
         applyEntries(blocking);
       }
     }
+    
+    _log.info("switchEntry end");
   }
   
   /**

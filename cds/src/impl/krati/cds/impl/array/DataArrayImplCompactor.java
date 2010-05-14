@@ -192,6 +192,16 @@ public class DataArrayImplCompactor implements Runnable
         // Safety check
         if(_dataArrayCopy == null) return;
         
+        // Consume the latest updates.
+        try
+        {
+            consume();
+        }
+        catch(Exception e)
+        {
+            _log.warn("consume aborted", e);
+        }
+        
         /*
          * Compact the dataArray copy.
          */
@@ -346,6 +356,28 @@ public class DataArrayImplCompactor implements Runnable
         {
             _updateQueue.add(new AddressUpdate(index, address, scn));
         }
+    }
+    
+    /**
+     * Method consume needs to be synchronized with addressUpdated so that
+     * the writer and compactor can safely access _updateQueue.
+     * 
+     * The purpose of consume is to avoid transferring data with the indexes pointing to the live segment. 
+     * 
+     * @throws Exception
+     */
+    private synchronized void consume() throws Exception
+    {
+        int cnt = 0;
+        
+        while(!_updateQueue.isEmpty())
+        {
+            AddressUpdate update = _updateQueue.remove();
+            _dataArrayCopy.setAddress(update._index, update._address, update._scn);
+            cnt++;
+        }
+        
+        _log.info("consume " + cnt + " updates");
     }
     
     static enum State {

@@ -419,7 +419,7 @@ public class TestDataCache extends AbstractTest
                 checkData(cache);
             }
             
-            int timeAllocated = runTimeSeconds/3;
+            int timeAllocated = runTimeSeconds/2;
             
             System.out.println("---testWrite---");
             evalWrite(cache, timeAllocated);
@@ -429,7 +429,7 @@ public class TestDataCache extends AbstractTest
             checkData(cache);
             
             System.out.println("---testRead---");
-            evalRead(cache, 4, timeAllocated);
+            evalRead(cache, 4, 10);
             
             System.out.println("---checkData---");
             checkData(cache);
