@@ -13,6 +13,12 @@ import krati.cds.impl.DataCacheImpl;
 
 import test.AbstractTest;
 
+/**
+ * TestDataCache using MemorySegment 
+ * 
+ * @author jwu
+ *
+ */
 public class TestDataCache extends AbstractTest
 {
     static List<String> _lineSeedData = new ArrayList<String>(3000);
@@ -87,59 +93,15 @@ public class TestDataCache extends AbstractTest
         }
     }
     
-    public static void checkData(DataCache cache)
+    public static void validate(DataCache cache)
     {
         int cacheSize = cache.getIdCount();
-        Random rand = new Random();
-        for(int i = 0; i < 10000; i++)
+        for(int i = 0; i < cacheSize; i++)
         {
-            int index = cache.getIdStart() + rand.nextInt(cacheSize);
+            int index = cache.getIdStart() + i;
             checkData(cache, index);
         }
         System.out.println("OK");
-    }
-    
-    static class Reader implements Runnable
-    {
-        DataCache _cache;
-        Random _rand = new Random();
-        byte[] _data = new byte[1 << 13];
-        boolean _running = true;
-        int _indexStart;
-        int _length;
-        long _cnt = 0;
-        
-        public Reader(DataCache cache)
-        {
-            this._cache = cache;
-            this._length = cache.getIdCount();
-            this._indexStart = cache.getIdStart();
-        }
-        
-        public long getReadCount()
-        {
-            return this._cnt;
-        }
-
-        public void stop()
-        {
-            _running = false;
-        }
-        
-        int read(int index)
-        {
-            return _cache.getData(index, _data);
-        }
-        
-        @Override
-        public void run()
-        {
-            while(_running)
-            {
-                read(_indexStart + _rand.nextInt(_length));
-                _cnt++;
-            }
-        }
     }
     
     static class Writer implements Runnable
@@ -190,6 +152,84 @@ public class TestDataCache extends AbstractTest
             while(_running)
             {
                 write(_indexStart + _rand.nextInt(_length));
+                _cnt++;
+            }
+        }
+    }
+    
+    static class Reader implements Runnable
+    {
+        DataCache _cache;
+        Random _rand = new Random();
+        byte[] _data = new byte[1 << 13];
+        boolean _running = true;
+        int _indexStart;
+        int _length;
+        long _cnt = 0;
+        
+        public Reader(DataCache cache)
+        {
+            this._cache = cache;
+            this._length = cache.getIdCount();
+            this._indexStart = cache.getIdStart();
+        }
+        
+        public long getReadCount()
+        {
+            return this._cnt;
+        }
+
+        public void stop()
+        {
+            _running = false;
+        }
+        
+        int read(int index)
+        {
+            return _cache.getData(index, _data);
+        }
+        
+        @Override
+        public void run()
+        {
+            while(_running)
+            {
+                read(_indexStart + _rand.nextInt(_length));
+                _cnt++;
+            }
+        }
+    }
+    
+    static class Checker extends Reader
+    {
+        public Checker(DataCache cache)
+        {
+            super(cache);
+        }
+        
+        void check(int index)
+        {
+            String line = _lineSeedData.get(index % _lineSeedData.size());
+            
+            byte[] b = _cache.getData(index);
+            if (b != null)
+            {
+                String s = new String(b);
+                assertTrue("[" + index + "]=" + s + " expected=" + line, s.equals(line));
+            }
+            else
+            {
+                assertTrue("[" + index + "]=null", line == null);
+            }
+        }
+        
+        @Override
+        public void run()
+        {
+            while(_running)
+            {
+                int index = _indexStart + _rand.nextInt(_length);
+                check(index);
                 _cnt++;
             }
         }
@@ -290,7 +330,8 @@ public class TestDataCache extends AbstractTest
         }
     }
     
-    public static void evalReadWrite(DataCache cache, int readerCnt, int runDuration) throws Exception
+    
+    public static void evalReadWrite(DataCache cache, int readerCnt, int runDuration, boolean doValidation) throws Exception
     {
         try
         {
@@ -298,7 +339,7 @@ public class TestDataCache extends AbstractTest
             Reader[] readers = new Reader[readerCnt];
             for(int i = 0; i < readers.length; i++)
             {
-                readers[i] = new Reader(cache);
+                readers[i] = doValidation ? new Checker(cache) : new Reader(cache);
             }
 
             Thread[] threads = new Thread[readers.length];
@@ -377,7 +418,7 @@ public class TestDataCache extends AbstractTest
         }
     }
     
-    static DataCache getDataCache(File cacheDir) throws Exception
+    protected DataCache getDataCache(File cacheDir) throws Exception
     {
         DataCache cache = new DataCacheImpl(idStart,
                                             idCount,
@@ -415,31 +456,37 @@ public class TestDataCache extends AbstractTest
                 System.out.println("---populate---");
                 eval.populate(cache);
                 
-                System.out.println("---checkData---");
-                checkData(cache);
+                System.out.println("---validate---");
+                validate(cache);
             }
             
-            int timeAllocated = runTimeSeconds/2;
+            int timeAllocated = runTimeSeconds/3;
+
+            System.out.println("---testRead---");
+            evalRead(cache, 4, 10);
             
             System.out.println("---testWrite---");
             evalWrite(cache, timeAllocated);
             cache.persist();
             
-            System.out.println("---checkData---");
-            checkData(cache);
-            
-            System.out.println("---testRead---");
-            evalRead(cache, 4, 10);
-            
-            System.out.println("---checkData---");
-            checkData(cache);
+            System.out.println("---validate---");
+            validate(cache);
             
             System.out.println("---testReadWrite---");
-            evalReadWrite(cache, 4, timeAllocated);
+            evalReadWrite(cache, 4, timeAllocated, false);
             cache.persist();
             
-            System.out.println("---checkData---");
-            checkData(cache);
+            System.out.println("---validate---");
+            validate(cache);
+            
+            System.out.println("---testWriteCheck---");
+            evalReadWrite(cache, 2, timeAllocated, true);
+            cache.persist();
+            
+            System.out.println("---validate---");
+            validate(cache);
+            
+            cache.sync();
         }
         catch(Exception e)
         {

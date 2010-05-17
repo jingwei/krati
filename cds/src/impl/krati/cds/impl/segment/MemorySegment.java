@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 
 import org.apache.log4j.Logger;
@@ -19,8 +18,6 @@ import org.apache.log4j.Logger;
 public class MemorySegment extends AbstractSegment
 {
     private final static Logger _log = Logger.getLogger(MemorySegment.class);
-    private RandomAccessFile _raf = null;
-    private FileChannel _channel;
     private ByteBuffer _buffer;
     
     public MemorySegment(int segmentId, File segmentFile, int initialSizeMB, Segment.Mode mode) throws IOException
@@ -68,7 +65,7 @@ public class MemorySegment extends AbstractSegment
             
             loadHeader();
             
-            _log.info("Segment " + getSegmentId() + " loaded as " + getMode() + ": " + getHeader());
+            _log.info("Segment " + getSegmentId() + " loaded: " + getHeader());
         }
         else
         {
@@ -85,7 +82,7 @@ public class MemorySegment extends AbstractSegment
             
             initHeader();
             
-            _log.info("Segment " + getSegmentId() + " initialized as " + getMode() + ": " + getHeader());
+            _log.info("Segment " + getSegmentId() + " initialized: " + getStatus());
         }
     }
     
@@ -272,18 +269,18 @@ public class MemorySegment extends AbstractSegment
     @Override
     public synchronized void load() throws IOException
     {
-        int newPosition = _buffer.position();
-        
-        // reset position
-        _buffer.position(0);
-        _channel.position(0);
+        int currentPosition = _buffer.position();
+        int channelPosition = (int)_channel.position();
         
         // load into memory buffer
-        _channel.read(_buffer, 0);
+        if(channelPosition < currentPosition)
+        {
+            _channel.read(ByteBuffer.wrap(_buffer.array(), channelPosition, currentPosition - channelPosition));
+        }
         
         // restore position
-        _buffer.position(newPosition);
-        _channel.position(newPosition);
+        _buffer.position(currentPosition);
+        _channel.position(currentPosition);
     }
     
     @Override
@@ -307,7 +304,7 @@ public class MemorySegment extends AbstractSegment
         }
         
         _channel.force(true);
-        _log.info("Forced Segment " + getSegmentId());
+        _log.info("Segment " + getSegmentId() + " forced: " + getStatus());
     }
     
     @Override
@@ -325,6 +322,52 @@ public class MemorySegment extends AbstractSegment
         {
             _raf.close();
             _raf = null;
+        }
+    }
+    
+    @Override
+    public boolean isRecyclable()
+    {
+        return true;
+    }
+
+    @Override
+    public void reinit() throws IOException
+    {
+        _buffer.clear();
+        _loadSizeBytes = 0;
+        _segMode = Segment.Mode.READ_WRITE;
+        
+        if (!getSegmentFile().exists())
+        {
+            if (!getSegmentFile().createNewFile())
+            {
+                String msg = "Failed to create " + getSegmentFile().getAbsolutePath();
+                
+                _log.error(msg);
+                throw new IOException(msg);
+            }
+            
+            RandomAccessFile raf = new RandomAccessFile(getSegmentFile(), "rw");
+            raf.setLength(getInitialSize());
+            raf.close();
+        }
+        
+        {
+            _raf = new RandomAccessFile(getSegmentFile(), "rw");
+            
+            if(_raf.length() != getInitialSize())
+            {
+                int rafSizeMB = (int)(_raf.length() / 1024L / 1024L);
+                throw new SegmentFileSizeException(getSegmentFile().getCanonicalPath(), rafSizeMB, getInitialSizeMB());
+            }
+            
+            _channel = _raf.getChannel();
+            _channel.position(0);
+            
+            initHeader();
+            
+            _log.info("Segment " + getSegmentId() + " initialized: " + getStatus());
         }
     }
 }

@@ -7,6 +7,12 @@ import krati.cds.impl.DataCacheImpl;
 import krati.cds.impl.store.SimpleDataStore;
 import krati.cds.store.DataStore;
 
+/**
+ * TestSimpleStore using MemorySegment.
+ * 
+ * @author jwu
+ *
+ */
 public class TestSimpleStore extends EvalDataStore
 {
     public TestSimpleStore()

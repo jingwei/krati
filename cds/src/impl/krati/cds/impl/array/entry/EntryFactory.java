@@ -9,7 +9,5 @@ package krati.cds.impl.array.entry;
  */
 public interface EntryFactory<T extends EntryValue>
 {
-  public Entry<T>[] newEntryArray(int length);
-  
   public Entry<T> newEntry(int initialCapacity);
 }

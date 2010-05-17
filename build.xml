@@ -52,14 +52,14 @@
         <get src="http://repo1.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar" dest="${ivy.jar.file}" usetimestamp="true"/>
     </target>
     
-    <target name="install-ivy" depends="download-ivy" description="--> install ivy">
+    <target name="install-ivy" depends="download-ivy" description="-- install ivy">
         <path id="ivy.lib.path">
             <fileset dir="${ivy.jar.dir}" includes="*.jar"/>
         </path>
         <taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpathref="ivy.lib.path"/>
     </target>
     
-    <target name="resolve" description="--> retrieve dependencies with ivy" depends="install-ivy">
+    <target name="resolve" depends="install-ivy">
         <ivy:retrieve />
     </target>
     
@@ -117,7 +117,7 @@
             <jar destfile="${dist.dir}/${project.name}-${version}.jar" basedir="${build.dir}" />
     </target>
     
-    <target name="test.clean">
+    <target name="test.clean" description="-- clean test results">
       <delete dir="${logs.dir}"/>
       <delete dir="${test.build.dir}"/>
       <delete dir="${test.dir}/cache"/>
@@ -140,12 +140,12 @@
         </copy>
     </target>
     
-    <target name="test" depends="test.compile">
+    <target name="test" depends="test.compile" description="-- run regression (30 seconds per test)">
         <junit printsummary="yes" maxmemory="10G">
             <jvmarg value="-Dtest.idStart=0"/>
             <jvmarg value="-Dtest.idCount=500000"/>
             <jvmarg value="-Dtest.segFileSizeMB=128"/>
-            <jvmarg value="-Dtest.runTimeSeconds=20"/>
+            <jvmarg value="-Dtest.runTimeSeconds=30"/>
             <jvmarg value="-Dtest.dir=${test.dir}"/>
             <jvmarg value="-Dtest.output.dir=${test.dir}/output"/>
             <formatter type="brief" usefile="false"/>
@@ -163,7 +163,7 @@
         </junit>
     </target>
     
-    <target name="stress.test" depends="test.compile">
+    <target name="test.stress" depends="test.compile" description="-- run regression (20 minutes per test)">
         <junit printsummary="yes" maxmemory="20G">
             <jvmarg value="-Dtest.idStart=0"/>
             <jvmarg value="-Dtest.idCount=5000000"/>
@@ -186,12 +186,35 @@
         </junit>
     </target>
 
-    <target name="store.test" depends="test.compile">
+    <target name="regress.cache" depends="test.compile" description="-- regress DataCache for memory/mapped/channel (20 minutes per test)">
         <junit printsummary="yes" maxmemory="20G">
             <jvmarg value="-Dtest.idStart=0"/>
             <jvmarg value="-Dtest.idCount=5000000"/>
             <jvmarg value="-Dtest.segFileSizeMB=256"/>
-            <jvmarg value="-Dtest.runTimeSeconds=3600"/>
+            <jvmarg value="-Dtest.runTimeSeconds=1200"/>
+            <jvmarg value="-Dtest.dir=${test.dir}"/>
+            <jvmarg value="-Dtest.output.dir=${test.dir}/output"/>
+            <formatter type="brief" usefile="false"/>
+            
+            <classpath>
+                <path refid="test.class.path"/>
+                <path refid="java.class.path"/>
+                <path refid="compile.class.path"/>
+                <path refid="test.compile.class.path"/>
+            </classpath>
+            
+            <batchtest fork="yes">
+                <fileset dir="${test.build.dir}" includes="**/TestDataCache*.class"/>
+            </batchtest>
+        </junit>
+    </target>
+
+    <target name="regress.store" depends="test.compile" description="-- regress DataStore for memory/mapped/channel (20 minutes per test)">
+        <junit printsummary="yes" maxmemory="20G">
+            <jvmarg value="-Dtest.idStart=0"/>
+            <jvmarg value="-Dtest.idCount=5000000"/>
+            <jvmarg value="-Dtest.segFileSizeMB=256"/>
+            <jvmarg value="-Dtest.runTimeSeconds=1200"/>
             <jvmarg value="-Dtest.dir=${test.dir}"/>
             <jvmarg value="-Dtest.output.dir=${test.dir}/output"/>
             <formatter type="brief" usefile="false"/>
@@ -205,6 +228,29 @@
             
             <batchtest fork="yes">
                 <fileset dir="${test.build.dir}" includes="**/Test*Store*.class"/>
+            </batchtest>
+        </junit>
+    </target>
+
+    <target name="test.quick" description="-- run a quick test on DataCache" depends="test.compile">
+        <junit printsummary="yes" maxmemory="4G">
+            <jvmarg value="-Dtest.idStart=0"/>
+            <jvmarg value="-Dtest.idCount=200000"/>
+            <jvmarg value="-Dtest.segFileSizeMB=100"/>
+            <jvmarg value="-Dtest.runTimeSeconds=60"/>
+            <jvmarg value="-Dtest.dir=${test.dir}"/>
+            <jvmarg value="-Dtest.output.dir=${test.dir}/output"/>
+            <formatter type="brief" usefile="false"/>
+            
+            <classpath>
+                <path refid="test.class.path"/>
+                <path refid="java.class.path"/>
+                <path refid="compile.class.path"/>
+                <path refid="test.compile.class.path"/>
+            </classpath>
+            
+            <batchtest fork="yes">
+                <fileset dir="${test.build.dir}" includes="**/TestDataCache.class"/>
             </batchtest>
         </junit>
     </target>

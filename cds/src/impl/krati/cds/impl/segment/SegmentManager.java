@@ -7,6 +7,7 @@ import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Arrays;
@@ -47,6 +48,8 @@ public final class SegmentManager implements Cloneable
     private final static Map<String, SegmentManager> _segManagerMap = new HashMap<String, SegmentManager>();
     
     private final List<Segment> _segList = new ArrayList<Segment>(100);
+    private final LinkedList<Segment> _recycleList = new LinkedList<Segment>();
+    private final int _recycleLimit = 5;
     private final SegmentFactory _segFactory;
     private final SegmentMeta _segMeta;
     private final String _segHomePath;
@@ -136,6 +139,7 @@ public final class SegmentManager implements Cloneable
     {
         _segList.clear();
         _segCurrent = null;
+        _recycleList.clear();
     }
     
     /**
@@ -150,6 +154,13 @@ public final class SegmentManager implements Cloneable
         {
             _segList.set(segId, null);
             seg.close(false);
+            
+            if(seg.isRecyclable() && _recycleList.size() < _recycleLimit)
+            {
+                _recycleList.add(seg);
+                _log.info("Segment " + seg.getSegmentId() + " recycled");
+            }
+            
             return true;
         }
         
@@ -189,6 +200,7 @@ public final class SegmentManager implements Cloneable
     private synchronized Segment nextSegment(boolean newOnly) throws IOException
     {
         int index;
+        Segment seg;
         
         if (newOnly)
         {
@@ -196,6 +208,16 @@ public final class SegmentManager implements Cloneable
         }
         else
         {
+            if(_recycleList.size() > 0)
+            {
+                seg = _recycleList.remove();
+                seg.reinit();
+                
+                _segList.set(seg.getSegmentId(), seg);
+                _log.info("reinit Segment " + seg.getSegmentId());
+                return seg;
+            }
+            
             for(index = 0; index < _segList.size(); index++)
             {
                 if(_segList.get(index) == null) break;
@@ -204,14 +226,13 @@ public final class SegmentManager implements Cloneable
         
         // Always create next segment as READ_WRITE
         File segFile = new File(_segHomePath, index + ".seg");
-        Segment s = getSegmentFactory().createSegment(index, segFile, _segFileSizeMB, Segment.Mode.READ_WRITE);
+        seg = getSegmentFactory().createSegment(index, segFile, _segFileSizeMB, Segment.Mode.READ_WRITE);
         
-        if(index < _segList.size()) _segList.set(index, s);
-        else _segList.add(s);
+        if(index < _segList.size()) _segList.set(index, seg);
+        else _segList.add(seg);
         
-        _log.info("Segment " + s.getSegmentId() + ": " + segFile.getCanonicalPath());
-        
-        return s;
+        _log.info("create Segment " + seg.getSegmentId());
+        return seg;
     }
     
     protected synchronized void init() throws IOException

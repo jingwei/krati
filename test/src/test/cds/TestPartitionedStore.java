@@ -5,6 +5,12 @@ import java.io.File;
 import krati.cds.impl.store.PartitionedDataStore;
 import krati.cds.store.DataStore;
 
+/**
+ * Test Partitioned DataStore.
+ * 
+ * @author jwu
+ *
+ */
 public class TestPartitionedStore extends EvalDataStore
 {
     public TestPartitionedStore()

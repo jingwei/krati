@@ -1,7 +1,6 @@
 package krati.cds.impl.array.entry;
 
 import java.io.IOException;
-import java.io.RandomAccessFile;
 
 import krati.io.ChannelWriter;
 import krati.io.DataWriter;
@@ -64,20 +63,6 @@ public class EntryValueInt extends EntryValue
     writer.writeInt(pos);  /* array position */
     writer.writeInt(val);  /* data value     */
     writer.writeLong(scn); /* SCN value      */
-  }
-  
-  /**
-   * Writes this EntryValue to an random access file at a given position.
-   * 
-   * @param raf
-   * @param position
-   * @throws IOException
-   */
-  @Override
-  public void updateArrayFile(RandomAccessFile raf, long position) throws IOException
-  {
-    raf.seek(position);
-    raf.writeInt(val);
   }
   
   /**

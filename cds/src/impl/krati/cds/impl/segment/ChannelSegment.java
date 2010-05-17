@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.BufferOverflowException;
-import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 
 import org.apache.log4j.Logger;
@@ -19,8 +18,6 @@ import org.apache.log4j.Logger;
 public class ChannelSegment extends AbstractSegment
 {
     private final static Logger _log = Logger.getLogger(ChannelSegment.class);
-    private RandomAccessFile _raf = null;
-    private FileChannel _channel;
     
     public ChannelSegment(int segmentId, File segmentFile, int initialSizeMB, Segment.Mode mode) throws IOException
     {
@@ -59,7 +56,7 @@ public class ChannelSegment extends AbstractSegment
             
             loadHeader();
             
-            _log.info("Segment " + getSegmentId() + " loaded as " + getMode() + ": " + getHeader());
+            _log.info("Segment " + getSegmentId() + " loaded: " + getHeader());
         }
         else
         {
@@ -75,7 +72,7 @@ public class ChannelSegment extends AbstractSegment
             
             initHeader();
             
-            _log.info("Segment " + getSegmentId() + " initialized as " + getMode() + ": " + getHeader());
+            _log.info("Segment " + getSegmentId() + " initialized: " + getStatus());
         }
     }
     
@@ -315,7 +312,7 @@ public class ChannelSegment extends AbstractSegment
         }
         
         _channel.force(true);
-        _log.info("Forced Segment " + getSegmentId());
+        _log.info("Segment " + getSegmentId() + " forced: " + getStatus());
     }
     
     @Override
@@ -334,5 +331,17 @@ public class ChannelSegment extends AbstractSegment
             _raf.close();
             _raf = null;
         }
+    }
+    
+    @Override
+    public boolean isRecyclable()
+    {
+        return false;
+    }
+    
+    @Override
+    public void reinit() throws IOException, UnsupportedOperationException
+    {
+        throw new UnsupportedOperationException("reinit not supported");
     }
 }

@@ -62,7 +62,8 @@ public class Entry<T extends EntryValue> implements Comparable<Entry<T>>
     return _maxScn;
   }
   
-  public int size() {
+  public int size()
+  {
     return _valArray.size();
   }
   

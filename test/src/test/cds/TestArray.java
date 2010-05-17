@@ -11,6 +11,12 @@ import krati.cds.impl.array.DynamicIntArrayImpl;
 import krati.cds.impl.array.DynamicLongArrayImpl;
 import krati.cds.impl.array.DynamicShortArrayImpl;
 
+/**
+ * TestArray
+ * 
+ * @author jwu
+ *
+ */
 public class TestArray extends AbstractTest
 {
     static long scn = 0;

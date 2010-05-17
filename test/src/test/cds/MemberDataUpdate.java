@@ -3,6 +3,12 @@ package test.cds;
 import java.io.File;
 import java.util.Random;
 
+/**
+ * MemberDataUpdate
+ * 
+ * @author jwu
+ * 
+ */
 public class MemberDataUpdate
 {
     static long scn = 0;

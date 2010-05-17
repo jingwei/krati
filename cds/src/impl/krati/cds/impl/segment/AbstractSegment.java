@@ -2,6 +2,8 @@ package krati.cds.impl.segment;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.channels.FileChannel;
 import java.util.Date;
 
 /**
@@ -19,6 +21,8 @@ public abstract class AbstractSegment implements Segment
     protected volatile int _loadSizeBytes;
     protected volatile long _lastForcedTime;
     protected volatile Segment.Mode _segMode;
+    protected RandomAccessFile _raf = null;
+    protected FileChannel _channel = null;
     
     protected long _storageVersion;
     
@@ -47,6 +51,7 @@ public abstract class AbstractSegment implements Segment
         decrLoadSize(8);
         force();
         
+        _channel.position(Segment.dataStartPosition);
         setAppendPosition(Segment.dataStartPosition);
     }
     
@@ -69,6 +74,55 @@ public abstract class AbstractSegment implements Segment
         b.append("storageVersion");
         b.append('=');
         b.append(getStorageVersion());
+        
+        return b.toString();
+    }
+
+    protected long getChannelPosition() throws IOException
+    {
+        return _channel.position();
+    }
+    
+    @Override
+    public String getStatus()
+    {
+        StringBuffer b = new StringBuffer();
+        
+        b.append("loadSize");
+        b.append('=');
+        b.append(getLoadSize());
+        
+        b.append(' ');
+        
+        b.append("appendPosition");
+        b.append('=');
+        try
+        {
+            b.append(getAppendPosition());
+        }
+        catch(IOException ioe)
+        {
+            b.append('?');
+        }
+        
+        b.append(' ');
+        
+        b.append("channelPosition");
+        b.append('=');
+        try
+        {
+            b.append(getChannelPosition());
+        }
+        catch(IOException ioe)
+        {
+            b.append('?');
+        }
+        
+        b.append(' ');
+        
+        b.append("lastForcedTime");
+        b.append('=');
+        b.append(new Date(getLastForcedTime()));
         
         return b.toString();
     }

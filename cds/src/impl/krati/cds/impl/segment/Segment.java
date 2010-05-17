@@ -122,6 +122,21 @@ public interface Segment
      */
     public long getStorageVersion();
     
+    /**
+     * @return whether this Segment is recyclable.
+     */
+    public boolean isRecyclable();
+    
+    /**
+     * Re-initialize this Segment for read and write.
+     */
+    public void reinit() throws IOException;
+    
+    /**
+     * @return the descriptive status of this Segment.
+     */
+    public String getStatus();
+    
     public static enum Mode
     {
         READ_ONLY,

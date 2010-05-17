@@ -1,7 +1,6 @@
 package krati.cds.impl.array.entry;
 
 import java.io.IOException;
-import java.io.RandomAccessFile;
 
 import krati.io.ChannelWriter;
 import krati.io.DataWriter;
@@ -11,7 +10,8 @@ import krati.io.DataWriter;
  * 
  * @author jwu
  */
-public abstract class EntryValue implements Comparable<EntryValue> {
+public abstract class EntryValue implements Comparable<EntryValue>
+{
   public final int pos;   // position in the array
   public final long scn;  // SCN associated with an update at the position
   
@@ -39,15 +39,6 @@ public abstract class EntryValue implements Comparable<EntryValue> {
    * @throws IOException
    */
   public abstract void write(DataWriter writer) throws IOException;
-  
-  /**
-   * Writes this EntryValue to an random access file at a given position.
-   * 
-   * @param raf
-   * @param position
-   * @throws IOException
-   */
-  public abstract void updateArrayFile(RandomAccessFile raf, long position) throws IOException;
   
   /**
    * Writes this EntryValue to a file channel at a given position.

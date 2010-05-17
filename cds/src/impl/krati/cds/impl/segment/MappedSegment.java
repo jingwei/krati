@@ -20,8 +20,6 @@ public class MappedSegment extends AbstractSegment
 {
     private final static Logger _log = Logger.getLogger(MappedSegment.class);
     private MappedByteBuffer _mmapBuffer;
-    private RandomAccessFile _raf = null;
-    private FileChannel _channel;
     
     public MappedSegment(int segmentId, File segmentFile, int initialSizeMB, Segment.Mode mode) throws IOException
     {
@@ -64,7 +62,7 @@ public class MappedSegment extends AbstractSegment
             
             loadHeader();
             
-            _log.info("Segment " + getSegmentId() + " loaded as " + getMode() + ": " + getHeader());
+            _log.info("Segment " + getSegmentId() + " loaded: " + getHeader());
         }
         else
         {
@@ -82,7 +80,7 @@ public class MappedSegment extends AbstractSegment
             
             initHeader();
             
-            _log.info("Segment " + getSegmentId() + " initialized as " + getMode() + ": " + getHeader());
+            _log.info("Segment " + getSegmentId() + " initialized: " + getStatus());
         }
     }
     
@@ -280,7 +278,7 @@ public class MappedSegment extends AbstractSegment
         }
         
         _mmapBuffer.force();
-        _log.info("Forced Segment " + getSegmentId());
+        _log.info("Segment " + getSegmentId() + " forced: " + getStatus());
     }
     
     @Override
@@ -303,5 +301,17 @@ public class MappedSegment extends AbstractSegment
             _raf.close();
             _raf = null;
         }
+    }
+    
+    @Override
+    public boolean isRecyclable()
+    {
+        return false;
+    }
+    
+    @Override
+    public void reinit() throws IOException, UnsupportedOperationException
+    {
+        throw new UnsupportedOperationException("reinit not supported");
     }
 }

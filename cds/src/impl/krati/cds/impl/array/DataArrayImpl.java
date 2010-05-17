@@ -320,6 +320,7 @@ public class DataArrayImpl implements DataArray
         try
         {
             _segment = _segmentManager.nextSegment();
+            _log.info("Segment " + _segment.getSegmentId() + " online: " + _segment.getStatus());
         }
         catch(IOException ioe)
         {
@@ -680,10 +681,7 @@ public class DataArrayImpl implements DataArray
             }
             catch(SegmentOverflowException soe)
             {
-                _log.info("Segment " + _segment.getSegmentId() + " filled");
-                
-                // update segment meta
-                // _segmentManager.updateMeta();
+                _log.info("Segment " + _segment.getSegmentId() + " filled: " + _segment.getStatus());
                 
                 // wait until compactor is done
                 while(_compactor.isStarted())
@@ -708,7 +706,7 @@ public class DataArrayImpl implements DataArray
                     _segment = _segmentManager.nextSegment(_segment);
                     _canTriggerCompaction = true;
                     
-                    _log.info("Segment " + _segment.getSegmentId() + " live");
+                    _log.info("Segment " + _segment.getSegmentId() + " online: " + _segment.getStatus());
                 }
             }
             catch(Exception e)

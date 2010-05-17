@@ -12,6 +12,11 @@ import test.AbstractTest;
 
 import krati.cds.store.DataStore;
 
+/**
+ * EvalDataStore.
+ * 
+ * @author jwu
+ */
 public abstract class EvalDataStore extends AbstractTest
 {
     protected DataStore<byte[], byte[]> _store;
@@ -45,7 +50,7 @@ public abstract class EvalDataStore extends AbstractTest
         void read()
         {
             String key = _lineSeedData.get(_rand.nextInt(_dataCnt));
-            int keyLength = 30 + ( _rand.nextInt(100) * 3);
+            int keyLength = 30 + (_rand.nextInt(100) * 3);
             if(key.length() > keyLength) {
                 key = key.substring(0, keyLength);
                 _ds.get(key.getBytes());
@@ -59,6 +64,34 @@ public abstract class EvalDataStore extends AbstractTest
             while(_running)
             {
                 read();
+            }
+        }
+    }
+    
+    static class Checker extends Reader
+    {
+        public Checker(DataStore<byte[], byte[]> ds)
+        {
+            super(ds);
+        }
+        
+        void read()
+        {
+            String line = _lineSeedData.get(_rand.nextInt(_dataCnt));
+            int keyLength = 30 + (_rand.nextInt(100) * 3);
+            if(line.length() > keyLength) {
+                String key = line.substring(0, keyLength);
+                byte[] val = _ds.get(key.getBytes());
+                if(val != null) {
+                    String lineRead = new String(val);
+                    if(!line.equals(lineRead)) {
+                        System.err.printf("key=\"%s\"%n", key);
+                        System.err.printf("    \"%s\"%n", line);
+                        System.err.printf("    \"%s\"%n", lineRead);
+                    }
+                    assertTrue("key=" + key + ", value=" + line, line.equals(lineRead));
+                }
+                _cnt++;
             }
         }
     }
@@ -314,7 +347,7 @@ public abstract class EvalDataStore extends AbstractTest
         }
     }
     
-    public void evalReadWrite(DataStore<byte[], byte[]> ds, int readerCnt, int writerCnt, int runDuration) throws Exception
+    public void evalReadWrite(DataStore<byte[], byte[]> ds, int readerCnt, int writerCnt, int runDuration, boolean doValidation) throws Exception
     {
         try
         {
@@ -322,7 +355,7 @@ public abstract class EvalDataStore extends AbstractTest
             Reader[] readers = new Reader[readerCnt];
             for(int i = 0; i < readers.length; i++)
             {
-                readers[i] = new Reader(ds);
+                readers[i] = doValidation ? new Checker(ds) : new Reader(ds);
             }
 
             Thread[] readerThreads = new Thread[readers.length];
@@ -455,7 +488,7 @@ public abstract class EvalDataStore extends AbstractTest
         
         try
         {
-            int timeAllocated = runDuration/2;
+            int timeAllocated = runDuration/3;
             
             File DataStoreDir = new File(TEST_OUTPUT_DIR, getClass().getSimpleName());
             _store = getDataStore(DataStoreDir);
@@ -465,6 +498,9 @@ public abstract class EvalDataStore extends AbstractTest
             
             System.out.println("---validate---");
             validate(_store);
+
+            System.out.println("---testRead---");
+            evalRead(_store, numOfReaders, 10);
             
             System.out.println("---testWrite---");
             evalWrite(_store, numOfWriters, timeAllocated);
@@ -473,15 +509,21 @@ public abstract class EvalDataStore extends AbstractTest
             System.out.println("---validate---");
             validate(_store);
             
-            System.out.println("---testRead---");
-            evalRead(_store, numOfReaders, 10);
-            
             System.out.println("---testReadWrite---");
-            evalReadWrite(_store, numOfReaders, numOfWriters, timeAllocated);
+            evalReadWrite(_store, numOfReaders, numOfWriters, timeAllocated, false);
             _store.persist();
             
             System.out.println("---validate---");
             validate(_store);
+
+            System.out.println("---testWriteCheck---");
+            evalReadWrite(_store, numOfReaders, numOfWriters, timeAllocated, true);
+            _store.persist();
+            
+            System.out.println("---validate---");
+            validate(_store);
+            
+            _store.sync();
         }
         catch(Exception e)
         {
