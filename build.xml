@@ -255,6 +255,30 @@
         </junit>
     </target>
 
+    <target name="test.Xprof" description="-- run profiling on DataCache (5 minutes)" depends="test.compile">
+        <junit printsummary="yes" maxmemory="4G">
+            <jvmarg value="-Xprof"/>
+            <jvmarg value="-Dtest.idStart=0"/>
+            <jvmarg value="-Dtest.idCount=200000"/>
+            <jvmarg value="-Dtest.segFileSizeMB=100"/>
+            <jvmarg value="-Dtest.runTimeSeconds=300"/>
+            <jvmarg value="-Dtest.dir=${test.dir}"/>
+            <jvmarg value="-Dtest.output.dir=${test.dir}/output"/>
+            <formatter type="brief" usefile="false"/>
+            
+            <classpath>
+                <path refid="test.class.path"/>
+                <path refid="java.class.path"/>
+                <path refid="compile.class.path"/>
+                <path refid="test.compile.class.path"/>
+            </classpath>
+            
+            <batchtest fork="yes">
+                <fileset dir="${test.build.dir}" includes="**/TestDataCache.class"/>
+            </batchtest>
+        </junit>
+    </target>
+
     <target name="main" depends="dist">
     </target>
 </project>
