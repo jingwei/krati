@@ -3,7 +3,6 @@ package krati.sos;
 import java.io.IOException;
 
 import krati.cds.store.DataStore;
-import krati.sos.ObjectSerializer;
 
 /**
  * A key-value store for serializable objects. The store requires that both key and value be serializable objects.
@@ -80,6 +79,30 @@ public class SerializableObjectStore<K, V> implements ObjectStore<K, V>
     }
     
     /**
+     * Gets an object in the form of byte array from the store.
+     * 
+     * @param key  the retrieving key. 
+     * @return the retrieved object in raw bytes.
+     */
+    @Override
+    public byte[] getBytes(K key)
+    {
+        return _store.get(getKeySerializer().serialize(key));
+    }
+    
+    /**
+     * Gets an object in the form of byte array from the store.
+     * 
+     * @param key  the retrieving key in raw bytes. 
+     * @return the retrieved object in raw bytes.
+     */
+    @Override
+    public byte[] getBytes(byte[] keyBytes)
+    {
+        return _store.get(keyBytes);
+    }
+    
+    /**
      * Puts an serializable object into the store.
      * 
      * @param key    the object key.
@@ -104,6 +127,15 @@ public class SerializableObjectStore<K, V> implements ObjectStore<K, V>
     public boolean delete(K key) throws Exception
     {
         return _store.delete(getKeySerializer().serialize(key));
+    }
+    
+    @Override
+    public void sync() throws IOException
+    {
+        synchronized(_store)
+        {
+            _store.sync();
+        }
     }
     
     /**

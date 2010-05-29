@@ -5,18 +5,19 @@ import java.io.IOException;
 
 import org.apache.log4j.Logger;
 
+import krati.cds.Persistable;
 import krati.cds.array.DynamicArray;
 import krati.cds.array.LongArray;
-import krati.cds.impl.array.basic.LongArrayRecoverableImpl;
+import krati.cds.impl.array.basic.RecoverableLongArray;
 
-public class DynamicLongArrayImpl implements LongArray, DynamicArray
+public class DynamicLongArrayImpl implements LongArray, DynamicArray, Persistable
 {
   private static final Logger _log = Logger.getLogger(DynamicLongArrayImpl.class);
 
   protected long _lwmScn = 0;
   protected long _hwmScn = 0;
   protected long[][] _dataArrays = new long[0][0];
-  protected LongArrayRecoverableImpl[] _implArrays = new LongArrayRecoverableImpl[0];
+  protected RecoverableLongArray[] _implArrays = new RecoverableLongArray[0];
   
   protected final File _cacheDirectory;
   protected final int _maxEntrySize;
@@ -45,22 +46,6 @@ public class DynamicLongArrayImpl implements LongArray, DynamicArray
     this._subArraySize = 1 << subArrayShift;
     this._subArrayMask = this._subArraySize - 1;
     this.loadCache();
-  }
-  
-  private DynamicLongArrayImpl(File cacheDirectory,
-                               int subArrayShift,
-                               int maxEntrySize,
-                               int maxEntries,
-                               boolean loadCache) throws Exception
-  {
-      this._cacheDirectory = cacheDirectory;
-      this._subArrayShift = subArrayShift;
-      this._maxEntrySize = maxEntrySize;
-      this._maxEntries = maxEntries;
-      this._subArraySize = 1 << subArrayShift;
-      this._subArrayMask = this._subArraySize - 1;
-      
-      if(loadCache) this.loadCache();
   }
   
   protected void loadCache() throws Exception
@@ -112,7 +97,7 @@ public class DynamicLongArrayImpl implements LongArray, DynamicArray
       this.expandCapacity(indexStart);
       
       // Calculate _hwmScn by finding the smallest _hwmScn of all sub-arrays
-      for(LongArrayRecoverableImpl implArray : _implArrays)
+      for(RecoverableLongArray implArray : _implArrays)
       {
         long implHwmScn = implArray.getHWMark();
         if(implHwmScn > 0)
@@ -145,13 +130,13 @@ public class DynamicLongArrayImpl implements LongArray, DynamicArray
   /**
    * @return a boolean indicating an index is in the current range of this IntArray.
    */
-  public boolean indexInRange(int index)
+  public boolean hasIndex(int index)
   {
     return (index >> _subArrayShift) < _dataArrays.length;
   }
   
   @Override
-  public long getData(int index)
+  public long get(int index)
   {
     int segInd = index >> _subArrayShift;
     int subInd = index & _subArrayMask;
@@ -160,9 +145,10 @@ public class DynamicLongArrayImpl implements LongArray, DynamicArray
   }
   
   @Override
-  public void setData(int index, long value, long scn) throws Exception
+  public void set(int index, long value, long scn) throws Exception
   {
     int segInd = index >> _subArrayShift;
+    int subInd = index & _subArrayMask;
     
     // Expand array capacity automatically
     if (segInd >= _implArrays.length)
@@ -177,7 +163,7 @@ public class DynamicLongArrayImpl implements LongArray, DynamicArray
       }
     }
     
-    _implArrays[segInd].setData(index, value, scn);
+    _implArrays[segInd].set(subInd, value, scn);
     _hwmScn = Math.max(_hwmScn, scn);
   }
   
@@ -189,7 +175,7 @@ public class DynamicLongArrayImpl implements LongArray, DynamicArray
       return; // No need to expand this array
     }
     
-    LongArrayRecoverableImpl[] tempArrays = new LongArrayRecoverableImpl[numSubArrays];
+    RecoverableLongArray[] tempArrays = new RecoverableLongArray[numSubArrays];
     
     int i = 0;
     for (; i < _implArrays.length; i++)
@@ -199,14 +185,10 @@ public class DynamicLongArrayImpl implements LongArray, DynamicArray
     
     for(; i < numSubArrays; i++)
     {
-      int memberIdStart = i << _subArrayShift;
-      int memberIdCount = _subArraySize;
-      tempArrays[i] = 
-        new LongArrayRecoverableImpl(memberIdStart,
-                                     memberIdCount,
-                                     _maxEntrySize,
-                                     _maxEntries,
-                                     _cacheDirectory);
+      tempArrays[i] = new RecoverableLongArray(_subArraySize,
+                                                   _maxEntrySize,
+                                                   _maxEntries,
+                                                   _cacheDirectory);
     }
     
     _implArrays = tempArrays;
@@ -223,7 +205,7 @@ public class DynamicLongArrayImpl implements LongArray, DynamicArray
   public long getLWMark()
   {
     long mark = 0;
-    for(LongArrayRecoverableImpl implArray : _implArrays)
+    for(RecoverableLongArray implArray : _implArrays)
     {
       mark = (mark == 0) ? implArray.getLWMark() : Math.min(mark, implArray.getLWMark());
     }
@@ -242,7 +224,7 @@ public class DynamicLongArrayImpl implements LongArray, DynamicArray
   public void saveHWMark(long endOfPeriod)
   {
     long mark = Math.max(_hwmScn, endOfPeriod);
-    for(LongArrayRecoverableImpl implArray : _implArrays)
+    for(RecoverableLongArray implArray : _implArrays)
     {
       implArray.saveHWMark(mark);
     }
@@ -256,7 +238,7 @@ public class DynamicLongArrayImpl implements LongArray, DynamicArray
     saveHWMark(getHWMark());
       
     // Persist each sub-array
-    for(LongArrayRecoverableImpl implArray : _implArrays)
+    for(RecoverableLongArray implArray : _implArrays)
     {
       try
       {
@@ -276,7 +258,7 @@ public class DynamicLongArrayImpl implements LongArray, DynamicArray
     saveHWMark(getHWMark());
       
     // Persist each sub-array
-    for(LongArrayRecoverableImpl implArray : _implArrays)
+    for(RecoverableLongArray implArray : _implArrays)
     {
       try
       {
@@ -291,7 +273,7 @@ public class DynamicLongArrayImpl implements LongArray, DynamicArray
   
   public void clear()
   {
-    for(LongArrayRecoverableImpl implArray : _implArrays)
+    for(RecoverableLongArray implArray : _implArrays)
     {
       implArray.clear();
     }
@@ -363,27 +345,5 @@ public class DynamicLongArrayImpl implements LongArray, DynamicArray
     {
       this._maxEntries = maxEntries;
     }
-  }
-
-  @Override
-  public Object memoryClone()
-  {
-      try
-      {
-          DynamicLongArrayImpl result;
-          result = new DynamicLongArrayImpl(_cacheDirectory,
-                                            _subArrayShift,
-                                            _maxEntrySize,
-                                            _maxEntries,
-                                            false);
-          // TODO no implementation
-          // result._implArrays = new LongArrayMemoryImpl[_implArrays.length];
-          return result;
-      }
-      catch(Exception e)
-      {
-          _log.error("failed to create memory clone");
-          return null;
-      }
   }
 }

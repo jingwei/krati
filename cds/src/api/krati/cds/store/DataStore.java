@@ -18,11 +18,9 @@ public interface DataStore<K, V>
     
     public boolean delete(K key) throws Exception;
     
-    public long hash(K key);
-    
     public void sync() throws IOException;
     
     public void persist() throws IOException;
     
-    public void clear() throws IOException;;
+    public void clear() throws IOException;
 }

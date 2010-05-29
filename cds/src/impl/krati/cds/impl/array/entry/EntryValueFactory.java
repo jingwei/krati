@@ -23,9 +23,22 @@ public interface EntryValueFactory<T extends EntryValue>
   public T[] newValueArray(int length);
   
   /**
+   * @return an empty EntryValue.
+   */
+  public T newValue();
+  
+  /**
    * @return an EntryValue read from an input stream.
    * @throws IOException
    */
   public T newValue(DataReader in) throws IOException;
   
+  /**
+   * Read data from stream to populate an EntryValue.
+   * @param in      data reader for EntryValue.
+   * @param value   an EntryValue to populate.
+   * @return <code>true</code> if value is populated.
+   * @throws IOException
+   */
+  public void reinitValue(DataReader in, T value) throws IOException;
 }

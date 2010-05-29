@@ -32,6 +32,14 @@ public interface ObjectCache<T> extends Persistable
     public T get(int objectId);
     
     /**
+     * Gets an object in raw bytes based on a user-specified object Id.
+     * 
+     * @param objectId    the Id of an object to be retrieved from the cache. 
+     * @return            an object in raw bytes according to the given object Id.
+     */
+    public byte[] getBytes(int objectId);
+    
+    /**
      * Sets an object at a user-specified object Id.
      * 
      * @param objectId    the object Id.

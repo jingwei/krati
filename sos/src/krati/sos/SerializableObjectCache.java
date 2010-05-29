@@ -184,4 +184,16 @@ public class SerializableObjectCache<T> implements ObjectCache<T>
     {
         _cache.saveHWMark(endOfPeriod);
     }
+    
+    /**
+     * Gets an object in raw bytes based on a user-specified object Id.
+     * 
+     * @param objectId    the Id of an object to be retrieved from the cache. 
+     * @return            an object in raw bytes according to the given object Id.
+     */
+    @Override
+    public byte[] getBytes(int objectId)
+    {
+        return _cache.getData(objectId);
+    }
 }

@@ -34,6 +34,11 @@ public class AbstractTest extends TestCase
     public static int runTimeSeconds = 120;
     public static int segFileSizeMB = 256;
     
+    /*
+     * Number of writes allowed before sleeping 1 millisecond.
+     */
+    public static int writesControl = 0;
+    
     static
     {
         try
@@ -42,8 +47,11 @@ public class AbstractTest extends TestCase
         }
         catch(Exception e)
         {
-            log.error("Failed to get test.idStart: " + System.getProperty("test.idStart"));
             idStart = 0;
+        }
+        finally
+        {
+            log.info("test.idStart: " + idStart);
         }
         
         try
@@ -52,8 +60,11 @@ public class AbstractTest extends TestCase
         }
         catch(Exception e)
         {
-            log.error("Failed to get test.idCount: " + System.getProperty("test.idCount"));
             idCount = 500000;
+        }
+        finally
+        {
+            log.info("test.idCount: " + idCount);
         }
         
         try
@@ -62,8 +73,11 @@ public class AbstractTest extends TestCase
         }
         catch(Exception e)
         {
-            log.error("Failed to get test.runTimeSeconds: " + System.getProperty("test.runTimeSeconds"));
             runTimeSeconds = 120;
+        }
+        finally
+        {
+            log.info("test.runTimeSeconds: " + runTimeSeconds);
         }
         
         try
@@ -72,8 +86,24 @@ public class AbstractTest extends TestCase
         }
         catch(Exception e)
         {
-            log.error("Failed to get test.segFileSizeMB: " + System.getProperty("test.segFileSizeMB"));
             segFileSizeMB = 256;
+        }
+        finally
+        {
+            log.info("test.segFileSizeMB: " + segFileSizeMB);
+        }
+        
+        try
+        {
+            writesControl = Integer.parseInt(System.getProperty("test.writesControl"));
+        }
+        catch(Exception e)
+        {
+            writesControl = 0;
+        }
+        finally
+        {
+            log.info("test.writesControl: " + (writesControl == 0 ? "N/A" : (writesControl + " (writes allowed before sleeping 1 ms)")));
         }
     }
     

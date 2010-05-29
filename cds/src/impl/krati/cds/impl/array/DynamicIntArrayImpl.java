@@ -5,44 +5,45 @@ import java.io.IOException;
 
 import org.apache.log4j.Logger;
 
+import krati.cds.Persistable;
 import krati.cds.array.DynamicArray;
 import krati.cds.array.IntArray;
-import krati.cds.impl.array.basic.IntArrayRecoverableImpl;
+import krati.cds.impl.array.basic.RecoverableIntArray;
 
-public class DynamicIntArrayImpl implements IntArray, DynamicArray
+public class DynamicIntArrayImpl implements IntArray, DynamicArray, Persistable
 {
   protected static final Logger _log = Logger.getLogger(DynamicIntArrayImpl.class);
 
   protected long _lwmScn = 0;
   protected long _hwmScn = 0;
   protected int[][] _dataArrays = new int[0][0];
-  protected IntArrayRecoverableImpl[] _implArrays = new IntArrayRecoverableImpl[0];
+  protected RecoverableIntArray[] _implArrays = new RecoverableIntArray[0];
   
   protected final File _cacheDirectory;
   protected final int _maxEntrySize;
   protected final int _maxEntries;
-  protected final int _subArrayShift;
+  protected final int _subArrayBits;
   protected final int _subArraySize;
   protected final int _subArrayMask;
   
   public DynamicIntArrayImpl(Config config) throws Exception
   {
     this(config.getCacheDirectory(),
-         config.getSubArrayShift(),
+         config.getSubArrayBits(),
          config.getMaxEntrySize(),
          config.getMaxEntries());
   }
   
   public DynamicIntArrayImpl(File cacheDirectory,
-                             int subArrayShift,
+                             int subArrayBits,
                              int maxEntrySize,
                              int maxEntries) throws Exception
   {
     this._cacheDirectory = cacheDirectory;
-    this._subArrayShift = subArrayShift;
+    this._subArrayBits = subArrayBits;
     this._maxEntrySize = maxEntrySize;
     this._maxEntries = maxEntries;
-    this._subArraySize = 1 << subArrayShift;
+    this._subArraySize = 1 << subArrayBits;
     this._subArrayMask = this._subArraySize - 1;
     this.loadCache();
   }
@@ -96,7 +97,7 @@ public class DynamicIntArrayImpl implements IntArray, DynamicArray
       this.expandCapacity(indexStart);
       
       // Calculate _hwmScn by finding the smallest _hwmScn of all sub-arrays
-      for(IntArrayRecoverableImpl implArray : _implArrays)
+      for(RecoverableIntArray implArray : _implArrays)
       {
         long implHwmScn = implArray.getHWMark();
         if(implHwmScn > 0)
@@ -119,32 +120,25 @@ public class DynamicIntArrayImpl implements IntArray, DynamicArray
   }
   
   /**
-   * @return the start index of this Array.
-   */
-  public final int getIndexStart()
-  {
-    return 0;
-  }
-  
-  /**
    * @return a boolean indicating an index is in the current range of this IntArray.
    */
-  public boolean indexInRange(int index)
+  public boolean hasIndex(int index)
   {
-    return (index >> _subArrayShift) < _dataArrays.length;
+    return (index >> _subArrayBits) < _dataArrays.length;
   }
   
-  public int getData(int index)
+  public int get(int index)
   {
-    int segInd = index >> _subArrayShift;
+    int segInd = index >> _subArrayBits;
     int subInd = index & _subArrayMask;
     
     return _dataArrays[segInd][subInd];
   }
   
-  public void setData(int index, int value, long scn) throws Exception
+  public void set(int index, int value, long scn) throws Exception
   {
-    int segInd = index >> _subArrayShift;
+    int segInd = index >> _subArrayBits;
+    int subInd = index & _subArrayMask;
     
     // Expand array capacity automatically
     if (segInd >= _implArrays.length)
@@ -159,19 +153,19 @@ public class DynamicIntArrayImpl implements IntArray, DynamicArray
       }
     }
     
-    _implArrays[segInd].setData(index, value, scn);
+    _implArrays[segInd].set(subInd, value, scn);
     _hwmScn = Math.max(_hwmScn, scn);
   }
   
   public synchronized void expandCapacity(int index) throws Exception
   {
-    int numSubArrays = (index >> _subArrayShift) + 1;
+    int numSubArrays = (index >> _subArrayBits) + 1;
     if (numSubArrays <= _implArrays.length)
     {
       return;
     }
     
-    IntArrayRecoverableImpl[] tempArrays = new IntArrayRecoverableImpl[numSubArrays];
+    RecoverableIntArray[] tempArrays = new RecoverableIntArray[numSubArrays];
     
     int i = 0;
     for (; i < _implArrays.length; i++)
@@ -181,14 +175,10 @@ public class DynamicIntArrayImpl implements IntArray, DynamicArray
     
     for(; i < numSubArrays; i++)
     {
-      int memberIdStart = i << _subArrayShift;
-      int memberIdCount = _subArraySize;
-      tempArrays[i] = 
-        new IntArrayRecoverableImpl(memberIdStart,
-                                    memberIdCount,
-                                    _maxEntrySize,
-                                    _maxEntries,
-                                    _cacheDirectory);
+      tempArrays[i] =  new RecoverableIntArray(_subArraySize,
+                                                   _maxEntrySize,
+                                                   _maxEntries,
+                                                   _cacheDirectory);
     }
     
     _implArrays = tempArrays;
@@ -205,7 +195,7 @@ public class DynamicIntArrayImpl implements IntArray, DynamicArray
   public long getLWMark()
   {
     long mark = 0;
-    for(IntArrayRecoverableImpl implArray : _implArrays)
+    for(RecoverableIntArray implArray : _implArrays)
     {
       mark = (mark == 0) ? implArray.getLWMark() : Math.min(mark, implArray.getLWMark());
     }
@@ -224,7 +214,7 @@ public class DynamicIntArrayImpl implements IntArray, DynamicArray
   public void saveHWMark(long endOfPeriod)
   {
     long mark = Math.max(_hwmScn, endOfPeriod);
-    for(IntArrayRecoverableImpl implArray : _implArrays)
+    for(RecoverableIntArray implArray : _implArrays)
     {
       implArray.saveHWMark(mark);
     }
@@ -238,7 +228,7 @@ public class DynamicIntArrayImpl implements IntArray, DynamicArray
     saveHWMark(getHWMark());
     
     // Persist each sub-array
-    for(IntArrayRecoverableImpl implArray : _implArrays)
+    for(RecoverableIntArray implArray : _implArrays)
     {
       try
       {
@@ -258,7 +248,7 @@ public class DynamicIntArrayImpl implements IntArray, DynamicArray
     saveHWMark(getHWMark());
     
     // Persist each sub-array
-    for(IntArrayRecoverableImpl implArray : _implArrays)
+    for(RecoverableIntArray implArray : _implArrays)
     {
       try
       {
@@ -273,7 +263,7 @@ public class DynamicIntArrayImpl implements IntArray, DynamicArray
   
   public void clear()
   {
-    for(IntArrayRecoverableImpl implArray : _implArrays)
+    for(RecoverableIntArray implArray : _implArrays)
     {
       implArray.clear();
     }
@@ -299,7 +289,7 @@ public class DynamicIntArrayImpl implements IntArray, DynamicArray
    */
   public static class Config {
     private File _cacheDirectory;
-    private int _subArrayShift;
+    private int _subArrayBits;
     private int _maxEntrySize;
     private int _maxEntries;
     
@@ -318,14 +308,14 @@ public class DynamicIntArrayImpl implements IntArray, DynamicArray
       this._cacheDirectory = cacheDirectory;
     }
     
-    public int getSubArrayShift()
+    public int getSubArrayBits()
     {
-      return this._subArrayShift;
+      return this._subArrayBits;
     }
     
-    public void setSubArrayShift(int subArrayShift)
+    public void setSubArrayBits(int subArrayBits)
     {
-      this._subArrayShift = subArrayShift;
+      this._subArrayBits = subArrayBits;
     }
     
     public int getMaxEntrySize()
@@ -348,11 +338,4 @@ public class DynamicIntArrayImpl implements IntArray, DynamicArray
       this._maxEntries = maxEntries;
     }
   }
-
-    @Override
-    public Object memoryClone()
-    {
-        // TODO Auto-generated method stub
-        return null;
-    }
 }

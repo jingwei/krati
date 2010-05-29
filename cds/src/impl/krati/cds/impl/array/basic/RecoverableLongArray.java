@@ -6,15 +6,17 @@ import java.io.IOException;
 import org.apache.log4j.Logger;
 
 import krati.cds.array.LongArray;
+import krati.cds.impl.array.AddressArray;
 import krati.cds.impl.array.entry.EntryLongFactory;
+import krati.cds.impl.array.entry.EntryPersistListener;
 import krati.cds.impl.array.entry.EntryValueLong;
 
 /**
- * LongArrayRecoverableImpl: Simple Persistent LongArray Implementation.
+ * RecoverableLongArray: Simple Persistent LongArray Implementation.
  * 
  * This class is not thread-safe by design. It is expected that the conditions below hold within one JVM.
  * <pre>
- *    1. There is one and only one instance of LongArrayRecoverableImpl for a given cacheDirectory.
+ *    1. There is one and only one instance of RecoverableLongArray for a given cacheDirectory.
  *    2. There is one and only one thread is calling the setData method at any given time. 
  * </pre>
  * 
@@ -23,26 +25,17 @@ import krati.cds.impl.array.entry.EntryValueLong;
  * @author jwu
  *
  */
-public class LongArrayRecoverableImpl extends RecoverableArrayImpl<long[], EntryValueLong> implements LongArray
+public class RecoverableLongArray extends RecoverableArray<EntryValueLong> implements AddressArray
 {
-  private static final Logger _log = Logger.getLogger(LongArrayRecoverableImpl.class);
+  private static final Logger _log = Logger.getLogger(RecoverableLongArray.class);
+  private long[] _internalArray;
   
-  public LongArrayRecoverableImpl(Config config) throws Exception
+  public RecoverableLongArray(int length,
+                              int entrySize,
+                              int maxEntries,
+                              File cacheDirectory) throws Exception
   {
-    this(config.getMemberIdStart(),
-         config.getMemberIdCount(),
-         config.getMaxEntrySize(),
-         config.getMaxEntries(),
-         config.getCacheDirectory());
-  }
-  
-  public LongArrayRecoverableImpl(int memberIdStart,
-                                  int memberIdCount,
-                                  int maxEntrySize,
-                                  int maxEntries,
-                                  File cacheDirectory) throws Exception
-  {
-    super(memberIdStart, memberIdCount, 8 /* elementSize */, maxEntrySize, maxEntries, cacheDirectory, new EntryLongFactory());
+    super(length, 8 /* elementSize */, entrySize, maxEntries, cacheDirectory, new EntryLongFactory());
   }
   
   @Override
@@ -52,12 +45,12 @@ public class LongArrayRecoverableImpl extends RecoverableArrayImpl<long[], Entry
     
     try
     {
-      maxScn = _arrayFile.readMaxSCN();
+      maxScn = _arrayFile.getMaxScn();
       _internalArray = _arrayFile.loadLongArray();
-      if (_internalArray.length != _memberIdCount)
+      if (_internalArray.length != _length)
       {
         maxScn = 0;
-        _internalArray = new long[_memberIdCount];
+        _internalArray = new long[_length];
         clear();
         
         _log.warn("Allocated _internalArray due to invalid length");
@@ -70,7 +63,7 @@ public class LongArrayRecoverableImpl extends RecoverableArrayImpl<long[], Entry
     catch(Exception e)
     {
       maxScn = 0;
-      _internalArray = new long[_memberIdCount];
+      _internalArray = new long[_length];
       clear();
       
       _log.warn("Allocated _internalArray due to a thrown exception: " + e.getMessage());
@@ -91,7 +84,7 @@ public class LongArrayRecoverableImpl extends RecoverableArrayImpl<long[], Entry
     {
       try
       {
-        setData(getIndexStart(), getData(getIndexStart()), endOfPeriod);
+        set(0, get(0), endOfPeriod);
       }
       catch(Exception e)
       {
@@ -127,34 +120,27 @@ public class LongArrayRecoverableImpl extends RecoverableArrayImpl<long[], Entry
   }
   
   @Override
-  public long getData(int index)
+  public long get(int index)
   {
-    return _internalArray[index - _memberIdStart];
+    return _internalArray[index];
   }
   
   @Override
-  public void setData(int index, long value, long scn) throws Exception
+  public void set(int index, long value, long scn) throws Exception
   {
-    int pos = index - _memberIdStart;
-    _internalArray[pos] = value;
-    _entryManager.addToEntry(new EntryValueLong(pos, value, scn));  
+    _internalArray[index] = value;
+    _entryManager.addToPreFillEntryLong(index, value, scn);  
   }
   
   @Override
-  public Object memoryClone()
+  public long[] getInternalArray()
   {
-      LongArrayMemoryImpl memClone = new LongArrayMemoryImpl(getIndexStart(), length());
-      
-      System.arraycopy(_internalArray, 0, memClone.getInternalArray(), 0, _internalArray.length);
-      memClone._lwmScn = getLWMark(); 
-      memClone._hwmScn = getHWMark();
-      
-      return memClone;
+    return _internalArray;
   }
-
+  
   public void wrap(LongArray newArray) throws Exception
   {
-     if(length() != newArray.length() || getIndexStart() != newArray.getIndexStart())
+     if(length() != newArray.length())
      {
          throw new ArrayIndexOutOfBoundsException();
      }
@@ -163,9 +149,16 @@ public class LongArrayRecoverableImpl extends RecoverableArrayImpl<long[], Entry
      _arrayFile.reset(_internalArray);
      _entryManager.clear();
   }
-  
-  public static class Config extends RecoverableArrayImpl.Config<EntryValueLong>
+
+  @Override
+  public EntryPersistListener getPersistListener()
   {
-    // super configuration class provides everything
+    return getEntryManager().getEntryPersistListener();
+  }
+
+  @Override
+  public void setPersistListener(EntryPersistListener persistListener)
+  {
+      getEntryManager().setEntryPersistListener(persistListener);
   }
 }

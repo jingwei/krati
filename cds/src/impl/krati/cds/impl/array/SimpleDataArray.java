@@ -1,19 +1,16 @@
 package krati.cds.impl.array;
 
 import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.log4j.Logger;
 
+import krati.cds.Persistable;
 import krati.cds.array.DataArray;
 import krati.cds.array.LongArray;
-import krati.cds.impl.array.basic.LongArrayMemoryImpl;
-import krati.cds.impl.array.basic.LongArrayRecoverableImpl;
+import krati.cds.impl.array.SimpleDataArrayCompactor.CompactionUpdateBatch;
 import krati.cds.impl.array.entry.Entry;
-import krati.cds.impl.array.entry.EntryFileWriter;
 import krati.cds.impl.array.entry.EntryPersistAdapter;
 import krati.cds.impl.array.entry.EntryValue;
 import krati.cds.impl.segment.AddressFormat;
@@ -23,11 +20,11 @@ import krati.cds.impl.segment.SegmentManager;
 import krati.cds.impl.segment.SegmentOverflowException;
 
 /**
- * DataArrayImpl: Simple Persistent DataArray Implementation.
+ * SimpleDataArray: Simple Persistent DataArray.
  * 
  * This class is not thread-safe by design. It is expected that the conditions below hold within one JVM.
  * <pre>
- *    1. There is one and only one instance of DataArrayImpl for a given cacheDirectory.
+ *    1. There is one and only one instance of SimpleDataArray for a given cacheDirectory.
  *    2. There is one and only one thread is calling setData methods at any given time. 
  * </pre>
  * 
@@ -36,16 +33,17 @@ import krati.cds.impl.segment.SegmentOverflowException;
  * @author jwu
  *
  */
-public class DataArrayImpl implements DataArray
+public class SimpleDataArray implements DataArray, Persistable
 {
-    private final static Logger _log = Logger.getLogger(DataArrayImpl.class);
+    private final static Logger _log = Logger.getLogger(SimpleDataArray.class);
     
     protected Segment _segment;              // current segment to append
     protected boolean _canTriggerCompaction; // current segment can trigger compaction only once
     
-    protected volatile LongArray _addressArray;
+    protected volatile AddressArray _addressArray;
     protected volatile SegmentManager _segmentManager;
-    protected DataArrayImplCompactor _compactor;
+    protected SimpleDataArrayCompactor _compactor;
+    protected ConcurrentLinkedQueue<Segment> _compactedSegmentQueue;
     
     protected final double _segmentCompactFactor;
     protected final double _segmentCompactTrigger;
@@ -65,7 +63,7 @@ public class DataArrayImpl implements DataArray
      * @param segmentManager         Segment manager for loading, creating, freeing, maintaining segments.
      * 
      */
-    public DataArrayImpl(LongArrayRecoverableImpl addressArray, SegmentManager segmentManager)
+    public SimpleDataArray(AddressArray addressArray, SegmentManager segmentManager)
     {
         this(addressArray, segmentManager, 0.1, 0.5);
     }
@@ -78,17 +76,17 @@ public class DataArrayImpl implements DataArray
      * @param segmentCompactTrigger  Percentage of segment capacity, which writes trigger compaction once per segment.
      * @param segmentCompactFactor   Load factor below which a segment is eligible for compaction. Recommended value is 0.5.
      */
-    public DataArrayImpl(LongArrayRecoverableImpl addressArray,
-                         SegmentManager segmentManager,
-                         double segmentCompactTrigger,
-                         double segmentCompactFactor)
+    public SimpleDataArray(AddressArray addressArray,
+                           SegmentManager segmentManager,
+                           double segmentCompactTrigger,
+                           double segmentCompactFactor)
     {
         this._addressArray = addressArray;
         this._segmentManager = segmentManager;
         this._segmentCompactFactor = segmentCompactFactor;
         this._segmentCompactTrigger = segmentCompactTrigger;
         
-        addressArray.getEntryManager().setEntryPersistListener(new SegmentPersistListener());
+        addressArray.setPersistListener(new SegmentPersistListener());
         
         AddressFormat f = new AddressFormat(16);
         this._segmentShift = f.getSegmentShift();
@@ -97,220 +95,99 @@ public class DataArrayImpl implements DataArray
         
         this.init();
 
-        this._compactor = new DataArrayImplCompactor(this, getSegmentCompactFactor());
+        this._compactor = new SimpleDataArrayCompactor(this, getSegmentCompactFactor());
+        this._compactedSegmentQueue = new ConcurrentLinkedQueue<Segment>();
         this._canTriggerCompaction = true;
         this.updateCompactTriggerBounds();
         
         this._metaUpdateOnAppendPosition = Segment.dataStartPosition;
     }
     
-    /* ************************************************************************************************ *
-     * The protected constructor and methods compact, catchup, and wrap are provided for the compactor. *
-     * ************************************************************************************************ */
-    
-    protected DataArrayImpl(LongArrayMemoryImpl memAddressArray, SegmentManager segmentManager, List<Segment> segTargetList)
+    private void consumeCompaction(CompactionUpdateBatch updateBatch) throws Exception 
     {
-        this._addressArray = memAddressArray;
-        this._segmentManager = segmentManager;
-        this._segmentCompactFactor = 0;        // No segment will be compacted.
-        this._segmentCompactTrigger = 1;       // No compaction will be triggered.
+        int ignoreCount = 0;
+        int updateCount = updateBatch.size();
+        int totalIgnoreBytes = 0;
+        int totalUpdateBytes = updateBatch.getDataSizeTotal();
+        int liveSegInd = _segment.getSegmentId();
         
-        AddressFormat f = new AddressFormat(16);
-        this._segmentShift = f.getSegmentShift();
-        this._segmentMask = f.getSegmentMask();
-        this._offsetMask = f.getOffsetMask();
+        Segment segTarget = updateBatch.getTargetSegment();
         
-        this.init();
+        // Update segment append position
+        segTarget.setAppendPosition(segTarget.getAppendPosition() + totalUpdateBytes);
         
-        this._compactor = null;
-        this._canTriggerCompaction = false;
-        this.updateCompactTriggerBounds();
+        // Partial-load data between channelPosition and appendPosition
+        segTarget.load();
         
-        this._metaUpdateOnAppendPosition = Segment.dataStartPosition;
-        
-        // Add current segment to segTargetList
-        segTargetList.add(_segment);
-    }
-    
-    protected long compact(Segment segSource,
-                           List<Segment> segTargetList,
-                           EntryFileWriter entryWriter) throws IOException
-    {
-        int segTargetCnt = 1;
-        RandomAccessFile raf;
-        Segment segTarget = null;
-        
-        if(segTargetList.size() > 0)
+        for(int i = 0; i < updateCount; i++)
         {
-            segTarget = segTargetList.get(segTargetList.size() - 1);
-        }
-        else
-        {
-            segTarget = getSegmentManager().nextSegment();
-            segTargetList.add(segTarget);
-        }
-        
-        int segSourceId = segSource.getSegmentId();
-        int segTargetId = segTarget.getSegmentId();
-        
-        // Get read channel
-        raf = new RandomAccessFile(segSource.getSegmentFile(), "r");
-        FileChannel readChannel = raf.getChannel();
-        
-        // Get write channel
-        raf = new RandomAccessFile(segTarget.getSegmentFile(), "rw");
-        FileChannel writeChannel = raf.getChannel();
-        
-        // Position write channel properly
-        writeChannel.position(segTarget.getAppendPosition());
-        
-        long sizeLimit = segTarget.getInitialSize();
-        
-        try
-        {
-            long bytesTransferred = 0;
-            int indexStart = getIndexStart();
-            long scn = entryWriter.getMinScn();
+            int index = updateBatch.getUpdateIndex(i);
+            long address = getAddress(index);
+            int segInd = (int)((address >> _segmentShift) & _segmentMask);
             
-            for(int index = indexStart, cnt = length(); index < cnt; index++)
+            if(address == 0 ||      /* data at the given index is deleted by writer */ 
+               segInd == liveSegInd /* data at the given index is updated by writer */)
             {
-                long oldAddress = getAddress(index);
-                int oldSegPos = (int)(oldAddress & _offsetMask);
-                int oldSegInd = (int)((oldAddress >> _segmentShift) & _segmentMask);
-                
-                if (oldSegInd == segSourceId && oldSegPos >= Segment.dataStartPosition)
-                {
-                    int length = segSource.readInt(oldSegPos);
-                    int byteCnt = 4 + length;
-                    long newSegPos = writeChannel.position();
-                    long newAddress = (((long)segTargetId) << _segmentShift) | newSegPos;
-                    
-                    if(writeChannel.position() + byteCnt >= sizeLimit)
-                    {
-                        /* It should never require more than 2 segments.
-                         * If it does happen, some kind of data corruption may have occurred.
-                         * Should abort data transfer now and try compaction at another time.
-                         */
-                        if (segTargetCnt >= 2)
-                        {
-                            throw new CompactionAbortedException();
-                        }
-                        
-                        // Update segTarget append position
-                        writeChannel.force(true);
-                        segTarget.setAppendPosition(writeChannel.position());
-                        segTarget.asReadOnly();
-                        writeChannel.close();
-                        
-                        String info = "transfer overflow: segment changed from " + segTarget.getSegmentId();
-                        
-                        // Get new segTarget
-                        segTarget = getSegmentManager().nextSegment();
-                        segTargetId = segTarget.getSegmentId();
-                        segTargetList.add(segTarget);
-                        segTargetCnt++;
-                        
-                        info = info + " to " + segTarget.getSegmentId();
-                        
-                        // Get new write channel
-                        raf = new RandomAccessFile(segTarget.getSegmentFile(), "rw");
-                        writeChannel = raf.getChannel();
-                        
-                        // Position write channel properly
-                        writeChannel.position(segTarget.getAppendPosition());
-                        
-                        sizeLimit = segTarget.getInitialSize();
-                        
-                        _log.info(info);
-                    }
-                    
-                    // Transfer byte from source to target
-                    readChannel.transferTo(oldSegPos, byteCnt, writeChannel);
-                    segTarget.incrLoadSize(byteCnt);
-                    bytesTransferred += byteCnt;
-                    
-                    // Update address
-                    try
-                    {
-                        setAddress(index, newAddress, 0);
-                    }
-                    catch(Exception e)
-                    {
-                        throw new IOException(e.getCause());
-                    }
-                    
-                    // Log the original address into compactor entry file.
-                    entryWriter.write(index - indexStart, oldAddress, scn);
-                }
-            }
-            
-            // Update segTarget append position
-            segTarget.setAppendPosition(writeChannel.position());
-            
-            // Close read channel
-            readChannel.close();
-            readChannel = null;
-            
-            // Close write channel
-            writeChannel.force(true);
-            writeChannel.close();
-            writeChannel = null;
-            
-            return bytesTransferred;
-        }
-        catch(IOException ioe)
-        {
-            // Update segTarget append position
-            segTarget.setAppendPosition(writeChannel.position());
-            
-            if(readChannel != null) readChannel.close();
-            if(writeChannel != null) writeChannel.close();
-            throw ioe;
-        }
-    }
-    
-    protected void catchup(int index, long addressUpdate, long scnUpdate, List<Segment> segTargetList) throws Exception
-    {
-        long address = getAddress(index);
-        int segPos = (int)(address & _offsetMask);
-        int segInd = (int)((address >> _segmentShift) & _segmentMask);
-        
-        for(Segment segTarget: segTargetList)
-        {
-            if (segInd == segTarget.getSegmentId() && segPos >= Segment.dataStartPosition)
-            {
-                segTarget.decrLoadSize(segTarget.readInt(segPos));
-                break;
-            }
-        }
-        
-        // Update address in the cloned memory array
-        setAddress(index, addressUpdate, scnUpdate);
-    }
-    
-    protected void wrap(LongArray memAddressArray, SegmentManager segmentManager) throws IOException
-    {
-        try
-        {
-            _segmentManager = segmentManager;
-            ((LongArrayRecoverableImpl)_addressArray).wrap(memAddressArray);
-            
-            _log.info("wrapped array:" +
-                      " indexStart=" + memAddressArray.getIndexStart() +
-                      " length=" + memAddressArray.length());
-        }
-        catch(Exception e)
-        {
-            _log.error("failed to wrap array:"+
-                       " indexStart=" + memAddressArray.getIndexStart() +
-                       " length=" + memAddressArray.length());
-            if(e instanceof IOException)
-            {
-                throw (IOException)e;
+                /*
+                 * The address generated by the compactor is obsolete.
+                 */
+                int updateBytes = updateBatch.getUpdateDataSize(i);
+                totalIgnoreBytes += updateBytes;
+                ignoreCount++;
             }
             else
             {
-                throw new IOException(e);
+                /*
+                 * The address generated by the compactor is not updated by the writer.
+                 * Update the address array directly.
+                 */ 
+                setAddress(index, updateBatch.getUpdateAddress(i), updateBatch.getLWMark());
+            }
+        }
+        
+        int consumeCount = updateCount - ignoreCount;
+        int totalConsumeBytes = totalUpdateBytes - totalIgnoreBytes;
+        
+        _log.info("consumed compaction batch " + updateBatch.getDescriptiveId() +
+                  " updates " + consumeCount + "/" + updateCount +
+                  " bytes " + totalConsumeBytes + "/" + totalUpdateBytes);
+        
+        // Update segment load size
+        segTarget.incrLoadSize(totalConsumeBytes);
+        _log.info("Segment " + segTarget.getSegmentId() + " catchup " + segTarget.getStatus());
+    }
+    
+    protected void consumeCompaction()
+    {
+        while(true)
+        {
+            CompactionUpdateBatch updateBatch = _compactor.pollCompactionBatch();
+            if(updateBatch == null) break;
+            
+            try
+            {
+                consumeCompaction(updateBatch);
+            }
+            catch (Exception e)
+            {
+                _log.error("failed to consume compaction batch " + updateBatch.getDescriptiveId(), e);
+            }
+            finally
+            {
+                _compactor.recycleCompactionBatch(updateBatch);
+            }
+        }
+        
+        while(!_compactedSegmentQueue.isEmpty())
+        {
+            Segment seg = _compactedSegmentQueue.remove();
+            try
+            {
+                _segmentManager.freeSegment(seg);
+            }
+            catch(IOException e)
+            {
+                _log.error("failed to recycle Segment " + seg.getSegmentId() + ": " + seg.getStatus(), e);
             }
         }
     }
@@ -351,12 +228,12 @@ public class DataArrayImpl implements DataArray
     
     protected long getAddress(int index)
     {
-        return _addressArray.getData(index);
+        return _addressArray.get(index);
     }
     
     protected void setAddress(int index, long value, long scn) throws Exception
     {
-        _addressArray.setData(index, value, scn);
+        _addressArray.set(index, value, scn);
     }
     
     protected LongArray getAddressArray()
@@ -404,7 +281,7 @@ public class DataArrayImpl implements DataArray
         catch(IOException e) {}
     }
     
-    private void tryFlowControl()
+    private void flowControl()
     {
         Segment liveSegment = _segment;
         if(liveSegment == null)
@@ -412,32 +289,20 @@ public class DataArrayImpl implements DataArray
             return;
         }
         
-        DataArrayImpl dataArrayCopy = _compactor.getDataArrayCopy();
-        if(dataArrayCopy == null)
-        {
-            return;
-        }
-        
-        SegmentManager segManagerCopy = dataArrayCopy.getSegmentManager();
-        if(segManagerCopy == null)
-        {
-            return;
-        }
-        
-        Segment compactSegment = segManagerCopy.getCurrentSegment();
+        Segment compactSegment = getSegmentManager().getCurrentSegment();
         if(compactSegment == null || compactSegment == liveSegment)
         {
             return;
         }
         
         /*
-         * Slow down the writer for 0.2 milliseconds so that the compactor has a chance to catch up.
+         * Slow down the writer for 0.5 milliseconds so that the compactor has a chance to catch up.
          */
         if(compactSegment.getLoadSize() < liveSegment.getLoadSize()) 
         {
             try
             {
-                Thread.sleep(0, 200000);
+                Thread.sleep(0, 500000);
             }
             catch(Exception e) {}
         }
@@ -520,6 +385,7 @@ public class DataArrayImpl implements DataArray
             
             // get data segment
             Segment seg = _segmentManager.getSegment(segInd);
+            if(seg == null) return -1;
             
             // read data length
             int len = seg.readInt(segPos);
@@ -613,7 +479,7 @@ public class DataArrayImpl implements DataArray
                     throw new SegmentOverflowException(_segment);
                 }
                 
-                // append data size
+                // append actual size
                 _segment.appendInt(length);
                 
                 // append actual data
@@ -642,35 +508,42 @@ public class DataArrayImpl implements DataArray
                     pos > _segmentCompactTriggerLowerPosition &&
                     pos < _segmentCompactTriggerUpperPosition )
                 {
+                    // start the compactor
                     if(!_compactor.isStarted())
                     {
                         _log.info("Segment " + _segment.getSegmentId() + " triggered compaction");
-                        
-                        // persist this data array and apply entry log files 
-                        persist();
-                        
-                        // disable auto-applying entry files
-                        if (_addressArray instanceof LongArrayRecoverableImpl)
-                        {
-                            ((LongArrayRecoverableImpl)_addressArray).getEntryManager().setAutoApplyEntries(false);
-                        }
-                        
-                        // start the compactor
-                        _compactor.start();
                         _canTriggerCompaction = false;
+                        _compactor.start();
                     }
                 }
                 
-                // Notify the compactor of new address update
                 if(_compactor.isStarted())
                 {
-                   _compactor.addressUpdated(index, address, scn);
-                   
-                   /*
-                    * Flow-control the writer and average-out write latency.
-                    * Give the compactor a chance to catch up with the writer.
-                    */
-                   tryFlowControl();
+                    /*
+                     * Consume one compaction update batch generated by the compactor.
+                     */
+                    CompactionUpdateBatch updateBatch = _compactor.pollCompactionBatch();
+                    if(updateBatch != null)
+                    {
+                        try
+                        {
+                            consumeCompaction(updateBatch);
+                        }
+                        catch (Exception e)
+                        {
+                            _log.error("failed to consume compaction batch " + updateBatch.getDescriptiveId(), e);
+                        }
+                        finally
+                        {
+                            _compactor.recycleCompactionBatch(updateBatch);
+                        }
+                    }
+                    
+                    /*
+                     * Flow-control the writer and average-out write latency.
+                     * Give the compactor a chance to catch up with the writer.
+                     */
+                    flowControl();
                 }
                 
                 /*
@@ -686,20 +559,35 @@ public class DataArrayImpl implements DataArray
                 // wait until compactor is done
                 while(_compactor.isStarted())
                 {
+                    /*
+                     * Consume compaction update batches generated by the compactor.
+                     */
+                    CompactionUpdateBatch updateBatch = _compactor.pollCompactionBatch();
+                    if(updateBatch != null)
+                    {
+                        try
+                        {
+                            consumeCompaction(updateBatch);
+                        }
+                        catch (Exception e)
+                        {
+                            _log.error("failed to consume compaction batch " + updateBatch.getDescriptiveId(), e);
+                        }
+                        finally
+                        {
+                            _compactor.recycleCompactionBatch(updateBatch);
+                        }
+                    }
+                    
                     _log.info("wait for compactor");
-                    Thread.sleep(100);
+                    Thread.sleep(10);
                 }
                 
-                synchronized(this) // synchronize the code below and the compactor
+                // synchronize with the compactor
+                _compactor.lock();
+                try
                 {
-                    // persist the current segment
                     persist();
-
-                    // enable auto-applying entry files
-                    if (_addressArray instanceof LongArrayRecoverableImpl)
-                    {
-                        ((LongArrayRecoverableImpl)_addressArray).getEntryManager().setAutoApplyEntries(true);
-                    }
                     
                     // get the next segment available for appending
                     _metaUpdateOnAppendPosition = Segment.dataStartPosition;
@@ -708,17 +596,16 @@ public class DataArrayImpl implements DataArray
                     
                     _log.info("Segment " + _segment.getSegmentId() + " online: " + _segment.getStatus());
                 }
+                finally
+                {
+                    _compactor.unlock(); 
+                }
             }
             catch(Exception e)
             {
                 // restore append position 
                 _segment.setAppendPosition(pos);
-                
-                // enable auto-applying entry files
-                if (_addressArray instanceof LongArrayRecoverableImpl)
-                {
-                    ((LongArrayRecoverableImpl)_addressArray).getEntryManager().setAutoApplyEntries(true);
-                }
+                _segment.force();
                 
                 throw e;
             }
@@ -726,15 +613,9 @@ public class DataArrayImpl implements DataArray
     }
     
     @Override
-    public int getIndexStart()
+    public boolean hasIndex(int index)
     {
-        return _addressArray.getIndexStart();
-    }
-    
-    @Override
-    public boolean indexInRange(int index)
-    {
-        return _addressArray.indexInRange(index);
+        return _addressArray.hasIndex(index);
     }
     
     @Override
@@ -764,10 +645,7 @@ public class DataArrayImpl implements DataArray
     @Override
     public synchronized void sync() throws IOException
     {
-        /* The "persist" must be synchronized with data array compactor because
-         * the compactor runs in a separate thread and will re-write the address
-         * array file at the end of compaction.  
-         */
+        consumeCompaction();
         
         /* CALLS ORDERED:
          * Need force _segment first and then persist _addressArray.
@@ -782,10 +660,7 @@ public class DataArrayImpl implements DataArray
     @Override
     public synchronized void persist() throws IOException
     {
-        /* The "persist" must be synchronized with data array compactor because
-         * the compactor runs in a separate thread and will re-write the address
-         * array file at the end of compaction.  
-         */
+        consumeCompaction();
         
         /* CALLS ORDERED:
          * Need force _segment first and then persist _addressArray.
@@ -800,6 +675,7 @@ public class DataArrayImpl implements DataArray
     @Override
     public synchronized void clear()
     {
+        _compactor.reset();
         _addressArray.clear();
         _segmentManager.clear();
     }

@@ -1,0 +1,562 @@
+package krati.cds.impl.array.basic;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.util.List;
+
+import org.apache.log4j.Logger;
+
+import krati.cds.impl.array.entry.Entry;
+import krati.cds.impl.array.entry.EntryUtility;
+import krati.cds.impl.array.entry.EntryValue;
+import krati.io.ChannelReader;
+import krati.io.ChannelWriter;
+import krati.util.Chronos;
+
+/**
+ * ArrayFile is not thread safe.
+ *
+ * <pre>
+ * Version 0:
+ * +--------------------------+
+ * |Header                    |
+ * |--------------------------|
+ * |Storage Version    | long | 
+ * |Max Scn            | long |
+ * |New Scn            | long |
+ * |Array Length       | int  |
+ * |Data Element Size  | int  |
+ * |--------------------------|
+ * | Array data begins at 1024|
+ * |                          |
+ * +--------------------------+
+ * </pre>
+ * 
+ */
+public class ArrayFile
+{
+  public static final long STORAGE_VERSION  = 0;
+  public static final int ARRAY_HEADER_LENGTH = 1024;
+  
+  static final int VERSION_POSITION      = 0;
+  static final int MAX_SCN_POSITION      = 8;
+  static final int NEW_SCN_POSITION      = 16;
+  static final int ARRAY_LENGTH_POSITION = 24;
+  static final int ELEMENT_SIZE_POSITION = 28;
+  static final long DATA_START_POSITION  = ARRAY_HEADER_LENGTH;
+  
+  static final Logger _log = Logger.getLogger(ArrayFile.class);
+
+  private File _file;
+  private ChannelWriter _writer;
+  
+  // header information
+  private long _version;
+  private long _arrayMaxScn;
+  private long _arrayNewScn;
+  private int  _arrayLength;  // array length (element count)
+  private int  _elementSize;  // element size in bytes
+  
+  public ArrayFile(File file, int arrayLength, int arrayElementSize) throws IOException
+  {
+    long initialFileLength = DATA_START_POSITION + (arrayLength * arrayElementSize);
+    
+    if (!file.exists())
+    {
+      if (!file.createNewFile())
+      {
+        String msg = "Failed to create " + file.getAbsolutePath();
+        
+        _log.error(msg);
+        throw new IOException(msg);
+      }
+    }
+    
+    boolean newFile = false;
+    RandomAccessFile raf = new RandomAccessFile(file, "rw");
+    if (raf.length() < DATA_START_POSITION)
+    {
+      raf.setLength(initialFileLength);
+      newFile = true;
+    }
+    
+    this._file = file;
+    this._writer = new ChannelWriter(file);
+    this._writer.open();
+    
+    if(newFile)
+    {
+      this._version = STORAGE_VERSION;
+      this._arrayMaxScn = 0;
+      this._arrayNewScn = 0;
+      this._arrayLength = arrayLength;
+      this._elementSize = arrayElementSize;
+      
+      this.saveHeader();
+    }
+    else
+    {
+      this.loadHeader();
+    }
+    
+    // Check storage version
+    if (_version != STORAGE_VERSION)
+    {
+      throw new RuntimeException("Invalid version " + _version + " found in "
+              + file.getAbsolutePath() + ": " + STORAGE_VERSION + " expected");
+    }
+    
+    if(!checkHeader())
+    {
+      throw new IOException(_file.getName() + " is inconsistent: " + getHeader());
+    }
+    
+    _log.info(_file.getName() + " header: " + getHeader());
+  }
+  
+  private void saveHeader() throws IOException
+  {
+    _writer.writeLong(VERSION_POSITION, _version);
+    _writer.writeLong(MAX_SCN_POSITION, _arrayMaxScn);
+    _writer.writeLong(NEW_SCN_POSITION, _arrayNewScn);
+    _writer.writeInt(ARRAY_LENGTH_POSITION, _arrayLength);
+    _writer.writeInt(ELEMENT_SIZE_POSITION, _elementSize);
+    _writer.flush();
+  }
+  
+  private void loadHeader() throws IOException
+  {
+    ByteBuffer headerBuffer = ByteBuffer.allocate(ARRAY_HEADER_LENGTH);
+    RandomAccessFile raf = new RandomAccessFile(_file, "rw");
+    raf.getChannel().read(headerBuffer, 0);
+    
+    _version     = headerBuffer.getLong(VERSION_POSITION);
+    _arrayMaxScn = headerBuffer.getLong(MAX_SCN_POSITION);
+    _arrayNewScn = headerBuffer.getLong(NEW_SCN_POSITION);
+    _arrayLength = headerBuffer.getInt(ARRAY_LENGTH_POSITION);
+    _elementSize = headerBuffer.getInt(ELEMENT_SIZE_POSITION);
+    
+    raf.close();
+  }
+  
+  private boolean checkHeader()
+  {
+    // Array file is inconsistent if newScn is greater than maxScn.
+    if (_arrayNewScn < _arrayMaxScn) return false;
+    
+    return true;
+  }
+  
+  private String getHeader()
+  {
+    StringBuffer buf = new StringBuffer();
+    
+    buf.append("version=");
+    buf.append(_version);
+    buf.append(" maxScn=");
+    buf.append(_arrayMaxScn);
+    buf.append(" newScn=");
+    buf.append(_arrayNewScn);
+    buf.append(" arrayLength=");
+    buf.append(_arrayLength);
+    buf.append(" elementSize=");
+    buf.append(_elementSize);
+    
+    return buf.toString();
+  }
+  
+  public final String getName()
+  {
+    return _file.getName();
+  }
+  
+  public final String getPath()
+  {
+    return _file.getPath();
+  }
+  
+  public final String getAbsolutePath()
+  {
+    return _file.getAbsolutePath();
+  }
+  
+  public final String getCanonicalPath() throws IOException
+  {
+    return _file.getCanonicalPath();
+  }
+  
+  public final long getVersion()
+  {
+    return _version;
+  }
+  
+  public final long getMaxScn()
+  {
+    return _arrayMaxScn;
+  }
+  
+  public final long getNewScn()
+  {
+    return _arrayNewScn;
+  }
+  
+  public final int getArrayLength()
+  {
+    return _arrayLength;
+  }
+  
+  public final int getElementSize()
+  {
+    return _elementSize;
+  }
+  
+  public void flush() throws IOException
+  {
+    _writer.flush();
+  }
+  
+  public void close() throws IOException
+  {
+    _writer.close();
+  }
+  
+  /**
+   * Load the main array.
+   * 
+   * @return an int array
+   * @throws IOException
+   */
+  public int[] loadIntArray() throws IOException
+  {
+    if (!_file.exists() || _file.length() == 0)
+    {
+      return null;
+    }
+    
+    Chronos c = new Chronos();
+    ChannelReader in = new ChannelReader(_file);
+    
+    try
+    {
+      in.open();
+      in.position(DATA_START_POSITION);
+      
+      int[] array = new int[_arrayLength];
+      for (int i = 0; i < _arrayLength; i++)
+      {
+        array[i] = in.readInt();
+      }
+      
+      _log.info(_file.getName() + " loaded in " + c.getElapsedTime());
+      return array;
+    }
+    finally
+    {
+      in.close();
+    }
+  }
+  
+  /**
+   * Load the main array.
+   * 
+   * @return a long array
+   * @throws IOException
+   */
+  public long[] loadLongArray() throws IOException
+  {
+    if (!_file.exists() || _file.length() == 0)
+    {
+      return null;
+    }
+    
+    Chronos c = new Chronos();
+    ChannelReader in = new ChannelReader(_file);
+    
+    try
+    {
+      in.open();
+      in.position(DATA_START_POSITION);
+      
+      long[] array = new long[_arrayLength];
+      for (int i = 0; i < _arrayLength; i++)
+      {
+        array[i] = in.readLong();
+      }
+      
+      _log.info(_file.getName() + " loaded in " + c.getElapsedTime());
+      return array;
+    }
+    finally
+    {
+      in.close();
+    }
+  }
+  
+  /**
+   * Load the main array.
+   * 
+   * @return a short array
+   * @throws IOException
+   */
+  public short[] loadShortArray() throws IOException
+  {
+    if (!_file.exists() || _file.length() == 0)
+    {
+      return null;
+    }
+    
+    Chronos c = new Chronos();
+    ChannelReader in = new ChannelReader(_file);
+    
+    try
+    {
+      in.open();
+      in.position(DATA_START_POSITION);
+        
+      short[] array = new short[_arrayLength];
+      for (int i = 0; i < _arrayLength; i++)
+      {
+        array[i] = in.readShort();
+      }
+      
+      _log.info(_file.getName() + " loaded in " + c.getElapsedTime());
+      return array;
+    }
+    finally
+    {
+      in.close();
+    }
+  }
+  
+  protected long getPosition(int index)
+  {
+    return DATA_START_POSITION + (index * _elementSize);
+  }
+  
+  /**
+   * Writes an int value at a specified index in the array.
+   * 
+   * This method does not update newScn and maxScn in the array file.
+   * 
+   * @param index   an index in the array.
+   * @param value   int value
+   * @throws IOException
+   */
+  public void writeInt(int index, int value) throws IOException
+  {
+    _writer.writeInt(getPosition(index), value);
+  }
+  
+  /**
+   * Writes a long value at a specified index in the array.
+   * 
+   * This method does not update newScn and maxScn in the array file.
+   * 
+   * @param index   an index in the array.
+   * @param value   long value
+   * @throws IOException
+   */
+  public void writeLong(int index, long value) throws IOException
+  {
+    _writer.writeLong(getPosition(index), value);
+  }
+  
+  /**
+   * Writes a short value at a specified index in the array.
+   * 
+   * This method does not update newScn and maxScn in the array file.
+   * 
+   * @param index   an index in the array.
+   * @param value   short value
+   * @throws IOException
+   */
+  public void writeShort(int index, short value) throws IOException
+  {
+    _writer.writeShort(getPosition(index), value);
+  }
+  
+  /**
+   * Apply entries to the array file.
+   * 
+   * The method will flatten entry data and sort it by position.
+   * So the array file can be updated sequentially to reduce disk seeking time.
+   * 
+   * This method updates newScn and maxScn in the array file.
+   * 
+   * @param entryList
+   * @throws IOException
+   */
+  public synchronized <T extends EntryValue> void update(List<Entry<T>> entryList)
+  throws IOException
+  {
+    Chronos chronos = new Chronos();
+    
+    // Sort values by position in the array file
+    T[] values = EntryUtility.sortEntriesToValues(entryList);
+    if (values == null || values.length == 0) return;
+    
+    // Obtain maxScn
+    long maxScn = 0;
+    for (Entry<?> e : entryList)
+    {
+      maxScn = Math.max(e.getMaxScn(), maxScn);
+    }
+    
+    // Write newScn
+    _log.info("write newScn:" + maxScn);
+    _writer.writeLong(NEW_SCN_POSITION, maxScn); 
+    _writer.flush();
+    
+    // Write values
+    for (T v : values)
+    {
+      v.updateArrayFile(_writer, getPosition(v.pos));
+    }
+    _writer.flush();
+    
+    // Write maxScn
+    _log.info("write maxScn:" + maxScn);
+    _writer.writeLong(MAX_SCN_POSITION, maxScn); 
+    _writer.flush();
+    
+    _arrayMaxScn = maxScn;
+    _arrayNewScn = maxScn;
+    
+    _log.info(entryList.size() + " entries flushed to " + 
+             _file.getAbsolutePath() + " in " + chronos.getElapsedTime());
+  }
+
+  protected void writeVersion(long value) throws IOException
+  {
+    _writer.writeLong(VERSION_POSITION, value);
+    _version = value;
+  }
+  
+  protected void writeMaxScn(long value) throws IOException
+  {
+    _writer.writeLong(MAX_SCN_POSITION, value);
+    _arrayMaxScn = value;
+  }
+  
+  protected void writeNewScn(long value) throws IOException
+  {
+    _writer.writeLong(NEW_SCN_POSITION, value);
+    _arrayNewScn = value;
+  }
+  
+  protected void writeArrayLength(int value) throws IOException
+  {
+    _writer.writeInt(ARRAY_LENGTH_POSITION, value);
+    _arrayLength = value;
+  }
+  
+  protected void writeElementSize(int value) throws IOException
+  {
+    _writer.writeInt(ELEMENT_SIZE_POSITION, value);
+    _elementSize = value;
+  }
+  
+  public synchronized void reset(int[] intArray) throws IOException
+  {
+      _writer.flush();
+      _writer.position(DATA_START_POSITION);
+      for(int i = 0; i < intArray.length; i++)
+      {
+          _writer.writeInt(intArray[i]);
+      }
+      _writer.flush();
+  }
+  
+  public synchronized void reset(int[] intArray, long maxScn) throws IOException
+  {   
+      reset(intArray);
+      
+      _log.info("update newScn and maxScn:" + maxScn);
+      writeNewScn(maxScn);
+      writeMaxScn(maxScn);
+      flush();
+  }
+  
+  public synchronized void reset(long[] longArray) throws IOException
+  {
+      _writer.flush();
+      _writer.position(DATA_START_POSITION);
+      for(int i = 0; i < longArray.length; i++)
+      {
+          _writer.writeLong(longArray[i]);
+      }
+      _writer.flush();
+  }
+  
+  public synchronized void reset(long[] longArray, long maxScn) throws IOException
+  {   
+      reset(longArray);
+      
+      _log.info("update newScn and maxScn:" + maxScn);
+      writeNewScn(maxScn);
+      writeMaxScn(maxScn);
+      flush();
+  }
+  
+  public synchronized void reset(short[] shortArray) throws IOException
+  {
+      _writer.flush();
+      _writer.position(DATA_START_POSITION);
+      for(int i = 0; i < shortArray.length; i++)
+      {
+          _writer.writeShort(shortArray[i]);
+      }
+      _writer.flush();
+  }
+  
+  public synchronized void reset(short[] shortArray, long maxScn) throws IOException
+  {   
+      reset(shortArray);
+      
+      _log.info("update newScn and maxScn:" + maxScn);
+      writeNewScn(maxScn);
+      writeMaxScn(maxScn);
+      flush();
+  }
+  
+  public synchronized void setArrayLength(int arrayLength, File renameToFile) throws IOException
+  {
+      if(arrayLength < 0)
+      {
+          throw new IllegalArgumentException("Negative array length: " + arrayLength);
+      }
+      
+      if(this._arrayLength == arrayLength) return;
+      
+      // Flush all the changes.
+      this.flush();
+      
+      // Change the file length.
+      long fileLength = DATA_START_POSITION + (arrayLength * _elementSize);
+      RandomAccessFile raf = new RandomAccessFile(_file, "rw");
+      raf.setLength(fileLength);
+      raf.close();
+      
+      // Write the new array length.
+      writeArrayLength(arrayLength);
+      this.flush();
+      
+      if(renameToFile != null)
+      {
+          if(_file.renameTo(renameToFile))
+          {
+              _writer.close();
+              _file = renameToFile;
+              _writer = new ChannelWriter(_file);
+              _writer.open();
+          }
+          else
+          {
+              _log.warn("Failed to rename " + _file.getAbsolutePath() + " to " + renameToFile.getAbsolutePath());
+          }
+      }
+  }
+  
+}

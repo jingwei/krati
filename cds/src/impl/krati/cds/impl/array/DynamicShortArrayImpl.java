@@ -5,18 +5,19 @@ import java.io.IOException;
 
 import org.apache.log4j.Logger;
 
+import krati.cds.Persistable;
 import krati.cds.array.DynamicArray;
 import krati.cds.array.ShortArray;
-import krati.cds.impl.array.basic.ShortArrayRecoverableImpl;
+import krati.cds.impl.array.basic.RecoverableShortArray;
 
-public class DynamicShortArrayImpl implements ShortArray, DynamicArray
+public class DynamicShortArrayImpl implements ShortArray, DynamicArray, Persistable
 {
   protected static final Logger _log = Logger.getLogger(DynamicShortArrayImpl.class);
 
   protected long _lwmScn = 0;
   protected long _hwmScn = 0;
   protected short[][] _dataArrays = new short[0][0];
-  protected ShortArrayRecoverableImpl[] _implArrays = new ShortArrayRecoverableImpl[0];
+  protected RecoverableShortArray[] _implArrays = new RecoverableShortArray[0];
   
   protected final File _cacheDirectory;
   protected final int _maxEntrySize;
@@ -34,9 +35,9 @@ public class DynamicShortArrayImpl implements ShortArray, DynamicArray
   }
   
   public DynamicShortArrayImpl(File cacheDirectory,
-                             int subArrayShift,
-                             int maxEntrySize,
-                             int maxEntries) throws Exception
+                               int subArrayShift,
+                               int maxEntrySize,
+                               int maxEntries) throws Exception
   {
     this._cacheDirectory = cacheDirectory;
     this._subArrayShift = subArrayShift;
@@ -96,7 +97,7 @@ public class DynamicShortArrayImpl implements ShortArray, DynamicArray
       this.expandCapacity(indexStart);
 
       // Calculate _hwmScn by finding the smallest _hwmScn of all sub-arrays
-      for(ShortArrayRecoverableImpl implArray : _implArrays)
+      for(RecoverableShortArray implArray : _implArrays)
       {
         long implHwmScn = implArray.getHWMark();
         if(implHwmScn > 0)
@@ -129,12 +130,12 @@ public class DynamicShortArrayImpl implements ShortArray, DynamicArray
   /**
    * @return a boolean indicating an index is in the current range of this ShortArray.
    */
-  public boolean indexInRange(int index)
+  public boolean hasIndex(int index)
   {
     return (index >> _subArrayShift) < _dataArrays.length;
   }
   
-  public short getData(int index)
+  public short get(int index)
   {
     int segInd = index >> _subArrayShift;
     int subInd = index & _subArrayMask;
@@ -142,9 +143,10 @@ public class DynamicShortArrayImpl implements ShortArray, DynamicArray
     return _dataArrays[segInd][subInd];
   }
   
-  public void setData(int index, short value, long scn) throws Exception
+  public void set(int index, short value, long scn) throws Exception
   {
     int segInd = index >> _subArrayShift;
+    int subInd = index & _subArrayMask;
     
     // Expand array capacity automatically
     if (segInd >= _implArrays.length)
@@ -159,7 +161,7 @@ public class DynamicShortArrayImpl implements ShortArray, DynamicArray
       }
     }
     
-    _implArrays[segInd].setData(index, value, scn);
+    _implArrays[segInd].set(subInd, value, scn);
     _hwmScn = Math.max(_hwmScn, scn);
   }
   
@@ -171,7 +173,7 @@ public class DynamicShortArrayImpl implements ShortArray, DynamicArray
       return;
     }
     
-    ShortArrayRecoverableImpl[] tempArrays = new ShortArrayRecoverableImpl[numSubArrays];
+    RecoverableShortArray[] tempArrays = new RecoverableShortArray[numSubArrays];
     
     int i = 0;
     for (; i < _implArrays.length; i++)
@@ -181,11 +183,8 @@ public class DynamicShortArrayImpl implements ShortArray, DynamicArray
     
     for(; i < numSubArrays; i++)
     {
-      int memberIdStart = i << _subArrayShift;
-      int memberIdCount = _subArraySize;
       tempArrays[i] = 
-        new ShortArrayRecoverableImpl(memberIdStart,
-                                      memberIdCount,
+        new RecoverableShortArray(_subArraySize,
                                       _maxEntrySize,
                                       _maxEntries,
                                       _cacheDirectory);
@@ -205,7 +204,7 @@ public class DynamicShortArrayImpl implements ShortArray, DynamicArray
   public long getLWMark()
   {
     long mark = 0;
-    for(ShortArrayRecoverableImpl implArray : _implArrays)
+    for(RecoverableShortArray implArray : _implArrays)
     {
       mark = (mark == 0) ? implArray.getLWMark() : Math.min(mark, implArray.getLWMark());
     }
@@ -224,7 +223,7 @@ public class DynamicShortArrayImpl implements ShortArray, DynamicArray
   public void saveHWMark(long endOfPeriod)
   {
     long mark = Math.max(_hwmScn, endOfPeriod);
-    for(ShortArrayRecoverableImpl implArray : _implArrays)
+    for(RecoverableShortArray implArray : _implArrays)
     {
       implArray.saveHWMark(mark);
     }
@@ -237,7 +236,7 @@ public class DynamicShortArrayImpl implements ShortArray, DynamicArray
     saveHWMark(getHWMark());
       
     // Persist each sub-array
-    for(ShortArrayRecoverableImpl implArray : _implArrays)
+    for(RecoverableShortArray implArray : _implArrays)
     {
       try
       {
@@ -257,7 +256,7 @@ public class DynamicShortArrayImpl implements ShortArray, DynamicArray
     saveHWMark(getHWMark());
       
     // Persist each sub-array
-    for(ShortArrayRecoverableImpl implArray : _implArrays)
+    for(RecoverableShortArray implArray : _implArrays)
     {
       try
       {
@@ -272,7 +271,7 @@ public class DynamicShortArrayImpl implements ShortArray, DynamicArray
   
   public void clear()
   {
-    for(ShortArrayRecoverableImpl implArray : _implArrays)
+    for(RecoverableShortArray implArray : _implArrays)
     {
       implArray.clear();
     }

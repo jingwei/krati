@@ -8,11 +8,11 @@ package krati.cds.impl.array.entry;
  */
 public class EntryShortFactory implements EntryFactory<EntryValueShort>
 {
-  private static final EntryValueShortFactory valFactory = new EntryValueShortFactory();
-
+  private int idCounter = 0;
+  
   @Override
   public Entry<EntryValueShort> newEntry(int initialCapacity)
   {
-    return new Entry<EntryValueShort>(EntryShortFactory.valFactory, initialCapacity);
+    return new PreFillEntryShort(idCounter++, initialCapacity);
   } 
 }

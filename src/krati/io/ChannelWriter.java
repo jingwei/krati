@@ -101,6 +101,11 @@ public class ChannelWriter implements DataWriter {
         _channel.write(_bbShort);
     }
     
+    public void writeBytes(byte[] bytes) throws IOException
+    {
+        _channel.write(ByteBuffer.wrap(bytes));
+    }
+    
     public void writeInt(long position, int value) throws IOException
     {
         _bbInt.position(0);
@@ -123,6 +128,11 @@ public class ChannelWriter implements DataWriter {
         _bbShort.putShort(value);
         _bbShort.flip();
         _channel.write(_bbShort, position);
+    }
+    
+    public void writeBytes(long position, byte[] bytes) throws IOException
+    {
+        _channel.write(ByteBuffer.wrap(bytes), position);
     }
     
     public long position() throws IOException

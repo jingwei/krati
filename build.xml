@@ -164,11 +164,12 @@
     </target>
     
     <target name="test.stress" depends="test.compile" description="-- run regression (20 minutes per test)">
-        <junit printsummary="yes" maxmemory="20G">
+        <junit printsummary="yes" maxmemory="16G">
             <jvmarg value="-Dtest.idStart=0"/>
             <jvmarg value="-Dtest.idCount=5000000"/>
             <jvmarg value="-Dtest.segFileSizeMB=256"/>
             <jvmarg value="-Dtest.runTimeSeconds=1200"/>
+            <jvmarg value="-Dtest.writesControl=20"/> <!-- sleep 1 millisecond every 20 writes -->
             <jvmarg value="-Dtest.dir=${test.dir}"/>
             <jvmarg value="-Dtest.output.dir=${test.dir}/output"/>
             <formatter type="brief" usefile="false"/>
@@ -187,7 +188,7 @@
     </target>
 
     <target name="regress.cache" depends="test.compile" description="-- regress DataCache for memory/mapped/channel (20 minutes per test)">
-        <junit printsummary="yes" maxmemory="20G">
+        <junit printsummary="yes" maxmemory="16G">
             <jvmarg value="-Dtest.idStart=0"/>
             <jvmarg value="-Dtest.idCount=5000000"/>
             <jvmarg value="-Dtest.segFileSizeMB=256"/>
@@ -204,13 +205,13 @@
             </classpath>
             
             <batchtest fork="yes">
-                <fileset dir="${test.build.dir}" includes="**/TestDataCache*.class"/>
+                <fileset dir="${test.build.dir}" includes="**/TestDataCache*.class" excludes="**/Test*er.class"/>
             </batchtest>
         </junit>
     </target>
 
     <target name="regress.store" depends="test.compile" description="-- regress DataStore for memory/mapped/channel (20 minutes per test)">
-        <junit printsummary="yes" maxmemory="20G">
+        <junit printsummary="yes" maxmemory="16G">
             <jvmarg value="-Dtest.idStart=0"/>
             <jvmarg value="-Dtest.idCount=5000000"/>
             <jvmarg value="-Dtest.segFileSizeMB=256"/>
@@ -227,7 +228,7 @@
             </classpath>
             
             <batchtest fork="yes">
-                <fileset dir="${test.build.dir}" includes="**/Test*Store*.class"/>
+                <fileset dir="${test.build.dir}" includes="**/Test*Store*.class" excludes="**/Test*er.class"/>
             </batchtest>
         </junit>
     </target>

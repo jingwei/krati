@@ -134,16 +134,22 @@ public class ObjectCacheAgent<T> implements ObjectCache<T>
     {
         return _cache.getHWMark();
     }
-
+    
     @Override
     public long getLWMark()
     {
         return _cache.getLWMark();
     }
-
+    
     @Override
     public void saveHWMark(long endOfPeriod) throws Exception
     {
         _cache.saveHWMark(endOfPeriod);
+    }
+    
+    @Override
+    public byte[] getBytes(int objectId)
+    {
+        throw new UnsupportedOperationException();
     }
 }

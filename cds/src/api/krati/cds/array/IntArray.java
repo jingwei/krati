@@ -1,14 +1,12 @@
 package krati.cds.array;
 
-import krati.cds.MemoryCloneable;
-
 /**
  * Integer Array
  * 
  * @author jwu
  *
  */
-public interface IntArray extends BasicArray<int[]>, MemoryCloneable
+public interface IntArray extends Array
 {
   /**
    * Gets data at a specified index.
@@ -16,7 +14,7 @@ public interface IntArray extends BasicArray<int[]>, MemoryCloneable
    * @param index
    * @return data at a specified index
    */
-  public int getData(int index);
+  public int get(int index);
   
   /**
    * Sets data at a specified index.
@@ -25,5 +23,12 @@ public interface IntArray extends BasicArray<int[]>, MemoryCloneable
    * @param value
    * @param scn
    */
-  public void setData(int index, int value, long scn) throws Exception;
+  public void set(int index, int value, long scn) throws Exception;
+  
+  /**
+   * Gets the internal primitive array.
+   * 
+   * @return int array.
+   */
+  public int[] getInternalArray();
 }

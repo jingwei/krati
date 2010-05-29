@@ -12,12 +12,24 @@ import krati.io.DataWriter;
  */
 public class EntryValueLong extends EntryValue
 {
-  public final long val;
+  public long val;
   
   public EntryValueLong(int pos, long val, long scn)
   {
     super(pos, scn);
     this.val = val;
+  }
+  
+  public final void reinit(int pos, long val, long scn)
+  {
+    this.pos = pos;
+    this.val = val;
+    this.scn = scn;
+  }
+  
+  public final long getValue()
+  {
+    return val;
   }
   
   @Override

@@ -19,6 +19,14 @@ public class EntryValueShortFactory implements EntryValueFactory<EntryValueShort
   }
   
   /**
+   * @return an empty EntryValueInt.
+   */
+  public EntryValueShort newValue()
+  {
+    return new EntryValueShort(0, (short)0, 0L);
+  }
+  
+  /**
    * @return an EntryValueShort read from an input stream.
    * @throws IOException
    */
@@ -27,5 +35,20 @@ public class EntryValueShortFactory implements EntryValueFactory<EntryValueShort
     return new EntryValueShort(in.readInt(),   /* array position */
                                in.readShort(), /* data value     */
                                in.readLong()   /* SCN value      */);
+  }
+  
+  /**
+   * Read data from stream to populate an EntryValueShort.
+   * @param in      data reader for EntryValueShort.
+   * @param value   an EntryValue to populate.
+   * @return <code>true</code> if value is populated.
+   * @throws IOException
+   */
+  @Override
+  public void reinitValue(DataReader in, EntryValueShort value) throws IOException
+  {
+    value.reinit(in.readInt(),   /* array position */
+                 in.readShort(), /* data value     */
+                 in.readLong()   /* SCN value      */);
   }
 }

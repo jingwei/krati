@@ -48,7 +48,7 @@ public interface Segment
     
     public final static int defaultSegmentFileSizeMB = 512;
     public final static int maxSegmentFileSizeMB = 2048;
-    public final static int minSegmentFileSizeMB = 32;
+    public final static int minSegmentFileSizeMB = 10;
     
     public final static int posLastForcedTime = 0;
     public final static int posStorageVersion = 8;

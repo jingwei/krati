@@ -24,7 +24,7 @@ public class SegmentPerf
     
     public SegmentPerf(SegmentFactory segFactory, String segmentHomePath, int initSizeMB) throws IOException
     {
-        segManager = SegmentManager.getInstance(segFactory, segmentHomePath, initSizeMB);
+        segManager = SegmentManager.getInstance(segmentHomePath, segFactory, initSizeMB);
         
         long initSizeBytes = initSizeMB * 1024L * 1024L;
         datLength = (int)(initSizeBytes / maxDataBytes);

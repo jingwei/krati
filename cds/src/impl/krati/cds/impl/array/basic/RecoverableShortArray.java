@@ -9,26 +9,17 @@ import krati.cds.array.ShortArray;
 import krati.cds.impl.array.entry.EntryShortFactory;
 import krati.cds.impl.array.entry.EntryValueShort;
 
-public class ShortArrayRecoverableImpl extends RecoverableArrayImpl<short[], EntryValueShort> implements ShortArray
+public class RecoverableShortArray extends RecoverableArray<EntryValueShort> implements ShortArray
 {
-  private static final Logger _log = Logger.getLogger(ShortArrayRecoverableImpl.class);
+  private static final Logger _log = Logger.getLogger(RecoverableShortArray.class);
+  private short[] _internalArray;
   
-  public ShortArrayRecoverableImpl(Config config) throws Exception
-  {
-    this(config.getMemberIdStart(),
-         config.getMemberIdCount(),
-         config.getMaxEntrySize(),
-         config.getMaxEntries(),
-         config.getCacheDirectory());
-  }
-  
-  public ShortArrayRecoverableImpl(int memberIdStart,
-                                   int memberIdCount,
-                                   int maxEntrySize,
+  public RecoverableShortArray(int length,
+                                   int entrySize,
                                    int maxEntries,
                                    File cacheDirectory) throws Exception
   {
-    super(memberIdStart, memberIdCount, 2 /* elementSize */, maxEntrySize, maxEntries, cacheDirectory, new EntryShortFactory());
+    super(length, 2 /* elementSize */, entrySize, maxEntries, cacheDirectory, new EntryShortFactory());
   }
   
   @Override
@@ -38,12 +29,12 @@ public class ShortArrayRecoverableImpl extends RecoverableArrayImpl<short[], Ent
     
     try
     {
-      maxScn = _arrayFile.readMaxSCN();
+      maxScn = _arrayFile.getMaxScn();
       _internalArray = _arrayFile.loadShortArray();
-      if (_internalArray.length != _memberIdCount)
+      if (_internalArray.length != _length)
       {
         maxScn = 0;
-        _internalArray = new short[_memberIdCount];
+        _internalArray = new short[_length];
         clear();
         
         _log.warn("Allocated _internalArray due to invalid length");
@@ -56,7 +47,7 @@ public class ShortArrayRecoverableImpl extends RecoverableArrayImpl<short[], Ent
     catch(Exception e)
     {
       maxScn = 0;
-      _internalArray = new short[_memberIdCount];
+      _internalArray = new short[_length];
       clear();
       
       _log.warn("Allocated _internalArray due to a thrown exception: " + e.getMessage());
@@ -77,7 +68,7 @@ public class ShortArrayRecoverableImpl extends RecoverableArrayImpl<short[], Ent
     {
       try
       {
-        setData(getIndexStart(), getData(getIndexStart()), endOfPeriod);
+        set(0, get(0), endOfPeriod);
       }
       catch(Exception e)
       {
@@ -111,20 +102,20 @@ public class ShortArrayRecoverableImpl extends RecoverableArrayImpl<short[], Ent
     }
   }
   
-  public short getData(int index)
+  public short get(int index)
   {
-    return _internalArray[index - _memberIdStart];
+    return _internalArray[index];
   }
   
-  public void setData(int index, short value, long scn) throws Exception
+  public void set(int index, short value, long scn) throws Exception
   {
-    int pos = index - _memberIdStart;
-    _internalArray[pos] = value;
-    _entryManager.addToEntry(new EntryValueShort(pos, value, scn));  
+    _internalArray[index] = value;
+    _entryManager.addToPreFillEntryShort(index, value, scn);  
   }
   
-  public static class Config extends RecoverableArrayImpl.Config<EntryValueShort>
+  @Override
+  public short[] getInternalArray()
   {
-    // super configuration class provides everything
+    return _internalArray;
   }
 }

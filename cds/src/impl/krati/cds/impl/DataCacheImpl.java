@@ -6,10 +6,9 @@ import java.io.IOException;
 import org.apache.log4j.Logger;
 
 import krati.cds.DataCache;
-import krati.cds.array.DataArray;
-import krati.cds.impl.array.CheckedDataArrayImpl;
-import krati.cds.impl.array.DataArrayImpl;
-import krati.cds.impl.array.basic.LongArrayRecoverableImpl;
+import krati.cds.impl.array.CheckedDataArray;
+import krati.cds.impl.array.SimpleDataArray;
+import krati.cds.impl.array.basic.RecoverableLongArray;
 import krati.cds.impl.segment.MemorySegmentFactory;
 import krati.cds.impl.segment.SegmentFactory;
 import krati.cds.impl.segment.SegmentManager;
@@ -31,7 +30,9 @@ import krati.cds.impl.segment.SegmentManager;
 public class DataCacheImpl implements DataCache
 {
     private final static Logger _log = Logger.getLogger(DataCacheImpl.class);
-    private DataArray _dataArray;
+    private SimpleDataArray _dataArray;
+    private int _idCount;
+    private int _idStart;
     
     /**
      * Constructs a data cache with default values below.
@@ -138,7 +139,7 @@ public class DataCacheImpl implements DataCache
      * 
      * @param memberIdStart          Start of memberId
      * @param memberIdCount          Total of memberId(s)
-     * @param maxEntrySize           Redo entry size (i.e., batch up date)
+     * @param maxEntrySize           Redo entry size (i.e., batch size)
      * @param maxEntries             Number of redo entries required for updating the underlying address array
      * @param cacheDirectory         Cache directory where persistent data will be stored
      * @param segmentFactory         Factory for creating Segment(s)
@@ -155,25 +156,27 @@ public class DataCacheImpl implements DataCache
                          int segmentFileSizeMB,
                          boolean checked) throws Exception
     {
-        LongArrayRecoverableImpl addressArray =
-            new LongArrayRecoverableImpl(memberIdStart,
-                                         memberIdCount,
-                                         maxEntrySize,
-                                         maxEntries,
-                                         cacheDirectory);
+        this._idStart = memberIdStart;
+        this._idCount = memberIdCount;
         
-        String segmentHomePath = cacheDirectory.getCanonicalPath() + File.separator + "segs";
-        SegmentManager segManager = SegmentManager.getInstance(segmentFactory,
-                                                               segmentHomePath,
+        RecoverableLongArray addressArray =
+            new RecoverableLongArray(memberIdCount,
+                                     maxEntrySize,
+                                     maxEntries,
+                                     cacheDirectory);
+        
+        String segmentHome = cacheDirectory.getCanonicalPath() + File.separator + "segs";
+        SegmentManager segManager = SegmentManager.getInstance(segmentHome,
+                                                               segmentFactory,
                                                                segmentFileSizeMB);
         
         if(checked)
         {
-            _dataArray = new CheckedDataArrayImpl(addressArray, segManager);
+            _dataArray = new CheckedDataArray(addressArray, segManager);
         }
         else
         {
-            _dataArray = new DataArrayImpl(addressArray, segManager);
+            _dataArray = new SimpleDataArray(addressArray, segManager);
         }
         
         _log.info("DataCache initiated: " + getStatus());
@@ -184,7 +187,7 @@ public class DataCacheImpl implements DataCache
      * 
      * @param memberIdStart          Start of memberId
      * @param memberIdCount          Total of memberId(s)
-     * @param maxEntrySize           Redo entry size (i.e., batch up date)
+     * @param maxEntrySize           Redo entry size (i.e., batch size)
      * @param maxEntries             Number of redo entries required for updating the underlying address array
      * @param cacheDirectory         Cache directory where persistent data will be stored
      * @param segmentFactory         Factory for creating Segment(s)
@@ -205,25 +208,27 @@ public class DataCacheImpl implements DataCache
                          double segmentCompactFactor,
                          boolean checked) throws Exception
     {
-        LongArrayRecoverableImpl addressArray =
-            new LongArrayRecoverableImpl(memberIdStart,
-                                         memberIdCount,
-                                         maxEntrySize,
-                                         maxEntries,
-                                         cacheDirectory);
+        this._idStart = memberIdStart;
+        this._idCount = memberIdCount;
         
-        String segmentHomePath = cacheDirectory.getCanonicalPath() + File.separator + "segs";
-        SegmentManager segManager = SegmentManager.getInstance(segmentFactory,
-                                                               segmentHomePath,
+        RecoverableLongArray addressArray =
+            new RecoverableLongArray(memberIdCount,
+                                     maxEntrySize,
+                                     maxEntries,
+                                     cacheDirectory);
+        
+        String segmentHome = cacheDirectory.getCanonicalPath() + File.separator + "segs";
+        SegmentManager segManager = SegmentManager.getInstance(segmentHome,
+                                                               segmentFactory,
                                                                segmentFileSizeMB);
         
         if (checked)
         {
-            _dataArray = new CheckedDataArrayImpl(addressArray, segManager, segmentCompactTrigger, segmentCompactFactor);
+            _dataArray = new CheckedDataArray(addressArray, segManager, segmentCompactTrigger, segmentCompactFactor);
         }
         else
         {
-            _dataArray = new DataArrayImpl(addressArray, segManager, segmentCompactTrigger, segmentCompactFactor);
+            _dataArray = new SimpleDataArray(addressArray, segManager, segmentCompactTrigger, segmentCompactFactor);
         }
         
         _log.info("DataCache initiated: " + getStatus());
@@ -258,49 +263,49 @@ public class DataCacheImpl implements DataCache
     @Override
     public int getIdCount()
     {
-        return _dataArray.length();
+        return _idCount;
     }
     
     @Override
     public int getIdStart()
     {
-        return _dataArray.getIndexStart();
+        return _idStart;
     }
     
     @Override
     public byte[] getData(int memberId)
     {
-        return _dataArray.getData(memberId);
+        return _dataArray.getData(memberId - _idStart);
     }
     
     @Override
     public int getData(int memberId, byte[] dst)
     {
-        return _dataArray.getData(memberId, dst);
+        return _dataArray.getData(memberId - _idStart, dst);
     }
     
     @Override
     public int getData(int memberId, byte[] dst, int offset)
     {
-        return _dataArray.getData(memberId, dst, offset);
+        return _dataArray.getData(memberId - _idStart, dst, offset);
     }
     
     @Override
     public void setData(int memberId, byte[] data, long scn) throws Exception
     {
-        _dataArray.setData(memberId, data, scn);
+        _dataArray.setData(memberId - _idStart, data, scn);
     }
     
     @Override
     public void setData(int memberId, byte[] data, int offset, int length, long scn) throws Exception
     {
-        _dataArray.setData(memberId, data, offset, length, scn);
+        _dataArray.setData(memberId - _idStart, data, offset, length, scn);
     }
     
     @Override
     public void deleteData(int memberId, long scn) throws Exception
     {
-        _dataArray.setData(memberId, null, scn);
+        _dataArray.setData(memberId - _idStart, null, scn);
     }
     
     @Override

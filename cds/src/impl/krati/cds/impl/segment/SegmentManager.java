@@ -42,7 +42,7 @@ import org.apache.log4j.Logger;
  * @author jwu
  *
  */
-public final class SegmentManager implements Cloneable
+public final class SegmentManager
 {
     private final static Logger _log = Logger.getLogger(SegmentManager.class);
     private final static Map<String, SegmentManager> _segManagerMap = new HashMap<String, SegmentManager>();
@@ -76,21 +76,6 @@ public final class SegmentManager implements Cloneable
         this._segFileSizeMB = segmentFileSizeMB;
         this._segMeta = new SegmentMeta(new File(_segHomePath, ".meta"));
         this.init();
-    }
-    
-    /**
-     * Only used for cloning this SegmentManager.
-     * 
-     * @param cloneTarget
-     */
-    private SegmentManager(SegmentManager cloneTarget)
-    {
-        this._segFactory = cloneTarget.getSegmentFactory();
-        this._segHomePath = cloneTarget.getSegmentHomePath();
-        this._segFileSizeMB = cloneTarget.getSegmentFileSizeMB();
-        this._segMeta = cloneTarget._segMeta;
-        this._segCurrent = cloneTarget._segCurrent;
-        this._segList.addAll(cloneTarget._segList);
     }
     
     public int getSegmentFileSizeMB()
@@ -316,15 +301,6 @@ public final class SegmentManager implements Cloneable
         return segFiles;
     }
     
-    @Override
-    public Object clone()
-    {
-        synchronized(this)
-        {
-            return new SegmentManager(this);
-        }
-    }
-    
     public SegmentMeta getMeta()
     {
         return _segMeta;
@@ -350,15 +326,15 @@ public final class SegmentManager implements Cloneable
     
     public synchronized static SegmentManager getInstance(String segmentHomePath) throws IOException
     {
-        return getInstance(new MappedSegmentFactory(), segmentHomePath);
+        return getInstance(segmentHomePath, new MappedSegmentFactory());
     }
     
-    public synchronized static SegmentManager getInstance(SegmentFactory segmentFactory, String segmentHomePath) throws IOException
+    public synchronized static SegmentManager getInstance(String segmentHomePath, SegmentFactory segmentFactory) throws IOException
     {
-        return getInstance(segmentFactory, segmentHomePath, Segment.defaultSegmentFileSizeMB);
+        return getInstance(segmentHomePath, segmentFactory, Segment.defaultSegmentFileSizeMB);
     }
     
-    public synchronized static SegmentManager getInstance(SegmentFactory segmentFactory, String segmentHomePath, int segmentFileSizeMB) throws IOException
+    public synchronized static SegmentManager getInstance(String segmentHomePath, SegmentFactory segmentFactory, int segmentFileSizeMB) throws IOException
     {
         if(segmentFileSizeMB < Segment.minSegmentFileSizeMB)
         {

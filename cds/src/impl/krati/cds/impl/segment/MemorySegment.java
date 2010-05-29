@@ -241,12 +241,32 @@ public class MemorySegment extends AbstractSegment
     @Override
     public long transferTo(long pos, int length, WritableByteChannel targetChannel) throws IOException
     {
-        if((pos + length) <= _channel.position())
+        /**
+         * Channel-based JavaNio zero copy (channel-to-channel transfer) does not work for MemorySegment because:
+         *   1. MemorySegment uses a large amount of memory.
+         *   2. OS IO cache also uses a large amount of memory.
+         *   3. Both will compete for memory and cause memory thrashing.
+         *
+         * For example, a worst case scenario can be something like the following:
+         *   
+         *   The machine has 24 GB, and JVM has -Xmx16GB, and each write is about 1 to 2 KB.
+         * 
+         *   Each MemorySegment is almost 50% fragmented. For 10GB data, the total memory hold by MemorySegment can be
+         *   approximately ~20GB. When compaction kicks off, the compactor will basically compact all the segments one
+         *   by one. Channel-based zero copy can extend IO cache up to 10-20GB.
+         *   
+         *   This can put extreme pressure on memory and decrease the write performance of MemorySegment significantly.
+         *   The test shows the write rate of MemorySegment can decrease from 20~30/ms to 0.5/ms.
+         *   
+         * The better solution is to write data from memory to channel directly.
+         */
+        if((pos + length) <= _buffer.position())
         {
-            return _channel.transferTo(pos, length, targetChannel);
+            targetChannel.write(ByteBuffer.wrap(_buffer.array(), (int)pos, length));
+            return length;
         }
         
-        throw new SegmentOverflowException(this);
+        throw new SegmentOverflowException(this, SegmentOverflowException.Type.READ_OVERFLOW);
     }
     
     @Override

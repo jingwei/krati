@@ -7,12 +7,24 @@ import krati.io.DataWriter;
 
 public class EntryValueShort extends EntryValue
 {
-  public final short val;
+  public short val;
   
   public EntryValueShort(int pos, short val, long scn)
   {
     super(pos, scn);
     this.val = val;
+  }
+  
+  public final void reinit(int pos, short val, long scn)
+  {
+    this.pos = pos;
+    this.val = val;
+    this.scn = scn;
+  }
+  
+  public final short getValue()
+  {
+    return val;
   }
   
   @Override

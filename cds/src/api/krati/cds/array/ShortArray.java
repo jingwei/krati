@@ -6,7 +6,7 @@ package krati.cds.array;
  * @author jwu
  *
  */
-public interface ShortArray extends BasicArray<short[]>
+public interface ShortArray extends Array
 {
   /**
    * Gets data at a specified index.
@@ -14,7 +14,7 @@ public interface ShortArray extends BasicArray<short[]>
    * @param index
    * @return data at a specified index
    */
-  public short getData(int index);
+  public short get(int index);
   
   /**
    * Sets data at a specified index.
@@ -23,5 +23,12 @@ public interface ShortArray extends BasicArray<short[]>
    * @param value
    * @param scn
    */
-  public void setData(int index, short value, long scn) throws Exception;
+  public void set(int index, short value, long scn) throws Exception;
+  
+  /**
+   * Gets the internal primitive array.
+   * 
+   * @return short array.
+   */
+  public short[] getInternalArray();
 }

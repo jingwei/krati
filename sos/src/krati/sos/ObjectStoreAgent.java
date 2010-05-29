@@ -91,6 +91,15 @@ public class ObjectStoreAgent<K, V> implements ObjectStore<K, V>
         }
     }
     
+    @Override
+    public void sync() throws IOException
+    {
+        synchronized(_store)
+        {
+            _store.sync();
+        }
+    }
+    
     /**
      * Persists this object store.
      * 
@@ -116,5 +125,17 @@ public class ObjectStoreAgent<K, V> implements ObjectStore<K, V>
         {
             _store.clear();
         }
+    }
+    
+    @Override
+    public byte[] getBytes(K key)
+    {
+        return _store.getBytes(key);
+    }
+
+    @Override
+    public byte[] getBytes(byte[] keyBytes)
+    {
+        return _store.getBytes(keyBytes);
     }
 }

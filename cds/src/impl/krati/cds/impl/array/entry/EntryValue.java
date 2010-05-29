@@ -12,13 +12,23 @@ import krati.io.DataWriter;
  */
 public abstract class EntryValue implements Comparable<EntryValue>
 {
-  public final int pos;   // position in the array
-  public final long scn;  // SCN associated with an update at the position
+  public int pos;   // position in the array
+  public long scn;  // SCN associated with an update at the position
   
   public EntryValue(int pos, long scn)
   {
     this.pos = pos;
     this.scn = scn;
+  }
+  
+  public final int getPosition()
+  {
+    return pos;
+  }
+  
+  public final long getScn()
+  {
+    return scn;
   }
   
   @Override

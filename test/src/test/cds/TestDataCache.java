@@ -153,6 +153,15 @@ public class TestDataCache extends AbstractTest
             {
                 write(_indexStart + _rand.nextInt(_length));
                 _cnt++;
+                
+                if(writesControl > 0 && _cnt % writesControl == 0)
+                {
+                    try
+                    {
+                        Thread.sleep(1);
+                    }
+                    catch(InterruptedException e) {}
+                }
             }
         }
     }

@@ -7,8 +7,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import krati.cds.DataCache;
-import krati.cds.impl.DataCacheImpl;
 import krati.cds.impl.segment.SegmentFactory;
 import krati.cds.store.DataStore;
 import krati.util.FnvHashFunction;
@@ -82,11 +80,15 @@ public class PartitionedDataStore implements DataStore<byte[], byte[]>
         _partitionList = new ArrayList<DataStore<byte[], byte[]>>(_partitionCount);
         for(int i = 0; i < _partitionCount; i++)
         {
-            DataCache cache = new DataCacheImpl(0,
-                                                _partitionCapacity,
-                                                new File(_partitionHome, "P" + i),
-                                                segFactory, segFileSizeMB);
-            _partitionList.add(new SimpleDataStore(cache, _hashFunction));
+            SimpleDataStore subStore =
+                new SimpleDataStore(
+                    new File(_partitionHome, "P" + i),
+                    _partitionCapacity,
+                    10000,
+                    5,
+                    segFileSizeMB,
+                    segFactory);
+            _partitionList.add(subStore);
         }
         
         _log.info("init done");
@@ -112,8 +114,7 @@ public class PartitionedDataStore implements DataStore<byte[], byte[]>
         return _totalCapacity;
     }
     
-    @Override
-    public long hash(byte[] key)
+    protected long hash(byte[] key)
     {
         return _hashFunction.hash(key);
     }

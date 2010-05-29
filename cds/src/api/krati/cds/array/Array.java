@@ -1,14 +1,12 @@
 package krati.cds.array;
 
-import krati.cds.Persistable;
-
 /**
  * Array
  * 
  * @author jwu
  *
  */
-public interface Array extends Persistable
+public interface Array
 {
   /**
    * Clears this Array.
@@ -21,12 +19,7 @@ public interface Array extends Persistable
   public int length();
   
   /**
-   * @return the start index of this Array.
-   */
-  public int getIndexStart();
-  
-  /**
    * @return a boolean indicating an index is in the range of this Array.
    */
-  public boolean indexInRange(int index);
+  public boolean hasIndex(int index);
 }

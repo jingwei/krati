@@ -7,11 +7,11 @@ package krati.cds.impl.array.entry;
  */
 public class EntryLongFactory implements EntryFactory<EntryValueLong>
 {
-  private static final EntryValueLongFactory valFactory = new EntryValueLongFactory();
-
+  private int idCounter = 0;
+  
   @Override
   public Entry<EntryValueLong> newEntry(int initialCapacity)
   {
-    return new Entry<EntryValueLong>(EntryLongFactory.valFactory, initialCapacity);
+    return new PreFillEntryLong(idCounter++, initialCapacity);
   } 
 }

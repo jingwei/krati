@@ -37,7 +37,6 @@ import krati.io.ChannelWriter;
 public class EntryFileWriter
 {
     private final static Logger _log = Logger.getLogger(EntryFileWriter.class);
-    public  final static long STORAGE_VERSION = 0;
     
     private final static long STORAGE_VERESION_POSITION = 0;
     private final static long HEAD_MIN_SCN_POSITION     = 8;
@@ -79,7 +78,7 @@ public class EntryFileWriter
         _maxScn = maxScn;
         
         // Update the tail section
-        _writer.writeLong(STORAGE_VERESION_POSITION, STORAGE_VERSION);
+        _writer.writeLong(STORAGE_VERESION_POSITION, Entry.STORAGE_VERSION);
         _writer.writeLong(HEAD_MIN_SCN_POSITION, minScn);
         _writer.writeLong(HEAD_MAX_SCN_POSITION, maxScn);
         _writer.writeInt(ENTRY_VALUE_CNT_POSITION, _valCnt);
