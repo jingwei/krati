@@ -168,7 +168,7 @@
             <jvmarg value="-Dtest.idStart=0"/>
             <jvmarg value="-Dtest.idCount=5000000"/>
             <jvmarg value="-Dtest.segFileSizeMB=256"/>
-            <jvmarg value="-Dtest.runTimeSeconds=1200"/>
+            <jvmarg value="-Dtest.runTimeSeconds=1800"/>
             <jvmarg value="-Dtest.writesControl=20"/> <!-- sleep 1 millisecond every 20 writes -->
             <jvmarg value="-Dtest.dir=${test.dir}"/>
             <jvmarg value="-Dtest.output.dir=${test.dir}/output"/>
@@ -192,7 +192,7 @@
             <jvmarg value="-Dtest.idStart=0"/>
             <jvmarg value="-Dtest.idCount=5000000"/>
             <jvmarg value="-Dtest.segFileSizeMB=256"/>
-            <jvmarg value="-Dtest.runTimeSeconds=1200"/>
+            <jvmarg value="-Dtest.runTimeSeconds=1800"/>
             <jvmarg value="-Dtest.dir=${test.dir}"/>
             <jvmarg value="-Dtest.output.dir=${test.dir}/output"/>
             <formatter type="brief" usefile="false"/>
@@ -215,7 +215,7 @@
             <jvmarg value="-Dtest.idStart=0"/>
             <jvmarg value="-Dtest.idCount=5000000"/>
             <jvmarg value="-Dtest.segFileSizeMB=256"/>
-            <jvmarg value="-Dtest.runTimeSeconds=1200"/>
+            <jvmarg value="-Dtest.runTimeSeconds=1800"/>
             <jvmarg value="-Dtest.dir=${test.dir}"/>
             <jvmarg value="-Dtest.output.dir=${test.dir}/output"/>
             <formatter type="brief" usefile="false"/>

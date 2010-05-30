@@ -10,6 +10,7 @@ import java.util.Random;
 
 import krati.cds.DataCache;
 import krati.cds.impl.DataCacheImpl;
+import krati.cds.impl.segment.SegmentFactory;
 
 import test.AbstractTest;
 
@@ -427,12 +428,17 @@ public class TestDataCache extends AbstractTest
         }
     }
     
+    protected SegmentFactory getSegmentFactory()
+    {
+        return new krati.cds.impl.segment.MemorySegmentFactory();
+    }
+    
     protected DataCache getDataCache(File cacheDir) throws Exception
     {
         DataCache cache = new DataCacheImpl(idStart,
                                             idCount,
                                             cacheDir,
-                                            new krati.cds.impl.segment.MemorySegmentFactory(),
+                                            getSegmentFactory(),
                                             segFileSizeMB);
         return cache;
     }

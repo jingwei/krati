@@ -1,9 +1,6 @@
 package test.cds;
 
-import java.io.File;
-
-import krati.cds.DataCache;
-import krati.cds.impl.DataCacheImpl;
+import krati.cds.impl.segment.SegmentFactory;
 
 /**
  * TestDataCache using ChannelSegment 
@@ -14,13 +11,8 @@ import krati.cds.impl.DataCacheImpl;
 public class TestDataCacheChannel extends TestDataCache
 {
     @Override
-    protected DataCache getDataCache(File cacheDir) throws Exception
+    protected SegmentFactory getSegmentFactory()
     {
-        DataCache cache = new DataCacheImpl(idStart,
-                                            idCount,
-                                            cacheDir,
-                                            new krati.cds.impl.segment.ChannelSegmentFactory(),
-                                            segFileSizeMB);
-        return cache;
+        return new krati.cds.impl.segment.ChannelSegmentFactory();
     }
 }
