@@ -101,7 +101,7 @@ public class ChannelSegment extends AbstractSegment
             int pos = (int)_channel.position();
             if((pos + 4) >= _initSizeBytes)
             {
-                throw new SegmentOverflowException(this);
+                throw new BufferOverflowException();
             }
             
             ByteBuffer bb = ByteBuffer.wrap(new byte[4]);
@@ -131,7 +131,7 @@ public class ChannelSegment extends AbstractSegment
             int pos = (int)_channel.position();
             if((pos + 8) >= _initSizeBytes)
             {
-                throw new SegmentOverflowException(this);
+                throw new BufferOverflowException();
             }
             
             ByteBuffer bb = ByteBuffer.wrap(new byte[8]);
@@ -161,7 +161,7 @@ public class ChannelSegment extends AbstractSegment
             int pos = (int)_channel.position();
             if((pos + 2) >= _initSizeBytes)
             {
-                throw new SegmentOverflowException(this);
+                throw new BufferOverflowException();
             }
             
             ByteBuffer bb = ByteBuffer.wrap(new byte[2]);
@@ -191,7 +191,7 @@ public class ChannelSegment extends AbstractSegment
             int pos = (int)_channel.position();
             if((pos + data.length) >= _initSizeBytes)
             {
-                throw new SegmentOverflowException(this);
+                throw new BufferOverflowException();
             }
             
             ByteBuffer bb = ByteBuffer.wrap(data);
@@ -219,7 +219,7 @@ public class ChannelSegment extends AbstractSegment
             int pos = (int)_channel.position();
             if((pos + length) >= _initSizeBytes)
             {
-                throw new SegmentOverflowException(this);
+                throw new BufferOverflowException();
             }
             
             ByteBuffer bb = ByteBuffer.wrap(data, offset, length);
