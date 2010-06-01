@@ -163,13 +163,12 @@
         </junit>
     </target>
     
-    <target name="test.stress" depends="test.compile" description="-- run regression (20 minutes per test)">
+    <target name="test.stress" depends="test.compile" description="-- run regression (30 minutes per test)">
         <junit printsummary="yes" maxmemory="16G">
             <jvmarg value="-Dtest.idStart=0"/>
             <jvmarg value="-Dtest.idCount=5000000"/>
             <jvmarg value="-Dtest.segFileSizeMB=256"/>
             <jvmarg value="-Dtest.runTimeSeconds=1800"/>
-            <jvmarg value="-Dtest.writesControl=20"/> <!-- sleep 1 millisecond every 20 writes -->
             <jvmarg value="-Dtest.dir=${test.dir}"/>
             <jvmarg value="-Dtest.output.dir=${test.dir}/output"/>
             <formatter type="brief" usefile="false"/>
@@ -187,7 +186,7 @@
         </junit>
     </target>
 
-    <target name="regress.cache" depends="test.compile" description="-- regress DataCache for memory/mapped/channel (20 minutes per test)">
+    <target name="regress.cache" depends="test.compile" description="-- regress DataCache for memory/mapped/channel (30 minutes per test)">
         <junit printsummary="yes" maxmemory="16G">
             <jvmarg value="-Dtest.idStart=0"/>
             <jvmarg value="-Dtest.idCount=5000000"/>
@@ -210,7 +209,7 @@
         </junit>
     </target>
 
-    <target name="regress.store" depends="test.compile" description="-- regress DataStore for memory/mapped/channel (20 minutes per test)">
+    <target name="regress.store" depends="test.compile" description="-- regress DataStore for memory/mapped/channel (30 minutes per test)">
         <junit printsummary="yes" maxmemory="16G">
             <jvmarg value="-Dtest.idStart=0"/>
             <jvmarg value="-Dtest.idCount=5000000"/>

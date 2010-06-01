@@ -34,11 +34,6 @@ public class AbstractTest extends TestCase
     public static int runTimeSeconds = 120;
     public static int segFileSizeMB = 256;
     
-    /*
-     * Number of writes allowed before sleeping 1 millisecond.
-     */
-    public static int writesControl = 0;
-    
     static
     {
         try
@@ -91,19 +86,6 @@ public class AbstractTest extends TestCase
         finally
         {
             log.info("test.segFileSizeMB: " + segFileSizeMB);
-        }
-        
-        try
-        {
-            writesControl = Integer.parseInt(System.getProperty("test.writesControl"));
-        }
-        catch(Exception e)
-        {
-            writesControl = 0;
-        }
-        finally
-        {
-            log.info("test.writesControl: " + (writesControl == 0 ? "N/A" : (writesControl + " (writes allowed before sleeping 1 ms)")));
         }
     }
     
