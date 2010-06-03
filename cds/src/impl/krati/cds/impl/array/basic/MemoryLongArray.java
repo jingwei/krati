@@ -123,6 +123,11 @@ public class MemoryLongArray implements LongArray, DynamicArray
         }
         
         _subArrays = tmpArrays;
+        
+        if(getArrayExpandListener() != null)
+        {
+            getArrayExpandListener().arrayExpanded(this);
+        }
     }
     
     @Override
@@ -135,5 +140,17 @@ public class MemoryLongArray implements LongArray, DynamicArray
         }
         
         return result;
+    }
+    
+    private ArrayExpandListener _expandListener;
+    
+    protected void setArrayExpandListener(ArrayExpandListener listener)
+    {
+        this._expandListener = listener;
+    }
+    
+    protected ArrayExpandListener getArrayExpandListener()
+    {
+        return _expandListener;
     }
 }

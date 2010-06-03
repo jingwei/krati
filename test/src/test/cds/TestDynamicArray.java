@@ -6,9 +6,9 @@ import test.AbstractTest;
 
 import java.util.Random;
 
-import krati.cds.impl.array.DynamicIntArrayImpl;
-import krati.cds.impl.array.DynamicLongArrayImpl;
-import krati.cds.impl.array.DynamicShortArrayImpl;
+import krati.cds.impl.array.basic.DynamicIntArray;
+import krati.cds.impl.array.basic.DynamicLongArray;
+import krati.cds.impl.array.basic.DynamicShortArray;
 
 /**
  * TestDynamicArray
@@ -21,8 +21,8 @@ public class TestDynamicArray extends AbstractTest
     static long scn = 0;
     static Random random = new Random(System.currentTimeMillis());
     
-    int subArrayShift = 16;
-    int subArraySize = 1 << subArrayShift;
+    int subArrayBits = 16;
+    int subArraySize = 1 << subArrayBits;
     int maxEntrySize = 1000;
     int maxEntries = 10;
     
@@ -37,11 +37,7 @@ public class TestDynamicArray extends AbstractTest
         cleanTestOutput();
         
         // Create the first long array and do random updates
-        DynamicIntArrayImpl array1 = new DynamicIntArrayImpl(
-                TEST_OUTPUT_DIR,
-                subArrayShift,
-                maxEntrySize,
-                maxEntries);
+        DynamicIntArray array1 = new DynamicIntArray(maxEntrySize, maxEntries, TEST_OUTPUT_DIR);
         
         int memberIdStart = 0;
         MemberDataUpdate[] updates1 = MemberDataUpdate.generateUpdates(memberIdStart, subArraySize);
@@ -98,22 +94,14 @@ public class TestDynamicArray extends AbstractTest
         }
         
         // Create the second array, which should load data from cache
-        DynamicIntArrayImpl array2 = new DynamicIntArrayImpl(
-                TEST_OUTPUT_DIR,
-                subArrayShift,
-                maxEntrySize,
-                maxEntries);
+        DynamicIntArray array2 = new DynamicIntArray(maxEntrySize, maxEntries, TEST_OUTPUT_DIR);
         assertTrue("array2.getHWMark() is greater than array1.getHWMark()", array2.getHWMark() <= array1.getHWMark());
         
         // Persist the first array
         array1.persist();
         
         // Create the third array, which should load data from cache
-        DynamicIntArrayImpl array3 = new DynamicIntArrayImpl(
-                TEST_OUTPUT_DIR,
-                subArrayShift,
-                maxEntrySize,
-                maxEntries);
+        DynamicIntArray array3 = new DynamicIntArray(maxEntrySize, maxEntries, TEST_OUTPUT_DIR);
         assertTrue("array3.getHWMark() is greater than array1.getHWMark()", array3.getHWMark() <= array1.getHWMark());
         
         int nonZeroCount = 0;
@@ -134,11 +122,7 @@ public class TestDynamicArray extends AbstractTest
         cleanTestOutput();
         
         // Create the first long array and do random updates
-        DynamicLongArrayImpl array1 = new DynamicLongArrayImpl(
-                TEST_OUTPUT_DIR,
-                subArrayShift,
-                maxEntrySize,
-                maxEntries);
+        DynamicLongArray array1 = new DynamicLongArray(maxEntrySize, maxEntries, TEST_OUTPUT_DIR);
         
         int memberIdStart = 0;
         MemberDataUpdate[] updates1 = MemberDataUpdate.generateUpdates(memberIdStart, subArraySize);
@@ -195,22 +179,14 @@ public class TestDynamicArray extends AbstractTest
         }
         
         // Create the second array, which should load data from cache
-        DynamicLongArrayImpl array2 = new DynamicLongArrayImpl(
-                TEST_OUTPUT_DIR,
-                subArrayShift,
-                maxEntrySize,
-                maxEntries);
+        DynamicLongArray array2 = new DynamicLongArray(maxEntrySize, maxEntries, TEST_OUTPUT_DIR);
         assertTrue("array2.getHWMark() is greater than array1.getHWMark()", array2.getHWMark() <= array1.getHWMark());
         
         // Persist the first array
         array1.persist();
         
         // Create the third array, which should load data from cache
-        DynamicLongArrayImpl array3 = new DynamicLongArrayImpl(
-                TEST_OUTPUT_DIR,
-                subArrayShift,
-                maxEntrySize,
-                maxEntries);
+        DynamicLongArray array3 = new DynamicLongArray(maxEntrySize, maxEntries, TEST_OUTPUT_DIR);
         assertTrue("array3.getHWMark() is greater than array1.getHWMark()", array3.getHWMark() <= array1.getHWMark());
         
         int nonZeroCount = 0;
@@ -231,11 +207,7 @@ public class TestDynamicArray extends AbstractTest
         cleanTestOutput();
         
         // Create the first long array and do random updates
-        DynamicShortArrayImpl array1 = new DynamicShortArrayImpl(
-                TEST_OUTPUT_DIR,
-                subArrayShift,
-                maxEntrySize,
-                maxEntries);
+        DynamicShortArray array1 = new DynamicShortArray(maxEntrySize, maxEntries, TEST_OUTPUT_DIR);
         
         int memberIdStart = 0;
         MemberDataUpdate[] updates1 = MemberDataUpdate.generateUpdates(memberIdStart, subArraySize);
@@ -292,22 +264,14 @@ public class TestDynamicArray extends AbstractTest
         }
         
         // Create the second array, which should load data from cache
-        DynamicShortArrayImpl array2 = new DynamicShortArrayImpl(
-                TEST_OUTPUT_DIR,
-                subArrayShift,
-                maxEntrySize,
-                maxEntries);
+        DynamicShortArray array2 = new DynamicShortArray(maxEntrySize, maxEntries, TEST_OUTPUT_DIR);
         assertTrue("array2.getHWMark() is greater than array1.getHWMark()", array2.getHWMark() <= array1.getHWMark());
         
         // Persist the first array
         array1.persist();
         
         // Create the third array, which should load data from cache
-        DynamicShortArrayImpl array3 = new DynamicShortArrayImpl(
-                TEST_OUTPUT_DIR,
-                subArrayShift,
-                maxEntrySize,
-                maxEntries);
+        DynamicShortArray array3 = new DynamicShortArray(maxEntrySize, maxEntries, TEST_OUTPUT_DIR);
         assertTrue("array3.getHWMark() is greater than array1.getHWMark()", array3.getHWMark() <= array1.getHWMark());
         
         int nonZeroCount = 0;

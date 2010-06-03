@@ -50,7 +50,7 @@ public abstract class RecoverableArray<V extends EntryValue> implements Array, P
     }
     
     boolean newFile = true;
-    File file = new File(cacheDirectory, "indexes_" + length() + ".dat");
+    File file = new File(cacheDirectory, "indexes.dat");
     if (file.exists())
     {
       newFile = false;
@@ -71,46 +71,7 @@ public abstract class RecoverableArray<V extends EntryValue> implements Array, P
              " cacheDirectory:" + cacheDirectory.getAbsolutePath() +
              " arrayFile:" + _arrayFile.getName());
   }
-  /*
-  protected RecoverableArray(int elemSize,
-                             int entrySize,
-                             int maxEntries,
-                             File cacheDirectory,
-                             EntryFactory<V> entryFactory) throws Exception
-  {
-    _cacheDir = cacheDirectory;
-    _entryFactory = entryFactory;
-    _entryManager = new ArrayEntryManager<V>(this, maxEntries, entrySize);
-    
-    if (!_cacheDir.exists())
-    {
-      _cacheDir.mkdirs();
-    }
-    
-    boolean newFile = true;
-    File file = new File(cacheDirectory, "indexes_" + length() + ".dat");
-    if (file.exists())
-    {
-      newFile = false;
-    }
-    
-    _arrayFile = new ArrayFile(file, elemSize);
-    _length = _arrayFile.readArrayLength();
-    
-    if (newFile)
-    {
-      initArrayFileData();
-    }
-    
-    _log.info("initialLength:" + _length +
-            " entrySize:" + entrySize +
-            " maxEntries:" + maxEntries +
-            " cacheDirectory:" + cacheDirectory.getAbsolutePath() +
-            " arrayFile:" + _arrayFile.getName());
-    
-    init();
-  }
-  */
+  
   /**
    * Loads data from the array file.
    */

@@ -57,29 +57,35 @@ public class ArrayFile
   private long _arrayMaxScn;
   private long _arrayNewScn;
   private int  _arrayLength;  // array length (element count)
-  private int  _elementSize;  // element size in bytes
+  private int  _elementSize;  // array element size in bytes
   
-  public ArrayFile(File file, int arrayLength, int arrayElementSize) throws IOException
+  /**
+   * Creates a new ArrayFile based on a given length and element size.
+   * 
+   * @param file           the file on disk
+   * @param initialLength  the initial length (number of elements) of array
+   * @param elementSize    the size (number of bytes) of every array element
+   * @throws IOException
+   */
+  public ArrayFile(File file, int initialLength, int elementSize) throws IOException
   {
-    long initialFileLength = DATA_START_POSITION + (arrayLength * arrayElementSize);
+    boolean newFile = false;
+    long initialFileLength = DATA_START_POSITION + (initialLength * elementSize);
     
     if (!file.exists())
     {
       if (!file.createNewFile())
       {
-        String msg = "Failed to create " + file.getAbsolutePath();
-        
-        _log.error(msg);
-        throw new IOException(msg);
+        throw new IOException("Failed to create " + file.getAbsolutePath());
       }
+      newFile = true;
     }
     
-    boolean newFile = false;
     RandomAccessFile raf = new RandomAccessFile(file, "rw");
+    if (newFile) raf.setLength(initialFileLength);
     if (raf.length() < DATA_START_POSITION)
     {
-      raf.setLength(initialFileLength);
-      newFile = true;
+      throw new IOException("Failed to open " + file.getAbsolutePath());
     }
     
     this._file = file;
@@ -91,8 +97,8 @@ public class ArrayFile
       this._version = STORAGE_VERSION;
       this._arrayMaxScn = 0;
       this._arrayNewScn = 0;
-      this._arrayLength = arrayLength;
-      this._elementSize = arrayElementSize;
+      this._arrayLength = initialLength;
+      this._elementSize = elementSize;
       
       this.saveHeader();
     }
@@ -101,19 +107,25 @@ public class ArrayFile
       this.loadHeader();
     }
     
+    this.initCheck();
+    
+    _log.info(_file.getName() + " header: " + getHeader());
+  }
+  
+  protected void initCheck() throws IOException
+  {
     // Check storage version
     if (_version != STORAGE_VERSION)
     {
-      throw new RuntimeException("Invalid version " + _version + " found in "
-              + file.getAbsolutePath() + ": " + STORAGE_VERSION + " expected");
+      throw new IOException("Invalid version in " + _file.getName() + ": "
+              + _version + ", " + STORAGE_VERSION + " expected");
     }
     
+    // Check array file header
     if(!checkHeader())
     {
-      throw new IOException(_file.getName() + " is inconsistent: " + getHeader());
+      throw new IOException("Invalid header in " + _file.getName() + ": " + getHeader());
     }
-    
-    _log.info(_file.getName() + " header: " + getHeader());
   }
   
   private void saveHeader() throws IOException
@@ -220,6 +232,106 @@ public class ArrayFile
   public void close() throws IOException
   {
     _writer.close();
+  }
+  
+  /**
+   * Load data into a memory-based int array.
+   * 
+   * @throws IOException
+   */
+  public void load(MemoryIntArray intArray) throws IOException
+  {
+    if (!_file.exists() || _file.length() == 0)
+    {
+      return;
+    }
+    
+    Chronos c = new Chronos();
+    ChannelReader in = new ChannelReader(_file);
+    
+    try
+    {
+      in.open();
+      in.position(DATA_START_POSITION);
+      
+      for (int i = 0; i < _arrayLength; i++)
+      {
+        intArray.set(i, in.readInt());
+      }
+      
+      _log.info(_file.getName() + " loaded in " + c.getElapsedTime());
+    }
+    finally
+    {
+      in.close();
+    }
+  }
+
+  /**
+   * Load data into a memory-based long array.
+   * 
+   * @throws IOException
+   */
+  public void load(MemoryLongArray longArray) throws IOException
+  {
+    if (!_file.exists() || _file.length() == 0)
+    {
+      return;
+    }
+    
+    Chronos c = new Chronos();
+    ChannelReader in = new ChannelReader(_file);
+    
+    try
+    {
+      in.open();
+      in.position(DATA_START_POSITION);
+      
+      for (int i = 0; i < _arrayLength; i++)
+      {
+        longArray.set(i, in.readLong());
+      }
+      
+      _log.info(_file.getName() + " loaded in " + c.getElapsedTime());
+    }
+    finally
+    {
+      in.close();
+    }
+  }
+  
+
+  /**
+   * Load data into a memory-based short array.
+   * 
+   * @throws IOException
+   */
+  public void load(MemoryShortArray shortArray) throws IOException
+  {
+    if (!_file.exists() || _file.length() == 0)
+    {
+      return;
+    }
+    
+    Chronos c = new Chronos();
+    ChannelReader in = new ChannelReader(_file);
+    
+    try
+    {
+      in.open();
+      in.position(DATA_START_POSITION);
+      
+      for (int i = 0; i < _arrayLength; i++)
+      {
+        shortArray.set(i, in.readShort());
+      }
+      
+      _log.info(_file.getName() + " loaded in " + c.getElapsedTime());
+    }
+    finally
+    {
+      in.close();
+    }
   }
   
   /**
@@ -456,6 +568,69 @@ public class ArrayFile
   {
     _writer.writeInt(ELEMENT_SIZE_POSITION, value);
     _elementSize = value;
+  }
+  
+  public synchronized void reset(MemoryIntArray intArray) throws IOException
+  {
+      _writer.flush();
+      _writer.position(DATA_START_POSITION);
+      for(int i = 0, cnt = intArray.length(); i < cnt; i++)
+      {
+          _writer.writeInt(intArray.get(i));
+      }
+      _writer.flush();
+  }
+  
+  public synchronized void reset(MemoryIntArray intArray, long maxScn) throws IOException
+  {   
+      reset(intArray);
+      
+      _log.info("update newScn and maxScn:" + maxScn);
+      writeNewScn(maxScn);
+      writeMaxScn(maxScn);
+      flush();
+  }
+  
+  public synchronized void reset(MemoryLongArray longArray) throws IOException
+  {
+      _writer.flush();
+      _writer.position(DATA_START_POSITION);
+      for(int i = 0, cnt = longArray.length(); i < cnt; i++)
+      {
+          _writer.writeLong(longArray.get(i));
+      }
+      _writer.flush();
+  }
+  
+  public synchronized void reset(MemoryLongArray longArray, long maxScn) throws IOException
+  {   
+      reset(longArray);
+      
+      _log.info("update newScn and maxScn:" + maxScn);
+      writeNewScn(maxScn);
+      writeMaxScn(maxScn);
+      flush();
+  }
+  
+  public synchronized void reset(MemoryShortArray shortArray) throws IOException
+  {
+      _writer.flush();
+      _writer.position(DATA_START_POSITION);
+      for(int i = 0, cnt = shortArray.length(); i < cnt; i++)
+      {
+          _writer.writeShort(shortArray.get(i));
+      }
+      _writer.flush();
+  }
+  
+  public synchronized void reset(MemoryShortArray shortArray, long maxScn) throws IOException
+  {   
+      reset(shortArray);
+      
+      _log.info("update newScn and maxScn:" + maxScn);
+      writeNewScn(maxScn);
+      writeMaxScn(maxScn);
+      flush();
   }
   
   public synchronized void reset(int[] intArray) throws IOException
