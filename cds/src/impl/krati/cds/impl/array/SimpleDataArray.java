@@ -73,7 +73,7 @@ public class SimpleDataArray implements DataArray, Persistable
      * 
      * @param addressArray           Array of addresses (longs) to positions of Segment.
      * @param segmentManager         Segment manager for loading, creating, freeing, maintaining segments.
-     * @param segmentCompactTrigger  Percentage of segment capacity, which writes trigger compaction once per segment.
+     * @param segmentCompactTrigger  Percentage of segment capacity, above which writes trigger compaction once per segment.
      * @param segmentCompactFactor   Load factor below which a segment is eligible for compaction. Recommended value is 0.5.
      */
     public SimpleDataArray(AddressArray addressArray,
@@ -275,7 +275,7 @@ public class SimpleDataArray implements DataArray, Persistable
                 Segment seg = _segmentManager.getSegment(segInd);
                 
                 // read data length
-                if(seg != null) seg.decrLoadSize(seg.readInt(segPos));
+                if(seg != null) seg.decrLoadSize(4 + seg.readInt(segPos));
             }
         }
         catch(IOException e) {}
@@ -296,13 +296,13 @@ public class SimpleDataArray implements DataArray, Persistable
         }
         
         /*
-         * Slow down the writer for 0.5 milliseconds so that the compactor has a chance to catch up.
+         * Slow down the writer for 0.2 milliseconds so that the compactor has a chance to catch up.
          */
         if(compactSegment.getLoadSize() < liveSegment.getLoadSize()) 
         {
             try
             {
-                Thread.sleep(0, 500000);
+                Thread.sleep(0, 200000);
             }
             catch(Exception e) {}
         }
