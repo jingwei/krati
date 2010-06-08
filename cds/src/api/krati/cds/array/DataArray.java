@@ -11,6 +11,11 @@ import java.nio.channels.WritableByteChannel;
 public interface DataArray extends Array
 {
     /**
+     * @return <code>true</code> if data exists at a given index. Otherwise, <code>false</code>.
+     */
+    public boolean hasData(int index);
+    
+    /**
      * @return the length of data at a specified index
      */
     public int getDataLength(int index);

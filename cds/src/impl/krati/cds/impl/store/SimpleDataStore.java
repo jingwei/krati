@@ -16,9 +16,9 @@ import krati.util.FnvHashFunction;
 import krati.util.HashFunction;
 
 /**
- * A simple implementation of key value store.
+ * A simple implementation of key value store. The store has a fixed capacity.
  * 
- * The key-value pairs are stored in DataArray using the following data format:
+ * The key-value pairs are stored in the underlying DataArray using the following format:
  * <pre>
  * [count][key-length][key][value-length][value][key-length][key][value-length][value]...
  *        +---------key-value pair 1-----------+----------key-value pair 2-----------+
@@ -36,29 +36,6 @@ public class SimpleDataStore implements DataStore<byte[], byte[]>
     private final HashFunction<byte[]> _hashFunction;
     
     /**
-     * Creates a DataStore instance.
-     * 
-     * @param dataArray     the underlying data array.
-     */
-    public SimpleDataStore(SimpleDataArray dataArray)
-    {
-        this(dataArray, new FnvHashFunction());
-    }
-    
-    /**
-     * Creates a DataStore instance.
-     * 
-     * @param dataArray     the underlying data array.
-     * @param hashFunction  the hash function for mapping keys to indexes.
-     */
-    public SimpleDataStore(SimpleDataArray dataArray, HashFunction<byte[]> hashFunction)
-    {
-        this._dataArray = dataArray;
-        this._hashFunction = hashFunction;
-        this._scn = _dataArray.getLWMark();
-    }
-    
-    /**
      * Creates a DataStore instance with the settings below:
      * 
      * <pre>
@@ -70,12 +47,45 @@ public class SimpleDataStore implements DataStore<byte[], byte[]>
      *    Hash Function          : krati.util.FnvHashFunction
      * </pre>
      * 
-     * @param homeDir                Home directory
-     * @param segmentFileSizeMB      Size of segment file in MB
-     * @param segmentFactory         Segment factory
+     * @param homeDir              the home directory
+     * @param capacity             the capacity of data store
+     * @param segmentFactory       the segment factory
      * @throws Exception
      */
     public SimpleDataStore(File homeDir, int capacity, SegmentFactory segmentFactory) throws Exception
+    {
+        this(homeDir,
+             capacity,
+             10000,
+             5,
+             256,
+             segmentFactory,
+             0.1, /* segment compact trigger */
+             0.5, /* segment compact factor  */
+             new FnvHashFunction());
+    }
+    
+    /**
+     * Creates a DataStore instance with the settings below:
+     * 
+     * <pre>
+     *    Entry Size             : 10000
+     *    Max Entries            : 5
+     *    Segment Compact Trigger: 0.1
+     *    Segment Compact Factor : 0.5
+     *    Hash Function          : krati.util.FnvHashFunction
+     * </pre>
+     * 
+     * @param homeDir              the home directory
+     * @param capacity             the capacity of data store
+     * @param segmentFileSizeMB    the size of segment file in MB
+     * @param segmentFactory       the segment factory
+     * @throws Exception
+     */
+    public SimpleDataStore(File homeDir,
+                           int capacity,
+                           int segmentFileSizeMB,
+                           SegmentFactory segmentFactory) throws Exception
     {
         this(homeDir,
              capacity,
@@ -97,12 +107,12 @@ public class SimpleDataStore implements DataStore<byte[], byte[]>
      *    Hash Function          : krati.util.FnvHashFunction
      * </pre>
      * 
-     * @param homeDir                Home directory
-     * @param capacity               Capacity of data store
-     * @param entrySize              Redo entry size (i.e., batch size)
-     * @param maxEntries             Number of redo entries required for updating the underlying address array
-     * @param segmentFileSizeMB      Size of segment file in MB
-     * @param segmentFactory         Segment factory
+     * @param homeDir              the home directory
+     * @param capacity             the capacity of data store
+     * @param entrySize            the redo entry size (i.e., batch size)
+     * @param maxEntries           the number of redo entries required for updating the underlying address array
+     * @param segmentFileSizeMB    the size of segment file in MB
+     * @param segmentFactory       the segment factory
      * @throws Exception
      */
     public SimpleDataStore(File homeDir,
@@ -131,13 +141,13 @@ public class SimpleDataStore implements DataStore<byte[], byte[]>
      *    Segment Compact Factor : 0.5
      * </pre>
      * 
-     * @param homeDir                Home directory
-     * @param capacity               Capacity of data store
-     * @param entrySize              Redo entry size (i.e., batch size)
-     * @param maxEntries             Number of redo entries required for updating the underlying address array
-     * @param segmentFileSizeMB      Size of segment file in MB
-     * @param segmentFactory         Segment factory
-     * @param hashFunction           Hash function for mapping keys to indexes
+     * @param homeDir              the home directory
+     * @param capacity             the capacity of data store
+     * @param entrySize            the redo entry size (i.e., batch size)
+     * @param maxEntries           the number of redo entries required for updating the underlying address array
+     * @param segmentFileSizeMB    the size of segment file in MB
+     * @param segmentFactory       the segment factory
+     * @param hashFunction         the hash function for mapping keys to indexes
      * @throws Exception
      */
     public SimpleDataStore(File homeDir,
@@ -162,15 +172,15 @@ public class SimpleDataStore implements DataStore<byte[], byte[]>
     /**
      * Creates a DataStore instance.
      * 
-     * @param homeDir                Home directory
-     * @param capacity               Capacity of data store
-     * @param entrySize              Redo entry size (i.e., batch size)
-     * @param maxEntries             Number of redo entries required for updating the underlying address array
-     * @param segmentFileSizeMB      Size of segment file in MB
-     * @param segmentFactory         Segment factory
-     * @param segmentCompactTrigger  Percentage of segment capacity, which triggers compaction once per segment
-     * @param segmentCompactFactor   Load factor of segment, below which a segment is eligible for compaction
-     * @param hashFunction           Hash function for mapping keys to indexes
+     * @param homeDir                the home directory
+     * @param capacity               the capacity of data store
+     * @param entrySize              the redo entry size (i.e., batch size)
+     * @param maxEntries             the number of redo entries required for updating the underlying address array
+     * @param segmentFileSizeMB      the size of segment file in MB
+     * @param segmentFactory         the segment factory
+     * @param segmentCompactTrigger  the percentage of segment capacity, which triggers compaction once per segment
+     * @param segmentCompactFactor   the load factor of segment, below which a segment is eligible for compaction
+     * @param hashFunction           the hash function for mapping keys to indexes
      * @throws Exception
      */
     public SimpleDataStore(File homeDir,
@@ -184,7 +194,7 @@ public class SimpleDataStore implements DataStore<byte[], byte[]>
                            HashFunction<byte[]> hashFunction) throws Exception
     {
         // Create address array
-        AddressArray addressArray = initAddressArray(capacity, entrySize, maxEntries, homeDir);
+        AddressArray addressArray = createAddressArray(capacity, entrySize, maxEntries, homeDir);
         
         // Create segment manager
         String segmentHome = homeDir.getCanonicalPath() + File.separator + "segs";
@@ -195,10 +205,10 @@ public class SimpleDataStore implements DataStore<byte[], byte[]>
         this._scn = _dataArray.getLWMark();
     }
     
-    protected AddressArray initAddressArray(int length,
-                                            int entrySize,
-                                            int maxEntries,
-                                            File homeDirectory) throws Exception
+    protected AddressArray createAddressArray(int length,
+                                              int entrySize,
+                                              int maxEntries,
+                                              File homeDirectory) throws Exception
     {
         return new RecoverableLongArray(length, entrySize, maxEntries, homeDirectory);
     }

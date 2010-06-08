@@ -308,6 +308,22 @@ public class SimpleDataArray implements DataArray, Persistable
         }
     }
     
+    public boolean hasData(int index)
+    {
+        long address = getAddress(index);
+        int segPos = (int)(address & _offsetMask);
+        int segInd = (int)((address >> _segmentShift) & _segmentMask);
+        
+        // no data found
+        if(segPos < Segment.dataStartPosition) return false;
+        
+        // get data segment
+        Segment seg = _segmentManager.getSegment(segInd);
+        if(seg == null) return false;
+        
+        return true;
+    }
+    
     @Override
     public int getDataLength(int index)
     {
@@ -322,6 +338,7 @@ public class SimpleDataArray implements DataArray, Persistable
             
             // get data segment
             Segment seg = _segmentManager.getSegment(segInd);
+            if(seg == null) return -1;
             
             // read data length
             return seg.readInt(segPos);
@@ -346,6 +363,7 @@ public class SimpleDataArray implements DataArray, Persistable
             
             // get data segment
             Segment seg = _segmentManager.getSegment(segInd);
+            if(seg == null) return null;
             
             // read data length
             int len = seg.readInt(segPos);

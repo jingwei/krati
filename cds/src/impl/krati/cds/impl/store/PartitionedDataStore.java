@@ -12,6 +12,12 @@ import krati.cds.store.DataStore;
 import krati.util.FnvHashFunction;
 import krati.util.HashFunction;
 
+/**
+ * PartitionedDataStore.
+ * 
+ * @author jwu
+ *
+ */
 public class PartitionedDataStore implements DataStore<byte[], byte[]>
 {
     private final static Logger _log = Logger.getLogger(PartitionedDataStore.class);

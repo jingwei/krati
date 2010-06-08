@@ -163,4 +163,9 @@ public class DynamicLongArray extends RecoverableArray<EntryValueLong> implement
             }
         }
     }
+    
+    public static int subArrayLength()
+    {
+        return _subArraySize;
+    }
 }
