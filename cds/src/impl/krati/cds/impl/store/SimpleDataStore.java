@@ -6,6 +6,7 @@ import java.nio.ByteBuffer;
 
 import org.apache.log4j.Logger;
 
+import krati.cds.array.DataArray;
 import krati.cds.impl.array.AddressArray;
 import krati.cds.impl.array.SimpleDataArray;
 import krati.cds.impl.array.basic.RecoverableLongArray;
@@ -471,5 +472,13 @@ public class SimpleDataStore implements DataStore<byte[], byte[]>
         }
         
         return false;
+    }
+    
+    /**
+     * @return the underlying data array.
+     */
+    public DataArray getDataArray()
+    {
+        return _dataArray;
     }
 }

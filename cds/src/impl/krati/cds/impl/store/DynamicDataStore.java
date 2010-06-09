@@ -6,6 +6,7 @@ import java.nio.ByteBuffer;
 
 import org.apache.log4j.Logger;
 
+import krati.cds.array.DataArray;
 import krati.cds.impl.array.SimpleDataArray;
 import krati.cds.impl.array.basic.DynamicLongArray;
 import krati.cds.impl.segment.SegmentFactory;
@@ -759,6 +760,9 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
         return cnt;
     }
     
+    /**
+     * @return the status of this data store.
+     */
     public String getStatus()
     {
         StringBuffer buf = new StringBuffer();
@@ -777,5 +781,13 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
         buf.append(_loadFactor);
         
         return buf.toString();
+    }
+    
+    /**
+     * @return the underlying data array.
+     */
+    public DataArray getDataArray()
+    {
+        return _dataArray;
     }
 }
