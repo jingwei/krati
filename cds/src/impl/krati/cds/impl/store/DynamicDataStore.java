@@ -148,6 +148,42 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
      * Creates a dynamic DataStore with the settings below:
      * 
      * <pre>
+     *    Entry Size               : 10000
+     *    Max Entries              : 5
+     *    Segment Compact Trigger  : 0.1
+     *    Segment Compact Factor   : 0.5
+     *    Store Hash Function      : krati.util.FnvHashFunction
+     * </pre>
+     * 
+     * @param homeDir                the home directory of DataStore
+     * @param initLevel              the initial level when DataStore is created
+     * @param segmentFileSizeMB      the size of segment file in MB
+     * @param segmentFactory         the segment factory
+     * @param hashLoadFactor         the load factor of the underlying address array (hash table)
+     * @throws Exception             if this dynamic data store cannot be created.
+     */
+    public DynamicDataStore(File homeDir,
+                            int initLevel,
+                            int segmentFileSizeMB,
+                            SegmentFactory segmentFactory,
+                            double hashLoadFactor) throws Exception
+    {
+        this(homeDir,
+             initLevel,
+             10000, /* entrySize */
+             5,     /* maxEntries */
+             segmentFileSizeMB,
+             segmentFactory,
+             0.1,   /* segmentCompactTrigger */
+             0.5,   /* segmentCompactFactor  */
+             hashLoadFactor,
+             new FnvHashFunction());
+    }
+    
+    /**
+     * Creates a dynamic DataStore with the settings below:
+     * 
+     * <pre>
      *    Segment Compact Trigger  : 0.1
      *    Segment Compact Factor   : 0.5
      *    Store Hash Load Factor   : 0.75
@@ -230,7 +266,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
      * @param segmentFactory         the segment factory
      * @param segmentCompactTrigger  the percentage of segment capacity, which triggers compaction once per segment
      * @param segmentCompactFactor   the load factor of segment, below which a segment is eligible for compaction
-     * @param hashLoadFactor         the load factor of the underlying address array (which works as a hash table)
+     * @param hashLoadFactor         the load factor of the underlying address array (hash table)
      * @param hashFunction           the hash function for mapping keys to indexes
      * @throws Exception             if this dynamic data store cannot be created.
      */
