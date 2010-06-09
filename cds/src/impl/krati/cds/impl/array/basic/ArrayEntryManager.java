@@ -75,64 +75,64 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable
     _autoApplyEntries = b;
   }
   
-  void addToEntry(V entryValue) throws IOException
+  final void addToEntry(V entryValue) throws IOException
   {
-    // Add to current entry
-    _entry.add(entryValue);
-    
-    // Advance high water mark to maintain progress record
-    _hwmScn = Math.max(_hwmScn, entryValue.scn);
-    
-    // Switch to a new entry if _currentEntry has reached _maxEntrySize and has seen more than one SCN.
-    if(_entry.isFull())
-    {
-      switchEntry(false);
-    }
+      // Switch to a new entry if the current _entry has reached _maxEntrySize.
+      if(_entry.isFull())
+      {
+        switchEntry(false);
+      }
+      
+      // Add to current entry
+      _entry.add(entryValue);
+      
+      // Advance high water mark to maintain progress record
+      _hwmScn = Math.max(_hwmScn, entryValue.scn);
   }
   
-  void addToPreFillEntryInt(int pos, int val, long scn) throws IOException
+  final void addToPreFillEntryInt(int pos, int val, long scn) throws IOException
   {
+      // Switch to a new entry if the current _entry has reached _maxEntrySize.
+      if(_entry.isFull())
+      {
+        switchEntry(false);
+      }
+      
       // Add to current entry
       ((PreFillEntryInt)_entry).add(pos, val, scn);
       
       // Advance high water mark to maintain progress record
       _hwmScn = Math.max(_hwmScn, scn);
-      
-      // Switch to a new entry if _currentEntry has reached _maxEntrySize and has seen more than one SCN.
+  }
+  
+  final void addToPreFillEntryLong(int pos, long val, long scn) throws IOException
+  {
+      // Switch to a new entry if the current _entry has reached _maxEntrySize.
       if(_entry.isFull())
       {
         switchEntry(false);
       }
-  }
-  
-  void addToPreFillEntryLong(int pos, long val, long scn) throws IOException
-  {
+      
       // Add to current entry
       ((PreFillEntryLong)_entry).add(pos, val, scn);
       
       // Advance high water mark to maintain progress record
       _hwmScn = Math.max(_hwmScn, scn);
-      
-      // Switch to a new entry if _currentEntry has reached _maxEntrySize and has seen more than one SCN.
+  }
+  
+  final void addToPreFillEntryShort(int pos, short val, long scn) throws IOException
+  {
+      // Switch to a new entry if the current _entry has reached _maxEntrySize.
       if(_entry.isFull())
       {
         switchEntry(false);
       }
-  }
-  
-  void addToPreFillEntryShort(int pos, short val, long scn) throws IOException
-  {
-   // Add to current entry
+      
+      // Add to current entry
       ((PreFillEntryShort)_entry).add(pos, val, scn);
       
       // Advance high water mark to maintain progress record
       _hwmScn = Math.max(_hwmScn, scn);
-      
-      // Switch to a new entry if _currentEntry has reached _maxEntrySize and has seen more than one SCN.
-      if(_entry.isFull())
-      {
-        switchEntry(false);
-      }
   }
   
   public synchronized void clear()
