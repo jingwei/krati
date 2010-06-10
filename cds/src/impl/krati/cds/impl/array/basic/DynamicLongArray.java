@@ -131,7 +131,10 @@ public class DynamicLongArray extends RecoverableArray<EntryValueLong> implement
         if(index < _length) return;
         
         int newLength = ((index >> _subArrayBits) + 1) * _subArraySize;
-
+        
+        // Reset _length
+        _length = newLength;
+        
         // Expand internal array in memory 
         if(_internalArray.length() < newLength)
         {
@@ -140,9 +143,6 @@ public class DynamicLongArray extends RecoverableArray<EntryValueLong> implement
         
         // Expand array file on disk
         _arrayFile.setArrayLength(newLength, null /* do not rename */);
-        
-        // Reset _length
-        _length = newLength;
         
         // Add to logging
         _log.info("Expanded: _length=" + _length);
