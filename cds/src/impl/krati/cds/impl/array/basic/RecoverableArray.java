@@ -56,7 +56,8 @@ public abstract class RecoverableArray<V extends EntryValue> implements Array, P
       newFile = false;
     }
     
-    _arrayFile = new ArrayFile(file, _length, elemSize);
+    _arrayFile = new ArrayFile(file, length, elemSize);
+    _length = _arrayFile.getArrayLength();
     
     if (newFile)
     {
@@ -65,7 +66,7 @@ public abstract class RecoverableArray<V extends EntryValue> implements Array, P
     
     init();
     
-    _log.info("length:" + length +
+    _log.info("length:" + _length +
              " entrySize:" + entrySize +
              " maxEntries:" + maxEntries +
              " cacheDirectory:" + cacheDirectory.getAbsolutePath() +

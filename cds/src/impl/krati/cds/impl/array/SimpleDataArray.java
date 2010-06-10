@@ -278,7 +278,8 @@ public class SimpleDataArray implements DataArray, Persistable
                 if(seg != null) seg.decrLoadSize(4 + seg.readInt(segPos));
             }
         }
-        catch(IOException e) {}
+        catch(IOException e1) {}
+        catch(ArrayIndexOutOfBoundsException e2) {}
     }
     
     private void flowControl()

@@ -39,9 +39,9 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
     private volatile int _split;
     private volatile int _level;
     private volatile int _levelCapacity;
+    private int _levelThreshold;
     private int _unitCapacity;
     private int _loadCount;
-    private int _loadLimit;
     
     /**
      * Creates a dynamic DataStore with the settings below:
@@ -301,7 +301,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
         this._loadCount = scan();
         this.initLinearHashing();
         
-        _log.info("init: " + getStatus());
+        _log.info(getStatus());
     }
     
     protected DynamicLongArray createAddressArray(int entrySize,
@@ -364,7 +364,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
             return delete(key);
         }
         
-        if(0 < _split || _loadLimit < _loadCount)
+        if(0 < _split || _levelThreshold < _loadCount)
         {
             split();
         }
@@ -376,7 +376,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
     @Override
     public synchronized boolean delete(byte[] key) throws Exception
     {
-        if(0 < _split || _loadLimit < _loadCount)
+        if(0 < _split || _levelThreshold < _loadCount)
         {
             split();
         }
@@ -637,19 +637,44 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
         return false;
     }
     
-    protected final int getLevel()
+    public final int getLevel()
     {
         return _level;
     }
     
-    protected final int getSplit()
+    public final int getSplit()
     {
         return _split;
     }
+
+    public final int getCapacity()
+    {
+        return _dataArray.length();
+    }
     
-    protected final int getUnitCapacity()
+    public final int getUnitCapacity()
     {
         return _unitCapacity;
+    }
+    
+    public final int getLevelCapacity()
+    {
+        return _levelCapacity;
+    }
+    
+    public final int getLoadCount()
+    {
+        return _loadCount;
+    }
+    
+    public final double getLoadRatio()
+    {
+        return _loadCount / (double)getCapacity();
+    }
+    
+    public final double getLoadFactor()
+    {
+        return _loadFactor;
     }
     
     private void initLinearHashing() throws Exception
@@ -661,7 +686,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
             _level = 0;
             _split = 0;
             _levelCapacity = getUnitCapacity();
-            _loadLimit = (int)(_levelCapacity * _loadFactor);
+            _levelThreshold = (int)(_levelCapacity * _loadFactor);
         }
         else
         {
@@ -676,7 +701,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
             
             _split = (unitCount - (1 << _level) - 1) * getUnitCapacity();
             _levelCapacity = getUnitCapacity() * (1 << _level);
-            _loadLimit = (int)((_levelCapacity << 1) * _loadFactor);
+            _levelThreshold = (int)(_levelCapacity * _loadFactor);
             
             // Need to re-populate the last unit
             for(int i = 0, cnt = getUnitCapacity(); i < cnt; i++)
@@ -689,6 +714,9 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
     
     private void split() throws Exception
     {
+        // Ensure address capacity
+        _addrArray.expandCapacity(_split + _levelCapacity);
+        
         // Read data from the _split index
         byte[] data = _dataArray.getData(_split);
         
@@ -724,7 +752,6 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
                     deleteInternal(_split, key);
                     
                     // Update at the new index
-                    _addrArray.expandCapacity(newIndex);
                     putInternal(newIndex, key, value);
                 }
                 
@@ -736,7 +763,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
 
         if(_split % _unitCapacity == 0)
         {
-            _log.info("split info: " + getStatus());
+            _log.info("split " + getStatus());
         }
         
         if(_split == _levelCapacity)
@@ -744,9 +771,9 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
             _split = 0;
             _level++;
             _levelCapacity = getUnitCapacity() * (1 << _level);
-            _loadLimit = (int)((_levelCapacity << 1) * _loadFactor);
+            _levelThreshold = (int)(_levelCapacity * _loadFactor);
             
-            _log.info("split done: " + getStatus());
+            _log.info(getStatus());
         }
     }
     
@@ -760,6 +787,28 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
         return cnt;
     }
     
+    public synchronized void rehash() throws Exception
+    {
+        if(_split > 0)
+        {
+            do
+            {
+                split();
+            }
+            while(_split > 0);
+            sync();
+        }
+        else if(getLoadRatio() > _loadFactor)
+        {
+            do
+            {
+                split();
+            }
+            while(_split > 0);
+            sync();
+        }
+    }
+    
     /**
      * @return the status of this data store.
      */
@@ -771,14 +820,14 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
         buf.append(_level);
         buf.append(" split=");
         buf.append(_split);
-        buf.append(" scn=");
-        buf.append(_scn);
+        buf.append(" capacity=");
+        buf.append(getCapacity());
         buf.append(" loadCount=");
         buf.append(_loadCount);
-        buf.append(" loadLimit=");
-        buf.append(_loadLimit);
-        buf.append(" loadFactor=");
-        buf.append(_loadFactor);
+        buf.append(" loadRatio=");
+        buf.append(getLoadRatio());
+        buf.append(" scn=");
+        buf.append(_scn);
         
         return buf.toString();
     }
