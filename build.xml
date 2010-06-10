@@ -1,6 +1,6 @@
 <project xmlns:ivy="antlib:org.apache.ivy.ant" name="krati" default="main" basedir=".">
     <property name="project.name" value="krati"/>
-    <property name="version" value="0.3.2"/>
+    <property name="version" value="0.3.3"/>
     <property name="krati.root" location="."/>
     
     <property name="lib.dir" value="lib"/>
