@@ -243,6 +243,26 @@ public class TestDynamicDataStore extends AbstractTest
         cleanTestOutput();
     }
     
+    public void testClear() throws Exception
+    {
+        System.out.println("--- testClear ---");
+        
+        // Create DynamicDataStore 1
+        File storeDir = new File(TEST_OUTPUT_DIR, getClass().getSimpleName());
+        DynamicDataStore dynStore = getDynamicDataStore(storeDir, 0, 100);
+        
+        checkRandomPuts(dynStore, 0.1);
+        checkRandomPuts(dynStore, 0.1);
+        dynStore.clear();
+        
+        checkRandomPuts(dynStore, 0.1);
+        checkRandomPuts(dynStore, 0.3);
+        dynStore.sync();
+        dynStore.clear();
+        
+        cleanTestOutput();
+    }
+    
     private byte[] intByteArray = new byte[4];
     private ByteBuffer intByteBuffer = ByteBuffer.wrap(intByteArray);
     

@@ -88,7 +88,8 @@ public class EntryPool<T extends EntryValue>
         while(true)
         {
             Entry<T> entry = pollFromService();
-            if(entry != null) addToRecycleQueue(entry);
+            if (entry == null) break;
+            addToRecycleQueue(entry);
         }
     }
 }
