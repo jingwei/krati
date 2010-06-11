@@ -282,7 +282,7 @@ public class SimpleDataArray implements DataArray, Persistable
         catch(IndexOutOfBoundsException e2) {}
     }
     
-    private void flowControl()
+    private final void flowControl()
     {
         Segment liveSegment = _segment;
         if(liveSegment == null)
@@ -309,8 +309,23 @@ public class SimpleDataArray implements DataArray, Persistable
         }
     }
     
+    private final void rangeCheck(int index)
+    {
+        if(!_addressArray.hasIndex(index))
+        {
+            throw new ArrayIndexOutOfBoundsException(index);
+        }
+    }
+    
+    /**
+     * @return <code>true</code> if this array has data at the given index. Otherwise, <code>false</code>.  
+     * @throws ArrayIndexOutOfBoundsException if the index is out of range.
+     */
+    @Override
     public boolean hasData(int index)
     {
+        rangeCheck(index);
+        
         long address = getAddress(index);
         int segPos = (int)(address & _offsetMask);
         int segInd = (int)((address >> _segmentShift) & _segmentMask);
@@ -325,6 +340,10 @@ public class SimpleDataArray implements DataArray, Persistable
         return true;
     }
     
+    /**
+     * @return the length of data at the given index.
+     * If the given index is out of the array index range, <code>-1<code> is returned.
+     */
     @Override
     public int getDataLength(int index)
     {
@@ -350,9 +369,18 @@ public class SimpleDataArray implements DataArray, Persistable
         }
     }
     
+    /**
+     * Gets data at a given index.
+     * 
+     * @param index  the array index
+     * @return the data at a given index.
+     * @throws ArrayIndexOutOfBoundsException if the index is out of range.
+     */
     @Override
     public byte[] getData(int index)
     {
+        rangeCheck(index);
+        
         try
         {
             long address = getAddress(index);
@@ -384,15 +412,36 @@ public class SimpleDataArray implements DataArray, Persistable
         }
     }
     
+    /**
+     * Gets data at a given index.
+     * 
+     * @param index  the array index
+     * @param data   the byte array to fill in
+     * @return the length of data at the given index.
+     * @throws ArrayIndexOutOfBoundsException if the index is out of range
+     * or if the byte array does not have enough space to hold the read data.
+     */
     @Override
     public int getData(int index, byte[] data)
     {
         return getData(index, data, 0);
     }
     
+    /**
+     * Gets data at a given index.
+     * 
+     * @param index  the array index
+     * @param data   the byte array to fill in
+     * @param offset the offset of the byte array where data is filled in 
+     * @return the length of data at the given index.
+     * @throws ArrayIndexOutOfBoundsException if the index is out of range
+     * or if the byte array does not have enough space to hold the read data.
+     */
     @Override
     public int getData(int index, byte[] data, int offset)
     {
+        rangeCheck(index);
+        
         try
         {
             long address = getAddress(index);
@@ -423,9 +472,18 @@ public class SimpleDataArray implements DataArray, Persistable
         }
     }
     
+    /**
+     * Transfers data at a given index to a writable channel.
+     * 
+     * @param index  the array index
+     * @return the amount of bytes transferred (the length of data at the given index).
+     * @throws ArrayIndexOutOfBoundsException if the index is out of range.
+     */
     @Override
     public int transferTo(int index, WritableByteChannel channel)
     {
+        rangeCheck(index);
+        
         try
         {
             long address = getAddress(index);
@@ -455,6 +513,15 @@ public class SimpleDataArray implements DataArray, Persistable
         }
     }
     
+    /**
+     * Sets data at a given index.
+     * 
+     * @param index  the array index
+     * @param data   the data (byte array).
+     *               If <code>null</code>, the data at the given index will be removed.
+     * @param scn    the global scn indicating the sequence of this change
+     * @throws ArrayIndexOutOfBoundsException if the index is out of range.
+     */
     @Override
     public void setData(int index, byte[] data, long scn) throws Exception
     {
@@ -468,9 +535,22 @@ public class SimpleDataArray implements DataArray, Persistable
         }
     }
     
+    /**
+     * Sets data at a given index.
+     * 
+     * @param index  the array index
+     * @param data   the data (byte array)
+     *               If <code>null</code>, the data at the given index will be removed.
+     * @param offset the offset of byte array where data is read
+     * @param length the length of data to read from the byte array
+     * @param scn    the global scn indicating the sequence of this change
+     * @throws ArrayIndexOutOfBoundsException if the index is out of range
+     * or if the offset and length is not properly specified.
+     */
     @Override
     public void setData(int index, byte[] data, int offset, int length, long scn) throws Exception
     {
+        rangeCheck(index);
         decrOriginalSegmentLoad(index);
         
         // no data
