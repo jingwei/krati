@@ -85,11 +85,10 @@ public class EntryPool<T extends EntryValue>
     
     public void clear()
     {
-        while(true)
+        while(!_serviceQueue.isEmpty())
         {
-            Entry<T> entry = pollFromService();
-            if (entry == null) break;
-            addToRecycleQueue(entry);
+            Entry<T> entry = _serviceQueue.poll();
+            if(entry != null) addToRecycleQueue(entry);
         }
     }
 }

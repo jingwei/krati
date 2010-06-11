@@ -12,7 +12,7 @@ import krati.util.HashFunction;
 import test.AbstractTest;
 
 /**
- * TestDynamicDataStore
+ * TestDynamicDataStore using MemorySegment.
  * 
  * @author jwu
  *
@@ -42,7 +42,7 @@ public class TestDynamicDataStore extends AbstractTest
         File storeDir = new File(TEST_OUTPUT_DIR, getClass().getSimpleName());
         DynamicDataStore dynStore1 = getDynamicDataStore(storeDir, 0, 100);
         
-        System.out.println("init dynStore1"); 
+        System.out.println("create dynStore1"); 
         System.out.printf("level=%d split=%d capacity=%d loadRatio=%f%n",
                 dynStore1.getLevel(), dynStore1.getSplit(), dynStore1.getCapacity(), dynStore1.getLoadRatio());
         
@@ -53,36 +53,41 @@ public class TestDynamicDataStore extends AbstractTest
         keyStart = 0;
         keyCount = unitCapacity;
         write(keyStart, keyCount, dynStore1);
-        System.out.printf("level=%d split=%d keyStart=%d keyCount=%d capacity=%d loadRatio=%f%n",
-                dynStore1.getLevel(), dynStore1.getSplit(), keyStart, keyCount, dynStore1.getCapacity(), dynStore1.getLoadRatio());
+        System.out.printf("update keyStart=%d keyCount=%d%n", keyStart, keyCount);
+        System.out.printf("level=%d split=%d capacity=%d loadRatio=%f%n",
+                dynStore1.getLevel(), dynStore1.getSplit(), dynStore1.getCapacity(), dynStore1.getLoadRatio());
         if ((unitCapacity * 2) != dynStore1.getCapacity())
             throw new RuntimeException("capacity expected: " + (unitCapacity * 2));
         
         keyStart += keyCount;
         write(keyStart, keyCount, dynStore1);
-        System.out.printf("level=%d split=%d keyStart=%d keyCount=%d capacity=%d loadRatio=%f%n",
-                dynStore1.getLevel(), dynStore1.getSplit(), keyStart, keyCount, dynStore1.getCapacity(), dynStore1.getLoadRatio());
+        System.out.printf("update keyStart=%d keyCount=%d%n", keyStart, keyCount);
+        System.out.printf("level=%d split=%d capacity=%d loadRatio=%f%n",
+                dynStore1.getLevel(), dynStore1.getSplit(), dynStore1.getCapacity(), dynStore1.getLoadRatio());
         if ((unitCapacity * 3) != dynStore1.getCapacity())
             throw new RuntimeException("capacity expected: " + (unitCapacity * 3));
         
         keyStart += keyCount;
         write(keyStart, keyCount, dynStore1);
-        System.out.printf("level=%d split=%d keyStart=%d keyCount=%d capacity=%d loadRatio=%f%n",
-                dynStore1.getLevel(), dynStore1.getSplit(), keyStart, keyCount, dynStore1.getCapacity(), dynStore1.getLoadRatio());
+        System.out.printf("update keyStart=%d keyCount=%d%n", keyStart, keyCount);
+        System.out.printf("level=%d split=%d capacity=%d loadRatio=%f%n",
+                dynStore1.getLevel(), dynStore1.getSplit(), dynStore1.getCapacity(), dynStore1.getLoadRatio());
         if ((unitCapacity * 4) != dynStore1.getCapacity())
             throw new RuntimeException("capacity expected: " + (unitCapacity * 4));
         
         keyStart += keyCount;
         write(keyStart, keyCount, dynStore1);
-        System.out.printf("level=%d split=%d keyStart=%d keyCount=%d capacity=%d loadRatio=%f%n",
-                dynStore1.getLevel(), dynStore1.getSplit(), keyStart, keyCount, dynStore1.getCapacity(), dynStore1.getLoadRatio());
+        System.out.printf("update keyStart=%d keyCount=%d%n", keyStart, keyCount);
+        System.out.printf("level=%d split=%d capacity=%d loadRatio=%f%n",
+                dynStore1.getLevel(), dynStore1.getSplit(), dynStore1.getCapacity(), dynStore1.getLoadRatio());
         if ((unitCapacity * 5) != dynStore1.getCapacity())
             throw new RuntimeException("capacity expected: " + (unitCapacity * 5));
         
         keyStart += keyCount;
         write(keyStart, keyCount, dynStore1);
-        System.out.printf("level=%d split=%d keyStart=%d keyCount=%d capacity=%d loadRatio=%f%n",
-                dynStore1.getLevel(), dynStore1.getSplit(), keyStart, keyCount, dynStore1.getCapacity(), dynStore1.getLoadRatio());
+        System.out.printf("update keyStart=%d keyCount=%d%n", keyStart, keyCount);
+        System.out.printf("level=%d split=%d capacity=%d loadRatio=%f%n",
+                dynStore1.getLevel(), dynStore1.getSplit(), dynStore1.getCapacity(), dynStore1.getLoadRatio());
         if ((unitCapacity * 6) != dynStore1.getCapacity())
             throw new RuntimeException("capacity expected: " + (unitCapacity * 6));
         
@@ -100,16 +105,18 @@ public class TestDynamicDataStore extends AbstractTest
         keyStart = 0;
         keyCount = unitCapacity * 16;
         write(keyStart, keyCount, dynStore1);
-        System.out.printf("level=%d split=%d keyStart=%d keyCount=%d capacity=%d loadRatio=%f%n",
-                dynStore1.getLevel(), dynStore1.getSplit(), keyStart, keyCount, dynStore1.getCapacity(), dynStore1.getLoadRatio());
+        System.out.printf("update keyStart=%d keyCount=%d%n", keyStart, keyCount);
+        System.out.printf("level=%d split=%d capacity=%d loadRatio=%f%n",
+                dynStore1.getLevel(), dynStore1.getSplit(), dynStore1.getCapacity(), dynStore1.getLoadRatio());
         if ((unitCapacity * 18) != dynStore1.getCapacity())
             throw new RuntimeException("capacity expected: " + (unitCapacity * 18));
         
         keyStart = 0;
         keyCount = unitCapacity * 8;
         write(keyStart, keyCount, dynStore1);
-        System.out.printf("level=%d split=%d keyStart=%d keyCount=%d capacity=%d loadRatio=%f%n",
-                dynStore1.getLevel(), dynStore1.getSplit(), keyStart, keyCount, dynStore1.getCapacity(), dynStore1.getLoadRatio());
+        System.out.printf("update keyStart=%d keyCount=%d%n", keyStart, keyCount);
+        System.out.printf("level=%d split=%d capacity=%d loadRatio=%f%n",
+                dynStore1.getLevel(), dynStore1.getSplit(), dynStore1.getCapacity(), dynStore1.getLoadRatio());
         if ((unitCapacity * 26) != dynStore1.getCapacity())
             throw new RuntimeException("capacity expected: " + (unitCapacity * 26));
         
@@ -128,8 +135,9 @@ public class TestDynamicDataStore extends AbstractTest
         keyStart = unitCapacity << 5;
         keyCount = (int)(dynStore1.getCapacity() * 0.75);
         write(keyStart, keyCount, dynStore1);
-        System.out.printf("level=%d split=%d keyStart=%d keyCount=%d capacity=%d loadRatio=%f%n",
-                dynStore1.getLevel(), dynStore1.getSplit(), keyStart, keyCount, dynStore1.getCapacity(), dynStore1.getLoadRatio());
+        System.out.printf("update keyStart=%d keyCount=%d%n", keyStart, keyCount);
+        System.out.printf("level=%d split=%d capacity=%d loadRatio=%f%n",
+                dynStore1.getLevel(), dynStore1.getSplit(), dynStore1.getCapacity(), dynStore1.getLoadRatio());
         if ((unitCapacity << 5) != dynStore1.getCapacity())
             throw new RuntimeException("capacity expected: " + (unitCapacity << 5));
         
@@ -137,33 +145,11 @@ public class TestDynamicDataStore extends AbstractTest
         keyStart += keyCount;
         keyCount = 1;
         write(keyStart, keyCount, dynStore1);
-        System.out.printf("level=%d split=%d keyStart=%d keyCount=%d capacity=%d loadRatio=%f%n",
-                dynStore1.getLevel(), dynStore1.getSplit(), keyStart, keyCount, dynStore1.getCapacity(), dynStore1.getLoadRatio());
-        if ((unitCapacity << 5 + unitCapacity) != dynStore1.getCapacity())
-            throw new RuntimeException("capacity expected: " + (unitCapacity << 5 + unitCapacity));
-        
-        dynStore1.rehash();
-        System.out.println("rehash()");
+        System.out.printf("update keyStart=%d keyCount=%d%n", keyStart, keyCount);
         System.out.printf("level=%d split=%d capacity=%d loadRatio=%f%n",
                 dynStore1.getLevel(), dynStore1.getSplit(), dynStore1.getCapacity(), dynStore1.getLoadRatio());
-        if(dynStore1.getLevel() != 6)
-            throw new RuntimeException("level expected: " + 6);
-        if(dynStore1.getSplit() != 0)
-            throw new RuntimeException("split expected: " + 0);
-        if ((dynStore1.getLevelCapacity()) != dynStore1.getCapacity())
-            throw new RuntimeException("capacity expected: " + dynStore1.getLevelCapacity());
-        
-        keyStart = unitCapacity << 6;
-        keyCount = 1;
-        write(keyStart, keyCount, dynStore1);
-        System.out.printf("level=%d split=%d keyStart=%d keyCount=%d capacity=%d loadRatio=%f%n",
-                dynStore1.getLevel(), dynStore1.getSplit(), keyStart, keyCount, dynStore1.getCapacity(), dynStore1.getLoadRatio());
-        if(dynStore1.getLevel() != 6)
-            throw new RuntimeException("level expected: " + 6);
-        if(dynStore1.getSplit() != 0)
-            throw new RuntimeException("split expected: " + 0);
-        if ((dynStore1.getLevelCapacity()) != dynStore1.getCapacity())
-            throw new RuntimeException("capacity expected: " + dynStore1.getLevelCapacity());
+        if ((unitCapacity << 5 + unitCapacity) != dynStore1.getCapacity())
+            throw new RuntimeException("capacity expected: " + (unitCapacity << 5 + unitCapacity));
         
         dynStore1.rehash();
         System.out.println("rehash()");
@@ -181,7 +167,7 @@ public class TestDynamicDataStore extends AbstractTest
         
         // Create DynamicDataStore 2
         DynamicDataStore dynStore2 = getDynamicDataStore(storeDir, 0, 100);
-        System.out.println("init dynStore2");
+        System.out.println("create dynStore2");
         System.out.printf("level=%d split=%d capacity=%d loadRatio=%f%n",
                 dynStore2.getLevel(), dynStore2.getSplit(), dynStore2.getCapacity(), dynStore2.getLoadRatio());
         int capacity2 = dynStore2.getCapacity();
