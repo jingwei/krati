@@ -284,6 +284,8 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
     {
         // Create dynamic address array
         _addrArray = createAddressArray(entrySize, maxEntries, homeDir);
+        _unitCapacity = _addrArray.subArrayLength();
+        
         if(initLevel > 0)
         {
             _addrArray.expandCapacity(_unitCapacity * (1 << initLevel) - 1); 
@@ -308,7 +310,6 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
                                                   int maxEntries,
                                                   File homeDirectory) throws Exception
     {
-        _unitCapacity = DynamicLongArray.subArrayLength();
         return new DynamicLongArray(entrySize, maxEntries, homeDirectory);
     }
     

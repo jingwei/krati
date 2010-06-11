@@ -150,4 +150,9 @@ public class DynamicIntArray extends RecoverableArray<EntryValueInt> implements 
             }
         }
     }
+    
+    public final int subArrayLength()
+    {
+        return _subArraySize;
+    }
 }

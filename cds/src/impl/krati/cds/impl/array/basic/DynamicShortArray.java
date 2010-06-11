@@ -150,4 +150,9 @@ public class DynamicShortArray extends RecoverableArray<EntryValueShort> impleme
             }
         }
     }
+    
+    public final int subArrayLength()
+    {
+        return _subArraySize;
+    }
 }
