@@ -389,6 +389,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
     public synchronized void clear() throws IOException
     {
         _dataArray.clear();
+        _loadCount = 0;
     }
     
     protected final int getIndex(byte[] key)

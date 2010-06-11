@@ -255,8 +255,19 @@ public class TestDynamicDataStore extends AbstractTest
         checkRandomPuts(dynStore, 0.1);
         dynStore.clear();
         
+        System.out.println(dynStore.getStatus());
+        
         checkRandomPuts(dynStore, 0.1);
         checkRandomPuts(dynStore, 0.3);
+        checkRandomPuts(dynStore, 0.3);
+        dynStore.sync();
+        dynStore.clear();
+        
+        System.out.println(dynStore.getStatus());
+        
+        checkRandomPuts(dynStore, 0.3);
+        checkRandomPuts(dynStore, 0.5);
+        checkRandomDeletes(dynStore, 0.3);
         dynStore.sync();
         dynStore.clear();
         
@@ -319,9 +330,8 @@ public class TestDynamicDataStore extends AbstractTest
         for(int i = 0; i < keys.length; i++)
         {
             byte[] val = get(keys[i], dynStore);
-            if(!("value." + keys[i]).equals(new String(val)))
+            if(val == null || !("value." + keys[i]).equals(new String(val)))
             {
-
                 throw new RuntimeException("Failed at key=" + keys[i] + " value= " + (val == null ? "null" : new String(val)));
             }
         }

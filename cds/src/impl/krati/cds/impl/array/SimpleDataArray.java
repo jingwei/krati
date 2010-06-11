@@ -279,7 +279,7 @@ public class SimpleDataArray implements DataArray, Persistable
             }
         }
         catch(IOException e1) {}
-        catch(ArrayIndexOutOfBoundsException e2) {}
+        catch(IndexOutOfBoundsException e2) {}
     }
     
     private void flowControl()
@@ -697,6 +697,7 @@ public class SimpleDataArray implements DataArray, Persistable
         _compactor.reset();
         _addressArray.clear();
         _segmentManager.clear();
+        this.init();
     }
     
     private class SegmentPersistListener extends EntryPersistAdapter
