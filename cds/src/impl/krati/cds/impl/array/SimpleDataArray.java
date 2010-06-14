@@ -59,9 +59,8 @@ public class SimpleDataArray implements DataArray, Persistable
     /**
      * Constructs a DataArray with Segment Compact Trigger default to 0.1 and Segment Compact Factor default to 0.5. 
      * 
-     * @param addressArray           Array of addresses (longs) to positions of Segment.
-     * @param segmentManager         Segment manager for loading, creating, freeing, maintaining segments.
-     * 
+     * @param addressArray           the array of addresses (i.e. pointers to Segment).
+     * @param segmentManager         the segment manager for loading, creating, freeing, maintaining segments.
      */
     public SimpleDataArray(AddressArray addressArray, SegmentManager segmentManager)
     {
@@ -69,12 +68,24 @@ public class SimpleDataArray implements DataArray, Persistable
     }
     
     /**
+     * Constructs a DataArray with Segment Compact Trigger default to 0.1. 
+     * 
+     * @param addressArray           the array of addresses (i.e. pointers to Segment).
+     * @param segmentManager         the segment manager for loading, creating, freeing, maintaining segments.
+     * @param segmentCompactFactor   the load factor below which a segment is eligible for compaction. The recommended value is 0.5.
+     */
+    public SimpleDataArray(AddressArray addressArray, SegmentManager segmentManager, double segmentCompactFactor)
+    {
+        this(addressArray, segmentManager, 0.1, segmentCompactFactor);
+    }
+    
+    /**
      * Constructs a DataArray.
      * 
-     * @param addressArray           Array of addresses (longs) to positions of Segment.
-     * @param segmentManager         Segment manager for loading, creating, freeing, maintaining segments.
-     * @param segmentCompactTrigger  Percentage of segment capacity, above which writes trigger compaction once per segment.
-     * @param segmentCompactFactor   Load factor below which a segment is eligible for compaction. Recommended value is 0.5.
+     * @param addressArray           the array of addresses (i.e. pointers to Segment).
+     * @param segmentManager         the segment manager for loading, creating, freeing, maintaining segments.
+     * @param segmentCompactTrigger  the percentage of segment capacity, above which writes trigger compaction once per segment.
+     * @param segmentCompactFactor   the load factor below which a segment is eligible for compaction. The recommended value is 0.5.
      */
     public SimpleDataArray(AddressArray addressArray,
                            SegmentManager segmentManager,
@@ -495,6 +506,7 @@ public class SimpleDataArray implements DataArray, Persistable
             
             // get data segment
             Segment seg = _segmentManager.getSegment(segInd);
+            if(seg == null) return -1;
             
             // read data length
             int len = seg.readInt(segPos);
