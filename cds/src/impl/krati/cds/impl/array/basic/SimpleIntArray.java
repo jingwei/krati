@@ -9,17 +9,37 @@ import krati.cds.array.IntArray;
 import krati.cds.impl.array.entry.EntryIntFactory;
 import krati.cds.impl.array.entry.EntryValueInt;
 
+/**
+ * SimpleIntArray: Simple Persistent IntArray Implementation.
+ * 
+ * This class is not thread-safe by design. It is expected that the conditions below hold within one JVM.
+ * <pre>
+ *    1. There is one and only one instance of SimpleIntArray for a given home directory.
+ *    2. There is one and only one thread is calling the setData method at any given time. 
+ * </pre>
+ * 
+ * It is expected that this class is used in the case of multiple readers and single writer.
+ * 
+ * @author jwu
+ *
+ */
 public class SimpleIntArray extends RecoverableArray<EntryValueInt> implements IntArray
 {
   private static final Logger _log = Logger.getLogger(SimpleIntArray.class);
   private int[] _internalArray;
   
-  public SimpleIntArray(int length,
-                             int entrySize,
-                             int maxEntries,
-                             File cacheDirectory) throws Exception
+  /**
+   * Create a fixed-length persistent integer array.
+   * 
+   * @param length         the length of this array
+   * @param entrySize      the size of redo entry (i.e., batch size) 
+   * @param maxEntries     the number of redo entries required for updating the underlying array file
+   * @param homeDirectory  the home directory of this array
+   * @throws Exception     if this array cannot be created.
+   */
+  public SimpleIntArray(int length, int entrySize, int maxEntries, File homeDirectory) throws Exception
   {
-    super(length, 4 /* elementSize */, entrySize, maxEntries, cacheDirectory, new EntryIntFactory());
+    super(length, 4 /* elementSize */, entrySize, maxEntries, homeDirectory, new EntryIntFactory());
   }
   
   @Override

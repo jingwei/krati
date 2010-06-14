@@ -24,8 +24,8 @@ import krati.cds.impl.segment.SegmentOverflowException;
  * 
  * This class is not thread-safe by design. It is expected that the conditions below hold within one JVM.
  * <pre>
- *    1. There is one and only one instance of SimpleDataArray for a given cacheDirectory.
- *    2. There is one and only one thread is calling setData methods at any given time. 
+ *    1. There is one and only one instance of SimpleDataArray for a given home directory.
+ *    2. There is one and only one thread is calling setData and transferTo methods at any given time. 
  * </pre>
  * 
  * It is expected that this class is used in the case of multiple readers and single writer.

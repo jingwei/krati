@@ -55,9 +55,9 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable
     return _maxEntrySize;
   }
   
-  public File getCacheDirectory()
+  public File getDirectory()
   {
-    return _array.getCacheDirectory();
+    return _array.getDirectory();
   }
   
   public EntryFactory<V> getEntryFactory()
@@ -249,7 +249,7 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable
       }
       
       // Create entry log and persist in-memory data
-      File file = new File(getCacheDirectory(), getEntryLogName(_entry));
+      File file = new File(getDirectory(), getEntryLogName(_entry));
       _entry.save(file);
       
       if(_persistListener != null)
@@ -348,7 +348,7 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable
    */
   protected List<Entry<V>> loadEntryFiles()
   {
-    File[] files = getCacheDirectory().listFiles();
+    File[] files = getDirectory().listFiles();
     String prefix = getEntryLogPrefix();
     String suffix = getEntryLogSuffix();
     
@@ -387,7 +387,7 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable
    */
   protected void deleteEntryFiles() throws IOException
   {
-    File[] files = getCacheDirectory().listFiles();
+    File[] files = getDirectory().listFiles();
     String prefix = getEntryLogPrefix();
     String suffix = getEntryLogSuffix();
     

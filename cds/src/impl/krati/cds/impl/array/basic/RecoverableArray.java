@@ -17,7 +17,7 @@ public abstract class RecoverableArray<V extends EntryValue> implements Array, P
   private static final Logger _log = Logger.getLogger(RecoverableArray.class);
   
   protected int                  _length;         // Length of this array
-  protected File                 _cacheDir;       // array cache directory
+  protected File                 _directory;      // array cache directory
   protected ArrayFile            _arrayFile;      // underlying array file
   protected EntryFactory<V>      _entryFactory;   // factory for creating Entry
   protected ArrayEntryManager<V> _entryManager;   // manager for entry redo logs
@@ -29,28 +29,28 @@ public abstract class RecoverableArray<V extends EntryValue> implements Array, P
    *            Maximum number of values per entry.
    * @param maxEntries
    *            Maximum number of entries before applying them.
-   * @param cacheDirectory
+   * @param directory
    *            Directory to store the array file and redo entries.
    */
   protected RecoverableArray(int length,
                              int elemSize,
                              int entrySize,
                              int maxEntries,
-                             File cacheDirectory,
+                             File directory,
                              EntryFactory<V> entryFactory) throws Exception
   {
     _length = length;
-    _cacheDir = cacheDirectory;
+    _directory = directory;
     _entryFactory = entryFactory;
     _entryManager = new ArrayEntryManager<V>(this, maxEntries, entrySize);
     
-    if (!_cacheDir.exists())
+    if (!_directory.exists())
     {
-      _cacheDir.mkdirs();
+      _directory.mkdirs();
     }
     
     boolean newFile = true;
-    File file = new File(cacheDirectory, "indexes.dat");
+    File file = new File(directory, "indexes.dat");
     if (file.exists())
     {
       newFile = false;
@@ -69,7 +69,7 @@ public abstract class RecoverableArray<V extends EntryValue> implements Array, P
     _log.info("length:" + _length +
              " entrySize:" + entrySize +
              " maxEntries:" + maxEntries +
-             " cacheDirectory:" + cacheDirectory.getAbsolutePath() +
+             " directory:" + directory.getAbsolutePath() +
              " arrayFile:" + _arrayFile.getName());
   }
   
@@ -107,9 +107,9 @@ public abstract class RecoverableArray<V extends EntryValue> implements Array, P
   
   protected abstract void loadArrayFileData();
   
-  public File getCacheDirectory()
+  public File getDirectory()
   {
-    return _cacheDir;
+    return _directory;
   }
   
   public EntryFactory<V> getEntryFactory()

@@ -16,7 +16,7 @@ import krati.cds.impl.array.entry.EntryValueLong;
  * 
  * This class is not thread-safe by design. It is expected that the conditions below hold within one JVM.
  * <pre>
- *    1. There is one and only one instance of SimpleLongArray for a given cacheDirectory.
+ *    1. There is one and only one instance of SimpleLongArray for a given home directory.
  *    2. There is one and only one thread is calling the setData method at any given time. 
  * </pre>
  * 
@@ -30,12 +30,18 @@ public class SimpleLongArray extends RecoverableArray<EntryValueLong> implements
   private static final Logger _log = Logger.getLogger(SimpleLongArray.class);
   private long[] _internalArray;
   
-  public SimpleLongArray(int length,
-                              int entrySize,
-                              int maxEntries,
-                              File cacheDirectory) throws Exception
+  /**
+   * Create a fixed-length persistent long array.
+   * 
+   * @param length         the length of this array
+   * @param entrySize      the size of redo entry (i.e., batch size) 
+   * @param maxEntries     the number of redo entries required for updating the underlying array file
+   * @param homeDirectory  the home directory of this array
+   * @throws Exception     if this array cannot be created.
+   */
+  public SimpleLongArray(int length, int entrySize, int maxEntries, File homeDirectory) throws Exception
   {
-    super(length, 8 /* elementSize */, entrySize, maxEntries, cacheDirectory, new EntryLongFactory());
+    super(length, 8 /* elementSize */, entrySize, maxEntries, homeDirectory, new EntryLongFactory());
   }
   
   @Override

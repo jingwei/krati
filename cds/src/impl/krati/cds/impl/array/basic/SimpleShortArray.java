@@ -9,17 +9,37 @@ import krati.cds.array.ShortArray;
 import krati.cds.impl.array.entry.EntryShortFactory;
 import krati.cds.impl.array.entry.EntryValueShort;
 
+/**
+ * SimpleShortArray: Simple Persistent ShortArray Implementation.
+ * 
+ * This class is not thread-safe by design. It is expected that the conditions below hold within one JVM.
+ * <pre>
+ *    1. There is one and only one instance of SimpleShortArray for a given home directory.
+ *    2. There is one and only one thread is calling the setData method at any given time. 
+ * </pre>
+ * 
+ * It is expected that this class is used in the case of multiple readers and single writer.
+ * 
+ * @author jwu
+ *
+ */
 public class SimpleShortArray extends RecoverableArray<EntryValueShort> implements ShortArray
 {
   private static final Logger _log = Logger.getLogger(SimpleShortArray.class);
   private short[] _internalArray;
   
-  public SimpleShortArray(int length,
-                                   int entrySize,
-                                   int maxEntries,
-                                   File cacheDirectory) throws Exception
+  /**
+   * Create a fixed-length persistent short array.
+   * 
+   * @param length         the length of this array
+   * @param entrySize      the size of redo entry (i.e., batch size) 
+   * @param maxEntries     the number of redo entries required for updating the underlying array file
+   * @param homeDirectory  the home directory of this array
+   * @throws Exception     if this array cannot be created.
+   */
+  public SimpleShortArray(int length, int entrySize, int maxEntries, File homeDirectory) throws Exception
   {
-    super(length, 2 /* elementSize */, entrySize, maxEntries, cacheDirectory, new EntryShortFactory());
+    super(length, 2 /* elementSize */, entrySize, maxEntries, homeDirectory, new EntryShortFactory());
   }
   
   @Override
