@@ -9,12 +9,12 @@ import krati.cds.array.ShortArray;
 import krati.cds.impl.array.entry.EntryShortFactory;
 import krati.cds.impl.array.entry.EntryValueShort;
 
-public class RecoverableShortArray extends RecoverableArray<EntryValueShort> implements ShortArray
+public class SimpleShortArray extends RecoverableArray<EntryValueShort> implements ShortArray
 {
-  private static final Logger _log = Logger.getLogger(RecoverableShortArray.class);
+  private static final Logger _log = Logger.getLogger(SimpleShortArray.class);
   private short[] _internalArray;
   
-  public RecoverableShortArray(int length,
+  public SimpleShortArray(int length,
                                    int entrySize,
                                    int maxEntries,
                                    File cacheDirectory) throws Exception

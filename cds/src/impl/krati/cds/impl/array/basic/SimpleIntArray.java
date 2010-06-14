@@ -9,12 +9,12 @@ import krati.cds.array.IntArray;
 import krati.cds.impl.array.entry.EntryIntFactory;
 import krati.cds.impl.array.entry.EntryValueInt;
 
-public class RecoverableIntArray extends RecoverableArray<EntryValueInt> implements IntArray
+public class SimpleIntArray extends RecoverableArray<EntryValueInt> implements IntArray
 {
-  private static final Logger _log = Logger.getLogger(RecoverableIntArray.class);
+  private static final Logger _log = Logger.getLogger(SimpleIntArray.class);
   private int[] _internalArray;
   
-  public RecoverableIntArray(int length,
+  public SimpleIntArray(int length,
                              int entrySize,
                              int maxEntries,
                              File cacheDirectory) throws Exception

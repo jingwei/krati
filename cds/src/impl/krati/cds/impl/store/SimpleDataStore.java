@@ -8,7 +8,7 @@ import org.apache.log4j.Logger;
 import krati.cds.array.DataArray;
 import krati.cds.impl.array.AddressArray;
 import krati.cds.impl.array.SimpleDataArray;
-import krati.cds.impl.array.basic.RecoverableLongArray;
+import krati.cds.impl.array.basic.SimpleLongArray;
 import krati.cds.impl.segment.SegmentFactory;
 import krati.cds.impl.segment.SegmentManager;
 import krati.cds.store.DataStore;
@@ -210,7 +210,7 @@ public class SimpleDataStore implements DataStore<byte[], byte[]>
                                               int maxEntries,
                                               File homeDirectory) throws Exception
     {
-        return new RecoverableLongArray(length, entrySize, maxEntries, homeDirectory);
+        return new SimpleLongArray(length, entrySize, maxEntries, homeDirectory);
     }
     
     protected long hash(byte[] key)

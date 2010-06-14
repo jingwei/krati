@@ -5,7 +5,7 @@ import java.io.IOException;
 
 import krati.cds.impl.array.AddressArray;
 import krati.cds.impl.array.SimpleDataArray;
-import krati.cds.impl.array.basic.RecoverableLongArray;
+import krati.cds.impl.array.basic.SimpleLongArray;
 import krati.cds.impl.segment.SegmentFactory;
 import krati.cds.impl.segment.SegmentManager;
 import test.AbstractSeedTest;
@@ -30,7 +30,7 @@ public class TestSimpleArray extends AbstractSeedTest
     
     protected AddressArray getAddressArray(File homeDir) throws Exception
     {
-        return new RecoverableLongArray(idCount, 10000, 5, homeDir);
+        return new SimpleLongArray(idCount, 10000, 5, homeDir);
     }
     
     protected SegmentManager getSegmentManager(File homeDir) throws IOException

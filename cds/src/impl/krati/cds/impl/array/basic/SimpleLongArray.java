@@ -12,11 +12,11 @@ import krati.cds.impl.array.entry.EntryPersistListener;
 import krati.cds.impl.array.entry.EntryValueLong;
 
 /**
- * RecoverableLongArray: Simple Persistent LongArray Implementation.
+ * SimpleLongArray: Simple Persistent LongArray Implementation.
  * 
  * This class is not thread-safe by design. It is expected that the conditions below hold within one JVM.
  * <pre>
- *    1. There is one and only one instance of RecoverableLongArray for a given cacheDirectory.
+ *    1. There is one and only one instance of SimpleLongArray for a given cacheDirectory.
  *    2. There is one and only one thread is calling the setData method at any given time. 
  * </pre>
  * 
@@ -25,12 +25,12 @@ import krati.cds.impl.array.entry.EntryValueLong;
  * @author jwu
  *
  */
-public class RecoverableLongArray extends RecoverableArray<EntryValueLong> implements AddressArray
+public class SimpleLongArray extends RecoverableArray<EntryValueLong> implements AddressArray
 {
-  private static final Logger _log = Logger.getLogger(RecoverableLongArray.class);
+  private static final Logger _log = Logger.getLogger(SimpleLongArray.class);
   private long[] _internalArray;
   
-  public RecoverableLongArray(int length,
+  public SimpleLongArray(int length,
                               int entrySize,
                               int maxEntries,
                               File cacheDirectory) throws Exception

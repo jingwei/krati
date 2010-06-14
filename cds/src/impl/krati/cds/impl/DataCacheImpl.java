@@ -8,7 +8,7 @@ import org.apache.log4j.Logger;
 import krati.cds.DataCache;
 import krati.cds.impl.array.CheckedDataArray;
 import krati.cds.impl.array.SimpleDataArray;
-import krati.cds.impl.array.basic.RecoverableLongArray;
+import krati.cds.impl.array.basic.SimpleLongArray;
 import krati.cds.impl.segment.MemorySegmentFactory;
 import krati.cds.impl.segment.SegmentFactory;
 import krati.cds.impl.segment.SegmentManager;
@@ -159,11 +159,11 @@ public class DataCacheImpl implements DataCache
         this._idStart = memberIdStart;
         this._idCount = memberIdCount;
         
-        RecoverableLongArray addressArray =
-            new RecoverableLongArray(memberIdCount,
-                                     maxEntrySize,
-                                     maxEntries,
-                                     cacheDirectory);
+        SimpleLongArray addressArray =
+            new SimpleLongArray(memberIdCount,
+                                maxEntrySize,
+                                maxEntries,
+                                cacheDirectory);
         
         String segmentHome = cacheDirectory.getCanonicalPath() + File.separator + "segs";
         SegmentManager segManager = SegmentManager.getInstance(segmentHome,
@@ -211,11 +211,11 @@ public class DataCacheImpl implements DataCache
         this._idStart = memberIdStart;
         this._idCount = memberIdCount;
         
-        RecoverableLongArray addressArray =
-            new RecoverableLongArray(memberIdCount,
-                                     maxEntrySize,
-                                     maxEntries,
-                                     cacheDirectory);
+        SimpleLongArray addressArray =
+            new SimpleLongArray(memberIdCount,
+                                maxEntrySize,
+                                maxEntries,
+                                cacheDirectory);
         
         String segmentHome = cacheDirectory.getCanonicalPath() + File.separator + "segs";
         SegmentManager segManager = SegmentManager.getInstance(segmentHome,
