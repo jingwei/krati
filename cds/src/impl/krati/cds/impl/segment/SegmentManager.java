@@ -260,9 +260,6 @@ public final class SegmentManager
             throw e;
         }
         
-        // TODO
-        // Validate that all live segments from meta are loaded
-        
         _log.info("init done");
     }
     
