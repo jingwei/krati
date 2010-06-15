@@ -150,9 +150,6 @@ class SimpleDataArrayCompactor implements Runnable
             // No segment need compaction
             if (recycleList.size() == 0) return false;
             
-            // Delay compaction if only one segment is eligible for compaction but it is not VERY fragmented.
-            if (recycleList.size() == 1 && recycleList.get(0).getLoadFactor() > (_compactLoadFactor/2)) return false;
-            
             // Sort recycleList in ascending order of load size
             Collections.sort(recycleList, _segmentLoadCmp);
             
@@ -176,6 +173,9 @@ class SimpleDataArrayCompactor implements Runnable
                     break;
                 }
             }
+            
+            // Delay compaction if only one segment is eligible for compaction but it is not VERY fragmented.
+            if (_segSourceList.size() == 1 && _segSourceList.get(0).getLoadFactor() > (_compactLoadFactor/2)) return false;
             
             for(Segment seg : _segSourceList)
             {
