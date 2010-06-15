@@ -128,67 +128,73 @@ public abstract class AbstractSegment implements Segment
     }
     
     @Override
-    public Mode getMode()
+    public final Mode getMode()
     {
         return _segMode;
     }
     
     @Override
-    public int getSegmentId()
+    public final int getSegmentId()
     {
         return _segId;
     }
     
     @Override
-    public File getSegmentFile()
+    public final File getSegmentFile()
     {
         return _segFile;
     }
     
     @Override
-    public int getInitialSizeMB()
+    public final int getInitialSizeMB()
     {
         return _initSizeMB;
     }
     
     @Override
-    public long getInitialSize() {
+    public final long getInitialSize() {
         return _initSizeBytes;
     }
     
     @Override
-    public long getLastForcedTime()
+    public final long getLastForcedTime()
     {
         return _lastForcedTime;
     }
     
     @Override
-    public long getStorageVersion()
+    public final long getStorageVersion()
     {
         return _storageVersion;
     }
     
     @Override
-    public double getLoadFactor()
+    public final double getLoadFactor()
     {
        return ((double)_loadSizeBytes) / _initSizeBytes;
     }
 
     @Override
-    public int getLoadSize()
+    public final int getLoadSize()
     {
         return _loadSizeBytes;
     }
 
     @Override
-    public void incrLoadSize(int byteCnt)
+    public final void incrLoadSize(int byteCnt)
     {
         _loadSizeBytes += byteCnt;
     }
     
     @Override
-    public void decrLoadSize(int byteCnt)
+    public final void decrLoadSize(int byteCnt)
     {
         _loadSizeBytes -= byteCnt;
+    }
+    
+    @Override
+    public final boolean isReadOnly()
+    {
+        return (_segMode == Segment.Mode.READ_ONLY);
     }
 }

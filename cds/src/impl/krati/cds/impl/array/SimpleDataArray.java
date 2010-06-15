@@ -68,18 +68,6 @@ public class SimpleDataArray implements DataArray, Persistable
     }
     
     /**
-     * Constructs a DataArray with Segment Compact Trigger default to 0.1. 
-     * 
-     * @param addressArray           the array of addresses (i.e. pointers to Segment).
-     * @param segmentManager         the segment manager for loading, creating, freeing, maintaining segments.
-     * @param segmentCompactFactor   the load factor below which a segment is eligible for compaction. The recommended value is 0.5.
-     */
-    public SimpleDataArray(AddressArray addressArray, SegmentManager segmentManager, double segmentCompactFactor)
-    {
-        this(addressArray, segmentManager, 0.1, segmentCompactFactor);
-    }
-    
-    /**
      * Constructs a DataArray.
      * 
      * @param addressArray           the array of addresses (i.e. pointers to Segment).

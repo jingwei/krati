@@ -249,12 +249,6 @@ public class MappedSegment extends AbstractSegment
     }
     
     @Override
-    public boolean isReadOnly()
-    {
-        return (getMode() == Segment.Mode.READ_ONLY);
-    }
-    
-    @Override
     public synchronized void asReadOnly() throws IOException
     {
         if(getMode() == Segment.Mode.READ_WRITE)
