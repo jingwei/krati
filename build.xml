@@ -282,6 +282,6 @@
         </junit>
     </target>
 
-    <target name="main" depends="jar">
+    <target name="main" depends="clean,jar">
     </target>
 </project>
