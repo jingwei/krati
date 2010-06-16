@@ -5,10 +5,6 @@
        <conf name="master"/>
     </configurations>
     
-    <publications>
-      <artifact name="cobertura" type="jar" conf="master" />
-    </publications>
-
     <dependencies>
         <dependency org="log4j" name="log4j" rev="1.2.15" conf="master"/>
     </dependencies>

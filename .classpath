@@ -12,5 +12,5 @@
 	<classpathentry kind="lib" path="test/lib/lucene-core-3.0.0.jar"/>
 	<classpathentry kind="lib" path="test/lib/zoie-2.0.0-rc3.jar"/>
 	<classpathentry kind="lib" path="test/lib/protobuf-java-2.3.0.jar"/>
-	<classpathentry kind="output" path="classes"/>
+	<classpathentry kind="output" path="build/classes"/>
 </classpath>
