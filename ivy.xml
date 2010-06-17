@@ -2,10 +2,14 @@
 <ivy-module version="2.0">
     <info organisation="proj.krati" module="krati"/>
     <configurations>
-       <conf name="master"/>
+      <conf name="master" visibility="public" description="contains only the artifact published by this module itself, with no transitive dependencies"/>
     </configurations>
-    
+
+    <publications>
+      <artifact name="zoie" type="jar" ext="jar" conf="master" />
+    </publications>
+
     <dependencies>
-        <dependency org="log4j" name="log4j" rev="1.2.15" conf="master"/>
+      <dependency org="log4j" name="log4j" rev="1.2.15" conf="master"/>
     </dependencies>
 </ivy-module>

@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <project xmlns:ivy="antlib:org.apache.ivy.ant" name="krati" default="main" basedir=".">
     <property name="project.name" value="krati"/>
-    <property name="version" value="0.3.3"/>
     <property name="krati.root" location="."/>
-    
+
+    <property file="${krati.root}/version.properties"/>
+
     <property name="logs.dir" value="logs"/>
     <property name="build.dir" value="build"/>
     <property name="config.dir" value="config"/>
