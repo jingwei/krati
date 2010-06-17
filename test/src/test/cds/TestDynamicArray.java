@@ -90,7 +90,7 @@ public class TestDynamicArray extends AbstractTest
         
         for(MemberDataUpdate u : updates) 
         {
-            assert array1.get(u.getMemberId()) == u.getData();
+            assertEquals(array1.get(u.getMemberId()), u.getData());
         }
         
         // Create the second array, which should load data from cache
@@ -108,7 +108,7 @@ public class TestDynamicArray extends AbstractTest
         for(int index = 0; index < array1.length(); index++)
         {
             if (array1.get(index) > 0) nonZeroCount++;
-            assert array1.get(index) == array3.get(index);
+            assertEquals(array1.get(index), array3.get(index));
         }
         
         assertTrue("all zeros in array1", nonZeroCount > 0);
@@ -175,7 +175,7 @@ public class TestDynamicArray extends AbstractTest
         
         for(MemberDataUpdate u : updates) 
         {
-            assert array1.get(u.getMemberId()) == u.getData();
+            assertEquals(array1.get(u.getMemberId()), u.getData());
         }
         
         // Create the second array, which should load data from cache
@@ -193,7 +193,7 @@ public class TestDynamicArray extends AbstractTest
         for(int index = 0; index < array1.length(); index++)
         {
             if (array1.get(index) > 0) nonZeroCount++;
-            assert array1.get(index) == array3.get(index);
+            assertEquals(array1.get(index), array3.get(index));
         }
         
         assertTrue("all zeros in array1", nonZeroCount > 0);
@@ -260,7 +260,7 @@ public class TestDynamicArray extends AbstractTest
         
         for(MemberDataUpdate u : updates) 
         {
-            assert array1.get(u.getMemberId()) == (short)u.getData();
+            assertEquals(array1.get(u.getMemberId()), (short)u.getData());
         }
         
         // Create the second array, which should load data from cache
@@ -278,7 +278,7 @@ public class TestDynamicArray extends AbstractTest
         for(int index = 0; index < array1.length(); index++)
         {
             if (array1.get(index) > 0) nonZeroCount++;
-            assert array1.get(index) == array3.get(index);
+            assertEquals(array1.get(index), array3.get(index));
         }
         
         assertTrue("all zeros in array1", nonZeroCount > 0);

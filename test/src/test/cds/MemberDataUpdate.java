@@ -46,21 +46,7 @@ public class MemberDataUpdate
         
         for(int i = 0; i < memberIdCount; i++)
         {
-            int memberId = memberIdStart + random.nextInt(memberIdCount);
-            int data = random.nextInt(1000000);
-            updates[i] = new MemberDataUpdate(memberId, data, scn++);
-        }
-        
-        return updates;
-    }
-    
-    public static MemberDataUpdate[] generateUpdates(int memberIdStart, int memberIdCount, int numOfUpdates)
-    {
-        MemberDataUpdate[] updates = new MemberDataUpdate[numOfUpdates];
-        
-        for(int i = 0; i < numOfUpdates; i++)
-        {
-            int memberId = memberIdStart + random.nextInt(memberIdCount);
+            int memberId = memberIdStart + i;
             int data = random.nextInt(1000000);
             updates[i] = new MemberDataUpdate(memberId, data, scn++);
         }

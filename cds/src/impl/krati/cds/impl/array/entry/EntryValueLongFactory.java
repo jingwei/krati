@@ -19,7 +19,6 @@ public class EntryValueLongFactory implements EntryValueFactory<EntryValueLong>
    */
   public EntryValueLong[] newValueArray(int length)
   {
-    assert length >= 0;
     return new EntryValueLong[length];
   }
   

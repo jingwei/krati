@@ -20,7 +20,6 @@ public class EntryValueIntFactory implements EntryValueFactory<EntryValueInt>
   @Override
   public EntryValueInt[] newValueArray(int length)
   {
-    assert length >= 0;
     return new EntryValueInt[length];
   }
   

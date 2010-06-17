@@ -14,7 +14,6 @@ public class EntryValueShortFactory implements EntryValueFactory<EntryValueShort
    */
   public EntryValueShort[] newValueArray(int length)
   {
-    assert length >= 0;
     return new EntryValueShort[length];
   }
   

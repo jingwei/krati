@@ -367,30 +367,30 @@ public class TestDynamicDataStore extends AbstractTest
         intByteBuffer.clear();
         intByteBuffer.putInt(i);
         System.out.printf("hash(%d)=%d%n", i, intHash.hash(intByteArray));
-        assert i == intHash.hash(intByteArray);
+        assertEquals(i, intHash.hash(intByteArray));
         
         i = 1023;
         intByteBuffer.clear();
         intByteBuffer.putInt(i);
         System.out.printf("hash(%d)=%d%n", i, intHash.hash(intByteArray));
-        assert i == intHash.hash(intByteArray);
+        assertEquals(i, intHash.hash(intByteArray));
         
         i = 65535;
         intByteBuffer.clear();
         intByteBuffer.putInt(i);
         System.out.printf("hash(%d)=%d%n", i, intHash.hash(intByteArray));
-        assert i == intHash.hash(intByteArray);
+        assertEquals(i, intHash.hash(intByteArray));
         
         i = 131072;
         intByteBuffer.clear();
         intByteBuffer.putInt(i);
         System.out.printf("hash(%d)=%d%n", i, intHash.hash(intByteArray));
-        assert i == intHash.hash(intByteArray);
+        assertEquals(i, intHash.hash(intByteArray));
         
         i = 262144;
         intByteBuffer.clear();
         intByteBuffer.putInt(i);
         System.out.printf("hash(%d)=%d%n", i, intHash.hash(intByteArray));
-        assert i == intHash.hash(intByteArray);
+        assertEquals(i, intHash.hash(intByteArray));
     }
 }
