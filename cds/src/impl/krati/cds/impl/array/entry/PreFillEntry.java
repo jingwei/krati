@@ -37,7 +37,7 @@ public abstract class PreFillEntry<T extends EntryValue> extends AbstractEntry<T
     }
     
     @Override
-    public int size()
+    public final int size()
     {
         return _index;
     }

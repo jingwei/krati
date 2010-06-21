@@ -88,6 +88,12 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable
       
       // Advance high water mark to maintain progress record
       _hwmScn = Math.max(_hwmScn, entryValue.scn);
+      
+      // Switch to a new entry if the current _entry has reached _maxEntrySize.
+      if(_entry.isFull())
+      {
+        switchEntry(false);
+      }
   }
   
   final void addToPreFillEntryInt(int pos, int val, long scn) throws IOException
@@ -103,6 +109,12 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable
       
       // Advance high water mark to maintain progress record
       _hwmScn = Math.max(_hwmScn, scn);
+      
+      // Switch to a new entry if the current _entry has reached _maxEntrySize.
+      if(_entry.isFull())
+      {
+        switchEntry(false);
+      }
   }
   
   final void addToPreFillEntryLong(int pos, long val, long scn) throws IOException
@@ -118,6 +130,12 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable
       
       // Advance high water mark to maintain progress record
       _hwmScn = Math.max(_hwmScn, scn);
+      
+      // Switch to a new entry if the current _entry has reached _maxEntrySize.
+      if(_entry.isFull())
+      {
+        switchEntry(false);
+      }
   }
   
   final void addToPreFillEntryShort(int pos, short val, long scn) throws IOException
@@ -133,6 +151,12 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable
       
       // Advance high water mark to maintain progress record
       _hwmScn = Math.max(_hwmScn, scn);
+      
+      // Switch to a new entry if the current _entry has reached _maxEntrySize.
+      if(_entry.isFull())
+      {
+        switchEntry(false);
+      }
   }
   
   public synchronized void clear()
