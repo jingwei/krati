@@ -116,6 +116,41 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
      * <pre>
      *    Entry Size               : 10000
      *    Max Entries              : 5
+     *    Segment File Size        : 256MB
+     *    Segment Compact Trigger  : 0.1
+     *    Segment Compact Factor   : 0.5
+     *    Store Hash Load Factor   : 0.75
+     * </pre>
+     * 
+     * @param homeDir                the home directory of DataStore
+     * @param initLevel              the initial level when DataStore is created
+     * @param segmentFactory         the segment factory
+     * @param hashFunction           the hash function for mapping keys to indexes
+     * @throws Exception             if this dynamic data store cannot be created.
+     */
+    public DynamicDataStore(File homeDir,
+                            int initLevel,
+                            SegmentFactory segmentFactory,
+                            HashFunction<byte[]> hashFunction) throws Exception
+    {
+        this(homeDir,
+             initLevel,
+             10000, /* entrySize */
+             5,     /* maxEntries */
+             256,   /* segmentFileSizeMB */
+             segmentFactory,
+             0.1,   /* segmentCompactTrigger */
+             0.5,   /* segmentCompactFactor  */
+             0.75,  /* DataStore load factor */
+             hashFunction);
+    }
+    
+    /**
+     * Creates a dynamic DataStore with the settings below:
+     * 
+     * <pre>
+     *    Entry Size               : 10000
+     *    Max Entries              : 5
      *    Segment Compact Trigger  : 0.1
      *    Segment Compact Factor   : 0.5
      *    Store Hash Load Factor   : 0.75
@@ -153,7 +188,6 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
      *    Max Entries              : 5
      *    Segment Compact Trigger  : 0.1
      *    Segment Compact Factor   : 0.5
-     *    Store Hash Function      : krati.util.FnvHashFunction
      * </pre>
      * 
      * @param homeDir                the home directory of DataStore
@@ -161,13 +195,15 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
      * @param segmentFileSizeMB      the size of segment file in MB
      * @param segmentFactory         the segment factory
      * @param hashLoadFactor         the load factor of the underlying address array (hash table)
+     * @param hashFunction           the hash function for mapping keys to indexes
      * @throws Exception             if this dynamic data store cannot be created.
      */
     public DynamicDataStore(File homeDir,
                             int initLevel,
                             int segmentFileSizeMB,
                             SegmentFactory segmentFactory,
-                            double hashLoadFactor) throws Exception
+                            double hashLoadFactor,
+                            HashFunction<byte[]> hashFunction) throws Exception
     {
         this(homeDir,
              initLevel,
@@ -178,7 +214,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
              0.1,   /* segmentCompactTrigger */
              0.5,   /* segmentCompactFactor  */
              hashLoadFactor,
-             new FnvHashFunction());
+             hashFunction);
     }
     
     /**
@@ -224,7 +260,6 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
      * <pre>
      *    Segment Compact Trigger  : 0.1
      *    Segment Compact Factor   : 0.5
-     *    Store Hash Load Factor   : 0.75
      * </pre>
      * 
      * @param homeDir                the home directory of DataStore
@@ -233,6 +268,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
      * @param maxEntries             the number of redo entries required for updating the underlying address array
      * @param segmentFileSizeMB      the size of segment file in MB
      * @param segmentFactory         the segment factory
+     * @param hashLoadFactor         the load factor of the underlying address array (hash table)
      * @param hashFunction           the hash function for mapping keys to indexes
      * @throws Exception             if this dynamic data store cannot be created.
      */
@@ -242,6 +278,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
                             int maxEntries,
                             int segmentFileSizeMB,
                             SegmentFactory segmentFactory,
+                            double hashLoadFactor,
                             HashFunction<byte[]> hashFunction) throws Exception
     {
         this(homeDir,
@@ -252,7 +289,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
              segmentFactory,
              0.1,   /* segmentCompactTrigger */
              0.5,   /* segmentCompactFactor  */
-             0.75,  /* DataStore load factor */
+             hashLoadFactor,
              hashFunction);
     }
     

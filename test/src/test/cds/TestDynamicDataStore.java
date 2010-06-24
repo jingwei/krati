@@ -31,7 +31,7 @@ public class TestDynamicDataStore extends AbstractTest
     
     protected DynamicDataStore getDynamicDataStore(File storeDir, int initLevel, int segFileSizeMB) throws Exception
     {
-        return new DynamicDataStore(storeDir, initLevel, 10000, 5, segFileSizeMB, getSegmentFactory(), new HashFunctionInteger());
+        return new DynamicDataStore(storeDir, initLevel, 10000, 5, segFileSizeMB, getSegmentFactory(), 0.75, new HashFunctionInteger());
     }
     
     public void testCapacityGrowth() throws Exception
