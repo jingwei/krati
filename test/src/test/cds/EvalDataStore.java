@@ -390,7 +390,7 @@ public abstract class EvalDataStore extends AbstractTest
             {
                 Thread.sleep(10000);
 
-                int newReadCount = 0;
+                long newReadCount = 0;
                 for(int r = 0; r < readers.length; r++)
                 {
                     newReadCount += readers[r].getReadCount();

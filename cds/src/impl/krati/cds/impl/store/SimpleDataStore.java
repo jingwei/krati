@@ -196,6 +196,11 @@ public class SimpleDataStore implements DataStore<byte[], byte[]>
         // Create address array
         AddressArray addressArray = createAddressArray(capacity, entrySize, maxEntries, homeDir);
         
+        if(addressArray.length() != capacity)
+        {
+            throw new IOException("Capacity expected: " + addressArray.length() + " not " + capacity);
+        }
+        
         // Create segment manager
         String segmentHome = homeDir.getCanonicalPath() + File.separator + "segs";
         SegmentManager segmentManager = SegmentManager.getInstance(segmentHome, segmentFactory, segmentFileSizeMB);

@@ -13,6 +13,7 @@ import krati.cds.impl.DataCacheImpl;
 import krati.cds.impl.segment.SegmentFactory;
 
 import test.AbstractTest;
+import test.LatencyStats;
 
 /**
  * TestDataCache using MemorySegment 
@@ -115,6 +116,7 @@ public class TestDataCache extends AbstractTest
         int _length;
         long _cnt = 0;
         long _scn = 0;
+        LatencyStats _latStats = new LatencyStats();
         
         public Writer(DataCache cache)
         {
@@ -129,6 +131,11 @@ public class TestDataCache extends AbstractTest
             return this._cnt;
         }
 
+        public LatencyStats getLatencyStats()
+        {
+            return this._latStats;
+        }
+        
         public void stop()
         {
             _running = false;
@@ -150,10 +157,17 @@ public class TestDataCache extends AbstractTest
         @Override
         public void run()
         {
+            long prevTime = System.nanoTime();
+            long currTime = prevTime;
+            
             while(_running)
             {
                 write(_indexStart + _rand.nextInt(_length));
                 _cnt++;
+                
+                currTime = System.nanoTime();
+                _latStats.countLatency((int)(currTime - prevTime)/1000);
+                prevTime = currTime;
             }
         }
     }
@@ -167,6 +181,7 @@ public class TestDataCache extends AbstractTest
         int _indexStart;
         int _length;
         long _cnt = 0;
+        LatencyStats _latStats = new LatencyStats();
         
         public Reader(DataCache cache)
         {
@@ -179,7 +194,12 @@ public class TestDataCache extends AbstractTest
         {
             return this._cnt;
         }
-
+        
+        public LatencyStats getLatencyStats()
+        {
+            return this._latStats;
+        }
+        
         public void stop()
         {
             _running = false;
@@ -193,10 +213,17 @@ public class TestDataCache extends AbstractTest
         @Override
         public void run()
         {
+            long prevTime = System.nanoTime();
+            long currTime = prevTime;
+            
             while(_running)
             {
                 read(_indexStart + _rand.nextInt(_length));
                 _cnt++;
+                
+                currTime = System.nanoTime();
+                _latStats.countLatency((int)(currTime - prevTime)/1000);
+                prevTime = currTime;
             }
         }
     }
@@ -366,7 +393,7 @@ public class TestDataCache extends AbstractTest
             {
                 Thread.sleep(10000);
 
-                int newReadCount = 0;
+                long newReadCount = 0;
                 for(int r = 0; r < readers.length; r++)
                 {
                     newReadCount += readers[r].getReadCount();
@@ -411,6 +438,15 @@ public class TestDataCache extends AbstractTest
             }
             
             System.out.printf("Total Read Rate=%6.2f per ms%n", sumReadRate);
+            
+            System.out.println("writer latency stats:");
+            writer.getLatencyStats().print(System.out);
+            
+            if(!doValidation)
+            {
+                System.out.println("reader[0] latency stats:");
+                readers[0].getLatencyStats().print(System.out);
+            }
         }
         catch(Exception e)
         {

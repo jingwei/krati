@@ -165,6 +165,11 @@ public class DataCacheImpl implements DataCache
                                 maxEntries,
                                 cacheDirectory);
         
+        if(addressArray.length() != memberIdCount)
+        {
+            throw new IOException("Capacity expected: " + addressArray.length() + " not " + memberIdCount);
+        }
+        
         String segmentHome = cacheDirectory.getCanonicalPath() + File.separator + "segs";
         SegmentManager segManager = SegmentManager.getInstance(segmentHome,
                                                                segmentFactory,
@@ -216,6 +221,11 @@ public class DataCacheImpl implements DataCache
                                 maxEntrySize,
                                 maxEntries,
                                 cacheDirectory);
+        
+        if(addressArray.length() != memberIdCount)
+        {
+            throw new IOException("Capacity expected: " + addressArray.length() + " not " + memberIdCount);
+        }
         
         String segmentHome = cacheDirectory.getCanonicalPath() + File.separator + "segs";
         SegmentManager segManager = SegmentManager.getInstance(segmentHome,
