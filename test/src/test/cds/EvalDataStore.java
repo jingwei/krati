@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Random;
 
 import test.AbstractTest;
+import test.LatencyStats;
 
 import krati.cds.store.DataStore;
 
@@ -21,7 +22,7 @@ public abstract class EvalDataStore extends AbstractTest
 {
     protected DataStore<byte[], byte[]> _store;
     
-    static List<String> _lineSeedData = new ArrayList<String>(3000);
+    static List<String> _lineSeedData = new ArrayList<String>(10000);
     
     static class Reader implements Runnable
     {
@@ -31,6 +32,7 @@ public abstract class EvalDataStore extends AbstractTest
         int _dataCnt = _lineSeedData.size();
         volatile boolean _running = true;
         volatile long _cnt = 0;
+        LatencyStats _latStats = new LatencyStats();
         
         public Reader(DataStore<byte[], byte[]> ds)
         {
@@ -41,7 +43,12 @@ public abstract class EvalDataStore extends AbstractTest
         {
             return this._cnt;
         }
-
+        
+        public LatencyStats getLatencyStats()
+        {
+            return this._latStats;
+        }
+        
         public void stop()
         {
             _running = false;
@@ -61,9 +68,16 @@ public abstract class EvalDataStore extends AbstractTest
         @Override
         public void run()
         {
+            long prevTime = System.nanoTime();
+            long currTime = prevTime;
+            
             while(_running)
             {
                 read();
+                
+                currTime = System.nanoTime();
+                _latStats.countLatency((int)(currTime - prevTime)/1000);
+                prevTime = currTime;
             }
         }
     }
@@ -104,6 +118,7 @@ public abstract class EvalDataStore extends AbstractTest
         int _dataCnt;
         volatile boolean _running = true;
         volatile long _cnt = 0;
+        LatencyStats _latStats = new LatencyStats();
         
         public Writer(DataStore<byte[], byte[]> ds)
         {
@@ -115,7 +130,12 @@ public abstract class EvalDataStore extends AbstractTest
         {
             return this._cnt;
         }
-
+        
+        public LatencyStats getLatencyStats()
+        {
+            return this._latStats;
+        }
+        
         public void stop()
         {
             _running = false;
@@ -142,9 +162,16 @@ public abstract class EvalDataStore extends AbstractTest
         @Override
         public void run()
         {
+            long prevTime = System.nanoTime();
+            long currTime = prevTime;
+            
             while(_running)
             {
                 write();
+                
+                currTime = System.nanoTime();
+                _latStats.countLatency((int)(currTime - prevTime)/1000);
+                prevTime = currTime;
             }
         }
     }
@@ -452,6 +479,15 @@ public abstract class EvalDataStore extends AbstractTest
             }
             
             System.out.printf("Total Read Rate=%6.2f per ms%n", sumReadRate);
+            
+            System.out.println("writer latency stats:");
+            writers[0].getLatencyStats().print(System.out);
+            
+            if(!doValidation)
+            {
+                System.out.println("reader[0] latency stats:");
+                readers[0].getLatencyStats().print(System.out);
+            }
         }
         catch(Exception e)
         {

@@ -38,7 +38,7 @@ public class LatencyStats
         else
         {
             int i = microSeconds/100;
-            ind += (i < 10) ? i : 10;
+            ind = 4 + ((i < 10) ? i : 10);
         }
         
         _latencyCountArray[ind] += 1; 

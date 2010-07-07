@@ -23,7 +23,7 @@ import test.LatencyStats;
  */
 public class TestDataCache extends AbstractTest
 {
-    static List<String> _lineSeedData = new ArrayList<String>(3000);
+    static List<String> _lineSeedData = new ArrayList<String>(10000);
     
     public TestDataCache()
     {

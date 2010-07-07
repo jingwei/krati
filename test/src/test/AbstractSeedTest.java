@@ -15,7 +15,7 @@ import java.util.List;
  */
 public abstract class AbstractSeedTest extends AbstractTest
 {
-    protected static List<String> _lineSeedData = new ArrayList<String>(3000);
+    protected static List<String> _lineSeedData = new ArrayList<String>(10000);
     
     protected static void loadSeedData(File dataFile) throws IOException
     {
