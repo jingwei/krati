@@ -11,7 +11,7 @@ public class AbstractTest extends TestCase
 {
     public static final File TEST_DIR;
     public static final File TEST_OUTPUT_DIR;
-    public static final Logger log = Logger.getLogger(AbstractTest.class);
+    static final Logger _log = Logger.getLogger(AbstractTest.class);
     
     static
     {
@@ -46,7 +46,7 @@ public class AbstractTest extends TestCase
         }
         finally
         {
-            log.info("test.idStart: " + idStart);
+            _log.info("test.idStart: " + idStart);
         }
         
         try
@@ -59,7 +59,7 @@ public class AbstractTest extends TestCase
         }
         finally
         {
-            log.info("test.idCount: " + idCount);
+            _log.info("test.idCount: " + idCount);
         }
         
         try
@@ -72,7 +72,7 @@ public class AbstractTest extends TestCase
         }
         finally
         {
-            log.info("test.runTimeSeconds: " + runTimeSeconds);
+            _log.info("test.runTimeSeconds: " + runTimeSeconds);
         }
         
         try
@@ -85,18 +85,18 @@ public class AbstractTest extends TestCase
         }
         finally
         {
-            log.info("test.segFileSizeMB: " + segFileSizeMB);
+            _log.info("test.segFileSizeMB: " + segFileSizeMB);
         }
     }
     
     protected String name;
     
-    public AbstractTest(String name)
+    protected AbstractTest(String name)
     {
         this.name = name;
     }
     
-    protected void cleanTestOutput() throws Exception
+    public void cleanTestOutput() throws Exception
     {
         File[] files = TEST_OUTPUT_DIR.listFiles();
         
@@ -117,7 +117,28 @@ public class AbstractTest extends TestCase
         }
     }
     
-    protected void deleteDirectory(File dir) throws IOException
+    public void cleanDirectory(File dir) throws IOException
+    {
+        File[] files = dir.listFiles();
+        
+        for (File f : files)
+        {
+            if (f.isFile())
+            {
+                boolean deleted = f.delete();
+                if (!deleted)
+                {
+                    throw new IOException("file:"+f.getAbsolutePath()+" not deleted");
+                }
+            }
+            else
+            {
+                deleteDirectory(f);
+            }
+        }
+    }
+    
+    public void deleteDirectory(File dir) throws IOException
     {
         File[] files = dir.listFiles();
         

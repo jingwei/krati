@@ -26,6 +26,8 @@
     <property name="test.src.dir" value="${test.dir}/src"/>
     <property name="test.build.dir" value="${test.dir}/classes"/>
     
+    <property name="tests.to.run" value="TestDataCache"/>
+    
     <path id="compile.class.path">
         <fileset dir="${lib.dir}">
             <include name="*.jar"/>
@@ -145,7 +147,7 @@
     </target>
     
     <target name="test" depends="test.compile" description="-- run regression (30 seconds per test)">
-        <junit printsummary="yes" maxmemory="16G">
+        <junit maxmemory="16G">
             <jvmarg value="-Dtest.idStart=0"/>
             <jvmarg value="-Dtest.idCount=500000"/>
             <jvmarg value="-Dtest.segFileSizeMB=128"/>
@@ -168,7 +170,7 @@
     </target>
     
     <target name="test.stress" depends="test.compile" description="-- run regression (30 minutes per test)">
-        <junit printsummary="yes" maxmemory="16G">
+        <junit maxmemory="16G">
             <jvmarg value="-Dtest.idStart=0"/>
             <jvmarg value="-Dtest.idCount=5000000"/>
             <jvmarg value="-Dtest.segFileSizeMB=256"/>
@@ -191,7 +193,7 @@
     </target>
 
     <target name="regress.cache" depends="test.compile" description="-- regress DataCache for memory/mapped/channel (30 minutes per test)">
-        <junit printsummary="yes" maxmemory="16G">
+        <junit maxmemory="16G">
             <jvmarg value="-Dtest.idStart=0"/>
             <jvmarg value="-Dtest.idCount=5000000"/>
             <jvmarg value="-Dtest.segFileSizeMB=256"/>
@@ -214,7 +216,7 @@
     </target>
 
     <target name="regress.store" depends="test.compile" description="-- regress DataStore for memory/mapped/channel (30 minutes per test)">
-        <junit printsummary="yes" maxmemory="16G">
+        <junit maxmemory="16G">
             <jvmarg value="-Dtest.idStart=0"/>
             <jvmarg value="-Dtest.idCount=5000000"/>
             <jvmarg value="-Dtest.segFileSizeMB=256"/>
@@ -236,11 +238,11 @@
         </junit>
     </target>
 
-    <target name="test.quick" description="-- run a quick test on DataCache" depends="test.compile">
-        <junit printsummary="yes" maxmemory="4G">
+    <target name="test.quick" description="-- run a quick test, default -Dtests.to.run=TestDataCache" depends="test.compile">
+        <junit maxmemory="4G">
             <jvmarg value="-Dtest.idStart=0"/>
             <jvmarg value="-Dtest.idCount=500000"/>
-            <jvmarg value="-Dtest.segFileSizeMB=100"/>
+            <jvmarg value="-Dtest.segFileSizeMB=128"/>
             <jvmarg value="-Dtest.runTimeSeconds=60"/>
             <jvmarg value="-Dtest.dir=${test.dir}"/>
             <jvmarg value="-Dtest.output.dir=${test.dir}/output"/>
@@ -254,37 +256,13 @@
             </classpath>
             
             <batchtest fork="yes">
-                <fileset dir="${test.build.dir}" includes="**/TestDataCache.class"/>
+                <fileset dir="${test.build.dir}" includes="**/${tests.to.run}.class" excludes="**/Test*er.class"/>
             </batchtest>
         </junit>
     </target>
     
-    <target name="test.Xprof" description="-- run profiling on DataCache (5 minutes)" depends="test.compile">
-        <junit printsummary="yes" maxmemory="4G">
-            <jvmarg value="-Xprof"/>
-            <jvmarg value="-Dtest.idStart=0"/>
-            <jvmarg value="-Dtest.idCount=500000"/>
-            <jvmarg value="-Dtest.segFileSizeMB=100"/>
-            <jvmarg value="-Dtest.runTimeSeconds=300"/>
-            <jvmarg value="-Dtest.dir=${test.dir}"/>
-            <jvmarg value="-Dtest.output.dir=${test.dir}/output"/>
-            <formatter type="brief" usefile="false"/>
-            
-            <classpath>
-                <path refid="test.class.path"/>
-                <path refid="java.class.path"/>
-                <path refid="compile.class.path"/>
-                <path refid="test.compile.class.path"/>
-            </classpath>
-            
-            <batchtest fork="yes">
-                <fileset dir="${test.build.dir}" includes="**/TestDataCache.class"/>
-            </batchtest>
-        </junit>
-    </target>
-
-    <target name="test.Xloggc" description="-- run test with -Xloggc (5 hours)" depends="test.compile">
-        <junit printsummary="yes" maxmemory="16G">
+    <target name="test.loggc" description="-- run GC test (5 hours), default -Dtests.to.run=TestDataCache" depends="test.compile">
+        <junit maxmemory="16G">
             <jvmarg value="-Xloggc:${logs.dir}/krati.gc"/>
             <jvmarg value="-XX:+PrintGCDetails"/>
             <jvmarg value="-Dtest.idStart=0"/>
@@ -303,7 +281,7 @@
             </classpath>
             
             <batchtest fork="yes">
-                <fileset dir="${test.build.dir}" includes="**/TestDataCache.class"/>
+                <fileset dir="${test.build.dir}" includes="**/${tests.to.run}.class" excludes="**/Test*er.class"/>
             </batchtest>
         </junit>
     </target>
