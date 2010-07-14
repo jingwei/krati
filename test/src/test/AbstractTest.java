@@ -28,64 +28,78 @@ public class AbstractTest extends TestCase
         }
     }
     
-    // Short-Regress Test Params.
-    public static int idStart = 0;
-    public static int idCount = 500000;
-    public static int runTimeSeconds = 120;
-    public static int segFileSizeMB = 256;
+    // Short-Regression Test Params.
+    public static int _idStart = 0;
+    public static int _idCount = 500000;
+    public static int _keyCount = 375000;
+    public static int _runTimeSeconds = 120;
+    public static int _segFileSizeMB = 256;
     
     static
     {
         try
         {
-            idStart = Integer.parseInt(System.getProperty("test.idStart"));
+            _idStart = Integer.parseInt(System.getProperty("test.idStart"));
         }
         catch(Exception e)
         {
-            idStart = 0;
+            _idStart = 0;
         }
         finally
         {
-            _log.info("test.idStart: " + idStart);
+            _log.info("test.idStart: " + _idStart);
         }
         
         try
         {
-            idCount = Integer.parseInt(System.getProperty("test.idCount"));
+            _idCount = Integer.parseInt(System.getProperty("test.idCount"));
         }
         catch(Exception e)
         {
-            idCount = 500000;
+            _idCount = 500000;
         }
         finally
         {
-            _log.info("test.idCount: " + idCount);
+            _log.info("test.idCount: " + _idCount);
         }
         
         try
         {
-            runTimeSeconds = Integer.parseInt(System.getProperty("test.runTimeSeconds"));
+            _keyCount = Integer.parseInt(System.getProperty("test.keyCount"));
         }
         catch(Exception e)
         {
-            runTimeSeconds = 120;
+            _keyCount = (int)(_idCount * 0.75);
         }
         finally
         {
-            _log.info("test.runTimeSeconds: " + runTimeSeconds);
+            _log.info("test.keyCount: " + _keyCount);
         }
         
         try
         {
-            segFileSizeMB = Integer.parseInt(System.getProperty("test.segFileSizeMB"));
+            _runTimeSeconds = Integer.parseInt(System.getProperty("test.runTimeSeconds"));
         }
         catch(Exception e)
         {
-            segFileSizeMB = 256;
+            _runTimeSeconds = 120;
         }
         finally
         {
-            _log.info("test.segFileSizeMB: " + segFileSizeMB);
+            _log.info("test.runTimeSeconds: " + _runTimeSeconds);
+        }
+        
+        try
+        {
+            _segFileSizeMB = Integer.parseInt(System.getProperty("test.segFileSizeMB"));
+        }
+        catch(Exception e)
+        {
+            _segFileSizeMB = 256;
+        }
+        finally
+        {
+            _log.info("test.segFileSizeMB: " + _segFileSizeMB);
         }
     }
     

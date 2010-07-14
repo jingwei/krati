@@ -1,9 +1,10 @@
-package test.driver;
+package test.driver.raw;
 
 import java.util.List;
 import java.util.Random;
 
 import test.LatencyStats;
+import test.driver.StoreReader;
 
 /**
  * Read driver for data store.
@@ -12,24 +13,26 @@ import test.LatencyStats;
  *
  * @param <S> Data Store
  */
-public class ReadDriver<S> implements Runnable
+public class BytesReadDriver<S> implements Runnable
 {
     protected final S _store;
-    protected final StoreReader<S, String, String> _reader;
+    protected final StoreReader<S, byte[], byte[]> _reader;
     protected final LatencyStats _latStats = new LatencyStats();
     protected final Random _rand = new Random();
     protected final List<String> _lineSeedData;
-    protected final int _dataCnt;
+    protected final int _lineSeedCount;
+    protected final int _keyCount;
 
     volatile long _cnt = 0;
     volatile boolean _running = true;
     
-    public ReadDriver(S store, StoreReader<S, String, String> reader, List<String> lineSeedData)
+    public BytesReadDriver(S store, StoreReader<S, byte[], byte[]> reader, List<String> lineSeedData, int keyCount)
     {
         this._store = store;
         this._reader = reader;
         this._lineSeedData = lineSeedData;
-        this._dataCnt = _lineSeedData.size();
+        this._lineSeedCount = lineSeedData.size();
+        this._keyCount = keyCount;
     }
     
     public LatencyStats getLatencyStats()
@@ -65,12 +68,10 @@ public class ReadDriver<S> implements Runnable
     
     protected void read()
     {
-        String key = _lineSeedData.get(_rand.nextInt(_dataCnt));
-        int keyLength = 30 + (_rand.nextInt(100) * 3);
-        if(key.length() > keyLength) {
-            key = key.substring(0, keyLength);
-            _reader.get(_store, key);
-            _cnt++;
-        }
+        int i = _rand.nextInt(_keyCount);
+        String s = _lineSeedData.get(i%_lineSeedCount);
+        String k = s.substring(0, 30) + i;
+        _reader.get(_store, k.getBytes());
+        _cnt++;
     }
 }

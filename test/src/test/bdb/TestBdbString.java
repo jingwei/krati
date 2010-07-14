@@ -10,12 +10,13 @@ import test.StatsLog;
 import test.driver.StoreReader;
 import test.driver.StoreTestDriver;
 import test.driver.StoreWriter;
+import test.driver.string.StoreTestStringDriver;
 
-public class TestBdb extends AbstractSeedTest
+public class TestBdbString extends AbstractSeedTest
 {
-    public TestBdb()
+    public TestBdbString()
     {
-        super(TestBdb.class.getSimpleName());
+        super(TestBdbString.class.getSimpleName());
     }
     
     static class BdbReader implements StoreReader<StoredMap<String, String>, String, String>
@@ -52,12 +53,12 @@ public class TestBdb extends AbstractSeedTest
             return;
         }
         
-        File dbHome = new File(TEST_OUTPUT_DIR, getClass().getSimpleName());
-        if(!dbHome.exists()) dbHome.mkdirs();
-        cleanDirectory(dbHome);
+        File storeDir = new File(TEST_OUTPUT_DIR, getClass().getSimpleName());
+        if(!storeDir.exists()) storeDir.mkdirs();
+        cleanDirectory(storeDir);
         
         SimpleDBEnv dbEnv = new SimpleDBEnv();
-        dbEnv.setup(dbHome, false);
+        dbEnv.setup(storeDir, false);
         
         StatsLog.logger.info("cacheSize=" + dbEnv.getEnv().getConfig().getCacheSize());
         StatsLog.logger.info("TxnNoSync=" + dbEnv.getEnv().getConfig().getTxnNoSync());
@@ -67,9 +68,9 @@ public class TestBdb extends AbstractSeedTest
         StoreReader<StoredMap<String, String>, String, String> storeReader = new BdbReader();
         StoreWriter<StoredMap<String, String>, String, String> storeWriter = new BdbWriter();
         
-        StoreTestDriver<StoredMap<String, String>> driver;
-        driver = new StoreTestDriver<StoredMap<String, String>>(store, storeReader, storeWriter, _lineSeedData);
-        driver.run(4, 1, runTimeSeconds);
+        StoreTestDriver driver;
+        driver = new StoreTestStringDriver<StoredMap<String, String>>(store, storeReader, storeWriter, _lineSeedData, _keyCount);
+        driver.run(4, 1, _runTimeSeconds);
         
         StatsLog.endUnit(unitTestName);
     }

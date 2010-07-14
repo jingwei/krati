@@ -1,19 +1,16 @@
 package test.cds;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 import krati.cds.DataCache;
 import krati.cds.impl.DataCacheImpl;
 import krati.cds.impl.segment.SegmentFactory;
 
-import test.AbstractTest;
+import test.AbstractSeedTest;
 import test.LatencyStats;
+import test.StatsLog;
 
 /**
  * TestDataCache using MemorySegment 
@@ -21,28 +18,11 @@ import test.LatencyStats;
  * @author jwu
  *
  */
-public class TestDataCache extends AbstractTest
+public class TestDataCache extends AbstractSeedTest
 {
-    static List<String> _lineSeedData = new ArrayList<String>(10000);
-    
     public TestDataCache()
     {
         super(TestDataCache.class.getName());
-    }
-    
-    public void loadSeedData(File dataFile) throws IOException
-    {
-        String line;
-        FileReader reader = new FileReader(dataFile);
-        BufferedReader in = new BufferedReader(reader);
-        
-        while((line = in.readLine()) != null)
-        {
-            _lineSeedData.add(line);
-        }
-        
-        in.close();
-        reader.close();
     }
     
     public void populate(DataCache cache) throws IOException
@@ -73,10 +53,11 @@ public class TestDataCache extends AbstractTest
 
         long endTime = System.currentTimeMillis();
         long elapsedTime = endTime - startTime;
-        System.out.printf("elapsedTime=%d ms (init)%n", elapsedTime);
+        StatsLog.logger.info("elapsedTime="+ elapsedTime +" ms (init)");
         
         double rate = cache.getIdCount()/(double)elapsedTime;
-        System.out.printf("writeCount=%d rate=%6.2f per ms%n", cache.getIdCount(), rate);
+        rate = Math.round(rate * 100) / 100.0;
+        StatsLog.logger.info("writeCount="+ cache.getIdCount() +" rate="+ rate +" per ms");
     }
     
     public static void checkData(DataCache cache, int index)
@@ -103,7 +84,7 @@ public class TestDataCache extends AbstractTest
             int index = cache.getIdStart() + i;
             checkData(cache, index);
         }
-        System.out.println("OK");
+        StatsLog.logger.info("OK");
     }
     
     static class Writer implements Runnable
@@ -271,7 +252,7 @@ public class TestDataCache extends AbstractTest
             Writer writer = new Writer(cache);
             Thread writerThread = new Thread(writer);
             writerThread.start();
-            System.out.println("Writer started");
+            StatsLog.logger.info("Writer started");
             
             long startTime = System.currentTimeMillis();
             long writeCount = 0;
@@ -280,7 +261,7 @@ public class TestDataCache extends AbstractTest
             {
                 Thread.sleep(10000);
                 long newWriteCount = writer.getWriteCount();
-                System.out.printf("writeCount=%d%n", newWriteCount - writeCount);
+                StatsLog.logger.info("writeCount=" + (newWriteCount - writeCount));
                 writeCount = newWriteCount;
             }
             
@@ -290,10 +271,11 @@ public class TestDataCache extends AbstractTest
             long endTime = System.currentTimeMillis();
 
             long elapsedTime = endTime - startTime;
-            System.out.printf("elapsedTime=%d ms%n", elapsedTime);
+            StatsLog.logger.info("elapsedTime="+ elapsedTime +" ms");
             
             double rate = writer.getWriteCount()/(double)elapsedTime;
-            System.out.printf("writeCount=%d rate=%6.2f per ms%n", writer.getWriteCount(), rate);
+            rate = Math.round(rate * 100) / 100.0;
+            StatsLog.logger.info("writeCount="+ writer.getWriteCount() +" rate="+ rate +" per ms");
             
             return rate;
         }
@@ -320,7 +302,7 @@ public class TestDataCache extends AbstractTest
             {
                 threads[i] = new Thread(readers[i]);
                 threads[i].start();
-                System.out.println("Reader " + i + " started");
+                StatsLog.logger.info("Reader " + i + " started");
             }
             
             long startTime = System.currentTimeMillis();
@@ -341,15 +323,17 @@ public class TestDataCache extends AbstractTest
             
             double sumReadRate = 0;
             long elapsedTime = endTime - startTime;
-            System.out.printf("elapsedTime=%d ms%n", elapsedTime);
+            StatsLog.logger.info("elapsedTime="+ elapsedTime +" ms");
             for(int i = 0; i < readers.length; i++)
             {
                 double rate = readers[i].getReadCount()/(double)elapsedTime;
-                System.out.printf("readCount[%d]=%d rate=%6.2f per ms%n", i, readers[i].getReadCount(), rate);
+                rate = Math.round(rate * 100) / 100.0;
+                StatsLog.logger.info("readCount["+ i +"]="+ readers[i].getReadCount() +" rate="+ rate +" per ms");
                 sumReadRate += rate;
             }
             
-            System.out.printf("Total Read Rate=%6.2f per ms%n", sumReadRate);
+            sumReadRate = Math.round(sumReadRate * 100) / 100.0;
+            StatsLog.logger.info("Total Read Rate="+ sumReadRate +" per ms");
         }
         catch(Exception e)
         {
@@ -375,14 +359,14 @@ public class TestDataCache extends AbstractTest
             {
                 threads[i] = new Thread(readers[i]);
                 threads[i].start();
-                System.out.println("Reader " + i + " started");
+                StatsLog.logger.info("Reader " + i + " started");
             }
             
             // Start writer
             Writer writer = new Writer(cache);
             Thread writerThread = new Thread(writer);
             writerThread.start();
-            System.out.println("Writer started");
+            StatsLog.logger.info("Writer started");
             
             long startTime = System.currentTimeMillis();
             
@@ -401,7 +385,7 @@ public class TestDataCache extends AbstractTest
                 
                 long newWriteCount = writer.getWriteCount();
                 
-                System.out.printf("write=%d read=%d%n", newWriteCount-writeCount, newReadCount-readCount);
+                StatsLog.logger.info("write="+ (newWriteCount-writeCount) +" read=" + (newReadCount-readCount));
                 
                 readCount = newReadCount;
                 writeCount = newWriteCount;
@@ -424,28 +408,31 @@ public class TestDataCache extends AbstractTest
             long endTime = System.currentTimeMillis();
 
             long elapsedTime = endTime - startTime;
-            System.out.printf("elapsedTime=%d ms%n", elapsedTime);
+            StatsLog.logger.info("elapsedTime="+ elapsedTime +" ms");
             
             double rate = writer.getWriteCount()/(double)elapsedTime;
-            System.out.printf("writeCount=%d rate=%6.2f per ms%n", writer.getWriteCount(), rate);
+            rate = Math.round(rate * 100) / 100.0;
+            StatsLog.logger.info("writeCount="+ writer.getWriteCount() +" rate="+ rate +" per ms");
             
             double sumReadRate = 0;
             for(int i = 0; i < readers.length; i++)
             {
                 rate = readers[i].getReadCount()/(double)elapsedTime;
-                System.out.printf("readCount[%d]=%d rate=%6.2f per ms%n", i, readers[i].getReadCount(), rate);
+                rate = Math.round(rate * 100) / 100.0;
+                StatsLog.logger.info("readCount["+ i +"]="+ readers[i].getReadCount() +" rate="+ rate +" per ms");
                 sumReadRate += rate;
             }
             
-            System.out.printf("Total Read Rate=%6.2f per ms%n", sumReadRate);
+            sumReadRate = Math.round(sumReadRate * 100) / 100.0;
+            StatsLog.logger.info("Total Read Rate="+ sumReadRate +" per ms");
             
-            System.out.println("writer latency stats:");
-            writer.getLatencyStats().print(System.out);
+            StatsLog.logger.info("writer latency stats:");
+            writer.getLatencyStats().print(StatsLog.logger);
             
             if(!doValidation)
             {
-                System.out.println("reader[0] latency stats:");
-                readers[0].getLatencyStats().print(System.out);
+                StatsLog.logger.info("reader latency stats:");
+                readers[0].getLatencyStats().print(StatsLog.logger);
             }
         }
         catch(Exception e)
@@ -462,22 +449,24 @@ public class TestDataCache extends AbstractTest
     
     protected DataCache getDataCache(File cacheDir) throws Exception
     {
-        DataCache cache = new DataCacheImpl(idStart,
-                                            idCount,
+        DataCache cache = new DataCacheImpl(_idStart,
+                                            _idCount,
                                             cacheDir,
                                             getSegmentFactory(),
-                                            segFileSizeMB);
+                                            _segFileSizeMB);
         return cache;
     }
     
-    public void testDataCache()
+    public void testDataCache() throws Exception
     {
+        String unitTestName = getClass().getSimpleName() + " with " + getSegmentFactory().getClass().getSimpleName(); 
+        StatsLog.beginUnit(unitTestName);
+        
         TestDataCache eval = new TestDataCache();
         
         try
         {
-            File seedDataFile = new File(TEST_DIR, "seed/seed.dat");
-            eval.loadSeedData(seedDataFile);
+            AbstractSeedTest.loadSeedData();
         }
         catch(Exception e)
         {
@@ -487,45 +476,42 @@ public class TestDataCache extends AbstractTest
         
         try
         {
-            DataCache cache;
-            
             File cacheDir = new File(TEST_OUTPUT_DIR, getClass().getSimpleName());
-            
-            cache = getDataCache(cacheDir);
+            DataCache cache = getDataCache(cacheDir);
             
             if (cache.getLWMark() == 0)
             {
-                System.out.println("---populate---");
+                StatsLog.logger.info(">>> populate");
                 eval.populate(cache);
                 
-                System.out.println("---validate---");
+                StatsLog.logger.info(">>> validate");
                 validate(cache);
             }
             
-            int timeAllocated = runTimeSeconds/3;
+            int timeAllocated = _runTimeSeconds/3;
 
-            System.out.println("---testRead---");
+            StatsLog.logger.info(">>> read only");
             evalRead(cache, 4, 10);
             
-            System.out.println("---testWrite---");
+            StatsLog.logger.info(">>> write only");
             evalWrite(cache, timeAllocated);
             cache.persist();
             
-            System.out.println("---validate---");
+            StatsLog.logger.info(">>> validate");
             validate(cache);
             
-            System.out.println("---testReadWrite---");
+            StatsLog.logger.info(">>> read & write");
             evalReadWrite(cache, 4, timeAllocated, false);
             cache.persist();
             
-            System.out.println("---validate---");
+            StatsLog.logger.info(">>> validate");
             validate(cache);
             
-            System.out.println("---testWriteCheck---");
+            StatsLog.logger.info(">>> check & write");
             evalReadWrite(cache, 2, timeAllocated, true);
             cache.persist();
             
-            System.out.println("---validate---");
+            StatsLog.logger.info(">>> validate");
             validate(cache);
             
             cache.sync();
@@ -534,5 +520,8 @@ public class TestDataCache extends AbstractTest
         {
             e.printStackTrace();
         }
+        
+        cleanTestOutput();
+        StatsLog.endUnit(unitTestName);
     }
 }

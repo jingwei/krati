@@ -30,13 +30,13 @@ public class TestSimpleArray extends AbstractSeedTest
     
     protected AddressArray getAddressArray(File homeDir) throws Exception
     {
-        return new SimpleLongArray(idCount, 10000, 5, homeDir);
+        return new SimpleLongArray(_idCount, 10000, 5, homeDir);
     }
     
     protected SegmentManager getSegmentManager(File homeDir) throws IOException
     {
         String segmentHome = homeDir.getCanonicalPath() + File.separator + "segs";
-        return SegmentManager.getInstance(segmentHome, getSegmentFactory(), segFileSizeMB);
+        return SegmentManager.getInstance(segmentHome, getSegmentFactory(), _segFileSizeMB);
     }
     
     protected SimpleDataArray getDataArray(File homeDir) throws Exception
@@ -101,7 +101,7 @@ public class TestSimpleArray extends AbstractSeedTest
             File homeDir = new File(TEST_OUTPUT_DIR, getClass().getSimpleName());
             array = getDataArray(homeDir);
             
-            System.out.println("---populate---");
+            System.out.println(">>> populate");
             eval.populate(array);
             
             array.sync();

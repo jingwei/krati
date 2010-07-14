@@ -29,11 +29,11 @@ public class TestObjectCache extends AbstractTest
     
     private DataCache getDataCache(File cacheDir) throws Exception
     {
-        DataCache cache = new DataCacheImpl(idStart,
-                                            idCount,
+        DataCache cache = new DataCacheImpl(_idStart,
+                                            _idCount,
                                             cacheDir,
                                             new krati.cds.impl.segment.MemorySegmentFactory(),
-                                            segFileSizeMB);
+                                            _segFileSizeMB);
         return cache;
     }
     

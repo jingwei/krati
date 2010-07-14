@@ -1,9 +1,10 @@
-package test.driver;
+package test.driver.raw;
 
 import java.util.List;
 import java.util.Random;
 
 import test.LatencyStats;
+import test.driver.StoreWriter;
 
 /**
  * Write driver for data store.
@@ -12,24 +13,26 @@ import test.LatencyStats;
  *
  * @param <S> Data Store
  */
-public class WriteDriver<S> implements Runnable
+public class BytesWriteDriver<S> implements Runnable
 {
     private final S _store;
-    private final StoreWriter<S, String, String> _writer;
+    private final StoreWriter<S, byte[], byte[]> _writer;
     private final LatencyStats _latencyStats = new LatencyStats();
     private final Random _rand = new Random();
     private final List<String> _lineSeedData;
-    private final int _dataCnt;
+    private final int _lineSeedCount;
+    private final int _keyCount;
     
     volatile long _cnt = 0;
     volatile boolean _running = true;
     
-    public WriteDriver(S ds, StoreWriter<S, String, String> writer, List<String> lineSeedData)
+    public BytesWriteDriver(S ds, StoreWriter<S, byte[], byte[]> writer, List<String> lineSeedData, int keyCount)
     {
         this._store = ds;
         this._writer = writer;
         this._lineSeedData = lineSeedData;
-        this._dataCnt = _lineSeedData.size();
+        this._lineSeedCount = lineSeedData.size();
+        this._keyCount = keyCount;
     }
     
     public LatencyStats getLatencyStats()
@@ -67,13 +70,11 @@ public class WriteDriver<S> implements Runnable
     {
         try
         {
-            String value = _lineSeedData.get(_rand.nextInt(_dataCnt));
-            int keyLength = 30 + ( _rand.nextInt(100) * 3);
-            if(value.length() > keyLength) {
-                String key = value.substring(0, keyLength);
-                _writer.put(_store, key, value);
-                _cnt++;
-            }
+            int i = _rand.nextInt(_keyCount);
+            String s = _lineSeedData.get(i%_lineSeedCount);
+            String k = s.substring(0, 30) + i;
+            _writer.put(_store, k.getBytes(), s.getBytes());
+            _cnt++;
         }
         catch(Exception e)
         {

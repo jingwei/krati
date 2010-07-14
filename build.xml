@@ -147,9 +147,11 @@
     </target>
     
     <target name="test" depends="test.compile" description="-- run regression (30 seconds per test)">
-        <junit maxmemory="16G">
+        <junit maxmemory="4G">
+            <jvmarg value="-server"/>
             <jvmarg value="-Dtest.idStart=0"/>
             <jvmarg value="-Dtest.idCount=500000"/>
+            <jvmarg value="-Dtest.keyCount=500000"/>
             <jvmarg value="-Dtest.segFileSizeMB=128"/>
             <jvmarg value="-Dtest.runTimeSeconds=30"/>
             <jvmarg value="-Dtest.dir=${test.dir}"/>
@@ -164,15 +166,17 @@
             </classpath>
             
             <batchtest fork="yes">
-                <fileset dir="${test.build.dir}" includes="**/Test*.class" excludes="**/Test*er.class"/>
+                <fileset dir="${test.build.dir}" includes="**/Test*.class" excludes="**/Test*er.class,**/TestBdb*"/>
             </batchtest>
         </junit>
     </target>
     
     <target name="test.stress" depends="test.compile" description="-- run regression (30 minutes per test)">
         <junit maxmemory="16G">
+            <jvmarg value="-server"/>
             <jvmarg value="-Dtest.idStart=0"/>
             <jvmarg value="-Dtest.idCount=5000000"/>
+            <jvmarg value="-Dtest.keyCount=5000000"/>
             <jvmarg value="-Dtest.segFileSizeMB=256"/>
             <jvmarg value="-Dtest.runTimeSeconds=1800"/>
             <jvmarg value="-Dtest.dir=${test.dir}"/>
@@ -187,15 +191,17 @@
             </classpath>
             
             <batchtest fork="yes">
-                <fileset dir="${test.build.dir}" includes="**/Test*.class" excludes="**/Test*er.class"/>
+                <fileset dir="${test.build.dir}" includes="**/Test*.class" excludes="**/Test*er.class,**/TestBdb*"/>
             </batchtest>
         </junit>
     </target>
 
     <target name="regress.cache" depends="test.compile" description="-- regress DataCache for memory/mapped/channel (30 minutes per test)">
         <junit maxmemory="16G">
+            <jvmarg value="-server"/>
             <jvmarg value="-Dtest.idStart=0"/>
             <jvmarg value="-Dtest.idCount=5000000"/>
+            <jvmarg value="-Dtest.keyCount=5000000"/>
             <jvmarg value="-Dtest.segFileSizeMB=256"/>
             <jvmarg value="-Dtest.runTimeSeconds=1800"/>
             <jvmarg value="-Dtest.dir=${test.dir}"/>
@@ -217,8 +223,10 @@
 
     <target name="regress.store" depends="test.compile" description="-- regress DataStore for memory/mapped/channel (30 minutes per test)">
         <junit maxmemory="16G">
+            <jvmarg value="-server"/>
             <jvmarg value="-Dtest.idStart=0"/>
             <jvmarg value="-Dtest.idCount=5000000"/>
+            <jvmarg value="-Dtest.keyCount=5000000"/>
             <jvmarg value="-Dtest.segFileSizeMB=256"/>
             <jvmarg value="-Dtest.runTimeSeconds=1800"/>
             <jvmarg value="-Dtest.dir=${test.dir}"/>
@@ -240,8 +248,10 @@
 
     <target name="test.quick" description="-- run a quick test, default -Dtests.to.run=TestDataCache" depends="test.compile">
         <junit maxmemory="4G">
+            <jvmarg value="-server"/>
             <jvmarg value="-Dtest.idStart=0"/>
             <jvmarg value="-Dtest.idCount=500000"/>
+            <jvmarg value="-Dtest.keyCount=500000"/>
             <jvmarg value="-Dtest.segFileSizeMB=128"/>
             <jvmarg value="-Dtest.runTimeSeconds=60"/>
             <jvmarg value="-Dtest.dir=${test.dir}"/>
@@ -261,14 +271,19 @@
         </junit>
     </target>
     
-    <target name="test.loggc" description="-- run GC test (5 hours), default -Dtests.to.run=TestDataCache" depends="test.compile">
+    <property name="test.loggc.idCount" value="5000000"/>
+    <property name="test.loggc.keyCount" value="5000000"/>
+    
+    <target name="test.loggc" description="-- run GC test (1 hour), default -Dtests.to.run=TestDataCache" depends="test.compile">
         <junit maxmemory="16G">
             <jvmarg value="-Xloggc:${logs.dir}/krati.gc"/>
             <jvmarg value="-XX:+PrintGCDetails"/>
+            <jvmarg value="-server"/>
             <jvmarg value="-Dtest.idStart=0"/>
-            <jvmarg value="-Dtest.idCount=5000000"/>
+            <jvmarg value="-Dtest.idCount=${test.loggc.idCount}"/>
+            <jvmarg value="-Dtest.keyCount=${test.loggc.keyCount}"/>
             <jvmarg value="-Dtest.segFileSizeMB=256"/>
-            <jvmarg value="-Dtest.runTimeSeconds=18000"/>
+            <jvmarg value="-Dtest.runTimeSeconds=3600"/>
             <jvmarg value="-Dtest.dir=${test.dir}"/>
             <jvmarg value="-Dtest.output.dir=${test.dir}/output"/>
             <formatter type="brief" usefile="false"/>

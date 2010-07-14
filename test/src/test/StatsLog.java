@@ -13,12 +13,13 @@ public class StatsLog
     
     public static void beginUnit(String unitTestName)
     {
-        logger.info("==================================================");
+        logger.info(">>> ========================================================");
         logger.info(">>> BEGIN " + unitTestName);
     }
     
     public static void endUnit(String unitTestName)
     {
         logger.info(">>> END " + unitTestName);
+        logger.info(">>> ");
     }
 }

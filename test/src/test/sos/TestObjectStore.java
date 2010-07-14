@@ -36,10 +36,10 @@ public class TestObjectStore extends AbstractTest
     protected DataStore<byte[], byte[]> getDataStore(File storeDir) throws Exception
     {
         return new SimpleDataStore(storeDir,
-                                   idCount,   /* capacity */
+                                   _idCount,   /* capacity */
                                    10000,     /* entrySize */
                                    5,         /* maxEntries */
-                                   segFileSizeMB,
+                                   _segFileSizeMB,
                                    getSegmentFactory());
     }
     

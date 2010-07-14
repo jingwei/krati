@@ -1,5 +1,6 @@
 package test.cds;
 
+import test.StatsLog;
 import krati.cds.impl.segment.SegmentFactory;
 
 /**
@@ -19,8 +20,12 @@ public class TestSimpleStoreMapped extends TestSimpleStore
     @Override
     public void testSimpleStore() throws Exception
     {
-        new TestSimpleStoreMapped().run(4, 1);
-        System.out.println("done");
+        String unitTestName = getClass().getSimpleName() + " with " + getSegmentFactory().getClass().getSimpleName(); 
+        StatsLog.beginUnit(unitTestName);
+        
+        new TestSimpleStoreMapped().evalPerformance(4, 1, _runTimeSeconds);
+        
         cleanTestOutput();
+        StatsLog.endUnit(unitTestName);
     }
 }
