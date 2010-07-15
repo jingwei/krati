@@ -2,7 +2,6 @@ package krati.cds.impl.array.entry;
 
 import java.io.IOException;
 
-import krati.io.ChannelWriter;
 import krati.io.DataWriter;
 
 /**
@@ -64,7 +63,7 @@ public class EntryValueInt extends EntryValue
   }
   
   /**
-   * Writes this EntryValue to entry log file via a channel writer.
+   * Writes this EntryValue to entry log file via a data writer.
    * 
    * @param writer
    * @throws IOException
@@ -78,14 +77,14 @@ public class EntryValueInt extends EntryValue
   }
   
   /**
-   * Writes this EntryValue to a file channel at a given position.
+   * Writes this EntryValue at a given position of a data writer.
    * 
    * @param writer
    * @param position
    * @throws IOException
    */
   @Override
-  public void updateArrayFile(ChannelWriter writer, long position) throws IOException
+  public void updateArrayFile(DataWriter writer, long position) throws IOException
   {
     writer.writeInt(position, val);
   }

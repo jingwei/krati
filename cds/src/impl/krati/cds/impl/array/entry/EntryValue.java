@@ -2,7 +2,6 @@ package krati.cds.impl.array.entry;
 
 import java.io.IOException;
 
-import krati.io.ChannelWriter;
 import krati.io.DataWriter;
 
 /**
@@ -57,5 +56,5 @@ public abstract class EntryValue implements Comparable<EntryValue>
    * @param position
    * @throws IOException
    */
-  public abstract void updateArrayFile(ChannelWriter writer, long position) throws IOException;
+  public abstract void updateArrayFile(DataWriter writer, long position) throws IOException;
 }

@@ -13,6 +13,8 @@ import krati.cds.impl.array.entry.EntryUtility;
 import krati.cds.impl.array.entry.EntryValue;
 import krati.io.ChannelReader;
 import krati.io.ChannelWriter;
+import krati.io.MappedWriter;
+import krati.io.DataWriter;
 import krati.util.Chronos;
 
 /**
@@ -50,7 +52,7 @@ public class ArrayFile
   static final Logger _log = Logger.getLogger(ArrayFile.class);
 
   private File _file;
-  private ChannelWriter _writer;
+  private DataWriter _writer;
   
   // header information
   private long _version;
@@ -89,7 +91,7 @@ public class ArrayFile
     }
     
     this._file = file;
-    this._writer = new ChannelWriter(file);
+    this._writer = createWriter(_file, raf.length());
     this._writer.open();
     
     if(newFile)
@@ -110,6 +112,11 @@ public class ArrayFile
     this.initCheck();
     
     _log.info(_file.getName() + " header: " + getHeader());
+  }
+  
+  protected DataWriter createWriter(File file, long fileLength)
+  {
+      return  (fileLength < Integer.MAX_VALUE) ? new MappedWriter(file) : new ChannelWriter(file);
   }
   
   protected void initCheck() throws IOException
@@ -700,7 +707,7 @@ public class ArrayFile
   {
       if(arrayLength < 0)
       {
-          throw new IllegalArgumentException("Negative array length: " + arrayLength);
+          throw new IllegalArgumentException("Illegal array length: " + arrayLength);
       }
       
       if(this._arrayLength == arrayLength) return;
@@ -724,14 +731,19 @@ public class ArrayFile
           {
               _writer.close();
               _file = renameToFile;
-              _writer = new ChannelWriter(_file);
+              _writer = createWriter(_file, fileLength);
               _writer.open();
+              return;
           }
           else
           {
               _log.warn("Failed to rename " + _file.getAbsolutePath() + " to " + renameToFile.getAbsolutePath());
           }
       }
+      
+      _writer.close();
+      _writer = createWriter(_file, fileLength);
+      _writer.open();
   }
   
 }

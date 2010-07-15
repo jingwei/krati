@@ -22,4 +22,14 @@ public interface DataReader
     public long readLong() throws IOException;
     
     public short readShort() throws IOException;
+    
+    public int readInt(long position) throws IOException;
+    
+    public long readLong(long position) throws IOException;
+    
+    public short readShort(long position) throws IOException;
+    
+    public long position() throws IOException;
+    
+    public void position(long newPosition) throws IOException;
 }

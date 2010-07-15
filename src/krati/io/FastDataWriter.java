@@ -256,4 +256,37 @@ public class FastDataWriter implements DataWriter
         if(_buffer.remaining() < size)
             writeFullBuffer();
     }
+    
+    final static UnsupportedOperationException _unsupportedOpEx =
+        new UnsupportedOperationException();
+    
+    @Override
+    public void writeInt(long position, int value) throws IOException
+    {
+        throw _unsupportedOpEx;
+    }
+    
+    @Override
+    public void writeLong(long position, long value) throws IOException
+    {
+        throw _unsupportedOpEx;
+    }
+
+    @Override
+    public void writeShort(long position, short value) throws IOException
+    {
+        throw _unsupportedOpEx;
+    }
+
+    @Override
+    public long position() throws IOException
+    {
+        throw _unsupportedOpEx;
+    }
+
+    @Override
+    public void position(long newPosition) throws IOException
+    {
+        throw _unsupportedOpEx;
+    }
 }

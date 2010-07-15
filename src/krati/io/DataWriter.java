@@ -16,7 +16,7 @@ public interface DataWriter
     public void open() throws IOException;
     
     public void close() throws IOException;
-
+    
     public void flush() throws IOException;
     
     public void writeInt(int value) throws IOException;
@@ -24,4 +24,14 @@ public interface DataWriter
     public void writeLong(long value) throws IOException;
     
     public void writeShort(short value) throws IOException;
+    
+    public void writeInt(long position, int value) throws IOException;
+    
+    public void writeLong(long position, long value) throws IOException;
+    
+    public void writeShort(long position, short value) throws IOException;
+    
+    public long position() throws IOException;
+    
+    public void position(long newPosition) throws IOException;
 }

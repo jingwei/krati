@@ -18,9 +18,9 @@ public class ChannelReader implements DataReader
     private FileChannel _channel;
     private RandomAccessFile _raf;
     
-    private ByteBuffer _bbInt = ByteBuffer.wrap(new byte[4]);
-    private ByteBuffer _bbLong = ByteBuffer.wrap(new byte[8]);
-    private ByteBuffer _bbShort = ByteBuffer.wrap(new byte[2]);
+    private final ByteBuffer _bbInt = ByteBuffer.wrap(new byte[4]);
+    private final ByteBuffer _bbLong = ByteBuffer.wrap(new byte[8]);
+    private final ByteBuffer _bbShort = ByteBuffer.wrap(new byte[2]);
     
     public ChannelReader(File file)
     {
@@ -32,7 +32,7 @@ public class ChannelReader implements DataReader
     {
         return _file;
     }
-
+    
     @Override
     public void open() throws IOException
     {
@@ -49,7 +49,7 @@ public class ChannelReader implements DataReader
         _raf = new RandomAccessFile(_file, "r");
         _channel = _raf.getChannel();
     }
-
+    
     @Override
     public void close() throws IOException
     {
@@ -64,7 +64,7 @@ public class ChannelReader implements DataReader
             _raf = null;
         }
     }
-
+    
     @Override
     public int readInt() throws IOException
     {
@@ -73,7 +73,7 @@ public class ChannelReader implements DataReader
         _bbInt.flip();
         return _bbInt.getInt();
     }
-
+    
     @Override
     public long readLong() throws IOException
     {
@@ -92,6 +92,7 @@ public class ChannelReader implements DataReader
         return _bbShort.getShort();
     }
     
+    @Override
     public int readInt(long position) throws IOException
     {
         _bbInt.clear();
@@ -100,6 +101,7 @@ public class ChannelReader implements DataReader
         return _bbInt.getInt();
     }
     
+    @Override
     public long readLong(long position) throws IOException
     {
         _bbLong.clear();
@@ -108,6 +110,7 @@ public class ChannelReader implements DataReader
         return _bbLong.getLong();
     }
     
+    @Override
     public short readShort(long position) throws IOException
     {
         _bbShort.clear();
@@ -116,11 +119,13 @@ public class ChannelReader implements DataReader
         return _bbShort.getShort();
     }
     
+    @Override
     public long position() throws IOException
     {
         return _channel.position();
     }
     
+    @Override
     public void position(long newPosition) throws IOException
     {
         _channel.position(newPosition);

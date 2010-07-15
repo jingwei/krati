@@ -1,0 +1,40 @@
+8
+
+dir
+17251
+svn+ssh://svn.corp.linkedin.com/lirepo/krati/branches/krati-dev/test/src/test/misc
+svn+ssh://svn.corp.linkedin.com/lirepo
+
+
+
+2010-07-15T16:36:30.599814Z
+17251
+jwu
+
+
+svn:special svn:externals svn:needs-lock
+
+AbstractTestDataRW.java
+file
+
+
+
+
+2010-07-15T05:08:08.000000Z
+f4e42ab4fcc7fba0d5e5692bb5c0482f
+2010-07-15T16:36:30.599814Z
+17251
+jwu
+
+TestMappedDataWriter.java
+file
+
+
+
+
+2010-07-15T05:08:08.000000Z
+1eaff41359a052758a17a35f6adca07c
+2010-07-15T16:36:30.599814Z
+17251
+jwu
+
