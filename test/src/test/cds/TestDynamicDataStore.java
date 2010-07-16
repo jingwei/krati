@@ -8,9 +8,9 @@ import java.util.Random;
 import krati.cds.impl.segment.SegmentFactory;
 import krati.cds.impl.store.DynamicDataStore;
 import krati.cds.store.DataStore;
-import krati.util.HashFunction;
 import test.AbstractTest;
 import test.StatsLog;
+import test.util.HashFunctionInteger;
 
 /**
  * TestDynamicDataStore using MemorySegment.
@@ -371,15 +371,6 @@ public class TestDynamicDataStore extends AbstractTest
             {
                 throw new RuntimeException("Failed to delete key=" + keys[i] + " value= " + (val == null ? "null" : new String(val)));
             }
-        }
-    }
-    
-    static class HashFunctionInteger implements HashFunction<byte[]>
-    {
-        @Override
-        public long hash(byte[] key)
-        {
-            return ByteBuffer.wrap(key).getInt();
         }
     }
     

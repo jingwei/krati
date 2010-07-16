@@ -2,15 +2,16 @@ package test.cds;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Random;
 
 import krati.cds.DataCache;
 import krati.cds.impl.DataCacheImpl;
 import krati.cds.impl.segment.SegmentFactory;
 
 import test.AbstractSeedTest;
-import test.LatencyStats;
 import test.StatsLog;
+import test.util.DataCacheChecker;
+import test.util.DataCacheReader;
+import test.util.DataCacheWriter;
 
 /**
  * TestDataCache using MemorySegment 
@@ -87,169 +88,12 @@ public class TestDataCache extends AbstractSeedTest
         StatsLog.logger.info("OK");
     }
     
-    static class Writer implements Runnable
-    {
-        DataCache _cache;
-        Random _rand = new Random();
-        boolean _running = true;
-        
-        int _indexStart;
-        int _length;
-        long _cnt = 0;
-        long _scn = 0;
-        LatencyStats _latStats = new LatencyStats();
-        
-        public Writer(DataCache cache)
-        {
-            this._cache = cache;
-            this._length = cache.getIdCount();
-            this._indexStart = cache.getIdStart();
-            this._scn = cache.getHWMark();
-        }
-        
-        public long getWriteCount()
-        {
-            return this._cnt;
-        }
-
-        public LatencyStats getLatencyStats()
-        {
-            return this._latStats;
-        }
-        
-        public void stop()
-        {
-            _running = false;
-        }
-        
-        void write(int index)
-        {
-            try
-            {
-                byte[] b = _lineSeedData.get(index%_lineSeedData.size()).getBytes();
-                _cache.setData(index, b, _scn++);
-            }
-            catch(Exception e)
-            {
-                e.printStackTrace();
-            }
-        }
-        
-        @Override
-        public void run()
-        {
-            long prevTime = System.nanoTime();
-            long currTime = prevTime;
-            
-            while(_running)
-            {
-                write(_indexStart + _rand.nextInt(_length));
-                _cnt++;
-                
-                currTime = System.nanoTime();
-                _latStats.countLatency((int)(currTime - prevTime)/1000);
-                prevTime = currTime;
-            }
-        }
-    }
-    
-    static class Reader implements Runnable
-    {
-        DataCache _cache;
-        Random _rand = new Random();
-        byte[] _data = new byte[1 << 13];
-        boolean _running = true;
-        int _indexStart;
-        int _length;
-        long _cnt = 0;
-        LatencyStats _latStats = new LatencyStats();
-        
-        public Reader(DataCache cache)
-        {
-            this._cache = cache;
-            this._length = cache.getIdCount();
-            this._indexStart = cache.getIdStart();
-        }
-        
-        public long getReadCount()
-        {
-            return this._cnt;
-        }
-        
-        public LatencyStats getLatencyStats()
-        {
-            return this._latStats;
-        }
-        
-        public void stop()
-        {
-            _running = false;
-        }
-        
-        int read(int index)
-        {
-            return _cache.getData(index, _data);
-        }
-        
-        @Override
-        public void run()
-        {
-            long prevTime = System.nanoTime();
-            long currTime = prevTime;
-            
-            while(_running)
-            {
-                read(_indexStart + _rand.nextInt(_length));
-                _cnt++;
-                
-                currTime = System.nanoTime();
-                _latStats.countLatency((int)(currTime - prevTime)/1000);
-                prevTime = currTime;
-            }
-        }
-    }
-    
-    static class Checker extends Reader
-    {
-        public Checker(DataCache cache)
-        {
-            super(cache);
-        }
-        
-        void check(int index)
-        {
-            String line = _lineSeedData.get(index % _lineSeedData.size());
-            
-            byte[] b = _cache.getData(index);
-            if (b != null)
-            {
-                String s = new String(b);
-                assertTrue("[" + index + "]=" + s + " expected=" + line, s.equals(line));
-            }
-            else
-            {
-                assertTrue("[" + index + "]=null", line == null);
-            }
-        }
-        
-        @Override
-        public void run()
-        {
-            while(_running)
-            {
-                int index = _indexStart + _rand.nextInt(_length);
-                check(index);
-                _cnt++;
-            }
-        }
-    }
-    
     public static double evalWrite(DataCache cache, int runDuration) throws Exception
     {
         try
         {
             // Start writer
-            Writer writer = new Writer(cache);
+            DataCacheWriter writer = new DataCacheWriter(cache, _lineSeedData);
             Thread writerThread = new Thread(writer);
             writerThread.start();
             StatsLog.logger.info("Writer started");
@@ -291,10 +135,10 @@ public class TestDataCache extends AbstractSeedTest
         try
         {
             // Start readers
-            Reader[] readers = new Reader[readerCnt];
+            DataCacheReader[] readers = new DataCacheReader[readerCnt];
             for(int i = 0; i < readers.length; i++)
             {
-                readers[i] = new Reader(cache);
+                readers[i] = new DataCacheReader(cache, _lineSeedData);
             }
             
             Thread[] threads = new Thread[readers.length];
@@ -348,10 +192,10 @@ public class TestDataCache extends AbstractSeedTest
         try
         {
             // Start readers
-            Reader[] readers = new Reader[readerCnt];
+            DataCacheReader[] readers = new DataCacheReader[readerCnt];
             for(int i = 0; i < readers.length; i++)
             {
-                readers[i] = doValidation ? new Checker(cache) : new Reader(cache);
+                readers[i] = doValidation ? new DataCacheChecker(cache, _lineSeedData) : new DataCacheReader(cache, _lineSeedData);
             }
 
             Thread[] threads = new Thread[readers.length];
@@ -363,7 +207,7 @@ public class TestDataCache extends AbstractSeedTest
             }
             
             // Start writer
-            Writer writer = new Writer(cache);
+            DataCacheWriter writer = new DataCacheWriter(cache, _lineSeedData);
             Thread writerThread = new Thread(writer);
             writerThread.start();
             StatsLog.logger.info("Writer started");

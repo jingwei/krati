@@ -3,15 +3,14 @@ package test.misc;
 import java.io.File;
 
 import krati.io.ChannelReader;
+import krati.io.ChannelWriter;
 import krati.io.DataReader;
 import krati.io.DataWriter;
-import krati.io.MappedWriter;
 
-public class TestMappedDataWriter extends AbstractTestDataRW {
+public class TestChannelReaderChannelWriter extends AbstractTestDataRW {
 
-    public TestMappedDataWriter()
-    {
-        super(TestMappedDataWriter.class.getSimpleName());
+    public TestChannelReaderChannelWriter() {
+        super(TestChannelReaderChannelWriter.class.getSimpleName());
     }
     
     @Override
@@ -21,6 +20,6 @@ public class TestMappedDataWriter extends AbstractTestDataRW {
 
     @Override
     protected DataWriter createDataWriter(File file) {
-        return new MappedWriter(file);
+        return new ChannelWriter(file);
     }
 }

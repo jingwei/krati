@@ -19,24 +19,6 @@ public class TestBdbString extends AbstractSeedTest
         super(TestBdbString.class.getSimpleName());
     }
     
-    static class BdbReader implements StoreReader<StoredMap<String, String>, String, String>
-    {
-        @Override
-        public final String get(StoredMap<String, String> store, String key)
-        {
-            return store.get(key);
-        }
-    }
-    
-    static class BdbWriter implements StoreWriter<StoredMap<String, String>, String, String>
-    {
-        @Override
-        public final void put(StoredMap<String, String> store, String key, String value)
-        {
-            store.put(key, value);
-        }
-    }
-    
     @SuppressWarnings("deprecation")
     public void testPerformace() throws IOException
     {
@@ -65,8 +47,8 @@ public class TestBdbString extends AbstractSeedTest
         StatsLog.logger.info("Transactional=" + dbEnv.getEnv().getConfig().getTransactional());
         
         StoredMap<String, String> store = dbEnv.getMap();
-        StoreReader<StoredMap<String, String>, String, String> storeReader = new BdbReader();
-        StoreWriter<StoredMap<String, String>, String, String> storeWriter = new BdbWriter();
+        StoreReader<StoredMap<String, String>, String, String> storeReader = new BdbStringReader();
+        StoreWriter<StoredMap<String, String>, String, String> storeWriter = new BdbStringWriter();
         
         StoreTestDriver driver;
         driver = new StoreTestStringDriver<StoredMap<String, String>>(store, storeReader, storeWriter, _lineSeedData, _keyCount);

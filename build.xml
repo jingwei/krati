@@ -166,7 +166,7 @@
             </classpath>
             
             <batchtest fork="yes">
-                <fileset dir="${test.build.dir}" includes="**/Test*.class" excludes="**/Test*er.class,**/TestBdb*"/>
+                <fileset dir="${test.build.dir}" includes="**/Test*.class" excludes="**/TestBdb*.class"/>
             </batchtest>
         </junit>
     </target>
@@ -191,7 +191,7 @@
             </classpath>
             
             <batchtest fork="yes">
-                <fileset dir="${test.build.dir}" includes="**/Test*.class" excludes="**/Test*er.class,**/TestBdb*"/>
+                <fileset dir="${test.build.dir}" includes="**/Test*.class" excludes="**/TestBdb*"/>
             </batchtest>
         </junit>
     </target>
@@ -216,7 +216,7 @@
             </classpath>
             
             <batchtest fork="yes">
-                <fileset dir="${test.build.dir}" includes="**/TestDataCache*.class" excludes="**/Test*er.class"/>
+                <fileset dir="${test.build.dir}" includes="**/TestDataCache*.class" excludes="**/TestBdb*.class"/>
             </batchtest>
         </junit>
     </target>
@@ -241,7 +241,7 @@
             </classpath>
             
             <batchtest fork="yes">
-                <fileset dir="${test.build.dir}" includes="**/Test*Store*.class" excludes="**/Test*er.class"/>
+                <fileset dir="${test.build.dir}" includes="**/Test*Store*.class" excludes="**/TestBdb*.class"/>
             </batchtest>
         </junit>
     </target>
@@ -266,13 +266,15 @@
             </classpath>
             
             <batchtest fork="yes">
-                <fileset dir="${test.build.dir}" includes="**/${tests.to.run}.class" excludes="**/Test*er.class"/>
+                <fileset dir="${test.build.dir}" includes="**/${tests.to.run}.class"/>
             </batchtest>
         </junit>
     </target>
     
     <property name="test.loggc.idCount" value="5000000"/>
     <property name="test.loggc.keyCount" value="5000000"/>
+    <property name="test.loggc.segFileSizeMB" value="256"/>
+    <property name="test.loggc.runTimeSeconds" value="3600"/>
     
     <target name="test.loggc" description="-- run GC test (1 hour), default -Dtests.to.run=TestDataCache" depends="test.compile">
         <junit maxmemory="16G">
@@ -282,8 +284,8 @@
             <jvmarg value="-Dtest.idStart=0"/>
             <jvmarg value="-Dtest.idCount=${test.loggc.idCount}"/>
             <jvmarg value="-Dtest.keyCount=${test.loggc.keyCount}"/>
-            <jvmarg value="-Dtest.segFileSizeMB=256"/>
-            <jvmarg value="-Dtest.runTimeSeconds=3600"/>
+            <jvmarg value="-Dtest.segFileSizeMB=${test.loggc.segFileSizeMB}"/>
+            <jvmarg value="-Dtest.runTimeSeconds=${test.loggc.runTimeSeconds}"/>
             <jvmarg value="-Dtest.dir=${test.dir}"/>
             <jvmarg value="-Dtest.output.dir=${test.dir}/output"/>
             <formatter type="brief" usefile="false"/>
@@ -296,7 +298,7 @@
             </classpath>
             
             <batchtest fork="yes">
-                <fileset dir="${test.build.dir}" includes="**/${tests.to.run}.class" excludes="**/Test*er.class"/>
+                <fileset dir="${test.build.dir}" includes="**/${tests.to.run}.class"/>
             </batchtest>
         </junit>
     </target>
