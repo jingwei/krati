@@ -10,6 +10,7 @@ import krati.sos.ObjectCache;
 import krati.sos.SerializableObjectCache;
 import krati.util.Chronos;
 import test.AbstractTest;
+import test.StatsLog;
 import test.protos.MemberDataGen;
 import test.protos.MemberProtos;
 import test.protos.MemberSerializer;
@@ -39,9 +40,11 @@ public class TestObjectCache extends AbstractTest
     
     public void testObjectCache() throws Exception
     {
+        String unitTestName = getClass().getSimpleName(); 
+        StatsLog.beginUnit(unitTestName);
         cleanTestOutput();
         
-        File objectCacheDir = new File(TEST_OUTPUT_DIR, "object_cache");
+        File objectCacheDir = getHomeDirectory();
         DataCache dataCache = getDataCache(objectCacheDir);
         ObjectCache<MemberProtos.Member> memberCache =
             new SerializableObjectCache<MemberProtos.Member>(dataCache, new MemberSerializer());
@@ -63,7 +66,7 @@ public class TestObjectCache extends AbstractTest
             MemberProtos.Member m = mList.get(i%numSeedMembers);
             memberCache.set(i, m, scn++);
         }
-        System.out.println("Populate " + cacheSize + " objects in " + timer.getElapsedTime());
+        StatsLog.logger.info("Populate " + cacheSize + " objects in " + timer.getElapsedTime());
         
         // Persist
         memberCache.persist();
@@ -75,7 +78,7 @@ public class TestObjectCache extends AbstractTest
             MemberProtos.Member m = mList.get(i%numSeedMembers);
             assertTrue("Member " + m.getMemberId(), memberCache.get(i).equals(m));
         }
-        System.out.println("Validate " + cacheSize + " objects in " + timer.getElapsedTime());
+        StatsLog.logger.info("Validate " + cacheSize + " objects in " + timer.getElapsedTime());
         
         // Random update
         Random rand = new Random();
@@ -85,7 +88,7 @@ public class TestObjectCache extends AbstractTest
             MemberProtos.Member m = mList.get(objectId%numSeedMembers);
             memberCache.set(objectId, m, scn++);
         }
-        System.out.println("Populate " + cacheSize + " objects in " + timer.getElapsedTime());
+        StatsLog.logger.info("Populate " + cacheSize + " objects in " + timer.getElapsedTime());
         
         // Persist
         memberCache.persist();
@@ -97,8 +100,9 @@ public class TestObjectCache extends AbstractTest
             MemberProtos.Member m = mList.get(i%mList.size());
             assertTrue("Member " + m.getMemberId(), memberCache.get(i).equals(m));
         }
-        System.out.println("Validate " + cacheSize + " objects in " + timer.getElapsedTime());
+        StatsLog.logger.info("Validate " + cacheSize + " objects in " + timer.getElapsedTime());
         
         cleanTestOutput();
+        StatsLog.endUnit(unitTestName);
     }
 }

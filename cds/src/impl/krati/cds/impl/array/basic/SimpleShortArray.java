@@ -23,7 +23,7 @@ import krati.cds.impl.array.entry.EntryValueShort;
  * @author jwu
  *
  */
-public class SimpleShortArray extends RecoverableArray<EntryValueShort> implements ShortArray
+public class SimpleShortArray extends AbstractRecoverableArray<EntryValueShort> implements ShortArray
 {
   private static final Logger _log = Logger.getLogger(SimpleShortArray.class);
   private short[] _internalArray;
@@ -49,7 +49,7 @@ public class SimpleShortArray extends RecoverableArray<EntryValueShort> implemen
     
     try
     {
-      maxScn = _arrayFile.getMaxScn();
+      maxScn = _arrayFile.getLwmScn();
       _internalArray = _arrayFile.loadShortArray();
       if (_internalArray.length != _length)
       {

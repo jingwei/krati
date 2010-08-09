@@ -6,57 +6,119 @@ package krati.cds.impl.segment;
  * @author jwu
  *
  */
-public class AddressFormat
+public final class AddressFormat
 {
+    private final int _numDataSizeBits;
     private final int _numSegmentBits;
-    private final int _numOffsetBits = 32;
+    private final int _numOffsetBits;
+    private final int _dataSizeShift;
+    private final int _dataSizeMask;
     private final int _segmentMask;
     private final int _offsetMask;
+    private final int _maxDataSize;
     
-    public AddressFormat(int numSegmentBits)
+    public AddressFormat()
     {
+        this(32, 16);
+    }
+    
+    public AddressFormat(int numOffsetBits, int numSegmentBits)
+    {
+        if(numOffsetBits < 1 || 32 < numOffsetBits)
+        {
+            throw new IllegalArgumentException("Invalid numOffsetBits: " + numOffsetBits);
+        }
+        
         if(numSegmentBits < 1 || 31 < numSegmentBits)
         {
             throw new IllegalArgumentException("Invalid numSegmentBits: " + numSegmentBits);
         }
         
+        _numOffsetBits = numOffsetBits;
         _numSegmentBits = numSegmentBits;
+        _numDataSizeBits = 64 - _numSegmentBits - _numOffsetBits;
+        
+        _offsetMask = (numOffsetBits >= 31) ? Integer.MAX_VALUE : ((1 << _numOffsetBits) - 1);
         _segmentMask = (1 << _numSegmentBits) - 1;
-        _offsetMask = Integer.MAX_VALUE;
+        _dataSizeMask = (1 << _numDataSizeBits) - 1;
+        _maxDataSize = _dataSizeMask;
+        _dataSizeShift = _numSegmentBits + _numOffsetBits;
     }
     
-    public int countOffsetBits()
+    public final int countOffsetBits()
     {
         return _numOffsetBits;
     }
     
-    public int countSegmentBits()
+    public final int countSegmentBits()
     {
         return _numSegmentBits;
     }
     
-    public int getAddressShift()
+    public final int countDataSizeBits()
     {
-        return _numSegmentBits + _numOffsetBits;
+        return _numDataSizeBits;
     }
     
-    public int getSegmentShift()
+    public final int getDataSizeShift()
+    {
+        return _dataSizeShift;
+    }
+    
+    public final int getDataSizeMask()
+    {
+        return _dataSizeMask;
+    }
+    
+    public final int getSegmentShift()
     {
         return _numOffsetBits;
     }
     
-    public int getSegmentMask()
+    public final int getSegmentMask()
     {
         return _segmentMask;
     }
     
-    public int getOffsetShift()
+    public final int getOffsetShift()
     {
         return 0;
     }
     
-    public int getOffsetMask()
+    public final int getOffsetMask()
     {
         return _offsetMask;
+    }
+    
+    public final int getOffset(long addr)
+    {
+        return (int)(addr & _offsetMask);
+    }
+    
+    public final int getSegment(long addr)
+    {
+        return ((int)(addr >> _numOffsetBits) & _segmentMask);
+    }
+    
+    public final int getDataSize(long addr)
+    {
+        return ((int)(addr >> _dataSizeShift) & _dataSizeMask);
+    }
+    
+    public final int getMaxDataSize()
+    {
+        return _maxDataSize;
+    }
+    
+    public final long composeAddress(int offset, int segment, int dataSize)
+    {
+        if(dataSize > _maxDataSize)
+        {
+            return (offset | ((long)segment << _numOffsetBits));
+        }
+        else
+        {
+            return (offset | ((long)segment << _numOffsetBits) | ((long)dataSize << _dataSizeShift));
+        }
     }
 }

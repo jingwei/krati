@@ -25,7 +25,7 @@ import krati.cds.impl.array.entry.EntryValueLong;
  * @author jwu
  *
  */
-public class SimpleLongArray extends RecoverableArray<EntryValueLong> implements AddressArray
+public class SimpleLongArray extends AbstractRecoverableArray<EntryValueLong> implements AddressArray
 {
   private static final Logger _log = Logger.getLogger(SimpleLongArray.class);
   private long[] _internalArray;
@@ -51,7 +51,7 @@ public class SimpleLongArray extends RecoverableArray<EntryValueLong> implements
     
     try
     {
-      maxScn = _arrayFile.getMaxScn();
+      maxScn = _arrayFile.getLwmScn();
       _internalArray = _arrayFile.loadLongArray();
       if (_internalArray.length != _length)
       {

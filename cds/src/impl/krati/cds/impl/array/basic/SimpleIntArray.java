@@ -23,7 +23,7 @@ import krati.cds.impl.array.entry.EntryValueInt;
  * @author jwu
  *
  */
-public class SimpleIntArray extends RecoverableArray<EntryValueInt> implements IntArray
+public class SimpleIntArray extends AbstractRecoverableArray<EntryValueInt> implements IntArray
 {
   private static final Logger _log = Logger.getLogger(SimpleIntArray.class);
   private int[] _internalArray;
@@ -49,7 +49,7 @@ public class SimpleIntArray extends RecoverableArray<EntryValueInt> implements I
     
     try
     {
-      maxScn = _arrayFile.getMaxScn();
+      maxScn = _arrayFile.getLwmScn();
       _internalArray = _arrayFile.loadIntArray();
       if (_internalArray.length != _length)
       {

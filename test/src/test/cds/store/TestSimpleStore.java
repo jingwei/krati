@@ -1,4 +1,4 @@
-package test.cds;
+package test.cds.store;
 
 import java.io.File;
 
@@ -29,7 +29,7 @@ public class TestSimpleStore extends EvalDataStore
     @Override
     protected DataStore<byte[], byte[]> getDataStore(File storeDir) throws Exception
     {
-        int capacity = (int)(_keyCount * 1.25);
+        int capacity = (int)(_keyCount * 1.5);
         return new SimpleDataStore(storeDir,
                                    capacity, /* capacity */
                                    10000,    /* entrySize */
@@ -43,7 +43,7 @@ public class TestSimpleStore extends EvalDataStore
         String unitTestName = getClass().getSimpleName() + " with " + getSegmentFactory().getClass().getSimpleName(); 
         StatsLog.beginUnit(unitTestName);
         
-        new TestSimpleStore().evalPerformance(4, 1, _runTimeSeconds);
+        evalPerformance(_numReaders, 1, _runTimeSeconds);
         
         cleanTestOutput();
         StatsLog.endUnit(unitTestName);

@@ -33,11 +33,11 @@ public class TestObjectStore extends AbstractTest
         return new krati.cds.impl.segment.MemorySegmentFactory();
     }
     
-    protected DataStore<byte[], byte[]> getDataStore(File storeDir) throws Exception
+    protected DataStore<byte[], byte[]> getDataStore(File storeDir, int capacity) throws Exception
     {
         return new SimpleDataStore(storeDir,
-                                   _idCount,   /* capacity */
-                                   10000,     /* entrySize */
+                                   capacity,
+                                   1000,      /* entrySize */
                                    5,         /* maxEntries */
                                    _segFileSizeMB,
                                    getSegmentFactory());
@@ -47,12 +47,15 @@ public class TestObjectStore extends AbstractTest
     {
         cleanTestOutput();
         
+        int memberCnt = 10000;
+        int capacity = memberCnt * 2;
+        
         File objectStoreDir = new File(TEST_OUTPUT_DIR, "object_store");
-        DataStore<byte[], byte[]> dataStore = getDataStore(objectStoreDir);
+        DataStore<byte[], byte[]> dataStore = getDataStore(objectStoreDir, capacity);
         ObjectStore<String, MemberProtos.Member> memberStore =
             new SerializableObjectStore<String, MemberProtos.Member>(dataStore, new KeySerializer(), new MemberSerializer());
         
-        MemberProtos.MemberBook book = MemberDataGen.generateMemberBook(10000);
+        MemberProtos.MemberBook book = MemberDataGen.generateMemberBook(memberCnt);
         
         for(MemberProtos.Member m : book.getMemberList()) 
         {

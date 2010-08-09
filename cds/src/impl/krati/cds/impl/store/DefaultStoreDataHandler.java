@@ -2,15 +2,18 @@ package krati.cds.impl.store;
 
 import java.nio.ByteBuffer;
 
+import krati.cds.store.StoreDataHandler;
+
 /**
- * Data Store Utilities.
+ * DefaultStoreDataHandler
  * 
  * @author jwu
  *
  */
-final class DataStoreUtils
+public final class DefaultStoreDataHandler implements StoreDataHandler
 {
-    static byte[] assemble(byte[] key, byte[] value)
+    @Override
+    public final byte[] assemble(byte[] key, byte[] value)
     {
         byte[] result = new byte[4 + 4 + key.length + 4 + value.length];
         ByteBuffer bb = ByteBuffer.wrap(result);
@@ -29,14 +32,15 @@ final class DataStoreUtils
         return result;
     }
     
-    static byte[] assemble(byte[] existingData, byte[] key, byte[] value)
+    @Override
+    public final byte[] assemble(byte[] key, byte[] value, byte[] data)
     {
         // Remove old data
-        int newLength = removeByKey(key, existingData);
+        int newLength = removeByKey(key, data);
         if(newLength == 0) return assemble(key, value);
         
         byte[] result = new byte[newLength + 4 + key.length + 4 + value.length];
-        System.arraycopy(existingData, 0, result, 0, newLength);
+        System.arraycopy(data, 0, result, 0, newLength);
         
         ByteBuffer bb = ByteBuffer.wrap(result);
         
@@ -58,7 +62,41 @@ final class DataStoreUtils
         return result;
     }
     
-    static byte[] extractByKey(byte[] key, byte[] data)
+    @Override
+    public final int countCollisions(byte[] key, byte[] data)
+    {
+        try
+        {
+            ByteBuffer bb = ByteBuffer.wrap(data);
+            int originalCnt = bb.getInt();
+            int cnt = originalCnt;
+            while(cnt > 0)
+            {
+                // Process key
+                int len = bb.getInt();
+                if(keysEqual(key, data, bb.position(), len))
+                {
+                    return originalCnt;
+                }
+                bb.position(bb.position() + len);
+                
+                // Process value
+                len = bb.getInt();
+                bb.position(bb.position() + len);
+                
+                cnt--;
+            }
+            
+            return -originalCnt;
+        }
+        catch(Exception e)
+        {
+            return 0;
+        }
+    }
+    
+    @Override
+    public final byte[] extractByKey(byte[] key, byte[] data)
     {
         if(data.length == 0) return null;
         ByteBuffer bb = ByteBuffer.wrap(data);
@@ -93,7 +131,8 @@ final class DataStoreUtils
         return null;
     }
     
-    static int removeByKey(byte[] key, byte[] data)
+    @Override
+    public final int removeByKey(byte[] key, byte[] data)
     {
         int offset1 = 0;
         int offset2 = 0;

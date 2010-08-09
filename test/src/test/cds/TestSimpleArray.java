@@ -9,6 +9,7 @@ import krati.cds.impl.array.basic.SimpleLongArray;
 import krati.cds.impl.segment.SegmentFactory;
 import krati.cds.impl.segment.SegmentManager;
 import test.AbstractSeedTest;
+import test.StatsLog;
 
 /**
  * Test SimpleDataArray.
@@ -74,15 +75,17 @@ public class TestSimpleArray extends AbstractSeedTest
 
         long endTime = System.currentTimeMillis();
         long elapsedTime = endTime - startTime;
-        System.out.printf("elapsedTime=%d ms (init)%n", elapsedTime);
         
         double rate = dataArray.length()/(double)elapsedTime;
-        System.out.printf("writeCount=%d rate=%6.2f per ms%n", dataArray.length(), rate);
+        rate = Math.round(rate * 100) / 100.0;
+        StatsLog.logger.info("writeCount=" + dataArray.length() + " rate=" + rate + " per ms");
+        StatsLog.logger.info("elapsedTime=" + elapsedTime + " ms");
     }
     
     public void testPopulate()
     {
-        TestSimpleArray eval = new TestSimpleArray();
+        String unitTestName = getClass().getSimpleName() + " with " + getSegmentFactory().getClass().getSimpleName(); 
+        StatsLog.beginUnit(unitTestName);
         
         try
         {
@@ -98,17 +101,20 @@ public class TestSimpleArray extends AbstractSeedTest
         {
             SimpleDataArray array;
             
-            File homeDir = new File(TEST_OUTPUT_DIR, getClass().getSimpleName());
+            File homeDir = getHomeDirectory();
             array = getDataArray(homeDir);
             
-            System.out.println(">>> populate");
-            eval.populate(array);
+            StatsLog.logger.info(">>> populate");
+            populate(array);
             
             array.sync();
         }
         catch(Exception e)
         {
+            StatsLog.logger.info(e.getMessage(), e);
             e.printStackTrace();
         }
+        
+        StatsLog.endUnit(unitTestName);
     }
 }

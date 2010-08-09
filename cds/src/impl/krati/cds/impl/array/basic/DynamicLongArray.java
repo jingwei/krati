@@ -17,7 +17,7 @@ import krati.cds.impl.array.entry.EntryValueLong;
  * @author jwu
  *
  */
-public class DynamicLongArray extends RecoverableArray<EntryValueLong> implements AddressArray, DynamicArray, ArrayExpandListener
+public class DynamicLongArray extends AbstractRecoverableArray<EntryValueLong> implements AddressArray, DynamicArray, ArrayExpandListener
 {
     private final static int _subArrayBits = 16;
     private final static int _subArraySize = 1 << _subArrayBits;
@@ -32,7 +32,7 @@ public class DynamicLongArray extends RecoverableArray<EntryValueLong> implement
     @Override
     protected void loadArrayFileData()
     {
-        long maxScn = _arrayFile.getMaxScn();
+        long maxScn = _arrayFile.getLwmScn();
         
         try
         {

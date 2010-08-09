@@ -1,4 +1,4 @@
-package test.cds;
+package test.cds.store;
 
 import java.io.File;
 import java.nio.ByteBuffer;
@@ -40,14 +40,14 @@ public class TestDynamicDataStore extends AbstractTest
         StatsLog.logger.info(">>> testCapacityGrowth");
         
         // Create DynamicDataStore 1
-        File storeDir = new File(TEST_OUTPUT_DIR, getClass().getSimpleName());
+        File storeDir = getHomeDirectory();
         DynamicDataStore dynStore1 = getDynamicDataStore(storeDir, 0, 100);
         
         StatsLog.logger.info("create dynStore1"); 
         StatsLog.logger.info("level=" + dynStore1.getLevel() +
                              " split=" + dynStore1.getSplit() +
                              " capacity=" + dynStore1.getCapacity() +
-                             " loadRatio=" + dynStore1.getLoadRatio());
+                             " loadFactor=" + dynStore1.getLoadFactor());
         
         int keyStart;
         int keyCount;
@@ -60,7 +60,7 @@ public class TestDynamicDataStore extends AbstractTest
         StatsLog.logger.info("level=" + dynStore1.getLevel() +
                              " split=" + dynStore1.getSplit() +
                              " capacity=" + dynStore1.getCapacity() +
-                             " loadRatio=" + dynStore1.getLoadRatio());
+                             " loadFactor=" + dynStore1.getLoadFactor());
         if ((unitCapacity * 2) != dynStore1.getCapacity())
             throw new RuntimeException("capacity expected: " + (unitCapacity * 2));
         
@@ -70,7 +70,7 @@ public class TestDynamicDataStore extends AbstractTest
         StatsLog.logger.info("level=" + dynStore1.getLevel() +
                              " split=" + dynStore1.getSplit() +
                              " capacity=" + dynStore1.getCapacity() +
-                             " loadRatio=" + dynStore1.getLoadRatio());
+                             " loadFactor=" + dynStore1.getLoadFactor());
         if ((unitCapacity * 3) != dynStore1.getCapacity())
             throw new RuntimeException("capacity expected: " + (unitCapacity * 3));
         
@@ -80,7 +80,7 @@ public class TestDynamicDataStore extends AbstractTest
         StatsLog.logger.info("level=" + dynStore1.getLevel() +
                              " split=" + dynStore1.getSplit() +
                              " capacity=" + dynStore1.getCapacity() +
-                             " loadRatio=" + dynStore1.getLoadRatio());
+                             " loadFactor=" + dynStore1.getLoadFactor());
         if ((unitCapacity * 4) != dynStore1.getCapacity())
             throw new RuntimeException("capacity expected: " + (unitCapacity * 4));
         
@@ -90,7 +90,7 @@ public class TestDynamicDataStore extends AbstractTest
         StatsLog.logger.info("level=" + dynStore1.getLevel() +
                              " split=" + dynStore1.getSplit() +
                              " capacity=" + dynStore1.getCapacity() +
-                             " loadRatio=" + dynStore1.getLoadRatio());
+                             " loadFactor=" + dynStore1.getLoadFactor());
         if ((unitCapacity * 5) != dynStore1.getCapacity())
             throw new RuntimeException("capacity expected: " + (unitCapacity * 5));
         
@@ -100,7 +100,7 @@ public class TestDynamicDataStore extends AbstractTest
         StatsLog.logger.info("level=" + dynStore1.getLevel() +
                              " split=" + dynStore1.getSplit() +
                              " capacity=" + dynStore1.getCapacity() +
-                             " loadRatio=" + dynStore1.getLoadRatio());
+                             " loadFactor=" + dynStore1.getLoadFactor());
         if ((unitCapacity * 6) != dynStore1.getCapacity())
             throw new RuntimeException("capacity expected: " + (unitCapacity * 6));
         
@@ -109,7 +109,7 @@ public class TestDynamicDataStore extends AbstractTest
         StatsLog.logger.info("level=" + dynStore1.getLevel() +
                              " split=" + dynStore1.getSplit() +
                              " capacity=" + dynStore1.getCapacity() +
-                             " loadRatio=" + dynStore1.getLoadRatio());
+                             " loadFactor=" + dynStore1.getLoadFactor());
         if(dynStore1.getLevel() != 3)
             throw new RuntimeException("level expected: " + 3);
         if(dynStore1.getSplit() != 0)
@@ -124,7 +124,7 @@ public class TestDynamicDataStore extends AbstractTest
         StatsLog.logger.info("level=" + dynStore1.getLevel() +
                              " split=" + dynStore1.getSplit() +
                              " capacity=" + dynStore1.getCapacity() +
-                             " loadRatio=" + dynStore1.getLoadRatio());
+                             " loadFactor=" + dynStore1.getLoadFactor());
         if ((unitCapacity * 18) != dynStore1.getCapacity())
             throw new RuntimeException("capacity expected: " + (unitCapacity * 18));
         
@@ -135,7 +135,7 @@ public class TestDynamicDataStore extends AbstractTest
         StatsLog.logger.info("level=" + dynStore1.getLevel() +
                              " split=" + dynStore1.getSplit() +
                              " capacity=" + dynStore1.getCapacity() +
-                             " loadRatio=" + dynStore1.getLoadRatio());
+                             " loadFactor=" + dynStore1.getLoadFactor());
         if ((unitCapacity * 26) != dynStore1.getCapacity())
             throw new RuntimeException("capacity expected: " + (unitCapacity * 26));
         
@@ -144,7 +144,7 @@ public class TestDynamicDataStore extends AbstractTest
         StatsLog.logger.info("level=" + dynStore1.getLevel() +
                              " split=" + dynStore1.getSplit() +
                              " capacity=" + dynStore1.getCapacity() +
-                             " loadRatio=" + dynStore1.getLoadRatio());
+                             " loadFactor=" + dynStore1.getLoadFactor());
         if(dynStore1.getLevel() != 5)
             throw new RuntimeException("level expected: " + 5);
         if(dynStore1.getSplit() != 0)
@@ -152,7 +152,7 @@ public class TestDynamicDataStore extends AbstractTest
         if ((dynStore1.getLevelCapacity()) != dynStore1.getCapacity())
             throw new RuntimeException("capacity expected: " + dynStore1.getLevelCapacity());
         
-        // Bring loadRatio up to 75%
+        // Bring loadFactor up to 75%
         keyStart = unitCapacity << 5;
         keyCount = (int)(dynStore1.getCapacity() * 0.75);
         write(keyStart, keyCount, dynStore1);
@@ -160,7 +160,7 @@ public class TestDynamicDataStore extends AbstractTest
         StatsLog.logger.info("level=" + dynStore1.getLevel() +
                              " split=" + dynStore1.getSplit() +
                              " capacity=" + dynStore1.getCapacity() +
-                             " loadRatio=" + dynStore1.getLoadRatio());
+                             " loadFactor=" + dynStore1.getLoadFactor());
         if ((unitCapacity << 5) != dynStore1.getCapacity())
             throw new RuntimeException("capacity expected: " + (unitCapacity << 5));
         
@@ -172,7 +172,7 @@ public class TestDynamicDataStore extends AbstractTest
         StatsLog.logger.info("level=" + dynStore1.getLevel() +
                              " split=" + dynStore1.getSplit() +
                              " capacity=" + dynStore1.getCapacity() +
-                             " loadRatio=" + dynStore1.getLoadRatio());
+                             " loadFactor=" + dynStore1.getLoadFactor());
         if ((unitCapacity << 5 + unitCapacity) != dynStore1.getCapacity())
             throw new RuntimeException("capacity expected: " + (unitCapacity << 5 + unitCapacity));
         
@@ -181,7 +181,7 @@ public class TestDynamicDataStore extends AbstractTest
         StatsLog.logger.info("level=" + dynStore1.getLevel() +
                              " split=" + dynStore1.getSplit() +
                              " capacity=" + dynStore1.getCapacity() +
-                             " loadRatio=" + dynStore1.getLoadRatio());
+                             " loadFactor=" + dynStore1.getLoadFactor());
         if(dynStore1.getLevel() != 6)
             throw new RuntimeException("level expected: " + 6);
         if(dynStore1.getSplit() != 0)
@@ -198,7 +198,7 @@ public class TestDynamicDataStore extends AbstractTest
         StatsLog.logger.info("level=" + dynStore2.getLevel() +
                              " split=" + dynStore2.getSplit() +
                              " capacity=" + dynStore2.getCapacity() +
-                             " loadRatio=" + dynStore2.getLoadRatio());
+                             " loadFactor=" + dynStore2.getLoadFactor());
         int capacity2 = dynStore2.getCapacity();
         
         // Check capacity
@@ -243,7 +243,7 @@ public class TestDynamicDataStore extends AbstractTest
         StatsLog.logger.info(">>> testUpdates");
         
         // Create DynamicDataStore 1
-        File storeDir = new File(TEST_OUTPUT_DIR, getClass().getSimpleName());
+        File storeDir = getHomeDirectory();
         DynamicDataStore dynStore = getDynamicDataStore(storeDir, 0, 100);
 
         checkRandomPuts(dynStore, 1.0);
@@ -263,7 +263,7 @@ public class TestDynamicDataStore extends AbstractTest
         StatsLog.logger.info(">>> testClear");
         
         // Create DynamicDataStore 1
-        File storeDir = new File(TEST_OUTPUT_DIR, getClass().getSimpleName());
+        File storeDir = getHomeDirectory();
         DynamicDataStore dynStore = getDynamicDataStore(storeDir, 0, 100);
         
         checkRandomPuts(dynStore, 0.1);

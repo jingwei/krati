@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.log4j.Logger;
 
+import krati.cds.impl.segment.AddressFormat;
 import krati.cds.impl.segment.Segment;
 import krati.cds.impl.segment.SegmentManager;
 
@@ -247,22 +248,21 @@ class SimpleDataArrayCompactor implements Runnable
         
         try
         {
-            int offsetMask = _dataArray._offsetMask;
-            int segmentMask = _dataArray._segmentMask;
-            int segmentShift = _dataArray._segmentShift;
+            AddressFormat addrFormat = _dataArray._addressFormat;
             
             for(int index = 0, cnt = _dataArray.length(); index < cnt; index++)
             {
                 long oldAddress = _dataArray.getAddress(index);
-                int oldSegPos = (int)(oldAddress & offsetMask);
-                int oldSegInd = (int)((oldAddress >> segmentShift) & segmentMask);
+                int oldSegPos = addrFormat.getOffset(oldAddress);
+                int oldSegInd = addrFormat.getSegment(oldAddress);
+                int length = addrFormat.getDataSize(oldAddress);
                 
                 if (oldSegInd == segSourceId && oldSegPos >= Segment.dataStartPosition)
                 {
-                    int length = segSource.readInt(oldSegPos);
+                    if(length == 0) length = segSource.readInt(oldSegPos);
                     int byteCnt = 4 + length;
                     long newSegPos = writeChannel.position();
-                    long newAddress = (((long)segTargetId) << segmentShift) | newSegPos;
+                    long newAddress = addrFormat.composeAddress((int)newSegPos, segTargetId, length);
                     
                     if(writeChannel.position() + byteCnt >= sizeLimit)
                     {

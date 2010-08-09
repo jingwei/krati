@@ -12,6 +12,7 @@ import krati.cds.impl.array.basic.SimpleLongArray;
 import krati.cds.impl.segment.SegmentFactory;
 import krati.cds.impl.segment.SegmentManager;
 import krati.cds.store.DataStore;
+import krati.cds.store.StoreDataHandler;
 import krati.util.FnvHashFunction;
 import krati.util.HashFunction;
 
@@ -31,8 +32,8 @@ public class SimpleDataStore implements DataStore<byte[], byte[]>
 {
     private final static Logger _log = Logger.getLogger(SimpleDataStore.class);
     
-    private long _scn;
     private final SimpleDataArray _dataArray;
+    private final StoreDataHandler _dataHandler;
     private final HashFunction<byte[]> _hashFunction;
     
     /**
@@ -193,6 +194,9 @@ public class SimpleDataStore implements DataStore<byte[], byte[]>
                            double segmentCompactFactor,
                            HashFunction<byte[]> hashFunction) throws Exception
     {
+        // Create data store data handler
+        _dataHandler = new DefaultStoreDataHandler();
+        
         // Create address array
         AddressArray addressArray = createAddressArray(capacity, entrySize, maxEntries, homeDir);
         
@@ -207,7 +211,6 @@ public class SimpleDataStore implements DataStore<byte[], byte[]>
         
         this._dataArray = new SimpleDataArray(addressArray, segmentManager, segmentCompactTrigger, segmentCompactFactor);
         this._hashFunction = hashFunction;
-        this._scn = _dataArray.getLWMark();
     }
     
     protected AddressArray createAddressArray(int length,
@@ -221,6 +224,11 @@ public class SimpleDataStore implements DataStore<byte[], byte[]>
     protected long hash(byte[] key)
     {
         return _hashFunction.hash(key);
+    }
+    
+    protected long nextScn()
+    {
+        return System.currentTimeMillis();
     }
     
     @Override
@@ -240,9 +248,10 @@ public class SimpleDataStore implements DataStore<byte[], byte[]>
     {
         long hashCode = hash(key);
         int index = (int)(hashCode % _dataArray.length());
+        if (index < 0) index = -index;
         
         byte[] existingData = _dataArray.getData(index);
-        return existingData == null ? null : DataStoreUtils.extractByKey(key, existingData);
+        return existingData == null ? null : _dataHandler.extractByKey(key, existingData);
     }
     
     @Override
@@ -252,22 +261,23 @@ public class SimpleDataStore implements DataStore<byte[], byte[]>
         
         long hashCode = hash(key);
         int index = (int)(hashCode % _dataArray.length());
+        if (index < 0) index = -index;
         
         byte[] existingData = _dataArray.getData(index);
         if(existingData == null || existingData.length == 0)
         {
-            _dataArray.setData(index, DataStoreUtils.assemble(key, value), _scn++);
+            _dataArray.setData(index, _dataHandler.assemble(key, value), nextScn());
         }
         else
         {
             try
             {
-                _dataArray.setData(index, DataStoreUtils.assemble(existingData, key, value), _scn++);
+                _dataArray.setData(index, _dataHandler.assemble(key, value, existingData), nextScn());
             }
             catch(Exception e)
             {
                 _log.warn("Value reset at index="+ index + " key=\"" + new String(key) + "\"");
-                _dataArray.setData(index, DataStoreUtils.assemble(key, value), _scn++);
+                _dataArray.setData(index, _dataHandler.assemble(key, value), nextScn());
             }
         }
         
@@ -279,23 +289,24 @@ public class SimpleDataStore implements DataStore<byte[], byte[]>
     {
         long hashCode = hash(key);
         int index = (int)(hashCode % _dataArray.length());
+        if (index < 0) index = -index;
         
         try
         {
             byte[] existingData = _dataArray.getData(index);
             if(existingData != null)
             {
-               int newLength = DataStoreUtils.removeByKey(key, existingData);
+               int newLength = _dataHandler.removeByKey(key, existingData);
                if(newLength == 0)
                {
                    // entire data is removed
-                   _dataArray.setData(index, null, _scn++);
+                   _dataArray.setData(index, null, nextScn());
                    return true;
                }
                else if(newLength < existingData.length)
                {
                    // partial data is removed
-                   _dataArray.setData(index, existingData, 0, newLength, _scn++);
+                   _dataArray.setData(index, existingData, 0, newLength, nextScn());
                    return true;
                }
             }
@@ -303,7 +314,7 @@ public class SimpleDataStore implements DataStore<byte[], byte[]>
         catch(Exception e)
         {
             _log.warn("Failed to delete key=\""+ new String(key) + "\" : " + e.getMessage());
-            _dataArray.setData(index, null, _scn++);
+            _dataArray.setData(index, null, nextScn());
         }
         
         // no data is removed

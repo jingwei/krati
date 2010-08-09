@@ -16,7 +16,7 @@ import org.apache.log4j.Logger;
  * @author jwu
  *
  */
-public class DynamicIntArray extends RecoverableArray<EntryValueInt> implements IntArray, DynamicArray, ArrayExpandListener
+public class DynamicIntArray extends AbstractRecoverableArray<EntryValueInt> implements IntArray, DynamicArray, ArrayExpandListener
 {
     private final static int _subArrayBits = 16;
     private final static int _subArraySize = 1 << _subArrayBits;
@@ -31,7 +31,7 @@ public class DynamicIntArray extends RecoverableArray<EntryValueInt> implements 
     @Override
     protected void loadArrayFileData()
     {
-        long maxScn = _arrayFile.getMaxScn();
+        long maxScn = _arrayFile.getLwmScn();
         
         try
         {

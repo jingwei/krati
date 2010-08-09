@@ -35,7 +35,7 @@ public class TestBdbString extends AbstractSeedTest
             return;
         }
         
-        File storeDir = new File(TEST_OUTPUT_DIR, getClass().getSimpleName());
+        File storeDir = getHomeDirectory();
         if(!storeDir.exists()) storeDir.mkdirs();
         cleanDirectory(storeDir);
         
@@ -52,7 +52,7 @@ public class TestBdbString extends AbstractSeedTest
         
         StoreTestDriver driver;
         driver = new StoreTestStringDriver<StoredMap<String, String>>(store, storeReader, storeWriter, _lineSeedData, _keyCount);
-        driver.run(4, 1, _runTimeSeconds);
+        driver.run(_numReaders, 1, _runTimeSeconds);
         
         StatsLog.endUnit(unitTestName);
     }

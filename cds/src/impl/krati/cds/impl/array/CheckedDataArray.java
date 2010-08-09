@@ -43,8 +43,8 @@ public class CheckedDataArray extends SimpleDataArray
         try
         {
             long address = getAddress(index);
-            int segPos = (int)(address & _offsetMask);
-            int segInd = (int)((address >> _segmentShift) & _segmentMask);
+            int segPos = _addressFormat.getOffset(address);
+            int segInd = _addressFormat.getSegment(address);
             
             // no data found
             if(segPos < Segment.dataStartPosition) return null;
@@ -85,8 +85,8 @@ public class CheckedDataArray extends SimpleDataArray
         try
         {
             long address = getAddress(index);
-            int segPos = (int)(address & _offsetMask);
-            int segInd = (int)((address >> _segmentShift) & _segmentMask);
+            int segPos = _addressFormat.getOffset(address);
+            int segInd = _addressFormat.getSegment(address);
             
             // no data found
             if(segPos < Segment.dataStartPosition) return -1;

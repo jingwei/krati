@@ -1,4 +1,4 @@
-package test.cds;
+package test.cds.store;
 
 import java.io.File;
 
@@ -32,7 +32,7 @@ public class TestPartitionedStore extends EvalDataStore
         String unitTestName = getClass().getSimpleName(); 
         StatsLog.beginUnit(unitTestName);
         
-        new TestPartitionedStore().evalPerformance(4, 2, _runTimeSeconds);
+        new TestPartitionedStore().evalPerformance(_numReaders, 2, _runTimeSeconds);
         cleanTestOutput();
         
         StatsLog.endUnit(unitTestName);

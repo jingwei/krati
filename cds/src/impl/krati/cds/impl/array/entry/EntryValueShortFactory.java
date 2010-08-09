@@ -18,7 +18,7 @@ public class EntryValueShortFactory implements EntryValueFactory<EntryValueShort
   }
   
   /**
-   * @return an empty EntryValueInt.
+   * @return an empty EntryValueShort.
    */
   public EntryValueShort newValue()
   {

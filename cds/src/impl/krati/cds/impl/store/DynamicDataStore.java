@@ -12,6 +12,7 @@ import krati.cds.impl.array.basic.DynamicLongArray;
 import krati.cds.impl.segment.SegmentFactory;
 import krati.cds.impl.segment.SegmentManager;
 import krati.cds.store.DataStore;
+import krati.cds.store.StoreDataHandler;
 import krati.util.FnvHashFunction;
 import krati.util.HashFunction;
 
@@ -31,10 +32,10 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
 {
     private final static Logger _log = Logger.getLogger(DynamicDataStore.class);
     
-    private long _scn;
-    private final double _loadFactor;
+    private final double _loadThreshold;
     private final SimpleDataArray _dataArray;
     private final DynamicLongArray _addrArray;
+    private final StoreDataHandler _dataHandler;
     private final HashFunction<byte[]> _hashFunction;
     private volatile int _split;
     private volatile int _level;
@@ -194,7 +195,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
      * @param initLevel              the initial level when DataStore is created
      * @param segmentFileSizeMB      the size of segment file in MB
      * @param segmentFactory         the segment factory
-     * @param hashLoadFactor         the load factor of the underlying address array (hash table)
+     * @param hashLoadThreshold      the load factor of the underlying address array (hash table)
      * @param hashFunction           the hash function for mapping keys to indexes
      * @throws Exception             if this dynamic data store cannot be created.
      */
@@ -202,7 +203,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
                             int initLevel,
                             int segmentFileSizeMB,
                             SegmentFactory segmentFactory,
-                            double hashLoadFactor,
+                            double hashLoadThreshold,
                             HashFunction<byte[]> hashFunction) throws Exception
     {
         this(homeDir,
@@ -213,7 +214,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
              segmentFactory,
              0.1,   /* segmentCompactTrigger */
              0.5,   /* segmentCompactFactor  */
-             hashLoadFactor,
+             hashLoadThreshold,
              hashFunction);
     }
     
@@ -268,7 +269,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
      * @param maxEntries             the number of redo entries required for updating the underlying address array
      * @param segmentFileSizeMB      the size of segment file in MB
      * @param segmentFactory         the segment factory
-     * @param hashLoadFactor         the load factor of the underlying address array (hash table)
+     * @param hashLoadThreshold      the load factor of the underlying address array (hash table)
      * @param hashFunction           the hash function for mapping keys to indexes
      * @throws Exception             if this dynamic data store cannot be created.
      */
@@ -278,7 +279,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
                             int maxEntries,
                             int segmentFileSizeMB,
                             SegmentFactory segmentFactory,
-                            double hashLoadFactor,
+                            double hashLoadThreshold,
                             HashFunction<byte[]> hashFunction) throws Exception
     {
         this(homeDir,
@@ -289,7 +290,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
              segmentFactory,
              0.1,   /* segmentCompactTrigger */
              0.5,   /* segmentCompactFactor  */
-             hashLoadFactor,
+             hashLoadThreshold,
              hashFunction);
     }
     
@@ -304,7 +305,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
      * @param segmentFactory         the segment factory
      * @param segmentCompactTrigger  the percentage of segment capacity, which triggers compaction once per segment
      * @param segmentCompactFactor   the load factor of segment, below which a segment is eligible for compaction
-     * @param hashLoadFactor         the load factor of the underlying address array (hash table)
+     * @param hashLoadThreshold      the load factor of the underlying address array (hash table)
      * @param hashFunction           the hash function for mapping keys to indexes
      * @throws Exception             if this dynamic data store cannot be created.
      */
@@ -316,9 +317,12 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
                             SegmentFactory segmentFactory,
                             double segmentCompactTrigger,
                             double segmentCompactFactor,
-                            double hashLoadFactor,
+                            double hashLoadThreshold,
                             HashFunction<byte[]> hashFunction) throws Exception
     {
+        // Create store data handler
+        _dataHandler = new DefaultStoreDataHandler();
+        
         // Create dynamic address array
         _addrArray = createAddressArray(entrySize, maxEntries, homeDir);
         _unitCapacity = _addrArray.subArrayLength();
@@ -335,8 +339,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
         // Create underlying simple data array
         this._dataArray = new SimpleDataArray(_addrArray, segmentManager, segmentCompactTrigger, segmentCompactFactor);
         this._hashFunction = hashFunction;
-        this._scn = _dataArray.getLWMark();
-        this._loadFactor = hashLoadFactor;
+        this._loadThreshold = hashLoadThreshold;
         this._loadCount = scan();
         this.initLinearHashing();
         
@@ -353,6 +356,11 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
     protected long hash(byte[] key)
     {
         return _hashFunction.hash(key);
+    }
+    
+    protected long nextScn()
+    {
+        return System.currentTimeMillis();
     }
     
     @Override
@@ -392,7 +400,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
             else index = indexNew;
         } while(true);
         
-        return existingData == null ? null : DataStoreUtils.extractByKey(key, existingData);
+        return existingData == null ? null : _dataHandler.extractByKey(key, existingData);
     }
     
     public synchronized boolean put(byte[] key, byte[] value) throws Exception
@@ -411,6 +419,22 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
         return putInternal(index, key, value);
     }
     
+    protected boolean put(byte[] key, byte[] value, boolean replace) throws Exception
+    {
+        if(value == null)
+        {
+            return delete(key, replace);
+        }
+        
+        if(0 < _split || _levelThreshold < _loadCount)
+        {
+            split();
+        }
+        
+        int index = getIndex(key);
+        return replace ? putReplace(index, key, value) : putInternal(index, key, value);
+    }
+    
     @Override
     public synchronized boolean delete(byte[] key) throws Exception
     {
@@ -421,6 +445,17 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
         
         int index = getIndex(key);
         return deleteInternal(index, key);
+    }
+    
+    protected boolean delete(byte[] key, boolean replace) throws Exception
+    {
+        if(0 < _split || _levelThreshold < _loadCount)
+        {
+            split();
+        }
+        
+        int index = getIndex(key);
+        return replace ? deleteReplace(index, key) : deleteInternal(index, key);
     }
     
     @Override
@@ -435,10 +470,13 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
         long hashCode = hash(key);
         int capacity = _levelCapacity;
         int index = (int)(hashCode % capacity);
+        if (index < 0) index = -index;
+        
         if (index < _split)
         {
             capacity = capacity << 1;
             index = (int)(hashCode % capacity);
+            if (index < 0) index = -index;
         }
         
         return index;
@@ -448,10 +486,13 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
     {
         int capacity = _levelCapacity;
         int index = (int)(hashCode % capacity);
+        if (index < 0) index = -index;
+        
         if (index < _split)
         {
             capacity = capacity << 1;
             index = (int)(hashCode % capacity);
+            if (index < 0) index = -index;
         }
         
         return index;
@@ -462,22 +503,28 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
         byte[] existingData = _dataArray.getData(index);
         if(existingData == null || existingData.length == 0)
         {
-            _dataArray.setData(index, DataStoreUtils.assemble(key, value), _scn++);
+            _dataArray.setData(index, _dataHandler.assemble(key, value), nextScn());
             _loadCount++;
         }
         else
         {
             try
             {
-                _dataArray.setData(index, DataStoreUtils.assemble(existingData, key, value), _scn++);
+                _dataArray.setData(index, _dataHandler.assemble(key, value, existingData), nextScn());
             }
             catch(Exception e)
             {
                 _log.warn("Value reset at index="+ index + " key=\"" + new String(key) + "\"");
-                _dataArray.setData(index, DataStoreUtils.assemble(key, value), _scn++);
+                _dataArray.setData(index, _dataHandler.assemble(key, value), nextScn());
             }
         }
         
+        return true;
+    }
+    
+    protected boolean putReplace(int index, byte[] key, byte[] value) throws Exception
+    {
+        _dataArray.setData(index, _dataHandler.assemble(key, value), nextScn());
         return true;
     }
     
@@ -488,18 +535,18 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
             byte[] existingData = _dataArray.getData(index);
             if(existingData != null)
             {
-               int newLength = DataStoreUtils.removeByKey(key, existingData);
+               int newLength = _dataHandler.removeByKey(key, existingData);
                if(newLength == 0)
                {
                    // entire data is removed
-                   _dataArray.setData(index, null, _scn++);
+                   _dataArray.setData(index, null, nextScn());
                    _loadCount--;
                    return true;
                }
                else if(newLength < existingData.length)
                {
                    // partial data is removed
-                   _dataArray.setData(index, existingData, 0, newLength, _scn++);
+                   _dataArray.setData(index, existingData, 0, newLength, nextScn());
                    return true;
                }
             }
@@ -507,11 +554,18 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
         catch(Exception e)
         {
             _log.warn("Failed to delete key=\""+ new String(key) + "\" : " + e.getMessage());
-            _dataArray.setData(index, null, _scn++);
+            _dataArray.setData(index, null, nextScn());
         }
         
         // no data is removed
         return false;
+    }
+    
+    protected boolean deleteReplace(int index, byte[] key) throws Exception
+    {
+        _dataArray.setData(index, null, nextScn());
+        _loadCount--;
+        return true;
     }
     
     public final int getLevel()
@@ -544,14 +598,14 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
         return _loadCount;
     }
     
-    public final double getLoadRatio()
+    public final double getLoadFactor()
     {
         return _loadCount / (double)getCapacity();
     }
     
-    public final double getLoadFactor()
+    public final double getLoadThreshold()
     {
-        return _loadFactor;
+        return _loadThreshold;
     }
     
     private void initLinearHashing() throws Exception
@@ -563,7 +617,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
             _level = 0;
             _split = 0;
             _levelCapacity = getUnitCapacity();
-            _levelThreshold = (int)(_levelCapacity * _loadFactor);
+            _levelThreshold = (int)(_levelCapacity * _loadThreshold);
         }
         else
         {
@@ -578,7 +632,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
             
             _split = (unitCount - (1 << _level) - 1) * getUnitCapacity();
             _levelCapacity = getUnitCapacity() * (1 << _level);
-            _levelThreshold = (int)(_levelCapacity * _loadFactor);
+            _levelThreshold = (int)(_levelCapacity * _loadThreshold);
             
             // Need to re-populate the last unit
             for(int i = 0, cnt = getUnitCapacity(); i < cnt; i++)
@@ -589,7 +643,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
         
     }
     
-    private void split() throws Exception
+    protected synchronized void split() throws Exception
     {
         // Ensure address capacity
         _addrArray.expandCapacity(_split + _levelCapacity);
@@ -612,6 +666,8 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
                 bb.get(key);
                 
                 int newIndex = (int)(hash(key) % newCapacity);
+                if (newIndex < 0) newIndex = -newIndex;
+                
                 if(newIndex == _split) /* No need to split */
                 {
                     // Pass value
@@ -648,7 +704,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
             _split = 0;
             _level++;
             _levelCapacity = getUnitCapacity() * (1 << _level);
-            _levelThreshold = (int)(_levelCapacity * _loadFactor);
+            _levelThreshold = (int)(_levelCapacity * _loadThreshold);
             
             _log.info(getStatus());
         }
@@ -675,7 +731,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
             while(_split > 0);
             sync();
         }
-        else if(getLoadRatio() > _loadFactor)
+        else if(getLoadFactor() > _loadThreshold)
         {
             do
             {
@@ -701,10 +757,8 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
         buf.append(getCapacity());
         buf.append(" loadCount=");
         buf.append(_loadCount);
-        buf.append(" loadRatio=");
-        buf.append(getLoadRatio());
-        buf.append(" scn=");
-        buf.append(_scn);
+        buf.append(" loadFactor=");
+        buf.append(getLoadFactor());
         
         return buf.toString();
     }

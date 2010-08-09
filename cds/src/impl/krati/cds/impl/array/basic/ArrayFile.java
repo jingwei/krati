@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import krati.cds.impl.array.entry.Entry;
 import krati.cds.impl.array.entry.EntryUtility;
 import krati.cds.impl.array.entry.EntryValue;
+import krati.cds.impl.array.entry.EntryValueLongDual;
 import krati.io.ChannelReader;
 import krati.io.ChannelWriter;
 import krati.io.MappedWriter;
@@ -26,8 +27,8 @@ import krati.util.Chronos;
  * |Header                    |
  * |--------------------------|
  * |Storage Version    | long | 
- * |Max Scn            | long |
- * |New Scn            | long |
+ * |LWM Scn            | long |
+ * |HWM Scn            | long |
  * |Array Length       | int  |
  * |Data Element Size  | int  |
  * |--------------------------|
@@ -43,8 +44,8 @@ public class ArrayFile
   public static final int ARRAY_HEADER_LENGTH = 1024;
   
   static final int VERSION_POSITION      = 0;
-  static final int MAX_SCN_POSITION      = 8;
-  static final int NEW_SCN_POSITION      = 16;
+  static final int LWM_SCN_POSITION      = 8;
+  static final int HWM_SCN_POSITION      = 16;
   static final int ARRAY_LENGTH_POSITION = 24;
   static final int ELEMENT_SIZE_POSITION = 28;
   static final long DATA_START_POSITION  = ARRAY_HEADER_LENGTH;
@@ -56,8 +57,8 @@ public class ArrayFile
   
   // header information
   private long _version;
-  private long _arrayMaxScn;
-  private long _arrayNewScn;
+  private long _arrayLwmScn;
+  private long _arrayHwmScn;
   private int  _arrayLength;  // array length (element count)
   private int  _elementSize;  // array element size in bytes
   
@@ -97,8 +98,8 @@ public class ArrayFile
     if(newFile)
     {
       this._version = STORAGE_VERSION;
-      this._arrayMaxScn = 0;
-      this._arrayNewScn = 0;
+      this._arrayLwmScn = 0;
+      this._arrayHwmScn = 0;
       this._arrayLength = initialLength;
       this._elementSize = elementSize;
       
@@ -138,8 +139,8 @@ public class ArrayFile
   private void saveHeader() throws IOException
   {
     _writer.writeLong(VERSION_POSITION, _version);
-    _writer.writeLong(MAX_SCN_POSITION, _arrayMaxScn);
-    _writer.writeLong(NEW_SCN_POSITION, _arrayNewScn);
+    _writer.writeLong(LWM_SCN_POSITION, _arrayLwmScn);
+    _writer.writeLong(HWM_SCN_POSITION, _arrayHwmScn);
     _writer.writeInt(ARRAY_LENGTH_POSITION, _arrayLength);
     _writer.writeInt(ELEMENT_SIZE_POSITION, _elementSize);
     _writer.flush();
@@ -152,8 +153,8 @@ public class ArrayFile
     raf.getChannel().read(headerBuffer, 0);
     
     _version     = headerBuffer.getLong(VERSION_POSITION);
-    _arrayMaxScn = headerBuffer.getLong(MAX_SCN_POSITION);
-    _arrayNewScn = headerBuffer.getLong(NEW_SCN_POSITION);
+    _arrayLwmScn = headerBuffer.getLong(LWM_SCN_POSITION);
+    _arrayHwmScn = headerBuffer.getLong(HWM_SCN_POSITION);
     _arrayLength = headerBuffer.getInt(ARRAY_LENGTH_POSITION);
     _elementSize = headerBuffer.getInt(ELEMENT_SIZE_POSITION);
     
@@ -162,8 +163,8 @@ public class ArrayFile
   
   private boolean checkHeader()
   {
-    // Array file is inconsistent if newScn is greater than maxScn.
-    if (_arrayNewScn < _arrayMaxScn) return false;
+    // Array file is inconsistent if lwmScn is greater than hwmScn.
+    if (_arrayHwmScn < _arrayLwmScn) return false;
     
     return true;
   }
@@ -174,10 +175,10 @@ public class ArrayFile
     
     buf.append("version=");
     buf.append(_version);
-    buf.append(" maxScn=");
-    buf.append(_arrayMaxScn);
-    buf.append(" newScn=");
-    buf.append(_arrayNewScn);
+    buf.append(" lwmScn=");
+    buf.append(_arrayLwmScn);
+    buf.append(" hwmScn=");
+    buf.append(_arrayHwmScn);
     buf.append(" arrayLength=");
     buf.append(_arrayLength);
     buf.append(" elementSize=");
@@ -211,14 +212,14 @@ public class ArrayFile
     return _version;
   }
   
-  public final long getMaxScn()
+  public final long getLwmScn()
   {
-    return _arrayMaxScn;
+    return _arrayLwmScn;
   }
   
-  public final long getNewScn()
+  public final long getHwmScn()
   {
-    return _arrayNewScn;
+    return _arrayHwmScn;
   }
   
   public final int getArrayLength()
@@ -457,7 +458,7 @@ public class ArrayFile
   /**
    * Writes an int value at a specified index in the array.
    * 
-   * This method does not update newScn and maxScn in the array file.
+   * This method does not update hwmScn and lwmScn in the array file.
    * 
    * @param index   an index in the array.
    * @param value   int value
@@ -471,7 +472,7 @@ public class ArrayFile
   /**
    * Writes a long value at a specified index in the array.
    * 
-   * This method does not update newScn and maxScn in the array file.
+   * This method does not update hwmScn and lwmScn in the array file.
    * 
    * @param index   an index in the array.
    * @param value   long value
@@ -485,7 +486,7 @@ public class ArrayFile
   /**
    * Writes a short value at a specified index in the array.
    * 
-   * This method does not update newScn and maxScn in the array file.
+   * This method does not update hwmScn and lwmScn in the array file.
    * 
    * @param index   an index in the array.
    * @param value   short value
@@ -502,7 +503,7 @@ public class ArrayFile
    * The method will flatten entry data and sort it by position.
    * So the array file can be updated sequentially to reduce disk seeking time.
    * 
-   * This method updates newScn and maxScn in the array file.
+   * This method updates hwmScn and lwmScn in the array file.
    * 
    * @param entryList
    * @throws IOException
@@ -523,9 +524,9 @@ public class ArrayFile
       maxScn = Math.max(e.getMaxScn(), maxScn);
     }
     
-    // Write newScn
-    _log.info("write newScn:" + maxScn);
-    _writer.writeLong(NEW_SCN_POSITION, maxScn); 
+    // Write hwmScn
+    _log.info("write hwmScn:" + maxScn);
+    _writer.writeLong(HWM_SCN_POSITION, maxScn); 
     _writer.flush();
     
     // Write values
@@ -535,13 +536,13 @@ public class ArrayFile
     }
     _writer.flush();
     
-    // Write maxScn
-    _log.info("write maxScn:" + maxScn);
-    _writer.writeLong(MAX_SCN_POSITION, maxScn); 
+    // Write lwmScn
+    _log.info("write lwmScn:" + maxScn);
+    _writer.writeLong(LWM_SCN_POSITION, maxScn); 
     _writer.flush();
     
-    _arrayMaxScn = maxScn;
-    _arrayNewScn = maxScn;
+    _arrayLwmScn = maxScn;
+    _arrayHwmScn = maxScn;
     
     _log.info(entryList.size() + " entries flushed to " + 
              _file.getAbsolutePath() + " in " + chronos.getElapsedTime());
@@ -553,16 +554,16 @@ public class ArrayFile
     _version = value;
   }
   
-  protected void writeMaxScn(long value) throws IOException
+  protected void writeLwmScn(long value) throws IOException
   {
-    _writer.writeLong(MAX_SCN_POSITION, value);
-    _arrayMaxScn = value;
+    _writer.writeLong(LWM_SCN_POSITION, value);
+    _arrayLwmScn = value;
   }
   
-  protected void writeNewScn(long value) throws IOException
+  protected void writeHwmScn(long value) throws IOException
   {
-    _writer.writeLong(NEW_SCN_POSITION, value);
-    _arrayNewScn = value;
+    _writer.writeLong(HWM_SCN_POSITION, value);
+    _arrayHwmScn = value;
   }
   
   protected void writeArrayLength(int value) throws IOException
@@ -592,9 +593,9 @@ public class ArrayFile
   {   
       reset(intArray);
       
-      _log.info("update newScn and maxScn:" + maxScn);
-      writeNewScn(maxScn);
-      writeMaxScn(maxScn);
+      _log.info("update hwmScn and lwmScn:" + maxScn);
+      writeHwmScn(maxScn);
+      writeLwmScn(maxScn);
       flush();
   }
   
@@ -613,9 +614,9 @@ public class ArrayFile
   {   
       reset(longArray);
       
-      _log.info("update newScn and maxScn:" + maxScn);
-      writeNewScn(maxScn);
-      writeMaxScn(maxScn);
+      _log.info("update hwmScn and lwmScn:" + maxScn);
+      writeHwmScn(maxScn);
+      writeLwmScn(maxScn);
       flush();
   }
   
@@ -634,9 +635,9 @@ public class ArrayFile
   {   
       reset(shortArray);
       
-      _log.info("update newScn and maxScn:" + maxScn);
-      writeNewScn(maxScn);
-      writeMaxScn(maxScn);
+      _log.info("update hwmScn and lwmScn:" + maxScn);
+      writeHwmScn(maxScn);
+      writeLwmScn(maxScn);
       flush();
   }
   
@@ -655,9 +656,9 @@ public class ArrayFile
   {   
       reset(intArray);
       
-      _log.info("update newScn and maxScn:" + maxScn);
-      writeNewScn(maxScn);
-      writeMaxScn(maxScn);
+      _log.info("update hwmScn and lwmScn:" + maxScn);
+      writeHwmScn(maxScn);
+      writeLwmScn(maxScn);
       flush();
   }
   
@@ -676,9 +677,9 @@ public class ArrayFile
   {   
       reset(longArray);
       
-      _log.info("update newScn and maxScn:" + maxScn);
-      writeNewScn(maxScn);
-      writeMaxScn(maxScn);
+      _log.info("update hwmScn and lwmScn:" + maxScn);
+      writeHwmScn(maxScn);
+      writeLwmScn(maxScn);
       flush();
   }
   
@@ -697,9 +698,9 @@ public class ArrayFile
   {   
       reset(shortArray);
       
-      _log.info("update newScn and maxScn:" + maxScn);
-      writeNewScn(maxScn);
-      writeMaxScn(maxScn);
+      _log.info("update hwmScn and lwmScn:" + maxScn);
+      writeHwmScn(maxScn);
+      writeLwmScn(maxScn);
       flush();
   }
   
@@ -746,4 +747,92 @@ public class ArrayFile
       _writer.open();
   }
   
+  private synchronized void update(EntryValueLongDual[] values, long maxScn)
+  throws IOException
+  {
+    Chronos chronos = new Chronos();
+    
+    // Write hwmScn
+    _log.info("write hwmScn:" + maxScn);
+    _writer.writeLong(HWM_SCN_POSITION, maxScn); 
+    _writer.flush();
+    
+    // Write values
+    for (EntryValueLongDual v : values)
+    {
+      v.updateArrayFile(_writer, getPosition(v.pos));
+    }
+    _writer.flush();
+    
+    // Write lwmScn
+    _log.info("write lwmScn:" + maxScn);
+    _writer.writeLong(LWM_SCN_POSITION, maxScn); 
+    _writer.flush();
+    
+    _arrayLwmScn = maxScn;
+    _arrayHwmScn = maxScn;
+    
+    _log.info(_file.getAbsolutePath() + " flushed in " + chronos.getElapsedTime());
+  }
+  
+  private synchronized void updateDual(EntryValueLongDual[] values, long maxScn)
+  throws IOException
+  {
+    Chronos chronos = new Chronos();
+    
+    // Write hwmScn
+    _log.info("write hwmScn:" + maxScn);
+    _writer.writeLong(HWM_SCN_POSITION, maxScn); 
+    _writer.flush();
+    
+    // Write values
+    for (EntryValueLongDual v : values)
+    {
+      v.updateArrayFileDual(_writer, getPosition(v.pos));
+    }
+    _writer.flush();
+    
+    // Write lwmScn
+    _log.info("write lwmScn:" + maxScn);
+    _writer.writeLong(LWM_SCN_POSITION, maxScn); 
+    _writer.flush();
+    
+    _arrayLwmScn = maxScn;
+    _arrayHwmScn = maxScn;
+    
+    _log.info(_file.getAbsolutePath() + " flushed in " + chronos.getElapsedTime());
+  }
+  
+  /**
+   * Apply entries to the array file.
+   * 
+   * The method will flatten entry data and sort it by position.
+   * So the array file can be updated sequentially to reduce disk seeking time.
+   * 
+   * This method updates hwmScn and lwmScn in the array file.
+   * 
+   * @param entryList
+   * @throws IOException
+   */
+  public static synchronized void updateDual(ArrayFile arrayFile, ArrayFile arrayFileDual, List<Entry<EntryValueLongDual>> entryList)
+  throws IOException
+  {
+    Chronos chronos = new Chronos();
+    
+    // Sort values by position in the array file
+    EntryValueLongDual[] values = EntryUtility.sortEntriesToValues(entryList);
+    if (values == null || values.length == 0) return;
+    
+    // Obtain maxScn
+    long maxScn = 0;
+    for (Entry<?> e : entryList)
+    {
+      maxScn = Math.max(e.getMaxScn(), maxScn);
+    }
+    
+    arrayFile.update(values, maxScn);
+    arrayFileDual.updateDual(values, maxScn);
+    
+    _log.info(entryList.size() + " entries flushed in " + chronos.getElapsedTime());
+  }
 }

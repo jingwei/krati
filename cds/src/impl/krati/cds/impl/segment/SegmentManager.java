@@ -49,7 +49,7 @@ public final class SegmentManager
     
     private final List<Segment> _segList = new ArrayList<Segment>(100);
     private final LinkedList<Segment> _recycleList = new LinkedList<Segment>();
-    private final int _recycleLimit = 5;
+    private final int _recycleLimit;
     private final SegmentFactory _segFactory;
     private final SegmentMeta _segMeta;
     private final String _segHomePath;
@@ -75,7 +75,13 @@ public final class SegmentManager
         this._segHomePath = segmentHomePath;
         this._segFileSizeMB = segmentFileSizeMB;
         this._segMeta = new SegmentMeta(new File(_segHomePath, ".meta"));
+        this._recycleLimit = computeRecycleLimit(segmentFileSizeMB);
         this.init();
+    }
+    
+    private int computeRecycleLimit(int segmentFileSizeMB)
+    {
+        return (segmentFileSizeMB <= 64) ? 5 : ((segmentFileSizeMB <= 256) ? 3 : 2);
     }
     
     public int getSegmentFileSizeMB()

@@ -23,7 +23,7 @@ public class EntryValueLongFactory implements EntryValueFactory<EntryValueLong>
   }
   
   /**
-   * @return an empty EntryValueInt.
+   * @return an empty EntryValueLong.
    */
   public EntryValueLong newValue()
   {

@@ -34,6 +34,8 @@ public class AbstractTest extends TestCase
     public static int _keyCount = 375000;
     public static int _runTimeSeconds = 120;
     public static int _segFileSizeMB = 256;
+    public static int _initLevel = 5;
+    public static int _numReaders = 4;
     
     static
     {
@@ -100,6 +102,32 @@ public class AbstractTest extends TestCase
         finally
         {
             _log.info("test.segFileSizeMB: " + _segFileSizeMB);
+        }
+        
+        try
+        {
+            _initLevel = Integer.parseInt(System.getProperty("test.initLevel"));
+        }
+        catch(Exception e)
+        {
+            _initLevel = 5;
+        }
+        finally
+        {
+            _log.info("test.initLevel: " + _initLevel);
+        }
+        
+        try
+        {
+            _numReaders = Integer.parseInt(System.getProperty("test.numReaders"));
+        }
+        catch(Exception e)
+        {
+            _numReaders = 4;
+        }
+        finally
+        {
+            _log.info("test.numReaders: " + _numReaders);
         }
     }
     
@@ -177,5 +205,10 @@ public class AbstractTest extends TestCase
         {
             throw new IOException("dir:"+dir.getAbsolutePath()+" not deleted");
         }
+    }
+    
+    protected File getHomeDirectory()
+    {
+        return new File(TEST_OUTPUT_DIR, getClass().getSimpleName());
     }
 }

@@ -130,6 +130,8 @@ public class PartitionedDataStore implements DataStore<byte[], byte[]>
     {
         long hashCode = hash(key);
         long index = hashCode % _totalCapacity;
+        if (index < 0) index = -index;
+        
         int storeId = (int)(index / _partitionCapacity);
         return _partitionList.get(storeId).get(key);
     }
@@ -139,6 +141,8 @@ public class PartitionedDataStore implements DataStore<byte[], byte[]>
     {
         long hashCode = hash(key);
         long index = hashCode % _totalCapacity;
+        if (index < 0) index = -index;
+        
         int storeId = (int)(index / _partitionCapacity);
         return _partitionList.get(storeId).put(key, value);
     }
@@ -148,6 +152,8 @@ public class PartitionedDataStore implements DataStore<byte[], byte[]>
     {
         long hashCode = hash(key);
         long index = hashCode % _totalCapacity;
+        if (index < 0) index = -index;
+        
         int storeId = (int)(index / _partitionCapacity);
         return _partitionList.get(storeId).delete(key);
     }

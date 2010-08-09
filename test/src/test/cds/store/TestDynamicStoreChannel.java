@@ -1,14 +1,14 @@
-package test.cds;
+package test.cds.store;
 
 import krati.cds.impl.segment.SegmentFactory;
 
 /**
- * TestDynamicDataStore using ChannelSegment.
+ * TestDynamicStore using ChannleSegment.
  * 
  * @author jwu
  *
  */
-public class TestDynamicDataStoreChannel extends TestDynamicDataStore
+public class TestDynamicStoreChannel extends TestDynamicStore
 {
     @Override
     protected SegmentFactory getSegmentFactory()

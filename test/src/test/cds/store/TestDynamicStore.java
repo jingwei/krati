@@ -1,4 +1,4 @@
-package test.cds;
+package test.cds.store;
 
 import java.io.File;
 
@@ -20,7 +20,7 @@ public class TestDynamicStore extends EvalDataStore
     {
         super(TestDynamicStore.class.getName());
     }
-
+    
     protected SegmentFactory getSegmentFactory()
     {
         return new krati.cds.impl.segment.MemorySegmentFactory();
@@ -29,15 +29,15 @@ public class TestDynamicStore extends EvalDataStore
     @Override
     protected DataStore<byte[], byte[]> getDataStore(File storeDir) throws Exception
     {
-        return new DynamicDataStore(storeDir, 2 /* initial level */, _segFileSizeMB, getSegmentFactory());
+        return new DynamicDataStore(storeDir, _initLevel /* initial level */, _segFileSizeMB, getSegmentFactory());
     }
-
+    
     public void testDynamicStore() throws Exception
     {
         String unitTestName = getClass().getSimpleName() + " with " + getSegmentFactory().getClass().getSimpleName(); 
         StatsLog.beginUnit(unitTestName);
         
-        new TestDynamicStore().evalPerformance(4, 1, _runTimeSeconds);
+        evalPerformance(_numReaders, 1, _runTimeSeconds);
         
         cleanTestOutput();
         StatsLog.endUnit(unitTestName);

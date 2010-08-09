@@ -15,6 +15,7 @@ import krati.cds.impl.array.entry.EntryPool;
 import krati.cds.impl.array.entry.EntryValue;
 import krati.cds.impl.array.entry.PreFillEntryInt;
 import krati.cds.impl.array.entry.PreFillEntryLong;
+import krati.cds.impl.array.entry.PreFillEntryLongDual;
 import krati.cds.impl.array.entry.PreFillEntryShort;
 
 public class ArrayEntryManager<V extends EntryValue> implements Persistable
@@ -127,6 +128,27 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable
       
       // Add to current entry
       ((PreFillEntryLong)_entry).add(pos, val, scn);
+      
+      // Advance high water mark to maintain progress record
+      _hwmScn = Math.max(_hwmScn, scn);
+      
+      // Switch to a new entry if the current _entry has reached _maxEntrySize.
+      if(_entry.isFull())
+      {
+        switchEntry(false);
+      }
+  }
+  
+  final void addToPreFillEntryLongDual(int pos, long val, long valDual, long scn) throws IOException
+  {
+      // Switch to a new entry if the current _entry has reached _maxEntrySize.
+      if(_entry.isFull())
+      {
+        switchEntry(false);
+      }
+      
+      // Add to current entry
+      ((PreFillEntryLongDual)_entry).add(pos, val, valDual, scn);
       
       // Advance high water mark to maintain progress record
       _hwmScn = Math.max(_hwmScn, scn);
@@ -534,25 +556,25 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable
     entries.clear();
   }
   
-  protected void init(long arrayFileMaxScn, long arrayFileNewScn) throws IOException
+  protected void init(long arrayFileLwmScn, long arrayFileHwmScn) throws IOException
   {
     // Load entries from logs on disk 
     List<Entry<V>> entryList = loadEntryFiles();
     
     // Sanitize loaded entries
-    if (arrayFileMaxScn == arrayFileNewScn) // array file is consistent 
+    if (arrayFileLwmScn == arrayFileHwmScn) // array file is consistent 
     {
       // Find entries that have not been flushed to the array file.
       if(entryList.size() > 0)
       {
-        entryList = filterEntryListLowerBound(entryList, arrayFileMaxScn);
+        entryList = filterEntryListLowerBound(entryList, arrayFileLwmScn);
       }
     }
     else // array file is inconsistent
     {
       if(entryList.size() > 0)
       {
-        entryList = filterEntryList(entryList, arrayFileMaxScn, arrayFileNewScn);
+        entryList = filterEntryList(entryList, arrayFileLwmScn, arrayFileHwmScn);
         
         if(entryList.size() == 0)
         {

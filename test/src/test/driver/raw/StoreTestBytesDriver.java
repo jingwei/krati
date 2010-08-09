@@ -41,6 +41,8 @@ public class StoreTestBytesDriver<S> implements StoreTestDriver
     public void validate() throws Exception
     {
         int count = 0;
+        long elapsedTime = 0;
+        long startTime = System.currentTimeMillis();
         
         for(int i = 0; i < _keyCount; i++)
         {
@@ -63,8 +65,16 @@ public class StoreTestBytesDriver<S> implements StoreTestDriver
             {
                 System.err.printf("validate found null for key=\"%s\"%n", k);
             }
+            
+            elapsedTime = System.currentTimeMillis() - startTime;
+            if(elapsedTime > 600000L)
+            {
+                StatsLog.logger.info("Quit: running time is over 600000 ms");
+                break;
+            }
         }
         
+        StatsLog.logger.info("Validated " + count + "/" + _keyCount + " in " + elapsedTime + " ms");
         StatsLog.logger.info("OK");
     }
     
@@ -83,7 +93,7 @@ public class StoreTestBytesDriver<S> implements StoreTestDriver
         
         long endTime = System.currentTimeMillis();
         long elapsedTime = endTime - startTime;
-        StatsLog.logger.info("elapsedTime=" + elapsedTime + " ms (init)");
+        StatsLog.logger.info("elapsedTime=" + elapsedTime + " ms");
         
         double rate;
         rate = count/(double)elapsedTime;

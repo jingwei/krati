@@ -24,7 +24,7 @@ public abstract class AbstractTestDataRW extends AbstractTest {
     
     public void testDataReadWrite() throws IOException
     {
-        File dir = new File(TEST_OUTPUT_DIR, getClass().getSimpleName());
+        File dir = getHomeDirectory();
         if(!dir.exists()) dir.mkdirs();
         cleanDirectory(dir);
         

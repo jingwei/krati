@@ -54,7 +54,7 @@ public class TestDataCache extends AbstractSeedTest
 
         long endTime = System.currentTimeMillis();
         long elapsedTime = endTime - startTime;
-        StatsLog.logger.info("elapsedTime="+ elapsedTime +" ms (init)");
+        StatsLog.logger.info("elapsedTime="+ elapsedTime +" ms");
         
         double rate = cache.getIdCount()/(double)elapsedTime;
         rate = Math.round(rate * 100) / 100.0;
@@ -320,7 +320,7 @@ public class TestDataCache extends AbstractSeedTest
         
         try
         {
-            File cacheDir = new File(TEST_OUTPUT_DIR, getClass().getSimpleName());
+            File cacheDir = getHomeDirectory();
             DataCache cache = getDataCache(cacheDir);
             
             if (cache.getLWMark() == 0)
@@ -335,7 +335,7 @@ public class TestDataCache extends AbstractSeedTest
             int timeAllocated = _runTimeSeconds/3;
 
             StatsLog.logger.info(">>> read only");
-            evalRead(cache, 4, 10);
+            evalRead(cache, _numReaders, 10);
             
             StatsLog.logger.info(">>> write only");
             evalWrite(cache, timeAllocated);
@@ -345,14 +345,14 @@ public class TestDataCache extends AbstractSeedTest
             validate(cache);
             
             StatsLog.logger.info(">>> read & write");
-            evalReadWrite(cache, 4, timeAllocated, false);
+            evalReadWrite(cache, _numReaders, timeAllocated, false);
             cache.persist();
             
             StatsLog.logger.info(">>> validate");
             validate(cache);
             
             StatsLog.logger.info(">>> check & write");
-            evalReadWrite(cache, 2, timeAllocated, true);
+            evalReadWrite(cache, _numReaders, timeAllocated, true);
             cache.persist();
             
             StatsLog.logger.info(">>> validate");

@@ -1,4 +1,4 @@
-package test.cds;
+package test.cds.store;
 
 import java.io.File;
 
@@ -48,7 +48,7 @@ public abstract class EvalDataStore extends AbstractSeedTest
             return;
         }
         
-        File storeDir = new File(TEST_OUTPUT_DIR, getClass().getSimpleName());
+        File storeDir = getHomeDirectory();
         if(!storeDir.exists()) storeDir.mkdirs();
         cleanDirectory(storeDir);
         

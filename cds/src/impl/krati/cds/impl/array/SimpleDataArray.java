@@ -40,6 +40,7 @@ public class SimpleDataArray implements DataArray, Persistable
     protected Segment _segment;              // current segment to append
     protected boolean _canTriggerCompaction; // current segment can trigger compaction only once
     
+    protected final AddressFormat _addressFormat;
     protected volatile AddressArray _addressArray;
     protected volatile SegmentManager _segmentManager;
     protected SimpleDataArrayCompactor _compactor;
@@ -49,10 +50,6 @@ public class SimpleDataArray implements DataArray, Persistable
     protected final double _segmentCompactTrigger;
     protected long _segmentCompactTriggerLowerPosition;
     protected long _segmentCompactTriggerUpperPosition;
-    
-    protected final int _offsetMask;
-    protected final int _segmentMask;
-    protected final int _segmentShift;
     
     private long _metaUpdateOnAppendPosition = Segment.dataStartPosition;
     
@@ -84,13 +81,9 @@ public class SimpleDataArray implements DataArray, Persistable
         this._segmentManager = segmentManager;
         this._segmentCompactFactor = segmentCompactFactor;
         this._segmentCompactTrigger = segmentCompactTrigger;
+        this._addressFormat = new AddressFormat();
         
         addressArray.setPersistListener(new SegmentPersistListener());
-        
-        AddressFormat f = new AddressFormat(16);
-        this._segmentShift = f.getSegmentShift();
-        this._segmentMask = f.getSegmentMask();
-        this._offsetMask = f.getOffsetMask();
         
         this.init();
 
@@ -122,7 +115,7 @@ public class SimpleDataArray implements DataArray, Persistable
         {
             int index = updateBatch.getUpdateIndex(i);
             long address = getAddress(index);
-            int segInd = (int)((address >> _segmentShift) & _segmentMask);
+            int segInd = _addressFormat.getSegment(address);
             
             if(address == 0 ||      /* data at the given index is deleted by writer */ 
                segInd == liveSegInd /* data at the given index is updated by writer */)
@@ -265,8 +258,9 @@ public class SimpleDataArray implements DataArray, Persistable
         try
         {
             long address = getAddress(index);
-            int segPos = (int)(address & _offsetMask);
-            int segInd = (int)((address >> _segmentShift) & _segmentMask);
+            int segPos = _addressFormat.getOffset(address);
+            int segInd = _addressFormat.getSegment(address);
+            int length = _addressFormat.getDataSize(address);
             
             if (segPos >= Segment.dataStartPosition)
             {
@@ -274,7 +268,7 @@ public class SimpleDataArray implements DataArray, Persistable
                 Segment seg = _segmentManager.getSegment(segInd);
                 
                 // read data length
-                if(seg != null) seg.decrLoadSize(4 + seg.readInt(segPos));
+                if(seg != null) seg.decrLoadSize(4 + ((length == 0) ? seg.readInt(segPos) : length));
             }
         }
         catch(IOException e1) {}
@@ -326,8 +320,8 @@ public class SimpleDataArray implements DataArray, Persistable
         rangeCheck(index);
         
         long address = getAddress(index);
-        int segPos = (int)(address & _offsetMask);
-        int segInd = (int)((address >> _segmentShift) & _segmentMask);
+        int segPos = _addressFormat.getOffset(address);
+        int segInd = _addressFormat.getSegment(address);
         
         // no data found
         if(segPos < Segment.dataStartPosition) return false;
@@ -349,8 +343,8 @@ public class SimpleDataArray implements DataArray, Persistable
         try
         {
             long address = getAddress(index);
-            int segPos = (int)(address & _offsetMask);
-            int segInd = (int)((address >> _segmentShift) & _segmentMask);
+            int segPos = _addressFormat.getOffset(address);
+            int segInd = _addressFormat.getSegment(address);
             
             // no data found
             if(segPos < Segment.dataStartPosition) return -1;
@@ -360,7 +354,8 @@ public class SimpleDataArray implements DataArray, Persistable
             if(seg == null) return -1;
             
             // read data length
-            return seg.readInt(segPos);
+            int length = _addressFormat.getDataSize(address);
+            return (length == 0) ? seg.readInt(segPos) : length;
         }
         catch(Exception e)
         {
@@ -383,8 +378,8 @@ public class SimpleDataArray implements DataArray, Persistable
         try
         {
             long address = getAddress(index);
-            int segPos = (int)(address & _offsetMask);
-            int segInd = (int)((address >> _segmentShift) & _segmentMask);
+            int segPos = _addressFormat.getOffset(address);
+            int segInd = _addressFormat.getSegment(address);
             
             // no data found
             if(segPos < Segment.dataStartPosition) return null;
@@ -444,8 +439,8 @@ public class SimpleDataArray implements DataArray, Persistable
         try
         {
             long address = getAddress(index);
-            int segPos = (int)(address & _offsetMask);
-            int segInd = (int)((address >> _segmentShift) & _segmentMask);
+            int segPos = _addressFormat.getOffset(address);
+            int segInd = _addressFormat.getSegment(address);
             
             // no data found
             if(segPos < Segment.dataStartPosition) return -1;
@@ -486,8 +481,8 @@ public class SimpleDataArray implements DataArray, Persistable
         try
         {
             long address = getAddress(index);
-            int segPos = (int)(address & _offsetMask);
-            int segInd = (int)((address >> _segmentShift) & _segmentMask);
+            int segPos = _addressFormat.getOffset(address);
+            int segInd = _addressFormat.getSegment(address);
             
             // no data found
             if(segPos < Segment.dataStartPosition) return -1;
@@ -573,7 +568,7 @@ public class SimpleDataArray implements DataArray, Persistable
             try
             {
                 // check append position is in range
-                if ((pos >> _segmentShift) > 0)
+                if ((pos >> _addressFormat.getSegmentShift()) > 0)
                 {
                     throw new SegmentOverflowException(_segment);
                 }
@@ -588,7 +583,7 @@ public class SimpleDataArray implements DataArray, Persistable
                 }
                 
                 // update addressArray 
-                long address = (((long)_segment.getSegmentId()) << _segmentShift) | pos;
+                long address = _addressFormat.composeAddress((int)pos, _segment.getSegmentId(), length);
                 setAddress(index, address, scn);
                 
                 // update segment meta on first write

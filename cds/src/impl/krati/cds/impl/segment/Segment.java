@@ -46,7 +46,7 @@ public interface Segment
 {
     public final static long STORAGE_VERSION = 1;
     
-    public final static int defaultSegmentFileSizeMB = 512;
+    public final static int defaultSegmentFileSizeMB = 256;
     public final static int maxSegmentFileSizeMB = 2048;
     public final static int minSegmentFileSizeMB = 10;
     
