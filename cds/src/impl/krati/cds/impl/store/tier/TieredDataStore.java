@@ -311,7 +311,8 @@ public class TieredDataStore implements DataStore<byte[], byte[]>
     public synchronized boolean put(byte[] key, byte[] value) throws Exception
     {
         if(key == null) return false;
-
+        if(value == null) return delete(key);
+        
         trySplitCollidingTier();
         
         if(!_tier1.put(key, value))
@@ -332,14 +333,9 @@ public class TieredDataStore implements DataStore<byte[], byte[]>
 
         trySplitCollidingTier();
         
-        if(!_tier1.delete(key))
-        {
-            if(!_tier2.delete(key))
-            {
-                return _tier3.delete(key);
-            }
-        }
-        
+        _tier1.delete(key);
+        _tier2.delete(key);
+        _tier3.delete(key);
         return true;
     }
     

@@ -41,7 +41,8 @@ public class KratiDataStore
     
     /**
      * Creates a data store instance.
-     * Subclasses can override this method to provide specific DataStore implementations such as DynamicDataStore.
+     * Subclasses can override this method to provide a specific DataStore implementation
+     * such as DynamicDataStore.
      */
     protected DataStore<byte[], byte[]> createDataStore(int keyCount, File storeDir) throws Exception
     {
@@ -56,7 +57,8 @@ public class KratiDataStore
     
     /**
      * Creates a segment factory.
-     * Subclasses can override this method to provide specific segment factory such ChannelSegmentFactory and MappedSegmentFactory.
+     * Subclasses can override this method to provide a specific segment factory
+     * such as ChannelSegmentFactory and MappedSegmentFactory.
      * 
      * @return the segment factory. 
      */

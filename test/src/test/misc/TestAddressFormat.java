@@ -42,6 +42,12 @@ public class TestAddressFormat extends AbstractTest {
         segment = 24;
         dataSize = 1023;
         check(af, offset, segment, dataSize);
+        
+        // Test 6
+        offset = 0;
+        segment = 24;
+        dataSize = af.getMaxDataSize();
+        check(af, offset, segment, dataSize);
     }
     
     private void check(AddressFormat af, int offset, int segment, int dataSize) {

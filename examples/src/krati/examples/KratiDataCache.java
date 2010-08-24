@@ -44,7 +44,8 @@ public class KratiDataCache
     
     /**
      * Creates a segment factory.
-     * Subclasses can override this method to provide specific segment factory such ChannelSegmentFactory and MappedSegmentFactory.
+     * Subclasses can override this method to provide a specific segment factory
+     * such as ChannelSegmentFactory and MappedSegmentFactory.
      * 
      * @return the segment factory. 
      */
