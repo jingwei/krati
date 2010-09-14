@@ -3,7 +3,7 @@ package test.util;
 import java.util.List;
 import java.util.Random;
 
-import krati.cds.store.DataSet;
+import krati.store.DataSet;
 import test.LatencyStats;
 
 public abstract class DataSetRunner implements Runnable

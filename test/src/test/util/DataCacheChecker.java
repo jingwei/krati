@@ -2,7 +2,7 @@ package test.util;
 
 import java.util.List;
 
-import krati.cds.DataCache;
+import krati.store.DataCache;
 
 public class DataCacheChecker extends DataCacheReader
 {
@@ -15,7 +15,7 @@ public class DataCacheChecker extends DataCacheReader
     {
         String line = _lineSeedData.get(index % _lineSeedData.size());
         
-        byte[] b = _cache.getData(index);
+        byte[] b = _cache.get(index);
         if (b != null)
         {
             String s = new String(b);

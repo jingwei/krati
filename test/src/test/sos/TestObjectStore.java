@@ -2,11 +2,11 @@ package test.sos;
 
 import java.io.File;
 
-import krati.cds.impl.segment.SegmentFactory;
-import krati.cds.impl.store.SimpleDataStore;
-import krati.cds.store.DataStore;
+import krati.core.segment.SegmentFactory;
 import krati.sos.ObjectStore;
 import krati.sos.SerializableObjectStore;
+import krati.store.DataStore;
+import krati.store.StaticDataStore;
 
 import test.AbstractTest;
 
@@ -30,12 +30,12 @@ public class TestObjectStore extends AbstractTest
     
     protected SegmentFactory getSegmentFactory()
     {
-        return new krati.cds.impl.segment.MemorySegmentFactory();
+        return new krati.core.segment.MemorySegmentFactory();
     }
     
     protected DataStore<byte[], byte[]> getDataStore(File storeDir, int capacity) throws Exception
     {
-        return new SimpleDataStore(storeDir,
+        return new StaticDataStore(storeDir,
                                    capacity,
                                    1000,      /* entrySize */
                                    5,         /* maxEntries */

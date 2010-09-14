@@ -5,10 +5,10 @@ import java.util.Random;
 import java.util.Set;
 import java.util.HashSet;
 
-import krati.cds.impl.segment.MappedSegmentFactory;
-import krati.cds.impl.segment.Segment;
-import krati.cds.impl.segment.SegmentFactory;
-import krati.cds.impl.segment.SegmentManager;
+import krati.core.segment.MappedSegmentFactory;
+import krati.core.segment.Segment;
+import krati.core.segment.SegmentFactory;
+import krati.core.segment.SegmentManager;
 
 public class SegmentPerf
 {

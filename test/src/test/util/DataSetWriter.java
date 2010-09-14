@@ -2,7 +2,7 @@ package test.util;
 
 import java.util.List;
 
-import krati.cds.store.DataSet;
+import krati.store.DataSet;
 
 public class DataSetWriter extends DataSetRunner
 {

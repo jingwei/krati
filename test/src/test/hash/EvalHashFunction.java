@@ -3,8 +3,8 @@ package test.hash;
 import java.io.File;
 import java.io.IOException;
 
-import krati.cds.impl.segment.MemorySegmentFactory;
-import krati.cds.impl.store.SimpleDataSet;
+import krati.core.segment.MemorySegmentFactory;
+import krati.store.StaticDataSet;
 import krati.util.HashFunction;
 import test.AbstractSeedTest;
 import test.StatsLog;
@@ -20,12 +20,12 @@ public abstract class EvalHashFunction extends AbstractSeedTest
     
     protected abstract HashFunction<byte[]> createHashFunction();
     
-    protected SimpleDataSet createDataSet(File storeDir, int capacity, HashFunction<byte[]> hashFunction) throws Exception
+    protected StaticDataSet createDataSet(File storeDir, int capacity, HashFunction<byte[]> hashFunction) throws Exception
     {
-        return new SimpleDataSet(storeDir, capacity, 10000, 5, 32, new MemorySegmentFactory(), hashFunction);
+        return new StaticDataSet(storeDir, capacity, 10000, 5, 32, new MemorySegmentFactory(), hashFunction);
     }
     
-    private void populate(SimpleDataSet store) throws IOException
+    private void populate(StaticDataSet store) throws IOException
     {
         int lineCnt = _lineSeedData.size();
         long startTime = System.currentTimeMillis();
@@ -53,7 +53,7 @@ public abstract class EvalHashFunction extends AbstractSeedTest
         StatsLog.logger.info("elapsedTime="+ elapsedTime +" ms");
     }
     
-    private void collect(SimpleDataSet store)
+    private void collect(StaticDataSet store)
     {
         int lineCnt = _lineSeedData.size();
         long startTime = System.currentTimeMillis();
@@ -98,7 +98,7 @@ public abstract class EvalHashFunction extends AbstractSeedTest
         
         File storeHomeDir = getHomeDirectory();
         int storeCapacity = (int)(_keyCount * 1.5);
-        SimpleDataSet store = createDataSet(storeHomeDir, storeCapacity, hashFunction);
+        StaticDataSet store = createDataSet(storeHomeDir, storeCapacity, hashFunction);
         
         StatsLog.logger.info(">>> populate");
         populate(store);

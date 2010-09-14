@@ -1,6 +1,6 @@
 package test.misc;
 
-import krati.cds.impl.segment.AddressFormat;
+import krati.core.segment.AddressFormat;
 import test.AbstractTest;
 
 public class TestAddressFormat extends AbstractTest {

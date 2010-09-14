@@ -2,7 +2,7 @@ package krati.sos;
 
 import java.io.IOException;
 
-import krati.cds.DataCache;
+import krati.store.DataCache;
 
 /**
  * A simple data cache for serializable objects.
@@ -79,7 +79,7 @@ public class SerializableObjectCache<T> implements ObjectCache<T>
     @Override
     public T get(int objectId)
     {
-        return getSerializer().construct(_cache.getData(objectId));
+        return getSerializer().construct(_cache.get(objectId));
     }
     
     /**
@@ -98,7 +98,7 @@ public class SerializableObjectCache<T> implements ObjectCache<T>
             return delete(objectId, scn);
         }
         
-        _cache.setData(objectId, getSerializer().serialize(object), scn);
+        _cache.set(objectId, getSerializer().serialize(object), scn);
         return true;
     }
     
@@ -112,7 +112,7 @@ public class SerializableObjectCache<T> implements ObjectCache<T>
     @Override
     public boolean delete(int objectId, long scn) throws Exception
     {
-        _cache.deleteData(objectId, scn);
+        _cache.delete(objectId, scn);
         return true;
     }
 
@@ -194,6 +194,6 @@ public class SerializableObjectCache<T> implements ObjectCache<T>
     @Override
     public byte[] getBytes(int objectId)
     {
-        return _cache.getData(objectId);
+        return _cache.get(objectId);
     }
 }

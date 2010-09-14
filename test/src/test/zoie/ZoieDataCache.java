@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import krati.cds.DataCache;
+import krati.store.DataCache;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
@@ -30,13 +30,13 @@ public class ZoieDataCache<R extends IndexReader> implements DataCache {
     }
     
     @Override
-    public void deleteData(int memberId, long scn) throws Exception {
+    public void delete(int memberId, long scn) throws Exception {
         DataEvent<ZoieData> event = new DataEvent<ZoieData>(scn,new ZoieData(memberId));
         _zoieSystem.consume(Arrays.asList(event));
     }
 
     @Override
-    public byte[] getData(int memberId) {
+    public byte[] get(int memberId) {
         return fetchData(memberId);
     }
     
@@ -68,14 +68,14 @@ public class ZoieDataCache<R extends IndexReader> implements DataCache {
     }
 
     @Override
-    public int getData(int memberId, byte[] dst) {
+    public int get(int memberId, byte[] dst) {
         byte[] data = fetchData(memberId);
         System.arraycopy(data, 0, dst, 0, data.length);
         return data.length;
     }
 
     @Override
-    public int getData(int memberId, byte[] dst, int offset) {
+    public int get(int memberId, byte[] dst, int offset) {
         byte[] data = fetchData(memberId);
         System.arraycopy(data, 0, dst, offset, data.length);
         return data.length;
@@ -110,13 +110,13 @@ public class ZoieDataCache<R extends IndexReader> implements DataCache {
     }
 
     @Override
-    public void setData(int memberId, byte[] data, long scn) throws Exception {
+    public void set(int memberId, byte[] data, long scn) throws Exception {
         DataEvent<ZoieData> event = new DataEvent<ZoieData>(scn,new ZoieData(memberId,data));
         _zoieSystem.consume(Arrays.asList(event));
     }
 
     @Override
-    public void setData(int memberId, byte[] data, int offset, int length, long scn) throws Exception {
+    public void set(int memberId, byte[] data, int offset, int length, long scn) throws Exception {
         DataEvent<ZoieData> event = new DataEvent<ZoieData>(scn,new ZoieData(memberId,data,offset,length));
         _zoieSystem.consume(Arrays.asList(event));
     }

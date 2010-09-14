@@ -18,7 +18,6 @@
     
     <property name="lib.dir" value="lib"/>
     <property name="src.dir" value="src"/>
-    <property name="cds.src.dir" value="cds/src"/>
     <property name="sos.src.dir" value="sos/src"/>
     
     <property name="test.dir" value="test"/>
@@ -83,21 +82,13 @@
     
     <target name="compile.krati" depends="init">
         <javac debug="true" destdir="${classes.dir}">
-            <src path="${src.dir}"/>
+            <src path="${src.dir}/api"/>
+            <src path="${src.dir}/impl"/>
             <classpath refid="compile.class.path"/>
         </javac>
     </target>
     
-    <target name="compile.cds" depends="compile.krati">
-        <javac debug="true" destdir="${classes.dir}">
-            <src path="${cds.src.dir}/api"/>
-            <src path="${cds.src.dir}/impl"/>
-            <classpath refid="java.class.path"/>
-            <classpath refid="compile.class.path"/>
-        </javac>
-    </target>
-    
-    <target name="compile.sos" depends="compile.cds">
+    <target name="compile.sos" depends="compile.krati">
         <javac debug="true" destdir="${classes.dir}">
             <src path="${sos.src.dir}"/>
             <classpath refid="java.class.path"/>
@@ -107,9 +98,8 @@
     
     <target name="compile" depends="init" description="-- compile source">
         <javac debug="true" destdir="${classes.dir}">
-            <src path="${src.dir}"/>
-            <src path="${cds.src.dir}/api"/>
-            <src path="${cds.src.dir}/impl"/>
+            <src path="${src.dir}/api"/>
+            <src path="${src.dir}/impl"/>
             <src path="${sos.src.dir}"/>
             <classpath refid="compile.class.path"/>
         </javac>
@@ -179,7 +169,7 @@
             <jvmarg value="-Dtest.idStart=0"/>
             <jvmarg value="-Dtest.idCount=5000000"/>
             <jvmarg value="-Dtest.keyCount=5000000"/>
-            <jvmarg value="-Dtest.initLevel=5"/>
+            <jvmarg value="-Dtest.initLevel=7"/>
             <jvmarg value="-Dtest.numReaders=4"/>
             <jvmarg value="-Dtest.segFileSizeMB=256"/>
             <jvmarg value="-Dtest.runTimeSeconds=1800"/>
@@ -206,7 +196,7 @@
             <jvmarg value="-Dtest.idStart=0"/>
             <jvmarg value="-Dtest.idCount=5000000"/>
             <jvmarg value="-Dtest.keyCount=5000000"/>
-            <jvmarg value="-Dtest.initLevel=5"/>
+            <jvmarg value="-Dtest.initLevel=7"/>
             <jvmarg value="-Dtest.numReaders=4"/>
             <jvmarg value="-Dtest.segFileSizeMB=256"/>
             <jvmarg value="-Dtest.runTimeSeconds=1800"/>
@@ -233,7 +223,7 @@
             <jvmarg value="-Dtest.idStart=0"/>
             <jvmarg value="-Dtest.idCount=5000000"/>
             <jvmarg value="-Dtest.keyCount=5000000"/>
-            <jvmarg value="-Dtest.initLevel=5"/>
+            <jvmarg value="-Dtest.initLevel=7"/>
             <jvmarg value="-Dtest.numReaders=4"/>
             <jvmarg value="-Dtest.segFileSizeMB=256"/>
             <jvmarg value="-Dtest.runTimeSeconds=1800"/>
@@ -292,7 +282,7 @@
     <property name="test.loggc.keyCount" value="5000000"/>
     <property name="test.loggc.segFileSizeMB" value="256"/>
     <property name="test.loggc.runTimeSeconds" value="3600"/>
-    <property name="test.loggc.initLevel" value="5"/>
+    <property name="test.loggc.initLevel" value="7"/>
     <property name="test.loggc.numReaders" value="4"/>
     
     <target name="test.loggc" description="-- run Java GC test, default -Dtests.to.run=TestDataCache (1 hour)" depends="test.compile">

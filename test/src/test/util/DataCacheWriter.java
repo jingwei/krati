@@ -3,7 +3,7 @@ package test.util;
 import java.util.List;
 import java.util.Random;
 
-import krati.cds.DataCache;
+import krati.store.DataCache;
 import test.LatencyStats;
 
 public class DataCacheWriter implements Runnable
@@ -48,7 +48,7 @@ public class DataCacheWriter implements Runnable
         try
         {
             byte[] b = _lineSeedData.get(index%_lineSeedData.size()).getBytes();
-            _cache.setData(index, b, _scn++);
+            _cache.set(index, b, _scn++);
         }
         catch(Exception e)
         {

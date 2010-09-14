@@ -2,7 +2,7 @@ package krati.sos;
 
 import java.io.IOException;
 
-import krati.cds.Persistable;
+import krati.Persistable;
 
 /**
  * ObjectCache

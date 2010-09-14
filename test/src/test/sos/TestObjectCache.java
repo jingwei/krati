@@ -4,10 +4,10 @@ import java.io.File;
 import java.util.List;
 import java.util.Random;
 
-import krati.cds.DataCache;
-import krati.cds.impl.DataCacheImpl;
 import krati.sos.ObjectCache;
 import krati.sos.SerializableObjectCache;
+import krati.store.DataCache;
+import krati.store.DataCacheImpl;
 import krati.util.Chronos;
 import test.AbstractTest;
 import test.StatsLog;
@@ -33,7 +33,7 @@ public class TestObjectCache extends AbstractTest
         DataCache cache = new DataCacheImpl(_idStart,
                                             _idCount,
                                             cacheDir,
-                                            new krati.cds.impl.segment.MemorySegmentFactory(),
+                                            new krati.core.segment.MemorySegmentFactory(),
                                             _segFileSizeMB);
         return cache;
     }

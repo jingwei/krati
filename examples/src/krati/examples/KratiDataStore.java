@@ -3,9 +3,9 @@ package krati.examples;
 import java.io.File;
 import java.util.Random;
 
-import krati.cds.impl.segment.SegmentFactory;
-import krati.cds.impl.store.SimpleDataStore;
-import krati.cds.store.DataStore;
+import krati.core.segment.SegmentFactory;
+import krati.store.DataStore;
+import krati.store.StaticDataStore;
 
 /**
  * Sample code for Krati DataStore.
@@ -47,7 +47,7 @@ public class KratiDataStore
     protected DataStore<byte[], byte[]> createDataStore(int keyCount, File storeDir) throws Exception
     {
         int capacity = (int)(keyCount * 1.5);
-        return new SimpleDataStore(storeDir,
+        return new StaticDataStore(storeDir,
                                    capacity, /* capacity */
                                    10000,    /* update batch size */
                                    5,        /* number of update batches required to sync indexes.dat */
@@ -64,7 +64,7 @@ public class KratiDataStore
      */
     protected SegmentFactory createSegmentFactory()
     {
-        return new krati.cds.impl.segment.MemorySegmentFactory();
+        return new krati.core.segment.MemorySegmentFactory();
     }
     
     /**

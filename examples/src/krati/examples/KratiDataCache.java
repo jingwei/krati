@@ -3,9 +3,9 @@ package krati.examples;
 import java.io.File;
 import java.util.Random;
 
-import krati.cds.DataCache;
-import krati.cds.impl.DataCacheImpl;
-import krati.cds.impl.segment.SegmentFactory;
+import krati.core.segment.SegmentFactory;
+import krati.store.DataCache;
+import krati.store.DataCacheImpl;
 
 /**
  * Sample code for Krati DataCache.
@@ -51,7 +51,7 @@ public class KratiDataCache
      */
     protected SegmentFactory createSegmentFactory()
     {
-        return new krati.cds.impl.segment.MemorySegmentFactory();
+        return new krati.core.segment.MemorySegmentFactory();
     }
     
     /**
@@ -75,7 +75,7 @@ public class KratiDataCache
         for(int i = 0, cnt = _cache.getIdCount(); i < cnt; i++)
         {
             int memberId = _cache.getIdStart() + i;
-            _cache.setData(memberId, createDataForMember(i), System.nanoTime());
+            _cache.set(memberId, createDataForMember(i), System.nanoTime());
         }
         _cache.sync();
     }
@@ -93,7 +93,7 @@ public class KratiDataCache
         for(int i = 0; i < readCnt; i++)
         {
             int memberId = idStart + rand.nextInt(idCount);
-            System.out.printf("MemberId=%-10d MemberData=%s%n", memberId, new String(_cache.getData(memberId)));
+            System.out.printf("MemberId=%-10d MemberData=%s%n", memberId, new String(_cache.get(memberId)));
         }
     }
     

@@ -2,7 +2,7 @@ package krati.sos;
 
 import java.io.IOException;
 
-import krati.cds.store.DataStore;
+import krati.store.DataStore;
 
 /**
  * A key-value store for serializable objects. The store requires that both key and value be serializable objects.

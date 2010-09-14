@@ -5,10 +5,10 @@ import java.io.IOException;
 
 import test.AbstractSeedTest;
 import test.StatsLog;
-import krati.cds.impl.segment.MemorySegmentFactory;
-import krati.cds.impl.segment.SegmentFactory;
-import krati.cds.impl.store.SimpleDataSet;
-import krati.cds.store.DataSet;
+import krati.core.segment.MemorySegmentFactory;
+import krati.core.segment.SegmentFactory;
+import krati.store.DataSet;
+import krati.store.StaticDataSet;
 import krati.util.HashFunction;
 
 public abstract class EvalTieredHashFunction extends AbstractSeedTest
@@ -27,12 +27,12 @@ public abstract class EvalTieredHashFunction extends AbstractSeedTest
         return new MemorySegmentFactory();
     }
     
-    protected SimpleDataSet createDataSet(File storeDir, int capacity, SegmentFactory segmentFactory, HashFunction<byte[]> hashFunction) throws Exception
+    protected StaticDataSet createDataSet(File storeDir, int capacity, SegmentFactory segmentFactory, HashFunction<byte[]> hashFunction) throws Exception
     {
-        return new SimpleDataSet(storeDir, capacity, 10000, 5, 32, segmentFactory, hashFunction);
+        return new StaticDataSet(storeDir, capacity, 10000, 5, 32, segmentFactory, hashFunction);
     }
     
-    private void populate(SimpleDataSet[] tieredStores) throws IOException
+    private void populate(StaticDataSet[] tieredStores) throws IOException
     {
         int storeCnt = tieredStores.length;
         int lineCnt = _lineSeedData.size();
@@ -87,7 +87,7 @@ public abstract class EvalTieredHashFunction extends AbstractSeedTest
         StatsLog.logger.info("elapsedTime="+ elapsedTime +" ms");
     }
     
-    private void collect(SimpleDataSet[] tieredStores)
+    private void collect(StaticDataSet[] tieredStores)
     {
         int storeCnt = tieredStores.length;
         int lineCnt = _lineSeedData.size();
@@ -150,7 +150,7 @@ public abstract class EvalTieredHashFunction extends AbstractSeedTest
         
         File storeHomeDir = getHomeDirectory();
         
-        SimpleDataSet[] tieredStores = new SimpleDataSet[tierCapacities.length];
+        StaticDataSet[] tieredStores = new StaticDataSet[tierCapacities.length];
         for(int i = 0; i < tierCapacities.length; i++)
         {
             tieredStores[i] = createDataSet(new File(storeHomeDir, "T" + i), tierCapacities[i], segmentFactory, hashFunction);

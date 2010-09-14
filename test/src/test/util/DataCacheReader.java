@@ -3,7 +3,7 @@ package test.util;
 import java.util.List;
 import java.util.Random;
 
-import krati.cds.DataCache;
+import krati.store.DataCache;
 import test.LatencyStats;
 
 public class DataCacheReader implements Runnable
@@ -44,7 +44,7 @@ public class DataCacheReader implements Runnable
     
     int read(int index)
     {
-        return _cache.getData(index, _data);
+        return _cache.get(index, _data);
     }
     
     @Override
