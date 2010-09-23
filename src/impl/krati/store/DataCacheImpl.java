@@ -30,9 +30,10 @@ import krati.store.DataCache;
 public class DataCacheImpl implements DataCache
 {
     private final static Logger _log = Logger.getLogger(DataCacheImpl.class);
-    private SimpleDataArray _dataArray;
-    private int _idCount;
-    private int _idStart;
+    private final SimpleDataArray _dataArray;
+    private final int _idCount;
+    private final int _idStart;
+    private final int _idEnd;
     
     /**
      * Constructs a data cache with default values below.
@@ -154,6 +155,7 @@ public class DataCacheImpl implements DataCache
     {
         this._idStart = memberIdStart;
         this._idCount = memberIdCount;
+        this._idEnd = memberIdStart + memberIdCount;
         
         StaticLongArray addressArray =
             new StaticLongArray(memberIdCount,
@@ -209,6 +211,7 @@ public class DataCacheImpl implements DataCache
     {
         this._idStart = memberIdStart;
         this._idCount = memberIdCount;
+        this._idEnd = memberIdStart + memberIdCount;
         
         StaticLongArray addressArray =
             new StaticLongArray(memberIdCount,
@@ -264,6 +267,12 @@ public class DataCacheImpl implements DataCache
         return buffer.toString();
     }
     
+    private void rangeCheck(int memberId)
+    {
+        if(memberId < _idStart || _idEnd <= memberId)
+            throw new ArrayIndexOutOfBoundsException(memberId);
+    }
+    
     @Override
     public int getIdCount()
     {
@@ -279,57 +288,63 @@ public class DataCacheImpl implements DataCache
     @Override
     public byte[] get(int memberId)
     {
+        rangeCheck(memberId);
         return _dataArray.getData(memberId - _idStart);
     }
     
     @Override
     public int get(int memberId, byte[] dst)
     {
+        rangeCheck(memberId);
         return _dataArray.getData(memberId - _idStart, dst);
     }
     
     @Override
     public int get(int memberId, byte[] dst, int offset)
     {
+        rangeCheck(memberId);
         return _dataArray.getData(memberId - _idStart, dst, offset);
     }
     
     @Override
     public void set(int memberId, byte[] data, long scn) throws Exception
     {
+        rangeCheck(memberId);
         _dataArray.setData(memberId - _idStart, data, scn);
     }
     
     @Override
     public void set(int memberId, byte[] data, int offset, int length, long scn) throws Exception
     {
+        rangeCheck(memberId);
         _dataArray.setData(memberId - _idStart, data, offset, length, scn);
     }
     
     @Override
     public void delete(int memberId, long scn) throws Exception
     {
+        rangeCheck(memberId);
         _dataArray.setData(memberId - _idStart, null, scn);
     }
     
     @Override
     public void sync() throws IOException
     {
-        _log.info("DataCache prior-sync: " + getStatus());
+        _log.info("prior sync: " + getStatus());
         
         _dataArray.sync();
         
-        _log.info("DataCache after-sync: " + getStatus());
+        _log.info("after sync: " + getStatus());
     }
     
     @Override
     public void persist() throws IOException
     {
-        _log.info("DataCache prior-persist: " + getStatus());
+        _log.info("prior persist: " + getStatus());
         
         _dataArray.persist();
         
-        _log.info("DataCache after-persist: " + getStatus());
+        _log.info("after persist: " + getStatus());
     }
     
     @Override
