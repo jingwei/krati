@@ -100,7 +100,9 @@ public interface Segment
     
     public int append(byte[] data, int offset, int length) throws IOException;
     
-    public long transferTo(long pos, int length, WritableByteChannel targetChannel) throws IOException;
+    public int transferTo(int pos, int length, Segment targetSegment) throws IOException;
+    
+    public int transferTo(int pos, int length, WritableByteChannel targetChannel) throws IOException;
     
     public boolean isReadOnly();
     
@@ -126,6 +128,16 @@ public interface Segment
      * @return whether this Segment is recyclable.
      */
     public boolean isRecyclable();
+    
+    /**
+     * @return whether this Segment can support reads from a buffer.
+     */
+    public boolean canReadFromBuffer();
+    
+    /**
+     * @return whether this Segment can support writes by appending to a buffer.
+     */
+    public boolean canAppendToBuffer();
     
     /**
      * Re-initialize this Segment for read and write.

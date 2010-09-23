@@ -181,13 +181,13 @@ public abstract class AbstractSegment implements Segment
     }
 
     @Override
-    public final void incrLoadSize(int byteCnt)
+    public final synchronized void incrLoadSize(int byteCnt)
     {
         _loadSizeBytes += byteCnt;
     }
     
     @Override
-    public final void decrLoadSize(int byteCnt)
+    public final synchronized void decrLoadSize(int byteCnt)
     {
         _loadSizeBytes -= byteCnt;
     }

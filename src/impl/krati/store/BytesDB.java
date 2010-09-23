@@ -45,7 +45,6 @@ public final class BytesDB {
              numSyncBatches,
              segmentFileSizeMB,
              segmentFactory,
-             0.1,
              0.5);
     }
     
@@ -55,7 +54,6 @@ public final class BytesDB {
                    int numSyncBatches,
                    int segmentFileSizeMB,
                    SegmentFactory segmentFactory,
-                   double segmentCompactTrigger,
                    double segmentCompactFactor) throws Exception {
         _logger.info("init " + homeDir.getAbsolutePath());
         {
@@ -70,7 +68,7 @@ public final class BytesDB {
             SegmentManager segManager = SegmentManager.getInstance(segmentHomePath, segmentFactory, segmentFileSizeMB);
             
             // Create simple data array
-            this._dataArray = new SimpleDataArray(_addrArray, segManager, segmentCompactTrigger, segmentCompactFactor);
+            this._dataArray = new SimpleDataArray(_addrArray, segManager, segmentCompactFactor);
             
             // Scan to count nextIndex
             this.initNextIndexCount();

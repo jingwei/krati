@@ -361,6 +361,15 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable
       
       _log.info("switchEntry to " + _entryCompaction.getId() + " _lwmScn=" + _lwmScn + " _hwmScn=" + _hwmScn + " Compaction");
     }
+    
+    // Apply entry logs to array file
+    if (_autoApplyEntries)
+    {
+      if (_entryPool.getServiceQueueSize() >= _maxEntries)
+      {
+        applyEntries(blocking);
+      }
+    }
   }
   
   /**
@@ -395,7 +404,7 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable
       }
       
       // Start a separate thread to update the underlying array file 
-      new Thread(_entryApply).run();
+      new Thread(_entryApply).start();
     }
   }
   

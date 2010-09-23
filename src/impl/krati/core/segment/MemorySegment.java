@@ -28,9 +28,7 @@ public class MemorySegment extends AbstractSegment
     @Override
     protected void init() throws IOException
     {
-        int bufferLength = (int)((_initSizeMB < Segment.maxSegmentFileSizeMB) ?
-                                  _initSizeBytes : (_initSizeBytes - 1));
-        _buffer = ByteBuffer.wrap(new byte[bufferLength]);
+        _buffer = initByteBuffer();
         
         if (!getSegmentFile().exists())
         {
@@ -86,6 +84,13 @@ public class MemorySegment extends AbstractSegment
         }
     }
     
+    protected ByteBuffer initByteBuffer()
+    {
+        int bufferLength = (int)((_initSizeMB < Segment.maxSegmentFileSizeMB) ?
+                                  _initSizeBytes : (_initSizeBytes - 1));
+        return ByteBuffer.wrap(new byte[bufferLength]);
+    }
+    
     @Override
     public long getAppendPosition() throws IOException
     {
@@ -110,7 +115,7 @@ public class MemorySegment extends AbstractSegment
         {
             int pos = _buffer.position();
             _buffer.putInt(value);
-            _loadSizeBytes += 4;
+            incrLoadSize(4);
             return pos;
         }
         catch(BufferOverflowException boe)
@@ -132,7 +137,7 @@ public class MemorySegment extends AbstractSegment
         {
             int pos = _buffer.position();
             _buffer.putLong(value);
-            _loadSizeBytes += 8;
+            incrLoadSize(8);
             return pos;
         }
         catch(BufferOverflowException boe)
@@ -154,7 +159,7 @@ public class MemorySegment extends AbstractSegment
         {
             int pos = _buffer.position();
             _buffer.putShort(value);
-            _loadSizeBytes += 2;
+            incrLoadSize(2);
             return pos;
         }
         catch(BufferOverflowException boe)
@@ -176,7 +181,7 @@ public class MemorySegment extends AbstractSegment
         {
             int pos = _buffer.position();
             _buffer.put(data);
-            _loadSizeBytes += data.length;
+            incrLoadSize(data.length);
             return pos;
         }
         catch(BufferOverflowException boe)
@@ -198,7 +203,7 @@ public class MemorySegment extends AbstractSegment
         {
             int pos = _buffer.position();
             _buffer.put(data, offset, length);
-            _loadSizeBytes += length;
+            incrLoadSize(length);
             return pos;
         }
         catch(BufferOverflowException boe)
@@ -238,8 +243,19 @@ public class MemorySegment extends AbstractSegment
         System.arraycopy(_buffer.array(), pos, dst, offset, length);
     }
     
+    public int transferTo(int pos, int length, Segment targetSegment) throws IOException
+    {
+        if((pos + length) <= _buffer.position())
+        {
+            targetSegment.append(_buffer.array(), pos, length);
+            return length;
+        }
+        
+        throw new SegmentOverflowException(this, SegmentOverflowException.Type.READ_OVERFLOW);
+    }
+    
     @Override
-    public long transferTo(long pos, int length, WritableByteChannel targetChannel) throws IOException
+    public int transferTo(int pos, int length, WritableByteChannel targetChannel) throws IOException
     {
         /**
          * Channel-based JavaNio zero copy (channel-to-channel transfer) does not work for MemorySegment because:
@@ -340,13 +356,7 @@ public class MemorySegment extends AbstractSegment
     }
     
     @Override
-    public boolean isRecyclable()
-    {
-        return true;
-    }
-
-    @Override
-    public void reinit() throws IOException
+    public synchronized void reinit() throws IOException
     {
         _buffer.clear();
         _loadSizeBytes = 0;
@@ -383,5 +393,23 @@ public class MemorySegment extends AbstractSegment
             
             _log.info("Segment " + getSegmentId() + " initialized: " + getStatus());
         }
+    }
+    
+    @Override
+    public final boolean isRecyclable()
+    {
+        return true;
+    }
+    
+    @Override
+    public final boolean canReadFromBuffer()
+    {
+        return true;
+    }
+
+    @Override
+    public final boolean canAppendToBuffer()
+    {
+        return true;
     }
 }

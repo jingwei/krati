@@ -55,8 +55,8 @@ public class ChannelReader implements DataReader
     {
         try
         {
-            _channel.close();
-            _raf.close();
+            if(_channel != null) _channel.close();
+            if(_raf != null) _raf.close();
         }
         finally
         {

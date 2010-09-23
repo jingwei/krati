@@ -23,17 +23,15 @@ public class CheckedDataArray extends SimpleDataArray
     public CheckedDataArray(AddressArray addressArray,
                             SegmentManager segmentManager)
     {
-        this(addressArray, segmentManager, 0.1, 0.5);
+        this(addressArray, segmentManager, 0.5);
     }
     
     public CheckedDataArray(AddressArray addressArray,
                             SegmentManager segmentManager,
-                            double segmentCompactTrigger,
                             double segmentCompactFactor)
     {
         super(addressArray,
               segmentManager,
-              segmentCompactTrigger,
               segmentCompactFactor);
     }
     

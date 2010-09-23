@@ -161,19 +161,6 @@ public final class SegmentManager
     /**
      * Gets the next segment available for read and write.
      */
-    public synchronized Segment nextSegment(Segment seg) throws IOException
-    {
-        if(seg != _segCurrent)
-        {
-            return (_segCurrent != null) ? _segCurrent : nextSegment(); 
-        }
-        
-        return nextSegment();
-    }
-    
-    /**
-     * Gets the next segment available for read and write.
-     */
     public synchronized Segment nextSegment() throws IOException
     {
         _segCurrent = nextSegment(false);
@@ -222,7 +209,6 @@ public final class SegmentManager
         if(index < _segList.size()) _segList.set(index, seg);
         else _segList.add(seg);
         
-        _log.info("create Segment " + seg.getSegmentId());
         return seg;
     }
     

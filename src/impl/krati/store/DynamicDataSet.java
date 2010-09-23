@@ -52,7 +52,6 @@ public class DynamicDataSet implements DataSet<byte[]>
      *    Entry Size               : 10000
      *    Max Entries              : 5
      *    Segment File Size        : 256MB
-     *    Segment Compact Trigger  : 0.1
      *    Segment Compact Factor   : 0.5
      *    DataSet Hash Load Factor : 0.75
      *    DataSet Hash Function    : krati.util.FnvHashFunction
@@ -71,7 +70,6 @@ public class DynamicDataSet implements DataSet<byte[]>
              5,     /* maxEntries */
              256,   /* segmentFileSizeMB */
              segmentFactory,
-             0.1,   /* segmentCompactTrigger */
              0.5,   /* segmentCompactFactor */
              0.75,  /* DataSet load factor */
              new FnvHashFunction());
@@ -84,7 +82,6 @@ public class DynamicDataSet implements DataSet<byte[]>
      *    Entry Size               : 10000
      *    Max Entries              : 5
      *    Segment File Size        : 256MB
-     *    Segment Compact Trigger  : 0.1
      *    Segment Compact Factor   : 0.5
      *    DataSet Hash Load Factor : 0.75
      *    DataSet Hash Function    : krati.util.FnvHashFunction
@@ -105,7 +102,6 @@ public class DynamicDataSet implements DataSet<byte[]>
              5,     /* maxEntries */
              256,   /* segmentFileSizeMB */
              segmentFactory,
-             0.1,   /* segmentCompactTrigger */
              0.5,   /* segmentCompactFactor */
              0.75,  /* DataSet load factor */
              new FnvHashFunction());
@@ -118,7 +114,6 @@ public class DynamicDataSet implements DataSet<byte[]>
      *    Entry Size               : 10000
      *    Max Entries              : 5
      *    Segment File Size        : 256MB
-     *    Segment Compact Trigger  : 0.1
      *    Segment Compact Factor   : 0.5
      *    DataSet Hash Load Factor : 0.75
      * </pre>
@@ -140,7 +135,6 @@ public class DynamicDataSet implements DataSet<byte[]>
              5,     /* maxEntries */
              256,   /* segmentFileSizeMB */
              segmentFactory,
-             0.1,   /* segmentCompactTrigger */
              0.5,   /* segmentCompactFactor */
              0.75,  /* DataSet load factor */
              hashFunction);
@@ -152,7 +146,6 @@ public class DynamicDataSet implements DataSet<byte[]>
      * <pre>
      *    Entry Size               : 10000
      *    Max Entries              : 5
-     *    Segment Compact Trigger  : 0.1
      *    Segment Compact Factor   : 0.5
      *    DataSet Hash Load Factor : 0.75
      *    DataSet Hash Function    : krati.util.FnvHashFunction
@@ -175,7 +168,6 @@ public class DynamicDataSet implements DataSet<byte[]>
              5,     /* maxEntries */
              segmentFileSizeMB,
              segmentFactory,
-             0.1,   /* segmentCompactTrigger */
              0.5,   /* segmentCompactFactor */
              0.75,  /* DataSet load factor */
              new FnvHashFunction());
@@ -187,7 +179,6 @@ public class DynamicDataSet implements DataSet<byte[]>
      * <pre>
      *    Entry Size               : 10000
      *    Max Entries              : 5
-     *    Segment Compact Trigger  : 0.1
      *    Segment Compact Factor   : 0.5
      * </pre>
      * 
@@ -212,7 +203,6 @@ public class DynamicDataSet implements DataSet<byte[]>
              5,     /* maxEntries */
              segmentFileSizeMB,
              segmentFactory,
-             0.1,   /* segmentCompactTrigger */
              0.5,   /* segmentCompactFactor  */
              hashLoadThreshold,
              hashFunction);
@@ -222,7 +212,6 @@ public class DynamicDataSet implements DataSet<byte[]>
      * Creates a dynamic DataSet with the settings below:
      * 
      * <pre>
-     *    Segment Compact Trigger  : 0.1
      *    Segment Compact Factor   : 0.5
      *    DataSet Hash Load Factor : 0.75
      *    DataSet Hash Function    : krati.util.FnvHashFunction
@@ -249,7 +238,6 @@ public class DynamicDataSet implements DataSet<byte[]>
              maxEntries,
              segmentFileSizeMB,
              segmentFactory,
-             0.1,   /* segmentCompactTrigger */
              0.5,   /* segmentCompactFactor */
              0.75,  /* DataSet load factor */
              new FnvHashFunction());
@@ -259,7 +247,6 @@ public class DynamicDataSet implements DataSet<byte[]>
      * Creates a dynamic DataSet.
      * 
      * <pre>
-     *    Segment Compact Trigger  : 0.1
      *    Segment Compact Factor   : 0.5
      * </pre>
      * 
@@ -288,7 +275,6 @@ public class DynamicDataSet implements DataSet<byte[]>
              maxEntries,
              segmentFileSizeMB,
              segmentFactory,
-             0.1,   /* segmentCompactTrigger */
              0.5,   /* segmentCompactFactor  */
              hashLoadThreshold,
              hashFunction);
@@ -303,7 +289,6 @@ public class DynamicDataSet implements DataSet<byte[]>
      * @param maxEntries             the number of redo entries required for updating the underlying address array
      * @param segmentFileSizeMB      the size of segment file in MB
      * @param segmentFactory         the segment factory
-     * @param segmentCompactTrigger  the percentage of segment capacity, which triggers compaction once per segment
      * @param segmentCompactFactor   the load factor of segment, below which a segment is eligible for compaction
      * @param hashLoadThreshold      the load factor of the underlying address array (hash table)
      * @param hashFunction           the hash function for mapping values to indexes
@@ -315,7 +300,6 @@ public class DynamicDataSet implements DataSet<byte[]>
                           int maxEntries,
                           int segmentFileSizeMB,
                           SegmentFactory segmentFactory,
-                          double segmentCompactTrigger,
                           double segmentCompactFactor,
                           double hashLoadThreshold,
                           HashFunction<byte[]> hashFunction) throws Exception
@@ -336,7 +320,7 @@ public class DynamicDataSet implements DataSet<byte[]>
         SegmentManager segmentManager = SegmentManager.getInstance(segmentHome, segmentFactory, segmentFileSizeMB);
         
         // Create underlying simple data array
-        this._dataArray = new SimpleDataArray(_addrArray, segmentManager, segmentCompactTrigger, segmentCompactFactor);
+        this._dataArray = new SimpleDataArray(_addrArray, segmentManager, segmentCompactFactor);
         this._hashFunction = hashFunction;
         this._loadThreshold = hashLoadThreshold;
         this._loadCount = scan();

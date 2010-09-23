@@ -43,7 +43,6 @@ public class StaticDataSet implements DataSet<byte[]>
      *    Entry Size             : 10000
      *    Max Entries            : 5
      *    Segment File Size      : 256MB
-     *    Segment Compact Trigger: 0.1
      *    Segment Compact Factor : 0.5
      *    Hash Function          : krati.util.FnvHashFunction
      * </pre>
@@ -61,7 +60,6 @@ public class StaticDataSet implements DataSet<byte[]>
              5,
              256,
              segmentFactory,
-             0.1, /* segment compact trigger */
              0.5, /* segment compact factor  */
              new FnvHashFunction());
     }
@@ -72,7 +70,6 @@ public class StaticDataSet implements DataSet<byte[]>
      * <pre>
      *    Entry Size             : 10000
      *    Max Entries            : 5
-     *    Segment Compact Trigger: 0.1
      *    Segment Compact Factor : 0.5
      *    Hash Function          : krati.util.FnvHashFunction
      * </pre>
@@ -94,7 +91,6 @@ public class StaticDataSet implements DataSet<byte[]>
              5,
              256,
              segmentFactory,
-             0.1, /* segment compact trigger */
              0.5, /* segment compact factor  */
              new FnvHashFunction());
     }
@@ -103,7 +99,6 @@ public class StaticDataSet implements DataSet<byte[]>
      * Creates a DataSet instance with the settings below:
      * 
      * <pre>
-     *    Segment Compact Trigger: 0.1
      *    Segment Compact Factor : 0.5
      *    Hash Function          : krati.util.FnvHashFunction
      * </pre>
@@ -129,7 +124,6 @@ public class StaticDataSet implements DataSet<byte[]>
              maxEntries,
              segmentFileSizeMB,
              segmentFactory,
-             0.1, /* segment compact trigger */
              0.5, /* segment compact factor  */
              new FnvHashFunction());
     }
@@ -138,7 +132,6 @@ public class StaticDataSet implements DataSet<byte[]>
      * Creates a DataSet instance with the settings below:
      * 
      * <pre>
-     *    Segment Compact Trigger: 0.1
      *    Segment Compact Factor : 0.5
      * </pre>
      * 
@@ -165,7 +158,6 @@ public class StaticDataSet implements DataSet<byte[]>
              maxEntries,
              segmentFileSizeMB,
              segmentFactory,
-             0.1, /* segment compact trigger */
              0.5, /* segment compact factor  */
              hashFunction);
     }
@@ -179,7 +171,6 @@ public class StaticDataSet implements DataSet<byte[]>
      * @param maxEntries             the number of redo entries required for updating the underlying address array
      * @param segmentFileSizeMB      the size of segment file in MB
      * @param segmentFactory         the segment factory
-     * @param segmentCompactTrigger  the percentage of segment capacity, which triggers compaction once per segment
      * @param segmentCompactFactor   the load factor of segment, below which a segment is eligible for compaction
      * @param hashFunction           the hash function for mapping values to indexes
      * @throws Exception
@@ -190,7 +181,6 @@ public class StaticDataSet implements DataSet<byte[]>
                          int maxEntries,
                          int segmentFileSizeMB,
                          SegmentFactory segmentFactory,
-                         double segmentCompactTrigger,
                          double segmentCompactFactor,
                          HashFunction<byte[]> hashFunction) throws Exception
     {
@@ -208,7 +198,7 @@ public class StaticDataSet implements DataSet<byte[]>
         String segmentHome = homeDir.getCanonicalPath() + File.separator + "segs";
         SegmentManager segmentManager = SegmentManager.getInstance(segmentHome, segmentFactory, segmentFileSizeMB);
         
-        this._dataArray = new SimpleDataArray(addressArray, segmentManager, segmentCompactTrigger, segmentCompactFactor);
+        this._dataArray = new SimpleDataArray(addressArray, segmentManager, segmentCompactFactor);
         this._hashFunction = hashFunction;
     }
     

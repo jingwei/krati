@@ -76,7 +76,6 @@ public class HashIndex implements Index {
                 numSyncBatches,
                 segmentFileSizeMB,
                 segmentFactory,
-                0.1,   /* segmentCompactTrigger */
                 0.5,   /* segmentCompactFactor  */
                 0.75,  /* store hash loadFactor */
                 hashFunction);

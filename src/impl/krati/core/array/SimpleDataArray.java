@@ -37,31 +37,24 @@ public class SimpleDataArray implements DataArray, Persistable
 {
     private final static Logger _log = Logger.getLogger(SimpleDataArray.class);
     
-    protected Segment _segment;              // current segment to append
-    protected boolean _canTriggerCompaction; // current segment can trigger compaction only once
-    
+    protected volatile Segment _segment;
     protected final AddressFormat _addressFormat;
-    protected volatile AddressArray _addressArray;
-    protected volatile SegmentManager _segmentManager;
-    protected SimpleDataArrayCompactor _compactor;
-    protected ConcurrentLinkedQueue<Segment> _compactedSegmentQueue;
-    
+    protected final AddressArray _addressArray;
+    protected final SegmentManager _segmentManager;
+    protected final SimpleDataArrayCompactor _compactor;
     protected final double _segmentCompactFactor;
-    protected final double _segmentCompactTrigger;
-    protected long _segmentCompactTriggerLowerPosition;
-    protected long _segmentCompactTriggerUpperPosition;
     
     private long _metaUpdateOnAppendPosition = Segment.dataStartPosition;
     
     /**
-     * Constructs a DataArray with Segment Compact Trigger default to 0.1 and Segment Compact Factor default to 0.5. 
+     * Constructs a DataArray with Segment Compact Factor default to 0.5. 
      * 
      * @param addressArray           the array of addresses (i.e. pointers to Segment).
      * @param segmentManager         the segment manager for loading, creating, freeing, maintaining segments.
      */
     public SimpleDataArray(AddressArray addressArray, SegmentManager segmentManager)
     {
-        this(addressArray, segmentManager, 0.1, 0.5);
+        this(addressArray, segmentManager, 0.5);
     }
     
     /**
@@ -69,30 +62,25 @@ public class SimpleDataArray implements DataArray, Persistable
      * 
      * @param addressArray           the array of addresses (i.e. pointers to Segment).
      * @param segmentManager         the segment manager for loading, creating, freeing, maintaining segments.
-     * @param segmentCompactTrigger  the percentage of segment capacity, above which writes trigger compaction once per segment.
      * @param segmentCompactFactor   the load factor below which a segment is eligible for compaction. The recommended value is 0.5.
      */
     public SimpleDataArray(AddressArray addressArray,
                            SegmentManager segmentManager,
-                           double segmentCompactTrigger,
                            double segmentCompactFactor)
     {
         this._addressArray = addressArray;
         this._segmentManager = segmentManager;
         this._segmentCompactFactor = segmentCompactFactor;
-        this._segmentCompactTrigger = segmentCompactTrigger;
         this._addressFormat = new AddressFormat();
         
+        // Add segment persist listener
         addressArray.setPersistListener(new SegmentPersistListener());
         
-        this.init();
-
-        this._compactor = new SimpleDataArrayCompactor(this, getSegmentCompactFactor());
-        this._compactedSegmentQueue = new ConcurrentLinkedQueue<Segment>();
-        this._canTriggerCompaction = true;
-        this.updateCompactTriggerBounds();
+        // Start segment data compactor
+        _compactor = new SimpleDataArrayCompactor(this, getSegmentCompactFactor());
+        _compactor.start();
         
-        this._metaUpdateOnAppendPosition = Segment.dataStartPosition;
+        this.init();
     }
     
     private void consumeCompaction(CompactionUpdateBatch updateBatch) throws Exception 
@@ -101,24 +89,17 @@ public class SimpleDataArray implements DataArray, Persistable
         int updateCount = updateBatch.size();
         int totalIgnoreBytes = 0;
         int totalUpdateBytes = updateBatch.getDataSizeTotal();
-        int liveSegInd = _segment.getSegmentId();
         
         Segment segTarget = updateBatch.getTargetSegment();
-        
-        // Update segment append position
-        segTarget.setAppendPosition(segTarget.getAppendPosition() + totalUpdateBytes);
-        
-        // Partial-load data between channelPosition and appendPosition
-        segTarget.load();
         
         for(int i = 0; i < updateCount; i++)
         {
             int index = updateBatch.getUpdateIndex(i);
-            long address = getAddress(index);
-            int segInd = _addressFormat.getSegment(address);
+            long origAddr = updateBatch.getOriginDataAddr(i);
+            long currAddr = getAddress(index);
             
-            if(address == 0 ||      /* data at the given index is deleted by writer */ 
-               segInd == liveSegInd /* data at the given index is updated by writer */)
+            if(currAddr == 0 ||      /* data at the given index is deleted by writer */ 
+               currAddr != origAddr  /* data at the given index is updated by writer */)
             {
                 /*
                  * The address generated by the compactor is obsolete.
@@ -130,7 +111,7 @@ public class SimpleDataArray implements DataArray, Persistable
             else
             {
                 /*
-                 * The address generated by the compactor is not updated by the writer.
+                 * The address generated by the compactor has not been touched by the writer.
                  * Update the address array directly.
                  */ 
                 setCompactionAddress(index, updateBatch.getUpdateDataAddr(i), updateBatch.getLWMark());
@@ -145,11 +126,37 @@ public class SimpleDataArray implements DataArray, Persistable
                   " bytes " + totalConsumeBytes + "/" + totalUpdateBytes);
         
         // Update segment load size
-        segTarget.incrLoadSize(totalConsumeBytes);
+        segTarget.decrLoadSize(totalIgnoreBytes);
         _log.info("Segment " + segTarget.getSegmentId() + " catchup " + segTarget.getStatus());
     }
     
-    protected void consumeCompaction()
+    protected boolean consumeCompactionBatch()
+    {
+        /*
+         * Consume one compaction update batch generated by the compactor.
+         */
+        CompactionUpdateBatch updateBatch = _compactor.pollCompactionBatch();
+        if(updateBatch != null)
+        {
+            try
+            {
+                consumeCompaction(updateBatch);
+            }
+            catch (Exception e)
+            {
+                _log.error("failed to consume compaction batch " + updateBatch.getDescriptiveId(), e);
+            }
+            finally
+            {
+                _compactor.recycleCompactionBatch(updateBatch);
+            }
+            return true;
+        }
+        
+        return false;
+    }
+    
+    protected void consumeCompactionBatches()
     {
         while(true)
         {
@@ -170,16 +177,17 @@ public class SimpleDataArray implements DataArray, Persistable
             }
         }
         
-        while(!_compactedSegmentQueue.isEmpty())
+        ConcurrentLinkedQueue<Segment> queue = _compactor.getCompactedQueue();
+        while(!queue.isEmpty())
         {
-            Segment seg = _compactedSegmentQueue.remove();
+            Segment seg = queue.remove();
             try
             {
                 _segmentManager.freeSegment(seg);
             }
             catch(IOException e)
             {
-                _log.error("failed to recycle Segment " + seg.getSegmentId() + ": " + seg.getStatus(), e);
+                _log.error("failed to free Segment " + seg.getSegmentId() + ": " + seg.getStatus(), e);
             }
         }
     }
@@ -188,33 +196,16 @@ public class SimpleDataArray implements DataArray, Persistable
     {
         try
         {
+            _metaUpdateOnAppendPosition = Segment.dataStartPosition;
             _segment = _segmentManager.nextSegment();
+            _compactor.startsCycle();
+            
             _log.info("Segment " + _segment.getSegmentId() + " online: " + _segment.getStatus());
         }
         catch(IOException ioe)
         {
             _log.error(ioe.getMessage(), ioe);
             throw new SegmentException("Instantiation failed due to " + ioe.getMessage());
-        }
-    }
-    
-    protected void updateCompactTriggerBounds()
-    {
-        long size = getCurrentSegment().getInitialSize();
-        long incr = (long)(size * 0.05);
-        
-        long compactTriggerLowerPosition = (long)(size * getSegmentCompactTrigger());
-        _segmentCompactTriggerLowerPosition = compactTriggerLowerPosition - incr;
-        _segmentCompactTriggerUpperPosition = compactTriggerLowerPosition + incr;
-        
-        if(_segmentCompactTriggerLowerPosition < Segment.dataStartPosition)
-        {
-            _segmentCompactTriggerLowerPosition = Segment.dataStartPosition;
-        }
-        
-        if(_segmentCompactTriggerUpperPosition > size)
-        {
-            _segmentCompactTriggerUpperPosition = size;
         }
     }
     
@@ -241,11 +232,6 @@ public class SimpleDataArray implements DataArray, Persistable
     protected double getSegmentCompactFactor()
     {
         return _segmentCompactFactor;
-    }
-    
-    protected double getSegmentCompactTrigger()
-    {
-        return _segmentCompactTrigger;
     }
     
     protected SegmentManager getSegmentManager()
@@ -280,30 +266,48 @@ public class SimpleDataArray implements DataArray, Persistable
         catch(IndexOutOfBoundsException e2) {}
     }
     
-    private final void flowControl()
+    private final void doThrottling(int lastWriteSize)
     {
-        Segment liveSegment = _segment;
-        if(liveSegment == null)
+        Segment writerSegment = _segment;
+        if(writerSegment == null)
         {
             return;
         }
         
-        Segment compactSegment = getSegmentManager().getCurrentSegment();
-        if(compactSegment == null || compactSegment == liveSegment)
+        Segment compactorTarget = _compactor.getTargetSegment();
+        if(compactorTarget == null || compactorTarget == writerSegment)
         {
             return;
         }
         
         /*
-         * Slow down the writer for 0.2 milliseconds so that the compactor has a chance to catch up.
+         * Slow down the writer so that the compactor has a chance to catch up.
          */
-        if(compactSegment.getLoadSize() < liveSegment.getLoadSize()) 
+        int writerLoadSize = writerSegment.getLoadSize();
+        int targetLoadSize = compactorTarget.getLoadSize();
+        if (targetLoadSize < writerLoadSize) 
         {
-            try
+            final long totalWait = 1; // milliseconds
+            final long startTime = System.currentTimeMillis();
+            targetLoadSize += (targetLoadSize == 0 ?
+                                 (lastWriteSize * 2) :
+                                 (int)((double)writerLoadSize / targetLoadSize * lastWriteSize));
+            
+            while(compactorTarget.getLoadSize() < targetLoadSize)
             {
-                Thread.sleep(0, 200000);
+                // Sleep 0.2 milliseconds only if no compaction batch was consumed
+                if(!consumeCompactionBatch()) {
+                    try {
+                        Thread.sleep(0 /* milliseconds */, 200000 /* nanoseconds */);
+                    } catch(Exception e) {}
+                }
+                
+                long elapsedTime = System.currentTimeMillis() - startTime; 
+                if (elapsedTime >= totalWait) {
+                    _log.info("throttle " + elapsedTime + " ms");
+                    return;
+                }
             }
-            catch(Exception e) {}
         }
     }
     
@@ -364,6 +368,7 @@ public class SimpleDataArray implements DataArray, Persistable
         }
         catch(Exception e)
         {
+            _log.warn(e.getMessage(), e);
             return -1;
         }
     }
@@ -407,6 +412,7 @@ public class SimpleDataArray implements DataArray, Persistable
         }
         catch(Exception e)
         {
+            _log.warn(e.getMessage(), e);
             return null;
         }
     }
@@ -467,6 +473,7 @@ public class SimpleDataArray implements DataArray, Persistable
         }
         catch(Exception e)
         {
+            _log.warn(e.getMessage(), e);
             return -1;
         }
     }
@@ -598,56 +605,16 @@ public class SimpleDataArray implements DataArray, Persistable
                     _metaUpdateOnAppendPosition = _segment.getInitialSize();
                 }
                 
-                /* ******************************************************************************
-                 * Trigger segment compaction (BEGIN)
-                 */
-                
-                // current segment can trigger compaction once and only once
-                if (_canTriggerCompaction &&
-                    pos > _segmentCompactTriggerLowerPosition &&
-                    pos < _segmentCompactTriggerUpperPosition )
-                {
-                    // start the compactor
-                    if(!_compactor.isStarted())
-                    {
-                        _log.info("Segment " + _segment.getSegmentId() + " triggered compaction");
-                        _canTriggerCompaction = false;
-                        _compactor.start();
-                    }
-                }
-                
                 if(_compactor.isStarted())
                 {
-                    /*
-                     * Consume one compaction update batch generated by the compactor.
-                     */
-                    CompactionUpdateBatch updateBatch = _compactor.pollCompactionBatch();
-                    if(updateBatch != null)
-                    {
-                        try
-                        {
-                            consumeCompaction(updateBatch);
-                        }
-                        catch (Exception e)
-                        {
-                            _log.error("failed to consume compaction batch " + updateBatch.getDescriptiveId(), e);
-                        }
-                        finally
-                        {
-                            _compactor.recycleCompactionBatch(updateBatch);
-                        }
-                    }
+                    consumeCompactionBatch();
                     
                     /*
-                     * Flow-control the writer and average-out write latency.
+                     * Throttle the writer to average-out write latency.
                      * Give the compactor a chance to catch up with the writer.
                      */
-                    flowControl();
+                    doThrottling(length + 4);
                 }
-                
-                /*
-                 * Trigger segment compaction (END)
-                 * ******************************************************************************/
                 
                 return;
             }
@@ -655,49 +622,78 @@ public class SimpleDataArray implements DataArray, Persistable
             {
                 _log.info("Segment " + _segment.getSegmentId() + " filled: " + _segment.getStatus());
                 
-                // wait until compactor is done
-                while(_compactor.isStarted())
-                {
-                    /*
-                     * Consume compaction update batches generated by the compactor.
-                     */
-                    CompactionUpdateBatch updateBatch = _compactor.pollCompactionBatch();
-                    if(updateBatch != null)
-                    {
-                        try
-                        {
-                            consumeCompaction(updateBatch);
-                        }
-                        catch (Exception e)
-                        {
-                            _log.error("failed to consume compaction batch " + updateBatch.getDescriptiveId(), e);
-                        }
-                        finally
-                        {
-                            _compactor.recycleCompactionBatch(updateBatch);
-                        }
-                    }
-                    
-                    _log.info("wait for compactor");
-                    Thread.sleep(10);
-                }
-                
-                // synchronize with the compactor
-                _compactor.lock();
-                try
+                Segment nextSegment = _compactor.peekTargetSegment();
+                if(nextSegment != null)
                 {
                     persist();
                     
                     // get the next segment available for appending
-                    _metaUpdateOnAppendPosition = Segment.dataStartPosition;
-                    _segment = _segmentManager.nextSegment(_segment);
-                    _canTriggerCompaction = true;
+                    _segment = nextSegment;
+                    _compactor.pollTargetSegment();
+                    _metaUpdateOnAppendPosition = _segment.getInitialSize();
                     
+                    _log.info("nextSegment from compactor");
                     _log.info("Segment " + _segment.getSegmentId() + " online: " + _segment.getStatus());
                 }
-                finally
+                else
                 {
-                    _compactor.unlock(); 
+                    if(_compactor.isStarted())
+                    {
+                        if(_compactor.getAndDecrementSegmentPermit())
+                        {
+                            _log.info("nextSegment permit granted");
+                            
+                            persist();
+                            
+                            // get the next segment available for appending
+                            _metaUpdateOnAppendPosition = Segment.dataStartPosition;
+                            _segment = _segmentManager.nextSegment();
+                            
+                            _log.info("Segment " + _segment.getSegmentId() + " online: " + _segment.getStatus());
+                        }
+                        else
+                        {
+                            _log.info("nextSegment permit refused");
+                            
+                            // wait until compactor is done
+                            while(_compactor.isStarted())
+                            {
+                                consumeCompactionBatch();
+                                
+                                _log.info("wait for compactor");
+                                Thread.sleep(10);
+                            }
+                            
+                            persist();
+                            
+                            // get the next segment available for appending
+                            _segment = _compactor.pollTargetSegment();
+                            if(_segment == null)
+                            {
+                                _segment = _segmentManager.nextSegment();
+                                _metaUpdateOnAppendPosition = Segment.dataStartPosition;
+                            }
+                            else
+                            {
+                                _metaUpdateOnAppendPosition = _segment.getInitialSize();
+                            }
+                            
+                            _log.info("Segment " + _segment.getSegmentId() + " online: " + _segment.getStatus());
+                        }
+                    }
+                    else
+                    {
+                        _log.info("nextSegment");
+                        
+                        persist();
+                        
+                        // get the next segment available for appending
+                        _metaUpdateOnAppendPosition = Segment.dataStartPosition;
+                        _segment = _segmentManager.nextSegment();
+                        _compactor.startsCycle();
+                        
+                        _log.info("Segment " + _segment.getSegmentId() + " online: " + _segment.getStatus());
+                    }
                 }
             }
             catch(Exception e)
@@ -744,7 +740,7 @@ public class SimpleDataArray implements DataArray, Persistable
     @Override
     public synchronized void sync() throws IOException
     {
-        consumeCompaction();
+        consumeCompactionBatches();
         
         /* CALLS ORDERED:
          * Need force _segment first and then persist _addressArray.
@@ -759,7 +755,7 @@ public class SimpleDataArray implements DataArray, Persistable
     @Override
     public synchronized void persist() throws IOException
     {
-        consumeCompaction();
+        consumeCompactionBatches();
         
         /* CALLS ORDERED:
          * Need force _segment first and then persist _addressArray.

@@ -38,7 +38,6 @@ public class DataCacheImpl implements DataCache
      * Constructs a data cache with default values below.
      * <pre>
      *    Segment File Size      : 256MB
-     *    Segment Compact Trigger: 0.1
      *    Segment Compact Factor : 0.5
      *    Redo entry size        : 10000
      *    Number of Redo Entries : 5
@@ -61,7 +60,6 @@ public class DataCacheImpl implements DataCache
     /**
      * Constructs a data cache with default values below.
      * <pre>
-     *    Segment Compact Trigger: 0.1
      *    Segment Compact Factor : 0.5
      *    Redo entry size        : 10000
      *    Number of Redo Entries : 5
@@ -87,7 +85,6 @@ public class DataCacheImpl implements DataCache
      * Constructs a data cache with default values below.
      * <pre>
      *    Segment File Size      : 256MB
-     *    Segment Compact Trigger: 0.1
      *    Segment Compact Factor : 0.5
      *    Redo entry size        : 10000
      *    Number of Redo Entries : 5
@@ -111,7 +108,6 @@ public class DataCacheImpl implements DataCache
     /**
      * Constructs a data cache with default values below.
      * <pre>
-     *    Segment Compact Trigger: 0.1
      *    Segment Compact Factor : 0.5
      *    Redo Entry Size        : 10000
      *    Number of redo entries : 5
@@ -135,7 +131,7 @@ public class DataCacheImpl implements DataCache
     }
     
     /**
-     * Constructs a data cache with Segment Compact Trigger default to 0.1 and Segment Compact Factor default to 0.5.
+     * Constructs a data cache with Segment Compact Factor default to 0.5.
      * 
      * @param memberIdStart          Start of memberId
      * @param memberIdCount          Total of memberId(s)
@@ -197,7 +193,6 @@ public class DataCacheImpl implements DataCache
      * @param cacheDirectory         Cache directory where persistent data will be stored
      * @param segmentFactory         Factory for creating Segment(s)
      * @param segmentFileSizeMB      Segment size in MB
-     * @param segmentCompactTrigger  Percentage of segment capacity, which triggers compaction once per segment
      * @param segmentCompactFactor   Load factor of segment, below which a segment is eligible for compaction
      * @param checked                whether to apply default checksum (Adler32) to ensure data integrity
      * @throws Exception
@@ -209,7 +204,6 @@ public class DataCacheImpl implements DataCache
                          File cacheDirectory,
                          SegmentFactory segmentFactory,
                          int segmentFileSizeMB,
-                         double segmentCompactTrigger,
                          double segmentCompactFactor,
                          boolean checked) throws Exception
     {
@@ -234,11 +228,11 @@ public class DataCacheImpl implements DataCache
         
         if (checked)
         {
-            _dataArray = new CheckedDataArray(addressArray, segManager, segmentCompactTrigger, segmentCompactFactor);
+            _dataArray = new CheckedDataArray(addressArray, segManager, segmentCompactFactor);
         }
         else
         {
-            _dataArray = new SimpleDataArray(addressArray, segManager, segmentCompactTrigger, segmentCompactFactor);
+            _dataArray = new SimpleDataArray(addressArray, segManager, segmentCompactFactor);
         }
         
         _log.info("DataCache initiated: " + getStatus());

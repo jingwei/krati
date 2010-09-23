@@ -1,21 +1,26 @@
 package krati.core.array;
 
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.log4j.Logger;
 
 import krati.core.segment.AddressFormat;
+import krati.core.segment.MemorySegment;
 import krati.core.segment.Segment;
 import krati.core.segment.SegmentManager;
+import krati.util.Chronos;
 
 /**
  * SimpleDataArray Compactor.
@@ -34,7 +39,7 @@ import krati.core.segment.SegmentManager;
 class SimpleDataArrayCompactor implements Runnable
 {
     private final static Logger _log = Logger.getLogger(SimpleDataArrayCompactor.class);
-    
+    private final ExecutorService _executor = Executors.newFixedThreadPool(1);
     private final SimpleDataArray _dataArray;
     private volatile double _compactLoadFactor;
     private volatile State _state = State.DONE;
@@ -42,9 +47,13 @@ class SimpleDataArrayCompactor implements Runnable
     /**
      * Reclaim segments in _segSourceList and transfer their content to _segTarget.
      */
-    private Segment _segTarget;
-    private long _segTargetAppendPosition;
+    private volatile Segment _segTarget;
     private final ArrayList<Segment> _segSourceList;
+    
+    /**
+     * Lock for synchronizing compactor executions.
+     */
+    private final ReentrantLock _lock = new ReentrantLock();
     
     /**
      * Manage compaction updates that will be consumed by the writer.
@@ -52,9 +61,31 @@ class SimpleDataArrayCompactor implements Runnable
     private final CompactionUpdateManager _updateManager;
     
     /**
-     * Lock for synchronizing compactor executions.
+     * The writer signals the compactor to start a new compaction cycle. 
      */
-    private final ReentrantLock _lock = new ReentrantLock();
+    private final AtomicBoolean _newCycle = new AtomicBoolean(false);
+    
+    /**
+     * Blocking queue for the compactor to send the writer the target segment as nextSegment. 
+     */
+    private final ArrayBlockingQueue<Segment> _targetQueue =
+        new ArrayBlockingQueue<Segment>(1);
+    
+    /**
+     * Queue for segments compacted successfully by the compactor. 
+     */
+    private final ConcurrentLinkedQueue<Segment> _compactedQueue =
+        new ConcurrentLinkedQueue<Segment>();
+    
+    /**
+     * Permits for the writer to get next segment without being blocked.
+     */
+    private final AtomicInteger _segPermits = new AtomicInteger(0);
+    
+    /**
+     * A byte buffer from transferring bytes to a target segment. 
+     */
+    private ByteBuffer _buffer = null;
     
     /**
      * Constructs a DataArrayCompactor with the setting below:
@@ -125,11 +156,12 @@ class SimpleDataArrayCompactor implements Runnable
     private boolean inspect() throws IOException
     {
         SegmentManager segManager = _dataArray.getSegmentManager();
-        Segment segCurrent = _dataArray.getCurrentSegment();
         if(segManager == null) return false;
         
         synchronized(segManager)
         {
+            Segment segCurrent = _dataArray.getCurrentSegment();
+            
             /*
              * Find source segments that are least loaded.
              * The source segments must be in the READ_ONLY mode.
@@ -149,7 +181,11 @@ class SimpleDataArrayCompactor implements Runnable
             }
             
             // No segment need compaction
-            if (recycleList.size() == 0) return false;
+            if (recycleList.size() == 0)
+            {
+                _segPermits.set(0);
+                return false;
+            }
             
             // Sort recycleList in ascending order of load size
             Collections.sort(recycleList, _segmentLoadCmp);
@@ -183,6 +219,7 @@ class SimpleDataArrayCompactor implements Runnable
                 _log.info("Segment " + seg.getSegmentId() + " load factor=" + ((long)(seg.getLoadFactor() * 10000) / 10000.0));
             }
             
+            _segPermits.set(_segSourceList.size() - 1);
             _log.info("inspect done");
             return true;
         }
@@ -197,18 +234,11 @@ class SimpleDataArrayCompactor implements Runnable
         try
         {
             _segTarget = _dataArray.getSegmentManager().nextSegment();
-            _segTargetAppendPosition = _segTarget.getAppendPosition();
-            
-            /* NOTE:
-             * From here, getAppendPosition() is not reliable for the compactor.
-             * This is because the writer updates appendPosition asynchronously.
-             */
-            
             for(Segment seg : _segSourceList)
             {
                 if(compact(seg, _segTarget))
                 {
-                    _dataArray._compactedSegmentQueue.add(seg);
+                    _compactedQueue.add(seg);
                 }
                 else
                 {
@@ -216,7 +246,8 @@ class SimpleDataArrayCompactor implements Runnable
                 }
             }
             
-            _log.info("bytes transferred to   " + _segTarget.getSegmentId() + ": " + (_segTargetAppendPosition  - Segment.dataStartPosition));
+            _targetQueue.add(_segTarget);
+            _log.info("bytes transferred to   " + _segTarget.getSegmentId() + ": " + (_segTarget.getAppendPosition() - Segment.dataStartPosition));
         }
         catch(Exception e)
         {
@@ -228,19 +259,18 @@ class SimpleDataArrayCompactor implements Runnable
         return true;
     }
     
-    private boolean compact(Segment segSource, Segment segTarget) throws IOException
+    private boolean compact(Segment segment, Segment segTarget) throws IOException
     {
-        RandomAccessFile raf;
+        Segment segSource = segment; 
         int segSourceId = segSource.getSegmentId();
         int segTargetId = segTarget.getSegmentId();
         
-        // Get write channel
-        raf = new RandomAccessFile(segTarget.getSegmentFile(), "rw");
-        FileChannel writeChannel = raf.getChannel();
-        
-        // Cannot use segTarget.getAppendPosition() as the writer and compactor work asynchronously.
-        // Position write channel properly
-        writeChannel.position(_segTargetAppendPosition);
+        Chronos c = new Chronos();
+        if(!segment.canReadFromBuffer() && segment.getLoadFactor() > 0.1)
+        {
+            segSource = new BufferedSegment(segment, getByteBuffer((int)segment.getInitialSize()));
+            _log.info("buffering time: " + c.tick() + " ms");
+        }
         
         long sizeLimit = segTarget.getInitialSize();
         long bytesTransferred = 0;
@@ -261,77 +291,90 @@ class SimpleDataArrayCompactor implements Runnable
                 {
                     if(length == 0) length = segSource.readInt(oldSegPos);
                     int byteCnt = 4 + length;
-                    long newSegPos = writeChannel.position();
+                    long newSegPos = segTarget.getAppendPosition();
                     long newAddress = addrFormat.composeAddress((int)newSegPos, segTargetId, length);
                     
-                    if(writeChannel.position() + byteCnt >= sizeLimit)
+                    if(segTarget.getAppendPosition() + byteCnt >= sizeLimit)
                     {
                         succ = false;
                         break;
                     }
                     
                     // Transfer bytes from source to target
-                    segSource.transferTo(oldSegPos, byteCnt, writeChannel);
+                    segSource.transferTo(oldSegPos, byteCnt, segTarget);
                     bytesTransferred += byteCnt;
                     
-                    _updateManager.addUpdate(index, byteCnt, newAddress, segTarget, writeChannel);
+                    _updateManager.addUpdate(index, byteCnt, newAddress, oldAddress, segTarget);
                 }
             }
             
             // Push whatever left into update queue
-            _segTargetAppendPosition += bytesTransferred;
-            _updateManager.endUpdate(segTarget, writeChannel);
-            _log.info("bytes transferred from " + segSource.getSegmentId() + ": " + bytesTransferred);
+            _updateManager.endUpdate(segTarget);
+            _log.info("bytes transferred from " + segSource.getSegmentId() + ": " + bytesTransferred + " time: " + c.tick() + " ms");
             
-            // Close write channel
-            writeChannel.force(true);
-            writeChannel.close();
-            writeChannel = null;
-            
+            segTarget.force();
             return succ;
         }
         finally
         {
-            if(writeChannel != null) writeChannel.close();
+            if(segSource.getClass() == BufferedSegment.class)
+            {
+                segSource.close(false);
+                segSource = null;
+            }
         }
     }
     
     @Override
     public void run()
     {
-        // One and only one compactor is at work.
-        _lock.lock();
-        
-        try
+        while(true)
         {
-            reset();
-            _state = State.INIT;
-            _log.info("compaction started");
-            
-            // Inspect the array
-            if(!inspect()) return;
-            
-            // Compact the array
-            if(!compact()) return;
-        }
-        catch(Exception e)
-        {
-            e.printStackTrace(System.err);
-            _log.error("failed to compact: " + e.getMessage());
-        }
-        finally
-        {
-            reset();
-            _state = State.DONE;
-            _log.info("compaction ended");
-            _lock.unlock();
+            if(_newCycle.compareAndSet(true, false))
+            {
+                // One and only one compactor is at work.
+                _lock.lock();
+                
+                try
+                {
+                    reset();
+                    _state = State.INIT;
+                    _log.info("cycle started");
+                    
+                    // Inspect the array
+                    if(!inspect()) continue;
+                    
+                    // Compact the array
+                    if(!compact()) continue;
+                }
+                catch(Exception e)
+                {
+                    e.printStackTrace(System.err);
+                    _log.error("failed to compact: " + e.getMessage());
+                }
+                finally
+                {
+                    reset();
+                    _state = State.DONE;
+                    _log.info("cycle ended");
+                    _lock.unlock();
+                }
+            }
+            else
+            {
+                try
+                {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    _log.warn(e.getMessage());
+                }
+            }
         }
     }
     
-    public void start() throws InterruptedException
+    final void start()
     {
-        _state = State.INIT;
-        new Thread(this).start();
+        _executor.execute(this);
     }
     
     public boolean isStarted()
@@ -342,18 +385,19 @@ class SimpleDataArrayCompactor implements Runnable
     protected void reset()
     {
         _segTarget = null;
+        _segPermits.set(0);
         _segSourceList.clear();
         _updateManager.clear();
     }
     
-    protected void lock()
+    protected Segment peekTargetSegment()
     {
-        _lock.lock();
+        return _targetQueue.peek();
     }
     
-    protected void unlock()
+    protected Segment pollTargetSegment()
     {
-        _lock.unlock();
+        return _targetQueue.poll();
     }
     
     protected CompactionUpdateBatch pollCompactionBatch()
@@ -366,7 +410,39 @@ class SimpleDataArrayCompactor implements Runnable
         return _updateManager.recycleBatch(batch);
     }
     
-    static enum State {
+    protected ByteBuffer getByteBuffer(int bufferLength)
+    {
+        if(_buffer == null)
+        {
+            _buffer = ByteBuffer.wrap(new byte[bufferLength]);
+            _log.info("ByteBuffer allocated for buffering");
+        }
+        
+        return _buffer;
+    }
+    
+    final ConcurrentLinkedQueue<Segment> getCompactedQueue()
+    {
+        return _compactedQueue;
+    }
+    
+    final boolean getAndDecrementSegmentPermit()
+    {
+        return _segPermits.getAndDecrement() > 0;
+    }
+    
+    final Segment getTargetSegment()
+    {
+        return _segTarget;
+    }
+    
+    final void startsCycle()
+    {
+        _newCycle.set(true);
+    }
+    
+    static enum State
+    {
         INIT,
         DONE;
     }
@@ -376,12 +452,14 @@ class SimpleDataArrayCompactor implements Runnable
         int _index;
         int _dataSize;
         long _dataAddr;
+        long _origAddr;
         
-        CompactionUpdate(int index, int dataSize, long dataAddr)
+        CompactionUpdate(int index, int dataSize, long dataAddr, long origAddr)
         {
             this._index = index;
             this._dataSize = dataSize;
             this._dataAddr = dataAddr;
+            this._origAddr = origAddr;
         }
         
         public String toString()
@@ -389,12 +467,14 @@ class SimpleDataArrayCompactor implements Runnable
             StringBuffer buf = new StringBuffer();
             
             buf.append(getClass().getSimpleName());
-            buf.append("{_index=");
+            buf.append("{index=");
             buf.append(_index);
-            buf.append(", _dataSize=");
+            buf.append(",  dataSize=");
             buf.append(_dataSize);
-            buf.append(", _address=");
+            buf.append(",  dataAddr=");
             buf.append(_dataAddr);
+            buf.append(",  origAddr=");
+            buf.append(_origAddr);
             buf.append("}");
             
             return buf.toString();
@@ -406,7 +486,7 @@ class SimpleDataArrayCompactor implements Runnable
         static int _counter = 0;
         final int _batchId;
         final int _capacity;
-        final int _unitSize = 16;
+        final int _unitSize = 24;
         final ByteBuffer _buffer;
         
         Segment _segTarget = null;
@@ -481,11 +561,12 @@ class SimpleDataArrayCompactor implements Runnable
             return _segTarget;
         }
         
-        public void add(int index, int dataSize, long dataAddr)
+        public void add(int index, int dataSize, long dataAddr, long origAddr)
         {
             _buffer.putInt(index);
             _buffer.putInt(dataSize);
             _buffer.putLong(dataAddr);
+            _buffer.putLong(origAddr);
             _dataSizeTotal += dataSize;
         }
         
@@ -493,22 +574,28 @@ class SimpleDataArrayCompactor implements Runnable
         {
             return new CompactionUpdate(getUpdateIndex(i),
                                         getUpdateDataSize(i),
-                                        getUpdateDataAddr(i));
+                                        getUpdateDataAddr(i),
+                                        getOriginDataAddr(i));
         }
         
         public int getUpdateIndex(int i)
         {
-            return _buffer.getInt(i << 4);
+            return _buffer.getInt(i * _unitSize);
         }
         
         public int getUpdateDataSize(int i)
         {
-            return _buffer.getInt((i << 4) + 4);
+            return _buffer.getInt((i * _unitSize) + 4);
         }
         
         public long getUpdateDataAddr(int i)
         {
-            return _buffer.getLong((i << 4) + 8);
+            return _buffer.getLong((i * _unitSize) + 8);
+        }
+        
+        public long getOriginDataAddr(int i)
+        {
+            return _buffer.getLong((i * _unitSize) + 16);
         }
         
         public int getDataSizeTotal()
@@ -583,15 +670,15 @@ class SimpleDataArrayCompactor implements Runnable
             return _recycleBatchQueue.add(batch);
         }
         
-        public void addUpdate(int index, int dataSize, long dataAddr, Segment segTarget, FileChannel writeChannel) throws IOException
+        public void addUpdate(int index, int dataSize, long dataAddr, long origAddr, Segment segTarget) throws IOException
         {
             try
             {
-                _batch.add(index, dataSize, dataAddr);
+                _batch.add(index, dataSize, dataAddr, origAddr);
             }
             catch(BufferOverflowException e)
             {
-                writeChannel.force(true);
+                segTarget.force();
                 _batch.setTargetSegment(segTarget);
                 _batch.setLWMark(_dataArray.getLWMark());
                 _log.info("compaction batch " + _batch.getDescriptiveId() + " hwMark=" + _batch.getLWMark());
@@ -600,13 +687,13 @@ class SimpleDataArrayCompactor implements Runnable
                 nextBatch();
                 
                 // Add compaction update to new batch
-                _batch.add(index, dataSize, dataAddr);
+                _batch.add(index, dataSize, dataAddr, origAddr);
             }
         }
         
-        public void endUpdate(Segment segTarget, FileChannel writeChannel) throws IOException
+        public void endUpdate(Segment segTarget) throws IOException
         {
-            writeChannel.force(true);
+            segTarget.force();
             _batch.setTargetSegment(segTarget);
             _batch.setLWMark(_dataArray.getLWMark());
             _log.info("compaction batch " + _batch.getDescriptiveId() + " hwMark=" + _batch.getLWMark());
@@ -621,6 +708,28 @@ class SimpleDataArrayCompactor implements Runnable
             _batchServiceIdCounter = 0;
             _batch.clear();
             _batch.setServiceId(_batchServiceIdCounter++);
+        }
+    }
+    
+    static class BufferedSegment extends MemorySegment {
+        private ByteBuffer _byteBuffer = null;
+        
+        public BufferedSegment(Segment segment, ByteBuffer buffer) throws IOException {
+            super(segment.getSegmentId(), segment.getSegmentFile(), segment.getInitialSizeMB(), segment.getMode());
+            this._byteBuffer = buffer;
+            this.init();
+        }
+        
+        @Override
+        protected void init() throws IOException {
+            if(_byteBuffer == null) return;
+            super.init();
+        }
+        
+        @Override
+        protected ByteBuffer initByteBuffer() {
+            _byteBuffer.clear();
+            return _byteBuffer;
         }
     }
 }

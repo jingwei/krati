@@ -65,9 +65,9 @@ public class StoreTestStringDriver<S> implements StoreTestDriver
             }
             
             elapsedTime = System.currentTimeMillis() - startTime;
-            if(elapsedTime > 600000L)
+            if(elapsedTime > 60000L)
             {
-                StatsLog.logger.info("Quit: running time is over 600000 ms");
+                StatsLog.logger.info("Quit: running time is over 60000 ms");
                 break;
             }
         }

@@ -110,7 +110,7 @@ public class ChannelSegment extends AbstractSegment
             bb.putInt(value);
             bb.flip();
             _channel.write(bb);
-            _loadSizeBytes += 4;
+            incrLoadSize(4);
             return pos;
         }
         catch(BufferOverflowException boe)
@@ -140,7 +140,7 @@ public class ChannelSegment extends AbstractSegment
             bb.putLong(value);
             bb.flip();
             _channel.write(bb);
-            _loadSizeBytes += 8;
+            incrLoadSize(8);
             return pos;
         }
         catch(BufferOverflowException boe)
@@ -170,7 +170,7 @@ public class ChannelSegment extends AbstractSegment
             bb.putShort(value);
             bb.flip();
             _channel.write(bb);
-            _loadSizeBytes += 2;
+            incrLoadSize(2);
             return pos;
         }
         catch(BufferOverflowException boe)
@@ -198,7 +198,7 @@ public class ChannelSegment extends AbstractSegment
             
             ByteBuffer bb = ByteBuffer.wrap(data);
             _channel.write(bb);
-            _loadSizeBytes += data.length;
+            incrLoadSize(data.length);
             return pos;
         }
         catch(BufferOverflowException boe)
@@ -226,7 +226,7 @@ public class ChannelSegment extends AbstractSegment
             
             ByteBuffer bb = ByteBuffer.wrap(data, offset, length);
             _channel.write(bb);
-            _loadSizeBytes += length;
+            incrLoadSize(length);
             return pos;
         }
         catch(BufferOverflowException boe)
@@ -275,9 +275,24 @@ public class ChannelSegment extends AbstractSegment
     }
     
     @Override
-    public long transferTo(long pos, int length, WritableByteChannel targetChannel) throws IOException
+    public int transferTo(int pos, int length, Segment targetSegment) throws IOException
     {
-        return _channel.transferTo(pos, length, targetChannel);
+        if((pos + length) <= _initSizeBytes)
+        {
+            byte[] dst = new byte[length];
+            this.read(pos, dst);
+            
+            targetSegment.append(dst);
+            return length;
+        }
+        
+        throw new SegmentOverflowException(this, SegmentOverflowException.Type.READ_OVERFLOW);
+    }
+    
+    @Override
+    public int transferTo(int pos, int length, WritableByteChannel targetChannel) throws IOException
+    {
+        return (int)_channel.transferTo(pos, length, targetChannel);
     }
     
     @Override
@@ -330,14 +345,26 @@ public class ChannelSegment extends AbstractSegment
     }
     
     @Override
+    public void reinit() throws IOException, UnsupportedOperationException
+    {
+        throw new UnsupportedOperationException("reinit not supported");
+    }
+    
+    @Override
     public boolean isRecyclable()
     {
         return false;
     }
     
     @Override
-    public void reinit() throws IOException, UnsupportedOperationException
+    public boolean canReadFromBuffer()
     {
-        throw new UnsupportedOperationException("reinit not supported");
+        return false;
+    }
+    
+    @Override
+    public boolean canAppendToBuffer()
+    {
+        return false;
     }
 }
