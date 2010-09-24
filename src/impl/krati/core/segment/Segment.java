@@ -108,8 +108,6 @@ public interface Segment
     
     public void asReadOnly() throws IOException;
     
-    public void load() throws IOException;
-    
     public void force() throws IOException;
     
     public void close(boolean force) throws IOException;

@@ -297,23 +297,6 @@ public class MemorySegment extends AbstractSegment
     }
     
     @Override
-    public synchronized void load() throws IOException
-    {
-        int currentPosition = _buffer.position();
-        int channelPosition = (int)_channel.position();
-        
-        // load into memory buffer
-        if(channelPosition < currentPosition)
-        {
-            _channel.read(ByteBuffer.wrap(_buffer.array(), channelPosition, currentPosition - channelPosition));
-        }
-        
-        // restore position
-        _buffer.position(currentPosition);
-        _channel.position(currentPosition);
-    }
-    
-    @Override
     public synchronized void force() throws IOException
     {
         if(getMode() == Segment.Mode.READ_WRITE)

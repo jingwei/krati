@@ -307,9 +307,6 @@ public class ChannelSegment extends AbstractSegment
     }
     
     @Override
-    public synchronized void load() throws IOException {}
-    
-    @Override
     public synchronized void force() throws IOException
     {
         if(getMode() == Segment.Mode.READ_WRITE)

@@ -275,9 +275,6 @@ public class MappedSegment extends AbstractSegment
     }
     
     @Override
-    public synchronized void load() throws IOException {}
-    
-    @Override
     public synchronized void force()
     {
         if(getMode() == Segment.Mode.READ_WRITE)
