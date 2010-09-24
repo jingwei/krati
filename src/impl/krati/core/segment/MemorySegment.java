@@ -359,7 +359,6 @@ public class MemorySegment extends AbstractSegment
     public synchronized void reinit() throws IOException
     {
         _buffer.clear();
-        _loadSizeBytes = 0;
         _segMode = Segment.Mode.READ_WRITE;
         
         if (!getSegmentFile().exists())

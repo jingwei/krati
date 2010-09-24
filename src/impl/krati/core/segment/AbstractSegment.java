@@ -18,13 +18,18 @@ public abstract class AbstractSegment implements Segment
     protected final File _segFile;
     protected final int _initSizeMB;
     protected final long _initSizeBytes;
-    protected volatile int _loadSizeBytes;
     protected volatile long _lastForcedTime;
     protected volatile Segment.Mode _segMode;
     protected RandomAccessFile _raf = null;
     protected FileChannel _channel = null;
-    
     protected long _storageVersion;
+    
+    /**
+     * Methods {@link #decrLoadSize(int)} and {@link #incrLoadSize(int)} are not synchronized
+     * as they modify two different fields.
+     */
+    private volatile int _incrLoadSize = 0;
+    private volatile int _decrLoadSize = 0;
     
     protected AbstractSegment(int segmentId, File segmentFile, int initialSizeMB, Segment.Mode mode) throws IOException
     {
@@ -40,6 +45,9 @@ public abstract class AbstractSegment implements Segment
     
     protected void initHeader() throws IOException
     {
+        _incrLoadSize = 0;
+        _decrLoadSize = 0;
+        
         // update the time stamp of segment
         _lastForcedTime = System.currentTimeMillis();
         _storageVersion = Segment.STORAGE_VERSION;
@@ -171,25 +179,39 @@ public abstract class AbstractSegment implements Segment
     @Override
     public final double getLoadFactor()
     {
-       return ((double)_loadSizeBytes) / _initSizeBytes;
+       return ((double)getLoadSize()) / _initSizeBytes;
     }
 
     @Override
     public final int getLoadSize()
     {
-        return _loadSizeBytes;
-    }
-
-    @Override
-    public final synchronized void incrLoadSize(int byteCnt)
-    {
-        _loadSizeBytes += byteCnt;
+        return (_incrLoadSize - _decrLoadSize);
     }
     
+    /**
+     * Increases the load size.
+     * 
+     * This method is not synchronized. This is because that the writer and compactor 
+     * never write (i.e. append) data to the same segment. Consequently this method is
+     * never concurrently called by the writer and compactor on the same segment. 
+     */
     @Override
-    public final synchronized void decrLoadSize(int byteCnt)
+    public final void incrLoadSize(int byteCnt)
     {
-        _loadSizeBytes -= byteCnt;
+        _incrLoadSize += byteCnt;
+    }
+    
+    /**
+     * Decreases the load size.
+     * 
+     * This method is not synchronized. This because that the writer is the only
+     * thread calling this method on Segment(s) and the compact should never call
+     * this method.
+     */
+    @Override
+    public final void decrLoadSize(int byteCnt)
+    {
+        _decrLoadSize += byteCnt;
     }
     
     @Override

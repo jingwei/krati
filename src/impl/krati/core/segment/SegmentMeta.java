@@ -13,7 +13,7 @@ import org.apache.log4j.Logger;
  * SegmentMeta: Meta Data for Segments
  * 
  * <pre>
- *          WORKING-SECTION  COMPACT-SECTION
+ *          PREVIOUS-SECTION CURRENT-SECTION
  *          
  *          SEGGEN  SEGLOAD  SEGGEN  SEGLOAD
  * 00000000    5       ?        6       ?
@@ -235,7 +235,7 @@ public class SegmentMeta
             Segment seg = segmentManager.getSegment(index);
             if(seg != null)
             {
-                if(seg.getLoadSize() > Segment.dataStartPosition)
+                if(seg.getLoadSize() > 0)
                 {
                     // Segment populated with data
                     writeInt(pos, LIVE_SEGMENT);
