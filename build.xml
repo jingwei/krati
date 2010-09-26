@@ -74,7 +74,7 @@
       <delete dir="${test.build.dir}"/>
     </target>
     
-    <target name="init" depends="resolve">
+    <target name="init">
         <mkdir dir="${logs.dir}"/>
         <mkdir dir="${build.dir}"/>
         <mkdir dir="${classes.dir}"/>

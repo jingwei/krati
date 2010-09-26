@@ -1,6 +1,7 @@
 package krati.core.array;
 
 /**
+ * DataCorruptionException.
  * 
  * @author jwu
  *

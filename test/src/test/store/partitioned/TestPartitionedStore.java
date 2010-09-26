@@ -24,7 +24,9 @@ public class TestPartitionedStore extends EvalDataStore
     protected DataStore<byte[], byte[]> getDataStore(File storeDir) throws Exception
     {
         int partitionCapacity = _idCount/5;
-        return new PartitionedDataStore(storeDir, 5, partitionCapacity);
+        return new PartitionedDataStore(storeDir, 5, partitionCapacity,
+                                        new krati.core.segment.MappedSegmentFactory(),
+                                        _segFileSizeMB);
     }
     
     public void testPartitionedStore() throws Exception

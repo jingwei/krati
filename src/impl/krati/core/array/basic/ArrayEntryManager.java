@@ -308,7 +308,7 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable
     {
       if(_persistListener != null)
       {
-        _persistListener.priorPersisting(_entry);
+        _persistListener.beforePersist(_entry);
       }
       
       // Create entry log and persist in-memory data
@@ -317,7 +317,7 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable
       
       if(_persistListener != null)
       {
-        _persistListener.afterPersisting(_entry);
+        _persistListener.afterPersist(_entry);
       }
       
       // Advance low water mark to maintain progress record

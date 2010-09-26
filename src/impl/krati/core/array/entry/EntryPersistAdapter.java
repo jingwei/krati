@@ -5,8 +5,8 @@ import java.io.IOException;
 public class EntryPersistAdapter implements EntryPersistListener
 {
     @Override
-    public void priorPersisting(Entry<? extends EntryValue> e) throws IOException {}
+    public void beforePersist(Entry<? extends EntryValue> e) throws IOException {}
     
     @Override
-    public void afterPersisting(Entry<? extends EntryValue> e) throws IOException {}
+    public void afterPersist(Entry<? extends EntryValue> e) throws IOException {}
 }

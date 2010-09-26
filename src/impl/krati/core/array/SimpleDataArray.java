@@ -778,7 +778,7 @@ public class SimpleDataArray implements DataArray, Persistable
     
     private class SegmentPersistListener extends EntryPersistAdapter
     {
-        public void priorPersisting(Entry<? extends EntryValue> e) throws IOException
+        public void beforePersist(Entry<? extends EntryValue> e) throws IOException
         {
             if(_segment != null)
             {
@@ -786,7 +786,7 @@ public class SimpleDataArray implements DataArray, Persistable
             }
         }
         
-        public void afterPersisting(Entry<? extends EntryValue> e) throws IOException
+        public void afterPersist(Entry<? extends EntryValue> e) throws IOException
         {
             if(_segmentManager != null)
             {
