@@ -375,7 +375,7 @@ public class DynamicDataSet implements DataSet<byte[]>
         do
         {
             // Read existing data at the index
-            existingData = _dataArray.getData(index);
+            existingData = _dataArray.get(index);
             
             // Check that value is still mapped to the known index
             int indexNew = getIndex(hashCode);
@@ -402,7 +402,7 @@ public class DynamicDataSet implements DataSet<byte[]>
         do
         {
             // Read existing data at the index
-            existingData = _dataArray.getData(index);
+            existingData = _dataArray.get(index);
             
             // Check that value is still mapped to the known index
             int indexNew = getIndex(hashCode);
@@ -486,27 +486,27 @@ public class DynamicDataSet implements DataSet<byte[]>
     
     protected boolean addInternal(int index, byte[] value) throws Exception
     {
-        byte[] existingData = _dataArray.getData(index);
+        byte[] existingData = _dataArray.get(index);
         
         try
         {
             if(existingData == null || existingData.length == 0)
             {
-                _dataArray.setData(index, _dataHandler.assemble(value), nextScn());
+                _dataArray.set(index, _dataHandler.assemble(value), nextScn());
                 _loadCount++;
             }
             else
             {
                 if(!_dataHandler.find(value, existingData))
                 {
-                    _dataArray.setData(index, _dataHandler.assemble(value, existingData), nextScn());
+                    _dataArray.set(index, _dataHandler.assemble(value, existingData), nextScn());
                 }
             }
         }
         catch(Exception e)
         {
             _log.warn("Value reset at index="+ index + " value=\"" + new String(value) + "\"", e);
-            _dataArray.setData(index, _dataHandler.assemble(value), nextScn());
+            _dataArray.set(index, _dataHandler.assemble(value), nextScn());
         }
         
         return true;
@@ -516,21 +516,21 @@ public class DynamicDataSet implements DataSet<byte[]>
     {
         try
         {
-            byte[] existingData = _dataArray.getData(index);
+            byte[] existingData = _dataArray.get(index);
             if(existingData != null)
             {
                int newLength = _dataHandler.remove(value, existingData);
                if(newLength == 0)
                {
                    // entire data is removed
-                   _dataArray.setData(index, null, nextScn());
+                   _dataArray.set(index, null, nextScn());
                    _loadCount--;
                    return true;
                }
                else if(newLength < existingData.length)
                {
                    // partial data is removed
-                   _dataArray.setData(index, existingData, 0, newLength, nextScn());
+                   _dataArray.set(index, existingData, 0, newLength, nextScn());
                    return true;
                }
                // else no data is removed
@@ -539,7 +539,7 @@ public class DynamicDataSet implements DataSet<byte[]>
         catch(Exception e)
         {
             _log.warn("Failed to delete value=\""+ new String(value) + "\"", e);
-            _dataArray.setData(index, null, nextScn());
+            _dataArray.set(index, null, nextScn());
         }
         
         // no data is removed
@@ -627,7 +627,7 @@ public class DynamicDataSet implements DataSet<byte[]>
         _addrArray.expandCapacity(_split + _levelCapacity);
         
         // Read data from the _split index
-        byte[] data = _dataArray.getData(_split);
+        byte[] data = _dataArray.get(_split);
         
         // Process read data
         if (data != null && data.length > 0)

@@ -347,7 +347,7 @@ public class SimpleDataArray implements DataArray, Persistable
      * If the given index is out of the array index range, <code>-1<code> is returned.
      */
     @Override
-    public int getDataLength(int index)
+    public int getLength(int index)
     {
         try
         {
@@ -381,7 +381,7 @@ public class SimpleDataArray implements DataArray, Persistable
      * @throws ArrayIndexOutOfBoundsException if the index is out of range.
      */
     @Override
-    public byte[] getData(int index)
+    public byte[] get(int index)
     {
         rangeCheck(index);
         
@@ -427,9 +427,9 @@ public class SimpleDataArray implements DataArray, Persistable
      * or if the byte array does not have enough space to hold the read data.
      */
     @Override
-    public int getData(int index, byte[] data)
+    public int get(int index, byte[] data)
     {
-        return getData(index, data, 0);
+        return get(index, data, 0);
     }
     
     /**
@@ -443,7 +443,7 @@ public class SimpleDataArray implements DataArray, Persistable
      * or if the byte array does not have enough space to hold the read data.
      */
     @Override
-    public int getData(int index, byte[] data, int offset)
+    public int get(int index, byte[] data, int offset)
     {
         rangeCheck(index);
         
@@ -530,15 +530,15 @@ public class SimpleDataArray implements DataArray, Persistable
      * @throws ArrayIndexOutOfBoundsException if the index is out of range.
      */
     @Override
-    public void setData(int index, byte[] data, long scn) throws Exception
+    public void set(int index, byte[] data, long scn) throws Exception
     {
         if(data == null)
         {
-            setData(index, data, 0, 0, scn);
+            set(index, data, 0, 0, scn);
         }
         else
         {
-            setData(index, data, 0, data.length, scn);
+            set(index, data, 0, data.length, scn);
         }
     }
     
@@ -555,7 +555,7 @@ public class SimpleDataArray implements DataArray, Persistable
      * or if the offset and length is not properly specified.
      */
     @Override
-    public void setData(int index, byte[] data, int offset, int length, long scn) throws Exception
+    public void set(int index, byte[] data, int offset, int length, long scn) throws Exception
     {
         rangeCheck(index);
         decrOriginalSegmentLoad(index);

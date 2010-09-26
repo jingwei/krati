@@ -86,37 +86,37 @@ public final class BytesDB {
     }
     
     public byte[] get(int index) {
-        return _dataArray.getData(index);
+        return _dataArray.get(index);
     }
     
     public int get(int index, byte[] data) {
-        return _dataArray.getData(index, data);
+        return _dataArray.get(index, data);
     }
     
     public int get(int index, byte[] data, int offset) {
-        return _dataArray.getData(index, data, offset);
+        return _dataArray.get(index, data, offset);
     }
     
     public synchronized void set(int index, byte[] data, long scn) throws Exception {
-        _dataArray.setData(index, data, scn);
+        _dataArray.set(index, data, scn);
         if(data == null) _nextIndexCount++;
     }
     
     public synchronized void set(int index, byte[] data, int offset, int length, long scn) throws Exception {
-        _dataArray.setData(index, data, offset, length, scn);
+        _dataArray.set(index, data, offset, length, scn);
         if(data == null) _nextIndexCount++;
     }
     
     public synchronized int add(byte[] data, long scn) throws Exception {
         int index = _nextIndexQueue.take();
-        _dataArray.setData(index, data, scn);
+        _dataArray.set(index, data, scn);
         _nextIndexCount--;
         return index;
     }
     
     public synchronized int add(byte[] data, int offset, int length, long scn) throws Exception {
         int index = _nextIndexQueue.take();
-        _dataArray.setData(index, data, offset, length, scn);
+        _dataArray.set(index, data, offset, length, scn);
         _nextIndexCount--;
         return index;
     }

@@ -108,23 +108,23 @@ public abstract class AbstractDataArray implements DataArray, Persistable {
     }
     
     @Override
-    public byte[] getData(int index) {
-        return _dataArray.getData(index);
+    public byte[] get(int index) {
+        return _dataArray.get(index);
     }
     
     @Override
-    public int getData(int index, byte[] dst) {
-        return _dataArray.getData(index, dst);
+    public int get(int index, byte[] dst) {
+        return _dataArray.get(index, dst);
     }
     
     @Override
-    public int getData(int index, byte[] dst, int offset) {
-        return _dataArray.getData(index, dst, offset);
+    public int get(int index, byte[] dst, int offset) {
+        return _dataArray.get(index, dst, offset);
     }
     
     @Override
-    public int getDataLength(int index) {
-        return _dataArray.getDataLength(index);
+    public int getLength(int index) {
+        return _dataArray.getLength(index);
     }
     
     @Override
@@ -133,13 +133,13 @@ public abstract class AbstractDataArray implements DataArray, Persistable {
     }
     
     @Override
-    public synchronized void setData(int index, byte[] data, long scn) throws Exception {
-        _dataArray.setData(index, data, scn);
+    public synchronized void set(int index, byte[] data, long scn) throws Exception {
+        _dataArray.set(index, data, scn);
     }
     
     @Override
-    public synchronized void setData(int index, byte[] data, int offset, int length, long scn) throws Exception {
-        _dataArray.setData(index, data, offset, length, scn);
+    public synchronized void set(int index, byte[] data, int offset, int length, long scn) throws Exception {
+        _dataArray.set(index, data, offset, length, scn);
     }
     
     @Override

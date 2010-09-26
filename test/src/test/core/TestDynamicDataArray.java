@@ -24,11 +24,11 @@ public class TestDynamicDataArray extends EvalDataArray {
                                  createSegmentFactory(),
                                  _segFileSizeMB);
         
-        dynArray.setData(initialLength, null, System.currentTimeMillis());
+        dynArray.set(initialLength, null, System.currentTimeMillis());
         
-        dynArray.setData(initialLength * 2, null, System.currentTimeMillis());
+        dynArray.set(initialLength * 2, null, System.currentTimeMillis());
         
-        dynArray.setData(initialLength * 3, null, System.currentTimeMillis());
+        dynArray.set(initialLength * 3, null, System.currentTimeMillis());
         
         return dynArray;
     }

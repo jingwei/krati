@@ -62,7 +62,7 @@ public class TestSimpleArray extends AbstractSeedTest
             try
             {
                 line = _lineSeedData.get(index % lineCnt);
-                dataArray.setData(index, line.getBytes(), scn++);
+                dataArray.set(index, line.getBytes(), scn++);
             }
             catch(Exception e)
             {

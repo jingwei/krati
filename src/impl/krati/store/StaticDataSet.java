@@ -241,7 +241,7 @@ public class StaticDataSet implements DataSet<byte[]>
         int index = (int)(hashCode % _dataArray.length());
         if (index < 0) index = -index;
         
-        byte[] existingData = _dataArray.getData(index);
+        byte[] existingData = _dataArray.get(index);
         return existingData == null ? false : _dataHandler.find(value, existingData);
     }
     
@@ -253,7 +253,7 @@ public class StaticDataSet implements DataSet<byte[]>
         int index = (int)(hashCode % _dataArray.length());
         if (index < 0) index = -index;
         
-        byte[] existingData = _dataArray.getData(index);
+        byte[] existingData = _dataArray.get(index);
         return existingData == null ? 0 : _dataHandler.countCollisions(value, existingData);
     }
     
@@ -271,26 +271,26 @@ public class StaticDataSet implements DataSet<byte[]>
         int index = (int)(hashCode % _dataArray.length());
         if (index < 0) index = -index;
         
-        byte[] existingData = _dataArray.getData(index);
+        byte[] existingData = _dataArray.get(index);
         
         try
         {
             if(existingData == null || existingData.length == 0)
             {
-                _dataArray.setData(index, _dataHandler.assemble(value), nextScn());
+                _dataArray.set(index, _dataHandler.assemble(value), nextScn());
             }
             else
             {
                 if(!_dataHandler.find(value, existingData))
                 {
-                    _dataArray.setData(index, _dataHandler.assemble(value, existingData), nextScn());
+                    _dataArray.set(index, _dataHandler.assemble(value, existingData), nextScn());
                 }
             }
         }
         catch(Exception e)
         {
             _log.warn("Value reset at index="+ index + " value=\"" + new String(value) + "\"", e);
-            _dataArray.setData(index, _dataHandler.assemble(value), nextScn());
+            _dataArray.set(index, _dataHandler.assemble(value), nextScn());
         }
         
         return true;
@@ -305,20 +305,20 @@ public class StaticDataSet implements DataSet<byte[]>
         
         try
         {
-            byte[] existingData = _dataArray.getData(index);
+            byte[] existingData = _dataArray.get(index);
             if(existingData != null)
             {
                int newLength = _dataHandler.remove(value, existingData);
                if(newLength == 0)
                {
                    // entire data is removed
-                   _dataArray.setData(index, null, nextScn());
+                   _dataArray.set(index, null, nextScn());
                    return true;
                }
                else if(newLength < existingData.length)
                {
                    // partial data is removed
-                   _dataArray.setData(index, existingData, 0, newLength, nextScn());
+                   _dataArray.set(index, existingData, 0, newLength, nextScn());
                    return true;
                }
             }
@@ -326,7 +326,7 @@ public class StaticDataSet implements DataSet<byte[]>
         catch(Exception e)
         {
             _log.warn("Failed to delete value=\""+ new String(value) + "\"", e);
-            _dataArray.setData(index, null, nextScn());
+            _dataArray.set(index, null, nextScn());
         }
         
         // no data is removed

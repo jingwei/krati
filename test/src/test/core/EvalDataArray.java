@@ -33,7 +33,7 @@ public abstract class EvalDataArray extends AbstractSeedTest
             try
             {
                 line = _lineSeedData.get(index % lineCnt);
-                dataArray.setData(index, line.getBytes(), System.currentTimeMillis());
+                dataArray.set(index, line.getBytes(), System.currentTimeMillis());
             }
             catch(Exception e)
             {
@@ -55,7 +55,7 @@ public abstract class EvalDataArray extends AbstractSeedTest
     {
         String line = _lineSeedData.get(index % _lineSeedData.size());
         
-        byte[] b = dataArray.getData(index);
+        byte[] b = dataArray.get(index);
         if (b != null)
         {
             String s = new String(b);

@@ -240,7 +240,7 @@ public class StaticDataStore implements DataStore<byte[], byte[]>
         int index = (int)(hashCode % _dataArray.length());
         if (index < 0) index = -index;
         
-        byte[] existingData = _dataArray.getData(index);
+        byte[] existingData = _dataArray.get(index);
         return existingData == null ? null : _dataHandler.extractByKey(key, existingData);
     }
     
@@ -253,21 +253,21 @@ public class StaticDataStore implements DataStore<byte[], byte[]>
         int index = (int)(hashCode % _dataArray.length());
         if (index < 0) index = -index;
         
-        byte[] existingData = _dataArray.getData(index);
+        byte[] existingData = _dataArray.get(index);
         if(existingData == null || existingData.length == 0)
         {
-            _dataArray.setData(index, _dataHandler.assemble(key, value), nextScn());
+            _dataArray.set(index, _dataHandler.assemble(key, value), nextScn());
         }
         else
         {
             try
             {
-                _dataArray.setData(index, _dataHandler.assemble(key, value, existingData), nextScn());
+                _dataArray.set(index, _dataHandler.assemble(key, value, existingData), nextScn());
             }
             catch(Exception e)
             {
                 _log.warn("Value reset at index="+ index + " key=\"" + new String(key) + "\"");
-                _dataArray.setData(index, _dataHandler.assemble(key, value), nextScn());
+                _dataArray.set(index, _dataHandler.assemble(key, value), nextScn());
             }
         }
         
@@ -283,20 +283,20 @@ public class StaticDataStore implements DataStore<byte[], byte[]>
         
         try
         {
-            byte[] existingData = _dataArray.getData(index);
+            byte[] existingData = _dataArray.get(index);
             if(existingData != null)
             {
                int newLength = _dataHandler.removeByKey(key, existingData);
                if(newLength == 0)
                {
                    // entire data is removed
-                   _dataArray.setData(index, null, nextScn());
+                   _dataArray.set(index, null, nextScn());
                    return true;
                }
                else if(newLength < existingData.length)
                {
                    // partial data is removed
-                   _dataArray.setData(index, existingData, 0, newLength, nextScn());
+                   _dataArray.set(index, existingData, 0, newLength, nextScn());
                    return true;
                }
             }
@@ -304,7 +304,7 @@ public class StaticDataStore implements DataStore<byte[], byte[]>
         catch(Exception e)
         {
             _log.warn("Failed to delete key=\""+ new String(key) + "\" : " + e.getMessage());
-            _dataArray.setData(index, null, nextScn());
+            _dataArray.set(index, null, nextScn());
         }
         
         // no data is removed

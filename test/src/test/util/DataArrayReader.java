@@ -40,7 +40,7 @@ public class DataArrayReader implements Runnable
     
     int read(int index)
     {
-        return _dataArray.getData(index, _data);
+        return _dataArray.get(index, _data);
     }
     
     @Override

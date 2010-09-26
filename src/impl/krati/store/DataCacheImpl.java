@@ -289,42 +289,42 @@ public class DataCacheImpl implements DataCache
     public byte[] get(int memberId)
     {
         rangeCheck(memberId);
-        return _dataArray.getData(memberId - _idStart);
+        return _dataArray.get(memberId - _idStart);
     }
     
     @Override
     public int get(int memberId, byte[] dst)
     {
         rangeCheck(memberId);
-        return _dataArray.getData(memberId - _idStart, dst);
+        return _dataArray.get(memberId - _idStart, dst);
     }
     
     @Override
     public int get(int memberId, byte[] dst, int offset)
     {
         rangeCheck(memberId);
-        return _dataArray.getData(memberId - _idStart, dst, offset);
+        return _dataArray.get(memberId - _idStart, dst, offset);
     }
     
     @Override
     public void set(int memberId, byte[] data, long scn) throws Exception
     {
         rangeCheck(memberId);
-        _dataArray.setData(memberId - _idStart, data, scn);
+        _dataArray.set(memberId - _idStart, data, scn);
     }
     
     @Override
     public void set(int memberId, byte[] data, int offset, int length, long scn) throws Exception
     {
         rangeCheck(memberId);
-        _dataArray.setData(memberId - _idStart, data, offset, length, scn);
+        _dataArray.set(memberId - _idStart, data, offset, length, scn);
     }
     
     @Override
     public void delete(int memberId, long scn) throws Exception
     {
         rangeCheck(memberId);
-        _dataArray.setData(memberId - _idStart, null, scn);
+        _dataArray.set(memberId - _idStart, null, scn);
     }
     
     @Override

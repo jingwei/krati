@@ -15,7 +15,7 @@ public class DataArrayChecker extends DataArrayReader
     {
         String line = _lineSeedData.get(index % _lineSeedData.size());
         
-        byte[] b = _dataArray.getData(index);
+        byte[] b = _dataArray.get(index);
         if (b != null)
         {
             String s = new String(b);

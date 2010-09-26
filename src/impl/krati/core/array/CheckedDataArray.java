@@ -36,7 +36,7 @@ public class CheckedDataArray extends SimpleDataArray
     }
     
     @Override
-    public byte[] getData(int index)
+    public byte[] get(int index)
     {
         try
         {
@@ -78,7 +78,7 @@ public class CheckedDataArray extends SimpleDataArray
     }
     
     @Override
-    public int getData(int index, byte[] data, int offset)
+    public int get(int index, byte[] data, int offset)
     {
         try
         {
@@ -119,18 +119,18 @@ public class CheckedDataArray extends SimpleDataArray
     }
     
     @Override
-    public void setData(int index, byte[] data, int offset, int length, long scn) throws Exception
+    public void set(int index, byte[] data, int offset, int length, long scn) throws Exception
     {
         if(length > 0)
         {
             // Calculate 8-byte checksum and combine it with real data
             int checkedLength = fillCheckedData(data, offset, length);
-            super.setData(index, _checkedData, 0, checkedLength, scn);
+            super.set(index, _checkedData, 0, checkedLength, scn);
         }
         else
         {
             // No checksum for 0-sized data
-            super.setData(index, data, offset, length, scn);
+            super.set(index, data, offset, length, scn);
         }
     }
     

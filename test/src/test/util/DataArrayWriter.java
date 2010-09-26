@@ -42,7 +42,7 @@ public class DataArrayWriter implements Runnable
         try
         {
             byte[] b = _lineSeedData.get(index%_lineSeedData.size()).getBytes();
-            _dataArray.setData(index, b, System.currentTimeMillis());
+            _dataArray.set(index, b, System.currentTimeMillis());
         }
         catch(Exception e)
         {

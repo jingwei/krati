@@ -376,7 +376,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
         do
         {
             // Read existing data at the index
-            existingData = _dataArray.getData(index);
+            existingData = _dataArray.get(index);
             
             // Check that key is still mapped to the known index
             int indexNew = getIndex(hashCode);
@@ -457,22 +457,22 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
     
     protected boolean putInternal(int index, byte[] key, byte[] value) throws Exception
     {
-        byte[] existingData = _dataArray.getData(index);
+        byte[] existingData = _dataArray.get(index);
         if(existingData == null || existingData.length == 0)
         {
-            _dataArray.setData(index, _dataHandler.assemble(key, value), nextScn());
+            _dataArray.set(index, _dataHandler.assemble(key, value), nextScn());
             _loadCount++;
         }
         else
         {
             try
             {
-                _dataArray.setData(index, _dataHandler.assemble(key, value, existingData), nextScn());
+                _dataArray.set(index, _dataHandler.assemble(key, value, existingData), nextScn());
             }
             catch(Exception e)
             {
                 _log.warn("Value reset at index="+ index + " key=\"" + new String(key) + "\"");
-                _dataArray.setData(index, _dataHandler.assemble(key, value), nextScn());
+                _dataArray.set(index, _dataHandler.assemble(key, value), nextScn());
             }
         }
         
@@ -483,21 +483,21 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
     {
         try
         {
-            byte[] existingData = _dataArray.getData(index);
+            byte[] existingData = _dataArray.get(index);
             if(existingData != null)
             {
                int newLength = _dataHandler.removeByKey(key, existingData);
                if(newLength == 0)
                {
                    // entire data is removed
-                   _dataArray.setData(index, null, nextScn());
+                   _dataArray.set(index, null, nextScn());
                    _loadCount--;
                    return true;
                }
                else if(newLength < existingData.length)
                {
                    // partial data is removed
-                   _dataArray.setData(index, existingData, 0, newLength, nextScn());
+                   _dataArray.set(index, existingData, 0, newLength, nextScn());
                    return true;
                }
             }
@@ -505,7 +505,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
         catch(Exception e)
         {
             _log.warn("Failed to delete key=\""+ new String(key) + "\" : " + e.getMessage());
-            _dataArray.setData(index, null, nextScn());
+            _dataArray.set(index, null, nextScn());
         }
         
         // no data is removed
@@ -593,7 +593,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
         _addrArray.expandCapacity(_split + _levelCapacity);
         
         // Read data from the _split index
-        byte[] data = _dataArray.getData(_split);
+        byte[] data = _dataArray.get(_split);
         
         // Process read data
         if (data != null && data.length > 0)
