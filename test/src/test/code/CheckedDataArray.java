@@ -1,10 +1,13 @@
-package krati.core.array;
+package test.code;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.zip.Adler32;
 import java.util.zip.Checksum;
 
+import krati.core.array.AddressArray;
+import krati.core.array.DataCorruptionException;
+import krati.core.array.SimpleDataArray;
 import krati.core.segment.Segment;
 import krati.core.segment.SegmentManager;
 

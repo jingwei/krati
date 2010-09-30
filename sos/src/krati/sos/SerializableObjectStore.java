@@ -1,6 +1,8 @@
 package krati.sos;
 
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.Map.Entry;
 
 import krati.store.DataStore;
 
@@ -163,5 +165,15 @@ public class SerializableObjectStore<K, V> implements ObjectStore<K, V>
         {
             _store.clear();
         }
+    }
+    
+    @Override
+    public Iterator<K> keyIterator() {
+        return new ObjectStoreKeyIterator<K>(_store.keyIterator(), _keySerializer);
+    }
+
+    @Override
+    public Iterator<Entry<K, V>> iterator() {
+        return new ObjectStoreIterator<K, V>(_store.iterator(), _keySerializer, _valSerializer);
     }
 }

@@ -1,6 +1,7 @@
 package test.sos;
 
 import java.io.File;
+import java.util.Iterator;
 
 import krati.core.segment.SegmentFactory;
 import krati.sos.ObjectStore;
@@ -77,6 +78,14 @@ public class TestObjectStore extends AbstractTest
         for(MemberProtos.Member m : book.getMemberList()) 
         {
             assertTrue("Member " + m.getMemberId(), memberStore.get(m.getEmail(0)).equals(m));
+        }
+        
+        Iterator<String> keyIter = memberStore.keyIterator();
+        while(keyIter.hasNext())
+        {
+            String key = keyIter.next();
+            MemberProtos.Member m = memberStore.get(key);
+            assertTrue("Member " + m.getMemberId() + ": key=" + key + " email=" + m.getEmail(0), m.getEmail(0).equals(key));
         }
         
         cleanTestOutput();

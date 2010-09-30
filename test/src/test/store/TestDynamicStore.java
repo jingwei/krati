@@ -34,7 +34,7 @@ public class TestDynamicStore extends EvalDataStore
     
     public void testDynamicStore() throws Exception
     {
-        String unitTestName = getClass().getSimpleName() + " with " + getSegmentFactory().getClass().getSimpleName(); 
+        String unitTestName = getClass().getSimpleName(); 
         StatsLog.beginUnit(unitTestName);
         
         evalPerformance(_numReaders, 1, _runTimeSeconds);

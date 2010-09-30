@@ -3,7 +3,9 @@ package test.store.partitioned;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
@@ -188,5 +190,17 @@ public class PartitionedDataStore implements DataStore<byte[], byte[]>
         {
             storeImpl.clear();
         }
+    }
+    
+    @Override
+    public Iterator<byte[]> keyIterator() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public Iterator<Entry<byte[], byte[]>> iterator() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException();
     }
 }

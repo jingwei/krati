@@ -1,4 +1,4 @@
-package krati.store;
+package test.code;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,11 +15,12 @@ import krati.core.segment.SegmentFactory;
 import krati.core.segment.SegmentManager;
 import krati.store.DataStore;
 import krati.store.DataStoreHandler;
+import krati.store.DefaultDataStoreHandler;
 import krati.util.FnvHashFunction;
 import krati.util.HashFunction;
 
 /**
- * DynamicDataStore is implemented using Linear Hashing. Its capacity grows as needed.
+ * TieredDataStore is implemented using Linear Hashing. Its capacity grows as needed.
  * 
  * The key-value pairs are stored in the underlying DataArray using the following format:
  * <pre>
@@ -30,18 +31,18 @@ import krati.util.HashFunction;
  * @author jwu
  *
  */
-public class DynamicDataStore implements DataStore<byte[], byte[]>
+public class TieredDataStore implements DataStore<byte[], byte[]>
 {
-    private final static Logger _log = Logger.getLogger(DynamicDataStore.class);
+    private final static Logger _log = Logger.getLogger(TieredDataStore.class);
     
     private final double _loadThreshold;
     private final SimpleDataArray _dataArray;
     private final DynamicLongArray _addrArray;
     private final DataStoreHandler _dataHandler;
     private final HashFunction<byte[]> _hashFunction;
-    private volatile int _split;
-    private volatile int _level;
-    private volatile int _levelCapacity;
+    protected volatile int _split;
+    protected volatile int _level;
+    protected volatile int _levelCapacity;
     private int _levelThreshold;
     private int _unitCapacity;
     private int _loadCount;
@@ -64,7 +65,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
      * @param segmentFactory         the segment factory
      * @throws Exception             if this dynamic data store cannot be created.
      */
-    public DynamicDataStore(File homeDir, SegmentFactory segmentFactory) throws Exception
+    public TieredDataStore(File homeDir, SegmentFactory segmentFactory) throws Exception
     {
         this(homeDir,
              0,     /* initial level */ 
@@ -94,9 +95,9 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
      * @param segmentFactory         the segment factory
      * @throws Exception             if this dynamic data store cannot be created.
      */
-    public DynamicDataStore(File homeDir,
-                            int initLevel,
-                            SegmentFactory segmentFactory) throws Exception
+    public TieredDataStore(File homeDir,
+                           int initLevel,
+                           SegmentFactory segmentFactory) throws Exception
     {
         this(homeDir,
              initLevel,
@@ -126,10 +127,10 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
      * @param hashFunction           the hash function for mapping keys to indexes
      * @throws Exception             if this dynamic data store cannot be created.
      */
-    public DynamicDataStore(File homeDir,
-                            int initLevel,
-                            SegmentFactory segmentFactory,
-                            HashFunction<byte[]> hashFunction) throws Exception
+    public TieredDataStore(File homeDir,
+                           int initLevel,
+                           SegmentFactory segmentFactory,
+                           HashFunction<byte[]> hashFunction) throws Exception
     {
         this(homeDir,
              initLevel,
@@ -159,10 +160,10 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
      * @param segmentFactory         the segment factory
      * @throws Exception             if this dynamic data store cannot be created.
      */
-    public DynamicDataStore(File homeDir,
-                            int initLevel,
-                            int segmentFileSizeMB,
-                            SegmentFactory segmentFactory) throws Exception
+    public TieredDataStore(File homeDir,
+                           int initLevel,
+                           int segmentFileSizeMB,
+                           SegmentFactory segmentFactory) throws Exception
     {
         this(homeDir,
              initLevel,
@@ -192,12 +193,12 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
      * @param hashFunction           the hash function for mapping keys to indexes
      * @throws Exception             if this dynamic data store cannot be created.
      */
-    public DynamicDataStore(File homeDir,
-                            int initLevel,
-                            int segmentFileSizeMB,
-                            SegmentFactory segmentFactory,
-                            double hashLoadThreshold,
-                            HashFunction<byte[]> hashFunction) throws Exception
+    public TieredDataStore(File homeDir,
+                           int initLevel,
+                           int segmentFileSizeMB,
+                           SegmentFactory segmentFactory,
+                           double hashLoadThreshold,
+                           HashFunction<byte[]> hashFunction) throws Exception
     {
         this(homeDir,
              initLevel,
@@ -227,12 +228,12 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
      * @param segmentFactory         the segment factory
      * @throws Exception             if this dynamic data store cannot be created.
      */
-    public DynamicDataStore(File homeDir,
-                            int initLevel,
-                            int entrySize,
-                            int maxEntries,
-                            int segmentFileSizeMB,
-                            SegmentFactory segmentFactory) throws Exception
+    public TieredDataStore(File homeDir,
+                           int initLevel,
+                           int entrySize,
+                           int maxEntries,
+                           int segmentFileSizeMB,
+                           SegmentFactory segmentFactory) throws Exception
     {
         this(homeDir,
              initLevel,
@@ -262,14 +263,14 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
      * @param hashFunction           the hash function for mapping keys to indexes
      * @throws Exception             if this dynamic data store cannot be created.
      */
-    public DynamicDataStore(File homeDir,
-                            int initLevel,
-                            int entrySize,
-                            int maxEntries,
-                            int segmentFileSizeMB,
-                            SegmentFactory segmentFactory,
-                            double hashLoadThreshold,
-                            HashFunction<byte[]> hashFunction) throws Exception
+    public TieredDataStore(File homeDir,
+                           int initLevel,
+                           int entrySize,
+                           int maxEntries,
+                           int segmentFileSizeMB,
+                           SegmentFactory segmentFactory,
+                           double hashLoadThreshold,
+                           HashFunction<byte[]> hashFunction) throws Exception
     {
         this(homeDir,
              initLevel,
@@ -296,15 +297,15 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
      * @param hashFunction           the hash function for mapping keys to indexes
      * @throws Exception             if this dynamic data store cannot be created.
      */
-    public DynamicDataStore(File homeDir,
-                            int initLevel,
-                            int entrySize,
-                            int maxEntries,
-                            int segmentFileSizeMB,
-                            SegmentFactory segmentFactory,
-                            double segmentCompactFactor,
-                            double hashLoadThreshold,
-                            HashFunction<byte[]> hashFunction) throws Exception
+    public TieredDataStore(File homeDir,
+                           int initLevel,
+                           int entrySize,
+                           int maxEntries,
+                           int segmentFileSizeMB,
+                           SegmentFactory segmentFactory,
+                           double segmentCompactFactor,
+                           double hashLoadThreshold,
+                           HashFunction<byte[]> hashFunction) throws Exception
     {
         // Create data store handler
         _dataHandler = new DefaultDataStoreHandler();
@@ -328,6 +329,11 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
         this._loadThreshold = hashLoadThreshold;
         this._loadCount = scan();
         this.initLinearHashing();
+        
+        // Create three tiers
+        _tier1 = createTier(1);
+        _tier2 = createTier(2);
+        _tier3 = createTier(3);
         
         _log.info(getStatus());
     }
@@ -362,58 +368,82 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
     }
     
     @Override
-    public byte[] get(byte[] key)
-    {
-        byte[] existingData;
+    public byte[] get(byte[] key) {
+        byte[] value;
+        byte[] tierData;
         long hashCode = hash(key);
         
-        /**
-         * Need SPIN to retrieve data from the underlying array
-         * because the index might have changed with the _split. 
-         */
+        tierData = getInternal(_tier1, hashCode);
+        value = (tierData == null) ? null : _dataHandler.extractByKey(key, tierData);
         
-        // Map key to an array index
-        int index = getIndex(hashCode);
-        
-        do
-        {
-            // Read existing data at the index
-            existingData = _dataArray.get(index);
+        if(value == null) {
+            tierData = getInternal(_tier2, hashCode);
+            value = (tierData == null) ? null : _dataHandler.extractByKey(key, tierData);
             
-            // Check that key is still mapped to the known index
-            int indexNew = getIndex(hashCode);
-            if(index == indexNew) break;
-            else index = indexNew;
-        } while(true);
+            if(value == null) {
+                tierData = getInternal(_tier3, hashCode);
+                value = (tierData == null) ? null : _dataHandler.extractByKey(key, tierData);
+            }
+        }
         
-        return existingData == null ? null : _dataHandler.extractByKey(key, existingData);
+        return value;
     }
     
-    public synchronized boolean put(byte[] key, byte[] value) throws Exception
-    {
-        if(value == null)
-        {
+    public synchronized boolean put(byte[] key, byte[] value) throws Exception {
+        if(value == null) {
             return delete(key);
         }
         
-        if(0 < _split || _levelThreshold < _loadCount)
-        {
+        if(0 < _split || _levelThreshold < _loadCount) {
             split();
         }
         
-        int index = getIndex(key);
+        int index;
+        long hashCode = hash(key);
+        
+        index = _tier1.getMainIndex(hashCode, _level, _split);
+        if(putInternalNonColliding(index, key, value)) {
+            index = _tier2.getMainIndex(hashCode, _level, _split);
+            deleteInternal(index, key);
+            
+            index = _tier3.getMainIndex(hashCode, _level, _split);
+            deleteInternal(index, key);
+            
+            return true;
+        }
+        
+        index = _tier2.getMainIndex(hashCode, _level, _split);
+        if(putInternalNonColliding(index, key, value)) {
+            index = _tier3.getMainIndex(hashCode, _level, _split);
+            deleteInternal(index, key);
+            
+            return true;
+        }
+        
+        index = _tier3.getMainIndex(hashCode, _level, _split);
         return putInternal(index, key, value);
     }
     
     @Override
-    public synchronized boolean delete(byte[] key) throws Exception
-    {
-        if(0 < _split || _levelThreshold < _loadCount)
-        {
+    public synchronized boolean delete(byte[] key) throws Exception {
+        if(0 < _split || _levelThreshold < _loadCount) {
             split();
         }
         
-        int index = getIndex(key);
+        int index;
+        long hashCode = hash(key);
+        
+        index = _tier1.getMainIndex(hashCode, _level, _split);
+        if(deleteInternal(index, key)) {
+            return true;
+        }
+        
+        index = _tier2.getMainIndex(hashCode, _level, _split);
+        if(deleteInternal(index, key)) {
+            return true;
+        }
+        
+        index = _tier3.getMainIndex(hashCode, _level, _split);
         return deleteInternal(index, key);
     }
     
@@ -424,55 +454,58 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
         _loadCount = 0;
     }
     
-    protected final int getIndex(byte[] key)
-    {
-        long hashCode = hash(key);
-        int capacity = _levelCapacity;
-        int index = (int)(hashCode % capacity);
-        if (index < 0) index = -index;
+    private byte[] getInternal(Tier tier, long hashCode) {
+        byte[] existingData ;
         
-        if (index < _split)
+        /**
+         * Need SPIN to retrieve data from the underlying array
+         * because the index might have changed with the _split. 
+         */
+        
+        // Map key to an array index
+        int index = tier.getMainIndex(hashCode, _level, _split);
+        
+        do
         {
-            capacity = capacity << 1;
-            index = (int)(hashCode % capacity);
-            if (index < 0) index = -index;
-        }
+            // Read existing data at the index
+            existingData = _dataArray.get(index);
+            
+            // Check that key is still mapped to the known index
+            int indexNew = tier.getMainIndex(hashCode, _level, _split);
+            if (indexNew == index) break;
+            index = indexNew;
+        } while(true);
         
-        return index;
+        return existingData;
     }
     
-    protected final int getIndex(long hashCode)
-    {
-        int capacity = _levelCapacity;
-        int index = (int)(hashCode % capacity);
-        if (index < 0) index = -index;
-        
-        if (index < _split)
-        {
-            capacity = capacity << 1;
-            index = (int)(hashCode % capacity);
-            if (index < 0) index = -index;
-        }
-        
-        return index;
-    }
-    
-    protected boolean putInternal(int index, byte[] key, byte[] value) throws Exception
-    {
+    private boolean putInternalNonColliding(int index, byte[] key, byte[] value) throws Exception {
         byte[] existingData = _dataArray.get(index);
-        if(existingData == null || existingData.length == 0)
-        {
+        
+        if(existingData == null) {
+            return setInternal(index, key, value);
+        }
+        
+        int collisionCnt = _dataHandler.countCollisions(key, existingData);
+        if(collisionCnt == 0) {
+            return setInternal(index, key, value);
+        } else if(collisionCnt == 1) {
+            return putReplace(index, key, value);
+        } else {
+            return false;
+        }
+    }
+    
+    private boolean putInternal(int index, byte[] key, byte[] value) throws Exception {
+        byte[] existingData = _dataArray.get(index);
+        
+        if(existingData == null || existingData.length == 0) {
             _dataArray.set(index, _dataHandler.assemble(key, value), nextScn());
             _loadCount++;
-        }
-        else
-        {
-            try
-            {
+        } else {
+            try {
                 _dataArray.set(index, _dataHandler.assemble(key, value, existingData), nextScn());
-            }
-            catch(Exception e)
-            {
+            } catch(Exception e) {
                 _log.warn("Value reset at index="+ index + " key=\"" + new String(key) + "\"");
                 _dataArray.set(index, _dataHandler.assemble(key, value), nextScn());
             }
@@ -481,7 +514,18 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
         return true;
     }
     
-    protected boolean deleteInternal(int index, byte[] key) throws Exception
+    private boolean setInternal(int index, byte[] key, byte[] value) throws Exception {
+        _dataArray.set(index, _dataHandler.assemble(key, value), nextScn());
+        _loadCount++;
+        return true;
+    }
+    
+    private boolean putReplace(int index, byte[] key, byte[] value) throws Exception {
+        _dataArray.set(index, _dataHandler.assemble(key, value), nextScn());
+        return true;
+    }
+    
+    private boolean deleteInternal(int index, byte[] key) throws Exception
     {
         try
         {
@@ -600,41 +644,60 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
         // Process read data
         if (data != null && data.length > 0)
         {
+            // Get split tier
+            Tier tier = getTier(_split);
+            
+            // Wrap data in byte buffer
             ByteBuffer bb = ByteBuffer.wrap(data);
-            int newCapacity = _levelCapacity << 1;
             
             int cnt = bb.getInt();
-            while(cnt > 0)
+            
+            if(tier.isColliding())
+            {
+                while(cnt > 0)
+                {
+                    // Read key
+                    int len = bb.getInt();
+                    byte[] key = new byte[len];
+                    bb.get(key);
+                    
+                    int newIndex = tier.getSplitIndex(hash(key), _level, _split);
+                    if(newIndex == _split) /* No need to split */
+                    {
+                        // Pass value
+                        len = bb.getInt();
+                        bb.position(bb.position() + len);
+                    }
+                    else
+                    {
+                        // Read value
+                        len = bb.getInt();
+                        byte[] value = new byte[len];
+                        bb.get(value);
+                        
+                        // Remove at the old index
+                        deleteInternal(_split, key);
+                        
+                        // Update at the new index
+                        putInternal(newIndex, key, value);
+                    }
+                    
+                    cnt--;
+                }
+            }
+            else
             {
                 // Read key
                 int len = bb.getInt();
                 byte[] key = new byte[len];
                 bb.get(key);
                 
-                int newIndex = (int)(hash(key) % newCapacity);
-                if (newIndex < 0) newIndex = -newIndex;
-                
-                if(newIndex == _split) /* No need to split */
-                {
-                    // Pass value
-                    len = bb.getInt();
-                    bb.position(bb.position() + len);
+                int newIndex = tier.getSplitIndex(hash(key), _level, _split);
+                if(newIndex != _split) {
+                    long scn = nextScn();
+                    _addrArray.set(newIndex, _addrArray.get(_split), scn);
+                    _addrArray.set(_split, 0, scn);
                 }
-                else
-                {
-                    // Read value
-                    len = bb.getInt();
-                    byte[] value = new byte[len];
-                    bb.get(value);
-                    
-                    // Remove at the old index
-                    deleteInternal(_split, key);
-                    
-                    // Update at the new index
-                    putInternal(newIndex, key, value);
-                }
-                
-                cnt--;
             }
         }
         
@@ -716,16 +779,104 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
     {
         return _dataArray;
     }
-
-    @Override
-    public Iterator<byte[]> keyIterator()
-    {
-        return new DataStoreKeyIterator(_dataArray, _dataHandler);
+    
+    private final Tier _tier1;
+    private final Tier _tier2;
+    private final Tier _tier3;
+    
+    protected Tier createTier(int rank) {
+        int k = 1 << 10;
+        switch(rank) {
+        case 1 : return new Tier(false, 36 * k, getUnitCapacity(), 0);
+        case 2 : return new Tier(false, 18 * k, getUnitCapacity(), 36 * k);
+        default: return new Tier(true , 10 * k, getUnitCapacity(), 54 * k);
+        }
+    }
+    
+    protected final Tier getTier1() {
+        return _tier1;
+    }
+    
+    protected final Tier getTier2() {
+        return _tier2;
+    }
+    
+    protected final Tier getTier3() {
+        return _tier3;
+    }
+    
+    protected Tier getTier(int index) {
+        return _tier1.hasIndex(index) ? _tier1 : (_tier2.hasIndex(index) ? _tier2 : _tier3);
+    }
+    
+    public static class Tier {
+        private final boolean _colliding;
+        private final int _tierUnitCapacity;
+        private final int _mainUnitCapacity;
+        private final int _mainUnitStart;
+        private final int _mainUnitEnd;
+        
+        public Tier(boolean colliding, int tierUnitCapacity, int mainUnitCapacity, int mainUnitOffset) {
+            this._colliding = colliding;
+            this._tierUnitCapacity = tierUnitCapacity;
+            this._mainUnitCapacity = mainUnitCapacity;
+            this._mainUnitStart = mainUnitOffset;
+            this._mainUnitEnd = mainUnitOffset + tierUnitCapacity;
+        }
+        
+        public boolean isColliding() {
+            return _colliding;
+        }
+        
+        public int getMainIndex(long hashCode, int mainLevel, int mainSplit) {
+            int tierLevelCapacity = _tierUnitCapacity * (1 << mainLevel);
+            int tierIndex = (int)(hashCode % tierLevelCapacity);
+            if (tierIndex < 0) tierIndex = -tierIndex;
+            
+            int unitCount = tierIndex / _tierUnitCapacity;
+            int remainder = tierIndex % _tierUnitCapacity;
+            int mainIndex = (unitCount * _mainUnitCapacity) + _mainUnitStart + remainder;
+            
+            if (mainIndex < mainSplit) {
+                tierLevelCapacity = tierLevelCapacity << 1;
+                tierIndex = (int)(hashCode % tierLevelCapacity);
+                if (tierIndex < 0) tierIndex = -tierIndex;
+                
+                unitCount = tierIndex / _tierUnitCapacity;
+                remainder = tierIndex % _tierUnitCapacity;
+                mainIndex = (unitCount * _mainUnitCapacity) + _mainUnitStart + remainder;
+            }
+            
+            return mainIndex;
+        }
+        
+        protected int getSplitIndex(long hashCode, int mainLevel, int mainSplit) {
+            int tierLevelCapacity = _tierUnitCapacity * (1 << (mainLevel + 1));
+            int tierIndex = (int)(hashCode % tierLevelCapacity);
+            if (tierIndex < 0) tierIndex = -tierIndex;
+            
+            int unitCount = tierIndex / _tierUnitCapacity;
+            int remainder = tierIndex % _tierUnitCapacity;
+            int mainIndex = (unitCount * _mainUnitCapacity) + _mainUnitStart + remainder;
+            
+            return mainIndex;
+        }
+        
+        protected boolean hasIndex(int mainIndex) {
+            int remainder = mainIndex % _mainUnitCapacity;
+            return (_mainUnitStart <= remainder && remainder < _mainUnitEnd) ? true : false;
+        }
     }
 
     @Override
-    public Iterator<Entry<byte[], byte[]>> iterator()
-    {
-        return new DataStoreIterator(_dataArray, _dataHandler);
+    public Iterator<byte[]> keyIterator() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Iterator<Entry<byte[], byte[]>> iterator() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException();
     }
 }

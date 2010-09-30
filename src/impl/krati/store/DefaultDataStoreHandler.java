@@ -1,6 +1,12 @@
 package krati.store;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.AbstractMap.SimpleEntry;
+
+import org.apache.log4j.Logger;
 
 import krati.store.DataStoreHandler;
 
@@ -12,6 +18,8 @@ import krati.store.DataStoreHandler;
  */
 public final class DefaultDataStoreHandler implements DataStoreHandler
 {
+    private final static Logger _log = Logger.getLogger(DefaultDataStoreHandler.class);
+    
     @Override
     public final byte[] assemble(byte[] key, byte[] value)
     {
@@ -91,6 +99,7 @@ public final class DefaultDataStoreHandler implements DataStoreHandler
         }
         catch(Exception e)
         {
+            _log.error("Failed to countCollisions", e);
             return 0;
         }
     }
@@ -209,5 +218,107 @@ public final class DefaultDataStoreHandler implements DataStoreHandler
         }
         
         return false;
+    }
+
+    @Override
+    public final List<byte[]> extractKeys(byte[] data) {
+        try
+        {
+            ByteBuffer bb = ByteBuffer.wrap(data);
+            int cnt = bb.getInt();
+            final List<byte[]> result = new ArrayList<byte[]>(cnt);
+            
+            while(cnt > 0)
+            {
+                // Process key
+                int len = bb.getInt();
+                byte[] key = new byte[len];
+                bb.get(key);
+                
+                // Add to result
+                result.add(key);
+                
+                // Process value
+                len = bb.getInt();
+                bb.position(bb.position() + len);
+                
+                cnt--;
+            }
+            
+            return result;
+        }
+        catch(Exception e)
+        {
+            _log.error("Failed to extractKeys", e);
+            return null;
+        }
+    }
+    
+    public final List<byte[]> extractValues(byte[] data) {
+        try
+        {
+            ByteBuffer bb = ByteBuffer.wrap(data);
+            int cnt = bb.getInt();
+            final List<byte[]> result = new ArrayList<byte[]>(cnt);
+            
+            while(cnt > 0)
+            {
+                // Process key
+                int len = bb.getInt();
+                bb.position(bb.position() + len);
+                
+                // Process value
+                len = bb.getInt();
+                byte[] value = new byte[len];
+                bb.get(value);
+                
+                // Add to result
+                result.add(value);
+                
+                cnt--;
+            }
+            
+            return result;
+        }
+        catch(Exception e)
+        {
+            _log.error("Failed to extractValues", e);
+            return null;
+        }
+    }
+    
+    @Override
+    public final List<Entry<byte[], byte[]>> extractEntries(byte[] data) {
+        try
+        {
+            ByteBuffer bb = ByteBuffer.wrap(data);
+            int cnt = bb.getInt();
+            final List<Entry<byte[], byte[]>> result = new ArrayList<Entry<byte[], byte[]>>(cnt);
+            
+            while(cnt > 0)
+            {
+                // Process key
+                int len = bb.getInt();
+                byte[] key = new byte[len];
+                bb.get(key);
+                
+                // Process value
+                len = bb.getInt();
+                byte[] val = new byte[len];
+                bb.get(val);
+                
+                // Add to result
+                result.add(new SimpleEntry<byte[], byte[]>(key, val));
+                
+                cnt--;
+            }
+            
+            return result;
+        }
+        catch(Exception e)
+        {
+            _log.error("Failed to extractEntries", e);
+            return null;
+        }
     }
 }

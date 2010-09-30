@@ -3,6 +3,9 @@ package krati.store;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.AbstractMap;
+import java.util.Iterator;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
@@ -181,6 +184,49 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
         
         int getDataAddr() {
             return _dataAddr;
+        }
+    }
+
+    @Override
+    public Iterator<byte[]> keyIterator() {
+        return _index.keyIterator();
+    }
+
+    @Override
+    public Iterator<Entry<byte[], byte[]>> iterator() {
+        return new IndexedDataStoreIterator(_index.iterator());
+    }
+    
+    private class IndexedDataStoreIterator implements Iterator<Entry<byte[], byte[]>> {
+        final Iterator<Entry<byte[], byte[]>> _indexIter;
+        
+        IndexedDataStoreIterator(Iterator<Entry<byte[], byte[]>> indexIter) {
+            this._indexIter = indexIter;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return _indexIter.hasNext();
+        }
+
+        @Override
+        public Entry<byte[], byte[]> next() {
+            Entry<byte[], byte[]> keyMeta = _indexIter.next();
+            
+            if(keyMeta != null) {
+                IndexMeta meta = IndexMeta.parse(keyMeta.getValue());
+                if(meta == null) return null;
+                
+                byte[] value = _bytesDB.get(meta.getDataAddr());
+                return new AbstractMap.SimpleEntry<byte[], byte[]>(keyMeta.getKey(), value);
+            }
+            
+            return null;
+        }
+        
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
         }
     }
 }

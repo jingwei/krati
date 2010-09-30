@@ -5,7 +5,6 @@ import java.io.IOException;
 
 import org.apache.log4j.Logger;
 
-import krati.core.array.CheckedDataArray;
 import krati.core.array.SimpleDataArray;
 import krati.core.array.basic.StaticLongArray;
 import krati.core.segment.MemorySegmentFactory;
@@ -172,14 +171,11 @@ public class DataCacheImpl implements DataCache
         SegmentManager segManager = SegmentManager.getInstance(segmentHome,
                                                                segmentFactory,
                                                                segmentFileSizeMB);
+        _dataArray = new SimpleDataArray(addressArray, segManager);
         
         if(checked)
         {
-            _dataArray = new CheckedDataArray(addressArray, segManager);
-        }
-        else
-        {
-            _dataArray = new SimpleDataArray(addressArray, segManager);
+            // TODO
         }
         
         _log.info("DataCache initiated: " + getStatus());
@@ -229,13 +225,11 @@ public class DataCacheImpl implements DataCache
                                                                segmentFactory,
                                                                segmentFileSizeMB);
         
+        _dataArray = new SimpleDataArray(addressArray, segManager, segmentCompactFactor);
+        
         if (checked)
         {
-            _dataArray = new CheckedDataArray(addressArray, segManager, segmentCompactFactor);
-        }
-        else
-        {
-            _dataArray = new SimpleDataArray(addressArray, segManager, segmentCompactFactor);
+            // TODO
         }
         
         _log.info("DataCache initiated: " + getStatus());

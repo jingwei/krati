@@ -1,6 +1,8 @@
 package krati.store;
 
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.Map.Entry;
 
 /**
  * Key Value Store.
@@ -10,7 +12,7 @@ import java.io.IOException;
  * @param <K> key
  * @param <V> value
  */
-public interface DataStore<K, V> {
+public interface DataStore<K, V> extends Iterable<Entry<K, V>> {
     
     public V get(K key);
     
@@ -23,4 +25,6 @@ public interface DataStore<K, V> {
     public void persist() throws IOException;
     
     public void clear() throws IOException;
+    
+    public Iterator<K> keyIterator();
 }

@@ -2,6 +2,8 @@ package krati.store.index;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
@@ -105,5 +107,15 @@ public class HashIndex implements Index {
     @Override
     public void update(byte[] keyBytes, byte[] metaBytes) throws Exception {
         _store.put(keyBytes, metaBytes);
+    }
+    
+    @Override
+    public Iterator<byte[]> keyIterator() {
+        return _store.keyIterator();
+    }
+    
+    @Override
+    public Iterator<Entry<byte[], byte[]>> iterator() {
+        return _store.iterator();
     }
 }

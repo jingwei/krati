@@ -1,9 +1,11 @@
 package test.store;
 
 import java.io.File;
+import java.util.Iterator;
 
 import krati.store.DataStore;
 import test.AbstractSeedTest;
+import test.StatsLog;
 import test.driver.StoreReader;
 import test.driver.StoreTestDriver;
 import test.driver.StoreWriter;
@@ -61,5 +63,32 @@ public abstract class EvalDataStore extends AbstractSeedTest
         driver.run(numOfReaders, numOfWriters, runDuration);
         
         store.sync();
+        
+        try
+        {
+            iterate(store, 100);
+        }
+        catch(UnsupportedOperationException e) {}
+    }
+    
+    protected void iterate(DataStore<byte[], byte[]> store, int runTimeSeconds)
+    {
+        int cnt = 0;
+        long total = runTimeSeconds * 1000;
+        long start = System.currentTimeMillis();
+        Iterator<byte[]> iter = store.keyIterator();
+        StatsLog.logger.info(">>> iterate");
+        
+        byte[] key = null;
+        while(iter.hasNext())
+        {
+            key = iter.next();
+            store.get(key);
+            cnt++;
+            
+            if((System.currentTimeMillis() - start) > total) break;
+        }
+        
+        StatsLog.logger.info("read " + cnt + " key-value(s) in " + (System.currentTimeMillis() - start) + " ms");
     }
 }

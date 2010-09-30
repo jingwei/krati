@@ -2,6 +2,8 @@ package krati.store;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
@@ -323,5 +325,15 @@ public class StaticDataStore implements DataStore<byte[], byte[]>
     public DataArray getDataArray()
     {
         return _dataArray;
+    }
+
+    @Override
+    public Iterator<byte[]> keyIterator() {
+        return new DataStoreKeyIterator(_dataArray, _dataHandler);
+    }
+    
+    @Override
+    public Iterator<Entry<byte[], byte[]>> iterator() {
+        return new DataStoreIterator(_dataArray, _dataHandler);
     }
 }

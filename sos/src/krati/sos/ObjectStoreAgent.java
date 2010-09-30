@@ -1,6 +1,8 @@
 package krati.sos;
 
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.Map.Entry;
 
 /**
  * ObjectStoreAgent:
@@ -137,5 +139,15 @@ public class ObjectStoreAgent<K, V> implements ObjectStore<K, V>
     public byte[] getBytes(byte[] keyBytes)
     {
         return _store.getBytes(keyBytes);
+    }
+
+    @Override
+    public Iterator<K> keyIterator() {
+        return _store.keyIterator();
+    }
+
+    @Override
+    public Iterator<Entry<K, V>> iterator() {
+        return _store.iterator();
     }
 }
