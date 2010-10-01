@@ -26,6 +26,8 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
     private final Index _index;
     private final File _indexHome;
     private final File _storeHome;
+    private int _batchSize;
+    private int _updateCnt;
     
     public IndexedDataStore(File homeDir,
                             int batchSize,
@@ -67,7 +69,7 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
                                numSyncBatches,
                                indexSegmentFileSizeMB,
                                indexSegmentFactory);
-        
+        _batchSize = batchSize;
         _logger.info("opened indexHome=" + _indexHome.getAbsolutePath() + " storeHome=" + _storeHome.getAbsolutePath());
     }
     
@@ -120,6 +122,12 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
             // No need to update hashIndex
         }
         
+        _updateCnt++;
+        if(_updateCnt >= _batchSize) { 
+            _updateCnt = 0;
+            persist();
+        }
+        
         return true;
     }
     
@@ -139,6 +147,12 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
         
         // Update index 
         _index.update(key, null);
+        
+        _updateCnt++;
+        if(_updateCnt >= _batchSize) { 
+            _updateCnt = 0;
+            persist();
+        }
         
         return true;
     }
