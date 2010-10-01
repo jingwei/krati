@@ -11,6 +11,11 @@ import test.driver.StoreTestDriver;
 import test.driver.StoreWriter;
 import test.driver.raw.StoreTestBytesDriver;
 
+/**
+ * EvalDataStore
+ * 
+ * @author jwu
+ */
 public abstract class EvalDataStore extends AbstractSeedTest
 {
     public EvalDataStore(String name)
