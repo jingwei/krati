@@ -1,9 +1,8 @@
 build
-classes
+build/classes
+build/jar
 docs
 logs
 lib/log4j-1.2.15.jar
-lib/zookeeper-3.2.2.jar
 test/output
-test/cache
-test/store
+test/build
