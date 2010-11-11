@@ -1,33 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <project xmlns:ivy="antlib:org.apache.ivy.ant" name="krati" default="main" basedir=".">
     <property name="project.name" value="krati"/>
-    <property name="krati.root" location="."/>
-
-    <property file="${krati.root}/version.properties"/>
-
-    <property name="logs.dir" value="logs"/>
-    <property name="build.dir" value="build"/>
-    <property name="config.dir" value="config"/>
-    <property name="jar.dir" value="${build.dir}/jar"/>
-    <property name="jar.file" value="${jar.dir}/${project.name}-${version}.jar"/>
-    <property name="classes.dir"  value="${build.dir}/classes"/>
+    <property file="${basedir}/build.properties"/>
+    <property name="jar.file" value="${build.jar.dir}/${project.name}-${version}.jar"/>
     
     <property name="ivy.jar.dir" value="${basedir}/ivy"/>
     <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar"/>
     <property name="ivy.install.version" value="2.0.0-beta1"/>
     
-    <property name="lib.dir" value="lib"/>
-    <property name="src.dir" value="src"/>
-    <property name="sos.src.dir" value="sos/src"/>
-    
-    <property name="test.dir" value="test"/>
-    <property name="test.lib.dir" value="${test.dir}/lib"/>
-    <property name="test.src.dir" value="${test.dir}/src"/>
-    <property name="test.build.dir" value="${test.dir}/classes"/>
+    <property name="src.api.dir"  value="${src.dir}/api"/>
+    <property name="src.impl.dir" value="${src.dir}/impl"/>
+    <property name="src.sos.dir"  value="${src.dir}/sos"/>
     
     <property name="tests.to.run" value="TestDataCache"/>
     
-    <path id="compile.class.path">
+    <path id="main.compile.class.path">
         <fileset dir="${lib.dir}">
             <include name="*.jar"/>
         </fileset>
@@ -39,14 +26,14 @@
         </fileset>
     </path>
     
-    <path id="java.class.path">
-        <dirset dir="${classes.dir}">
+    <path id="main.class.path">
+        <dirset dir="${build.classes.dir}">
             <include name="**"/>
         </dirset>
     </path>
     
     <path id="test.class.path">
-        <dirset dir="${test.build.dir}">
+        <dirset dir="${test.build.classes.dir}">
             <include name="**"/>
         </dirset>
     </path>
@@ -69,70 +56,62 @@
     </target>
     
     <target name="clean">
-      <delete dir="${build.dir}"/>
       <delete dir="${logs.dir}"/>
+      <delete dir="${build.dir}"/>
       <delete dir="${test.build.dir}"/>
+      <delete dir="${test.output.dir}"/>
+      <delete dir="${test.report.dir}"/>
+      <delete dir="${contrib.build.dir}"/>
     </target>
     
     <target name="init">
         <mkdir dir="${logs.dir}"/>
         <mkdir dir="${build.dir}"/>
-        <mkdir dir="${classes.dir}"/>
-    </target>
-    
-    <target name="compile.krati" depends="init">
-        <javac debug="true" destdir="${classes.dir}">
-            <src path="${src.dir}/api"/>
-            <src path="${src.dir}/impl"/>
-            <classpath refid="compile.class.path"/>
-        </javac>
-    </target>
-    
-    <target name="compile.sos" depends="compile.krati">
-        <javac debug="true" destdir="${classes.dir}">
-            <src path="${sos.src.dir}"/>
-            <classpath refid="java.class.path"/>
-            <classpath refid="compile.class.path"/>
-        </javac>
+        <mkdir dir="${build.jar.dir}"/>
+        <mkdir dir="${build.classes.dir}"/>
     </target>
     
     <target name="compile" depends="init" description="-- compile source">
-        <javac debug="true" destdir="${classes.dir}">
-            <src path="${src.dir}/api"/>
-            <src path="${src.dir}/impl"/>
-            <src path="${sos.src.dir}"/>
-            <classpath refid="compile.class.path"/>
+        <javac debug="true" destdir="${build.classes.dir}">
+            <src path="${src.api.dir}"/>
+            <src path="${src.impl.dir}"/>
+            <src path="${src.sos.dir}"/>
+            <classpath refid="main.compile.class.path"/>
         </javac>
-        <copy todir="${classes.dir}">
+        <copy todir="${build.classes.dir}">
             <fileset dir="${config.dir}"/>
         </copy>
     </target>
     
     <target name="jar" depends="compile">
-        <mkdir dir="${jar.dir}"/>
-        <jar destfile="${jar.file}" basedir="${classes.dir}"/>
+        <mkdir dir="${build.jar.dir}"/>
+        <jar destfile="${jar.file}" basedir="${build.classes.dir}"/>
     </target>
     
     <target name="test.clean" description="-- clean test results">
       <delete dir="${logs.dir}"/>
       <delete dir="${test.build.dir}"/>
-      <delete dir="${test.dir}/cache"/>
-      <delete dir="${test.dir}/output"/>
+      <delete dir="${test.output.dir}"/>
+      <delete dir="${test.report.dir}"/>
     </target>
     
     <target name="test.init" depends="compile">
         <mkdir dir="${test.build.dir}"/>
+        <mkdir dir="${test.build.jar.dir}"/>
+        <mkdir dir="${test.build.classes.dir}"/>
+        <mkdir dir="${test.output.dir}"/>
+        <mkdir dir="${test.report.dir}"/>
     </target>
     
     <target name="test.compile" depends="test.init">
-        <javac debug="true" destdir="${test.build.dir}">
+        <javac debug="true" destdir="${test.build.classes.dir}">
             <src path="${test.src.dir}"/>
-            <classpath refid="java.class.path"/>
-            <classpath refid="compile.class.path"/>
+            <classpath refid="main.class.path"/>
+            <classpath refid="main.compile.class.path"/>
             <classpath refid="test.compile.class.path"/>
         </javac>
-        <copy todir="${test.build.dir}">
-            <fileset dir="${config.dir}"/>
+        <copy todir="${test.build.classes.dir}">
+            <fileset dir="${test.config.dir}"/>
         </copy>
     </target>
     
@@ -147,18 +126,18 @@
             <jvmarg value="-Dtest.segFileSizeMB=128"/>
             <jvmarg value="-Dtest.runTimeSeconds=30"/>
             <jvmarg value="-Dtest.dir=${test.dir}"/>
-            <jvmarg value="-Dtest.output.dir=${test.dir}/output"/>
+            <jvmarg value="-Dtest.output.dir=${test.output.dir}"/>
             <formatter type="brief" usefile="false"/>
             
             <classpath>
                 <path refid="test.class.path"/>
-                <path refid="java.class.path"/>
-                <path refid="compile.class.path"/>
+                <path refid="main.class.path"/>
+                <path refid="main.compile.class.path"/>
                 <path refid="test.compile.class.path"/>
             </classpath>
             
             <batchtest fork="yes">
-                <fileset dir="${test.build.dir}" includes="**/Test*.class" excludes="**/TestBdb*.class"/>
+                <fileset dir="${test.build.classes.dir}" includes="**/Test*.class" excludes="**/TestBdb*.class"/>
             </batchtest>
         </junit>
     </target>
@@ -174,18 +153,18 @@
             <jvmarg value="-Dtest.segFileSizeMB=256"/>
             <jvmarg value="-Dtest.runTimeSeconds=1800"/>
             <jvmarg value="-Dtest.dir=${test.dir}"/>
-            <jvmarg value="-Dtest.output.dir=${test.dir}/output"/>
+            <jvmarg value="-Dtest.output.dir=${test.output.dir}"/>
             <formatter type="brief" usefile="false"/>
             
             <classpath>
                 <path refid="test.class.path"/>
-                <path refid="java.class.path"/>
-                <path refid="compile.class.path"/>
+                <path refid="main.class.path"/>
+                <path refid="main.compile.class.path"/>
                 <path refid="test.compile.class.path"/>
             </classpath>
             
             <batchtest fork="yes">
-                <fileset dir="${test.build.dir}" includes="**/Test*.class" excludes="**/TestBdb*"/>
+                <fileset dir="${test.build.classes.dir}" includes="**/Test*.class" excludes="**/TestBdb*"/>
             </batchtest>
         </junit>
     </target>
@@ -201,18 +180,18 @@
             <jvmarg value="-Dtest.segFileSizeMB=256"/>
             <jvmarg value="-Dtest.runTimeSeconds=1800"/>
             <jvmarg value="-Dtest.dir=${test.dir}"/>
-            <jvmarg value="-Dtest.output.dir=${test.dir}/output"/>
+            <jvmarg value="-Dtest.output.dir=${test.output.dir}"/>
             <formatter type="brief" usefile="false"/>
             
             <classpath>
                 <path refid="test.class.path"/>
-                <path refid="java.class.path"/>
-                <path refid="compile.class.path"/>
+                <path refid="main.class.path"/>
+                <path refid="main.compile.class.path"/>
                 <path refid="test.compile.class.path"/>
             </classpath>
             
             <batchtest fork="yes">
-                <fileset dir="${test.build.dir}" includes="**/TestDataCache*.class" excludes="**/TestBdb*.class"/>
+                <fileset dir="${test.build.classes.dir}" includes="**/TestDataCache*.class" excludes="**/TestBdb*.class"/>
             </batchtest>
         </junit>
     </target>
@@ -228,18 +207,18 @@
             <jvmarg value="-Dtest.segFileSizeMB=256"/>
             <jvmarg value="-Dtest.runTimeSeconds=1800"/>
             <jvmarg value="-Dtest.dir=${test.dir}"/>
-            <jvmarg value="-Dtest.output.dir=${test.dir}/output"/>
+            <jvmarg value="-Dtest.output.dir=${test.output.dir}"/>
             <formatter type="brief" usefile="false"/>
             
             <classpath>
                 <path refid="test.class.path"/>
-                <path refid="java.class.path"/>
-                <path refid="compile.class.path"/>
+                <path refid="main.class.path"/>
+                <path refid="main.compile.class.path"/>
                 <path refid="test.compile.class.path"/>
             </classpath>
             
             <batchtest fork="yes">
-                <fileset dir="${test.build.dir}" includes="**/Test*Store*.class" excludes="**/*DataStore*.class,**/TestBdb*.class"/>
+                <fileset dir="${test.build.classes.dir}" includes="**/Test*Store*.class" excludes="**/*DataStore*.class,**/TestBdb*.class"/>
             </batchtest>
         </junit>
     </target>
@@ -262,18 +241,18 @@
             <jvmarg value="-Dtest.segFileSizeMB=${test.quick.segFileSizeMB}"/>
             <jvmarg value="-Dtest.runTimeSeconds=${test.quick.runTimeSeconds}"/>
             <jvmarg value="-Dtest.dir=${test.dir}"/>
-            <jvmarg value="-Dtest.output.dir=${test.dir}/output"/>
+            <jvmarg value="-Dtest.output.dir=${test.output.dir}"/>
             <formatter type="brief" usefile="false"/>
             
             <classpath>
                 <path refid="test.class.path"/>
-                <path refid="java.class.path"/>
-                <path refid="compile.class.path"/>
+                <path refid="main.class.path"/>
+                <path refid="main.compile.class.path"/>
                 <path refid="test.compile.class.path"/>
             </classpath>
             
             <batchtest fork="yes">
-                <fileset dir="${test.build.dir}" includes="**/${tests.to.run}.class"/>
+                <fileset dir="${test.build.classes.dir}" includes="**/${tests.to.run}.class"/>
             </batchtest>
         </junit>
     </target>
@@ -298,18 +277,18 @@
             <jvmarg value="-Dtest.segFileSizeMB=${test.loggc.segFileSizeMB}"/>
             <jvmarg value="-Dtest.runTimeSeconds=${test.loggc.runTimeSeconds}"/>
             <jvmarg value="-Dtest.dir=${test.dir}"/>
-            <jvmarg value="-Dtest.output.dir=${test.dir}/output"/>
+            <jvmarg value="-Dtest.output.dir=${test.output.dir}"/>
             <formatter type="brief" usefile="false"/>
             
             <classpath>
                 <path refid="test.class.path"/>
-                <path refid="java.class.path"/>
-                <path refid="compile.class.path"/>
+                <path refid="main.class.path"/>
+                <path refid="main.compile.class.path"/>
                 <path refid="test.compile.class.path"/>
             </classpath>
             
             <batchtest fork="yes">
-                <fileset dir="${test.build.dir}" includes="**/${tests.to.run}.class"/>
+                <fileset dir="${test.build.classes.dir}" includes="**/${tests.to.run}.class"/>
             </batchtest>
         </junit>
     </target>
