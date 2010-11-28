@@ -2,7 +2,7 @@
 <project xmlns:ivy="antlib:org.apache.ivy.ant" name="krati" default="main" basedir=".">
     <property name="project.name" value="krati"/>
     <property file="${basedir}/build.properties"/>
-    <property name="jar.file" value="${build.jar.dir}/${project.name}-${version}.jar"/>
+    <property name="jar.file" value="${build.dir}/${project.name}-${version}.jar"/>
     
     <property name="ivy.jar.dir" value="${basedir}/ivy"/>
     <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar"/>
@@ -14,26 +14,26 @@
     
     <property name="tests.to.run" value="TestDataCache"/>
     
-    <path id="main.compile.class.path">
+    <path id="main.compile.classpath">
         <fileset dir="${lib.dir}">
             <include name="*.jar"/>
         </fileset>
     </path>
     
-    <path id="test.compile.class.path">
+    <path id="test.compile.classpath">
         <fileset dir="${test.lib.dir}">
             <include name="*.jar"/>
         </fileset>
     </path>
     
-    <path id="main.class.path">
+    <path id="main.classpath">
         <dirset dir="${build.classes.dir}">
             <include name="**"/>
         </dirset>
     </path>
     
-    <path id="test.class.path">
-        <dirset dir="${test.build.classes.dir}">
+    <path id="test.classpath">
+        <dirset dir="${build.test.classes.dir}">
             <include name="**"/>
         </dirset>
     </path>
@@ -58,16 +58,12 @@
     <target name="clean">
       <delete dir="${logs.dir}"/>
       <delete dir="${build.dir}"/>
-      <delete dir="${test.build.dir}"/>
+      <delete dir="${target.dir}"/>
       <delete dir="${test.output.dir}"/>
-      <delete dir="${test.report.dir}"/>
-      <delete dir="${contrib.build.dir}"/>
     </target>
     
-    <target name="init">
-        <mkdir dir="${logs.dir}"/>
+    <target name="init" depends="resolve">
         <mkdir dir="${build.dir}"/>
-        <mkdir dir="${build.jar.dir}"/>
         <mkdir dir="${build.classes.dir}"/>
     </target>
     
@@ -76,7 +72,7 @@
             <src path="${src.api.dir}"/>
             <src path="${src.impl.dir}"/>
             <src path="${src.sos.dir}"/>
-            <classpath refid="main.compile.class.path"/>
+            <classpath refid="main.compile.classpath"/>
         </javac>
         <copy todir="${build.classes.dir}">
             <fileset dir="${config.dir}"/>
@@ -84,33 +80,29 @@
     </target>
     
     <target name="jar" depends="compile">
-        <mkdir dir="${build.jar.dir}"/>
         <jar destfile="${jar.file}" basedir="${build.classes.dir}"/>
     </target>
     
     <target name="test.clean" description="-- clean test results">
       <delete dir="${logs.dir}"/>
-      <delete dir="${test.build.dir}"/>
       <delete dir="${test.output.dir}"/>
-      <delete dir="${test.report.dir}"/>
+      <delete dir="${build.test.classes.dir}"/>
     </target>
     
     <target name="test.init" depends="compile">
-        <mkdir dir="${test.build.dir}"/>
-        <mkdir dir="${test.build.jar.dir}"/>
-        <mkdir dir="${test.build.classes.dir}"/>
+        <mkdir dir="${logs.dir}"/>
         <mkdir dir="${test.output.dir}"/>
-        <mkdir dir="${test.report.dir}"/>
+        <mkdir dir="${build.test.classes.dir}"/>
     </target>
     
     <target name="test.compile" depends="test.init">
-        <javac debug="true" destdir="${test.build.classes.dir}">
+        <javac debug="true" destdir="${build.test.classes.dir}">
             <src path="${test.src.dir}"/>
-            <classpath refid="main.class.path"/>
-            <classpath refid="main.compile.class.path"/>
-            <classpath refid="test.compile.class.path"/>
+            <classpath refid="main.classpath"/>
+            <classpath refid="main.compile.classpath"/>
+            <classpath refid="test.compile.classpath"/>
         </javac>
-        <copy todir="${test.build.classes.dir}">
+        <copy todir="${build.test.classes.dir}">
             <fileset dir="${test.config.dir}"/>
         </copy>
     </target>
@@ -119,25 +111,25 @@
         <junit maxmemory="4G">
             <jvmarg value="-server"/>
             <jvmarg value="-Dtest.idStart=0"/>
-            <jvmarg value="-Dtest.idCount=100000"/>
-            <jvmarg value="-Dtest.keyCount=100000"/>
-            <jvmarg value="-Dtest.initLevel=2"/>
+            <jvmarg value="-Dtest.idCount=10000"/>
+            <jvmarg value="-Dtest.keyCount=10000"/>
+            <jvmarg value="-Dtest.initLevel=1"/>
             <jvmarg value="-Dtest.numReaders=4"/>
             <jvmarg value="-Dtest.segFileSizeMB=128"/>
             <jvmarg value="-Dtest.runTimeSeconds=30"/>
-            <jvmarg value="-Dtest.dir=${test.dir}"/>
+            <jvmarg value="-Dtest.resources.dir=${test.resources.dir}"/>
             <jvmarg value="-Dtest.output.dir=${test.output.dir}"/>
             <formatter type="brief" usefile="false"/>
             
             <classpath>
-                <path refid="test.class.path"/>
-                <path refid="main.class.path"/>
-                <path refid="main.compile.class.path"/>
-                <path refid="test.compile.class.path"/>
+                <path refid="main.classpath"/>
+                <path refid="test.classpath"/>
+                <path refid="main.compile.classpath"/>
+                <path refid="test.compile.classpath"/>
             </classpath>
             
             <batchtest fork="yes">
-                <fileset dir="${test.build.classes.dir}" includes="**/Test*.class" excludes="**/TestBdb*.class"/>
+                <fileset dir="${build.test.classes.dir}" includes="**/Test*.class" excludes="**/TestBdb*.class"/>
             </batchtest>
         </junit>
     </target>
@@ -152,73 +144,19 @@
             <jvmarg value="-Dtest.numReaders=4"/>
             <jvmarg value="-Dtest.segFileSizeMB=256"/>
             <jvmarg value="-Dtest.runTimeSeconds=1800"/>
-            <jvmarg value="-Dtest.dir=${test.dir}"/>
+            <jvmarg value="-Dtest.resources.dir=${test.resources.dir}"/>
             <jvmarg value="-Dtest.output.dir=${test.output.dir}"/>
             <formatter type="brief" usefile="false"/>
             
             <classpath>
-                <path refid="test.class.path"/>
-                <path refid="main.class.path"/>
-                <path refid="main.compile.class.path"/>
-                <path refid="test.compile.class.path"/>
+                <path refid="main.classpath"/>
+                <path refid="test.classpath"/>
+                <path refid="main.compile.classpath"/>
+                <path refid="test.compile.classpath"/>
             </classpath>
             
             <batchtest fork="yes">
-                <fileset dir="${test.build.classes.dir}" includes="**/Test*.class" excludes="**/TestBdb*"/>
-            </batchtest>
-        </junit>
-    </target>
-
-    <target name="regress.cache" depends="test.compile" description="-- regress DataCache for memory/mapped/channel (30 minutes per test)">
-        <junit maxmemory="16G">
-            <jvmarg value="-server"/>
-            <jvmarg value="-Dtest.idStart=0"/>
-            <jvmarg value="-Dtest.idCount=5000000"/>
-            <jvmarg value="-Dtest.keyCount=5000000"/>
-            <jvmarg value="-Dtest.initLevel=7"/>
-            <jvmarg value="-Dtest.numReaders=4"/>
-            <jvmarg value="-Dtest.segFileSizeMB=256"/>
-            <jvmarg value="-Dtest.runTimeSeconds=1800"/>
-            <jvmarg value="-Dtest.dir=${test.dir}"/>
-            <jvmarg value="-Dtest.output.dir=${test.output.dir}"/>
-            <formatter type="brief" usefile="false"/>
-            
-            <classpath>
-                <path refid="test.class.path"/>
-                <path refid="main.class.path"/>
-                <path refid="main.compile.class.path"/>
-                <path refid="test.compile.class.path"/>
-            </classpath>
-            
-            <batchtest fork="yes">
-                <fileset dir="${test.build.classes.dir}" includes="**/TestDataCache*.class" excludes="**/TestBdb*.class"/>
-            </batchtest>
-        </junit>
-    </target>
-
-    <target name="regress.store" depends="test.compile" description="-- regress DataStore for memory/mapped/channel (30 minutes per test)">
-        <junit maxmemory="16G">
-            <jvmarg value="-server"/>
-            <jvmarg value="-Dtest.idStart=0"/>
-            <jvmarg value="-Dtest.idCount=5000000"/>
-            <jvmarg value="-Dtest.keyCount=5000000"/>
-            <jvmarg value="-Dtest.initLevel=7"/>
-            <jvmarg value="-Dtest.numReaders=4"/>
-            <jvmarg value="-Dtest.segFileSizeMB=256"/>
-            <jvmarg value="-Dtest.runTimeSeconds=1800"/>
-            <jvmarg value="-Dtest.dir=${test.dir}"/>
-            <jvmarg value="-Dtest.output.dir=${test.output.dir}"/>
-            <formatter type="brief" usefile="false"/>
-            
-            <classpath>
-                <path refid="test.class.path"/>
-                <path refid="main.class.path"/>
-                <path refid="main.compile.class.path"/>
-                <path refid="test.compile.class.path"/>
-            </classpath>
-            
-            <batchtest fork="yes">
-                <fileset dir="${test.build.classes.dir}" includes="**/Test*Store*.class" excludes="**/*DataStore*.class,**/TestBdb*.class"/>
+                <fileset dir="${build.test.classes.dir}" includes="**/Test*.class" excludes="**/TestBdb*"/>
             </batchtest>
         </junit>
     </target>
@@ -240,19 +178,19 @@
             <jvmarg value="-Dtest.numReaders=${test.quick.numReaders}"/>
             <jvmarg value="-Dtest.segFileSizeMB=${test.quick.segFileSizeMB}"/>
             <jvmarg value="-Dtest.runTimeSeconds=${test.quick.runTimeSeconds}"/>
-            <jvmarg value="-Dtest.dir=${test.dir}"/>
+            <jvmarg value="-Dtest.resources.dir=${test.resources.dir}"/>
             <jvmarg value="-Dtest.output.dir=${test.output.dir}"/>
             <formatter type="brief" usefile="false"/>
             
             <classpath>
-                <path refid="test.class.path"/>
-                <path refid="main.class.path"/>
-                <path refid="main.compile.class.path"/>
-                <path refid="test.compile.class.path"/>
+                <path refid="main.classpath"/>
+                <path refid="test.classpath"/>
+                <path refid="main.compile.classpath"/>
+                <path refid="test.compile.classpath"/>
             </classpath>
             
             <batchtest fork="yes">
-                <fileset dir="${test.build.classes.dir}" includes="**/${tests.to.run}.class"/>
+                <fileset dir="${build.test.classes.dir}" includes="**/${tests.to.run}.class"/>
             </batchtest>
         </junit>
     </target>
@@ -276,19 +214,19 @@
             <jvmarg value="-Dtest.numReaders=${test.loggc.numReaders}"/>
             <jvmarg value="-Dtest.segFileSizeMB=${test.loggc.segFileSizeMB}"/>
             <jvmarg value="-Dtest.runTimeSeconds=${test.loggc.runTimeSeconds}"/>
-            <jvmarg value="-Dtest.dir=${test.dir}"/>
+            <jvmarg value="-Dtest.resources.dir=${test.resources.dir}"/>
             <jvmarg value="-Dtest.output.dir=${test.output.dir}"/>
             <formatter type="brief" usefile="false"/>
             
             <classpath>
-                <path refid="test.class.path"/>
-                <path refid="main.class.path"/>
-                <path refid="main.compile.class.path"/>
-                <path refid="test.compile.class.path"/>
+                <path refid="main.classpath"/>
+                <path refid="test.classpath"/>
+                <path refid="main.compile.classpath"/>
+                <path refid="test.compile.classpath"/>
             </classpath>
             
             <batchtest fork="yes">
-                <fileset dir="${test.build.classes.dir}" includes="**/${tests.to.run}.class"/>
+                <fileset dir="${build.test.classes.dir}" includes="**/${tests.to.run}.class"/>
             </batchtest>
         </junit>
     </target>

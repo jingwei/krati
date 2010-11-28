@@ -10,5 +10,5 @@
 	<classpathentry kind="lib" path="test/lib/junit-4.5.jar"/>
 	<classpathentry kind="lib" path="test/lib/protobuf-java-2.3.0.jar"/>
 	<classpathentry kind="lib" path="test/lib/je-4.0.92.jar"/>
-	<classpathentry kind="output" path="classes"/>
+	<classpathentry kind="output" path="eclipse-build"/>
 </classpath>

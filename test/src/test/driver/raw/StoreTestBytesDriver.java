@@ -124,9 +124,10 @@ public class StoreTestBytesDriver<S> implements StoreTestDriver
             long startTime = System.currentTimeMillis();
             long writeCount = 0;
             int heartBeats = runDuration/10;
+            long sleepTime = Math.min(runDuration * 1000, 10000);
             for(int i = 0; i < heartBeats; i++)
             {
-                Thread.sleep(10000);
+                Thread.sleep(sleepTime);
                 long newWriteCount = 0;
                 for(int r = 0; r < writers.length; r++)
                 {
@@ -269,9 +270,10 @@ public class StoreTestBytesDriver<S> implements StoreTestDriver
             long readCount = 0;
             long writeCount = 0;
             int heartBeats = runDuration/10;
+            long sleepTime = Math.min(runDuration * 1000, 10000);
             for(int i = 0; i < heartBeats; i++)
             {
-                Thread.sleep(10000);
+                Thread.sleep(sleepTime);
 
                 long newReadCount = 0;
                 for(int r = 0; r < readers.length; r++)
@@ -361,13 +363,13 @@ public class StoreTestBytesDriver<S> implements StoreTestDriver
     {
         try
         {
-            int timeAllocated = runDuration/3;
+            int timeAllocated = Math.round((float)runDuration/3);
             
             StatsLog.logger.info(">>> populate");
             populate();
             
             StatsLog.logger.info(">>> read only");
-            evalRead(numOfReaders, 10);
+            evalRead(numOfReaders, Math.min(timeAllocated, 10));
             
             StatsLog.logger.info(">>> write only");
             evalWrite(numOfWriters, timeAllocated);

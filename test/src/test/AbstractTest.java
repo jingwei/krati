@@ -9,31 +9,31 @@ import junit.framework.TestCase;
 
 public class AbstractTest extends TestCase
 {
-    public static final File TEST_DIR;
     public static final File TEST_OUTPUT_DIR;
+    public static final File TEST_RESOURCES_DIR;
     static final Logger _log = Logger.getLogger(AbstractTest.class);
     
     static
     {
-        TEST_DIR = new File(System.getProperty("test.dir"));
-        if(!TEST_DIR.exists())
-        {
-            TEST_DIR.mkdirs();
-        }
-        
         TEST_OUTPUT_DIR = new File(System.getProperty("test.output.dir"));
         if(!TEST_OUTPUT_DIR.exists())
         {
             TEST_OUTPUT_DIR.mkdirs();
         }
+        
+        TEST_RESOURCES_DIR = new File(System.getProperty("test.resources.dir"));
+        if(!TEST_RESOURCES_DIR.exists())
+        {
+            TEST_RESOURCES_DIR.mkdirs();
+        }
     }
     
-    // Short-Regression Test Params.
+    // Default Test Params.
     public static int _idStart = 0;
-    public static int _idCount = 500000;
-    public static int _keyCount = 375000;
-    public static int _runTimeSeconds = 120;
-    public static int _segFileSizeMB = 256;
+    public static int _idCount = 100000;
+    public static int _keyCount = 75000;
+    public static int _runTimeSeconds = 60;
+    public static int _segFileSizeMB = 128;
     public static int _initLevel = 5;
     public static int _numReaders = 4;
     
@@ -137,6 +137,11 @@ public class AbstractTest extends TestCase
     {
         this.name = name;
     }
+
+    public File getHomeDirectory()
+    {
+        return new File(TEST_OUTPUT_DIR, getClass().getSimpleName());
+    }
     
     public void cleanTestOutput() throws Exception
     {
@@ -205,10 +210,5 @@ public class AbstractTest extends TestCase
         {
             throw new IOException("dir:"+dir.getAbsolutePath()+" not deleted");
         }
-    }
-    
-    protected File getHomeDirectory()
-    {
-        return new File(TEST_OUTPUT_DIR, getClass().getSimpleName());
     }
 }

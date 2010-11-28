@@ -41,7 +41,7 @@ public class TestDynamicDataStore extends AbstractTest
         
         // Create DynamicDataStore 1
         File storeDir = getHomeDirectory();
-        DynamicDataStore dynStore1 = getDynamicDataStore(storeDir, 0, 100);
+        DynamicDataStore dynStore1 = getDynamicDataStore(storeDir, 0, 32);
         
         StatsLog.logger.info("create dynStore1"); 
         StatsLog.logger.info("level=" + dynStore1.getLevel() +
@@ -164,36 +164,11 @@ public class TestDynamicDataStore extends AbstractTest
         if ((unitCapacity << 5) != dynStore1.getCapacity())
             throw new RuntimeException("capacity expected: " + (unitCapacity << 5));
         
-        // Add one more update to trigger split
-        keyStart += keyCount;
-        keyCount = 1;
-        write(keyStart, keyCount, dynStore1);
-        StatsLog.logger.info("update keyStart=" + keyStart + " keyCount=" + keyCount);
-        StatsLog.logger.info("level=" + dynStore1.getLevel() +
-                             " split=" + dynStore1.getSplit() +
-                             " capacity=" + dynStore1.getCapacity() +
-                             " loadFactor=" + dynStore1.getLoadFactor());
-        if ((unitCapacity << 5 + unitCapacity) != dynStore1.getCapacity())
-            throw new RuntimeException("capacity expected: " + (unitCapacity << 5 + unitCapacity));
-        
-        dynStore1.rehash();
-        StatsLog.logger.info("rehash()");
-        StatsLog.logger.info("level=" + dynStore1.getLevel() +
-                             " split=" + dynStore1.getSplit() +
-                             " capacity=" + dynStore1.getCapacity() +
-                             " loadFactor=" + dynStore1.getLoadFactor());
-        if(dynStore1.getLevel() != 6)
-            throw new RuntimeException("level expected: " + 6);
-        if(dynStore1.getSplit() != 0)
-            throw new RuntimeException("split expected: " + 0);
-        if ((dynStore1.getLevelCapacity()) != dynStore1.getCapacity())
-            throw new RuntimeException("capacity expected: " + dynStore1.getLevelCapacity());
-        
         dynStore1.sync();
         int capacity1 = dynStore1.getCapacity();
         
         // Create DynamicDataStore 2
-        DynamicDataStore dynStore2 = getDynamicDataStore(storeDir, 0, 100);
+        DynamicDataStore dynStore2 = getDynamicDataStore(storeDir, 0, 32);
         StatsLog.logger.info("create dynStore2");
         StatsLog.logger.info("level=" + dynStore2.getLevel() +
                              " split=" + dynStore2.getSplit() +
@@ -244,7 +219,7 @@ public class TestDynamicDataStore extends AbstractTest
         
         // Create DynamicDataStore
         File storeDir = getHomeDirectory();
-        DynamicDataStore dynStore = getDynamicDataStore(storeDir, 0, 100);
+        DynamicDataStore dynStore = getDynamicDataStore(storeDir, 0, 32);
 
         checkRandomPuts(dynStore, 1.0);
         checkRandomPuts(dynStore, 0.1);
@@ -264,7 +239,7 @@ public class TestDynamicDataStore extends AbstractTest
         
         // Create DynamicDataStore
         File storeDir = getHomeDirectory();
-        DynamicDataStore dynStore = getDynamicDataStore(storeDir, 0, 100);
+        DynamicDataStore dynStore = getDynamicDataStore(storeDir, 0, 32);
         
         checkRandomPuts(dynStore, 0.1);
         checkRandomPuts(dynStore, 0.1);

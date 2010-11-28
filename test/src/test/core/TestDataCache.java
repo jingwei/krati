@@ -101,9 +101,10 @@ public class TestDataCache extends AbstractSeedTest
             long startTime = System.currentTimeMillis();
             long writeCount = 0;
             int heartBeats = runDuration/10;
+            long sleepTime = Math.min(runDuration * 1000, 10000);
             for(int i = 0; i < heartBeats; i++)
             {
-                Thread.sleep(10000);
+                Thread.sleep(sleepTime);
                 long newWriteCount = writer.getWriteCount();
                 StatsLog.logger.info("writeCount=" + (newWriteCount - writeCount));
                 writeCount = newWriteCount;
@@ -217,9 +218,10 @@ public class TestDataCache extends AbstractSeedTest
             long readCount = 0;
             long writeCount = 0;
             int heartBeats = runDuration/10;
+            long sleepTime = Math.min(runDuration * 1000, 10000);
             for(int i = 0; i < heartBeats; i++)
             {
-                Thread.sleep(10000);
+                Thread.sleep(sleepTime);
 
                 long newReadCount = 0;
                 for(int r = 0; r < readers.length; r++)
@@ -332,10 +334,10 @@ public class TestDataCache extends AbstractSeedTest
                 validate(cache);
             }
             
-            int timeAllocated = _runTimeSeconds/3;
+            int timeAllocated = Math.round((float)_runTimeSeconds/3);
 
             StatsLog.logger.info(">>> read only");
-            evalRead(cache, _numReaders, 10);
+            evalRead(cache, _numReaders, Math.min(timeAllocated, 10));
             
             StatsLog.logger.info(">>> write only");
             evalWrite(cache, timeAllocated);

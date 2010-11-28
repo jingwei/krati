@@ -1,8 +1,4 @@
-build
-build/classes
-build/jar
+eclipse-build
+target
 docs
 logs
-lib/log4j-1.2.15.jar
-test/output
-test/build

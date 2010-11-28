@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <ivy-module version="2.0">
-    <info organisation="proj.krati" module="krati"/>
+    <info organisation="org.linkedin" module="krati"/>
     <configurations>
       <conf name="master" visibility="public" description="contains only the artifact published by this module itself, with no transitive dependencies"/>
     </configurations>

@@ -36,7 +36,7 @@ public abstract class AbstractSeedTest extends AbstractTest
     {
         if(_lineSeedData.size() == 0)
         {
-            File seedDataFile = new File(TEST_DIR, "seed/seed.dat");
+            File seedDataFile = new File(TEST_RESOURCES_DIR, "seed/seed.dat");
             loadSeedData(seedDataFile);
         }
     }
