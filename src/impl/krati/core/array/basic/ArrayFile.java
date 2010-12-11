@@ -510,7 +510,7 @@ public class ArrayFile
   public synchronized <T extends EntryValue> void update(List<Entry<T>> entryList)
   throws IOException
   {
-    Chronos chronos = new Chronos();
+    Chronos c = new Chronos();
     
     // Sort values by position in the array file
     T[] values = EntryUtility.sortEntriesToValues(entryList);
@@ -544,7 +544,7 @@ public class ArrayFile
     _arrayHwmScn = maxScn;
     
     _log.info(entryList.size() + " entries flushed to " + 
-             _file.getAbsolutePath() + " in " + chronos.getElapsedTime());
+             _file.getAbsolutePath() + " in " + c.getElapsedTime());
   }
 
   protected void writeVersion(long value) throws IOException

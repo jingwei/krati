@@ -116,6 +116,7 @@
             <jvmarg value="-Dtest.initLevel=1"/>
             <jvmarg value="-Dtest.numReaders=4"/>
             <jvmarg value="-Dtest.segFileSizeMB=128"/>
+            <jvmarg value="-Dtest.accessPercent=100"/>
             <jvmarg value="-Dtest.runTimeSeconds=30"/>
             <jvmarg value="-Dtest.resources.dir=${test.resources.dir}"/>
             <jvmarg value="-Dtest.output.dir=${test.output.dir}"/>
@@ -143,6 +144,7 @@
             <jvmarg value="-Dtest.initLevel=7"/>
             <jvmarg value="-Dtest.numReaders=4"/>
             <jvmarg value="-Dtest.segFileSizeMB=256"/>
+            <jvmarg value="-Dtest.accessPercent=100"/>
             <jvmarg value="-Dtest.runTimeSeconds=1800"/>
             <jvmarg value="-Dtest.resources.dir=${test.resources.dir}"/>
             <jvmarg value="-Dtest.output.dir=${test.output.dir}"/>
@@ -164,6 +166,7 @@
     <property name="test.quick.idCount" value="100000"/>
     <property name="test.quick.keyCount" value="100000"/>
     <property name="test.quick.segFileSizeMB" value="128"/>
+    <property name="test.quick.accessPercent" value="100"/>
     <property name="test.quick.runTimeSeconds" value="30"/>
     <property name="test.quick.initLevel" value="2"/>
     <property name="test.quick.numReaders" value="4"/>
@@ -177,6 +180,7 @@
             <jvmarg value="-Dtest.initLevel=${test.quick.initLevel}"/>
             <jvmarg value="-Dtest.numReaders=${test.quick.numReaders}"/>
             <jvmarg value="-Dtest.segFileSizeMB=${test.quick.segFileSizeMB}"/>
+            <jvmarg value="-Dtest.accessPercent=${test.quick.accessPercent}"/>
             <jvmarg value="-Dtest.runTimeSeconds=${test.quick.runTimeSeconds}"/>
             <jvmarg value="-Dtest.resources.dir=${test.resources.dir}"/>
             <jvmarg value="-Dtest.output.dir=${test.output.dir}"/>
@@ -198,6 +202,7 @@
     <property name="test.loggc.idCount" value="5000000"/>
     <property name="test.loggc.keyCount" value="5000000"/>
     <property name="test.loggc.segFileSizeMB" value="256"/>
+    <property name="test.loggc.accessPercent" value="100"/>
     <property name="test.loggc.runTimeSeconds" value="3600"/>
     <property name="test.loggc.initLevel" value="7"/>
     <property name="test.loggc.numReaders" value="4"/>
@@ -213,6 +218,7 @@
             <jvmarg value="-Dtest.initLevel=${test.loggc.initLevel}"/>
             <jvmarg value="-Dtest.numReaders=${test.loggc.numReaders}"/>
             <jvmarg value="-Dtest.segFileSizeMB=${test.loggc.segFileSizeMB}"/>
+            <jvmarg value="-Dtest.accessPercent=${test.loggc.accessPercent}"/>
             <jvmarg value="-Dtest.runTimeSeconds=${test.loggc.runTimeSeconds}"/>
             <jvmarg value="-Dtest.resources.dir=${test.resources.dir}"/>
             <jvmarg value="-Dtest.output.dir=${test.output.dir}"/>

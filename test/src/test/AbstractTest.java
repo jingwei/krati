@@ -36,6 +36,7 @@ public class AbstractTest extends TestCase
     public static int _segFileSizeMB = 128;
     public static int _initLevel = 5;
     public static int _numReaders = 4;
+    public static int _accessPercent = 100;
     
     static
     {
@@ -129,6 +130,20 @@ public class AbstractTest extends TestCase
         {
             _log.info("test.numReaders: " + _numReaders);
         }
+        
+        try
+        {
+            _accessPercent = Integer.parseInt(System.getProperty("test.accessPercent"));
+            _accessPercent = Math.min(_accessPercent, 100);
+        }
+        catch(Exception e)
+        {
+            _accessPercent = 100;
+        }
+        finally
+        {
+            _log.info("test.accessPercent: " + _accessPercent);
+        }
     }
     
     protected String name;
@@ -137,10 +152,20 @@ public class AbstractTest extends TestCase
     {
         this.name = name;
     }
-
+    
     public File getHomeDirectory()
     {
         return new File(TEST_OUTPUT_DIR, getClass().getSimpleName());
+    }
+    
+    public void cleanHomeDirectory() throws IOException
+    {
+        cleanDirectory(getHomeDirectory());
+    }
+    
+    public void deleteHomeDirectory() throws IOException
+    {
+        deleteDirectory(getHomeDirectory());
     }
     
     public void cleanTestOutput() throws Exception
@@ -164,7 +189,7 @@ public class AbstractTest extends TestCase
         }
     }
     
-    public void cleanDirectory(File dir) throws IOException
+    public static void cleanDirectory(File dir) throws IOException
     {
         File[] files = dir.listFiles();
         
@@ -185,7 +210,7 @@ public class AbstractTest extends TestCase
         }
     }
     
-    public void deleteDirectory(File dir) throws IOException
+    public static void deleteDirectory(File dir) throws IOException
     {
         File[] files = dir.listFiles();
         
@@ -210,5 +235,45 @@ public class AbstractTest extends TestCase
         {
             throw new IOException("dir:"+dir.getAbsolutePath()+" not deleted");
         }
+    }
+    
+    public static int getIdStart()
+    {
+        return _idStart;
+    }
+    
+    public static int getIdCount()
+    {
+        return _idCount;
+    }
+    
+    public static int getKeyCount()
+    {
+        return _keyCount;
+    }
+    
+    public static int getRunTimeSeconds()
+    {
+        return _runTimeSeconds;
+    }
+    
+    public static int getSegFileSizeMB()
+    {
+        return _segFileSizeMB;
+    }
+    
+    public static int getInitLevel()
+    {
+        return _initLevel;
+    }
+    
+    public static int getNumReaders()
+    {
+        return _numReaders;
+    }
+    
+    public static int getAccessPercent()
+    {
+        return _accessPercent;
     }
 }

@@ -52,6 +52,7 @@
     <test.keyCount>10000</test.keyCount>
     <test.numReaders>4</test.numReaders>
     <test.segFileSizeMB>128</test.segFileSizeMB>
+    <test.accessPercent>100</test.accessPercent>
     <test.runTimeSeconds>10</test.runTimeSeconds>
 
     <test.output.dir>
@@ -153,6 +154,10 @@
             <property>
               <name>test.segFileSizeMB</name>
               <value>${test.segFileSizeMB}</value>
+            </property>
+            <property>
+              <name>test.accessPercent</name>
+              <value>${test.accessPercent}</value>
             </property>
             <property>
               <name>test.runTimeSeconds</name>

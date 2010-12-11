@@ -51,7 +51,7 @@ public class TestBdbBytes extends AbstractSeedTest
         StoreWriter<Database, byte[], byte[]> storeWriter = new BdbBytesWriter();
         
         StoreTestDriver driver;
-        driver = new StoreTestBytesDriver<Database>(store, storeReader, storeWriter, _lineSeedData, _keyCount);
+        driver = new StoreTestBytesDriver<Database>(store, storeReader, storeWriter, _lineSeedData, _keyCount, _accessPercent);
         driver.run(_numReaders, 1, _runTimeSeconds);
         
         StatsLog.endUnit(unitTestName);

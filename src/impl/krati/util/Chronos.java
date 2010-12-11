@@ -18,12 +18,12 @@ public class Chronos
   /**
    * The last tick
    */
-  private long _lastTick;
+  private volatile long _lastTick;
   
   /**
    * When this Chronos is started
    */
-  private long _startTime;
+  private volatile long _startTime;
   
   /**
    * Constructor : initialize the tick and sets no stream
@@ -69,7 +69,7 @@ public class Chronos
   }
 
   /**
-   * @return the total time since start of this chronos
+   * @return the total time since start of this Chronos
    */
   public long getTotalTime()
   {
@@ -77,12 +77,13 @@ public class Chronos
   }
   
   /**
-   * Returns a string that represents the time elapsed
+   * Returns a string that represents the time elapsed since the last call
    *
-   * @return the elapsed time as a string */
+   * @return the elapsed time as a string
+   */
   public String getElapsedTime()
   {
-    StringBuffer sb = new StringBuffer("Time: ");
+    StringBuffer sb = new StringBuffer();
     sb.append(tick());
     sb.append(" ms");
     
