@@ -51,7 +51,7 @@ public class TestBdbString extends AbstractSeedTest
         StoreWriter<StoredMap<String, String>, String, String> storeWriter = new BdbStringWriter();
         
         StoreTestDriver driver;
-        driver = new StoreTestStringDriver<StoredMap<String, String>>(store, storeReader, storeWriter, _lineSeedData, _keyCount);
+        driver = new StoreTestStringDriver<StoredMap<String, String>>(store, storeReader, storeWriter, _lineSeedData, _keyCount, _accessPercent);
         driver.run(_numReaders, 1, _runTimeSeconds);
         
         StatsLog.endUnit(unitTestName);
