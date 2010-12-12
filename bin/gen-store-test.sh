@@ -10,7 +10,7 @@ if [ $# -lt 3 ]; then
   echo "NAME"
   echo "  $PROG"
   echo "SYNOPSIS"
-  echo "  $PROG testName numReaders accessPercent"
+  echo "  $PROG testName numReaders hitPercent"
   echo "EXAMPLES"
   for t in TestBdbBytes TestIndexedStore TestIndexedStoreMapped TestIndexedStoreWriteBuffer TestStaticStore TestStaticStoreMapped TestDynamicStore TestDynamicStoreMapped
   do
@@ -39,7 +39,7 @@ do
   fi
   
   echo ant test.clean
-  echo ant test.loggc -Dtests.to.run=$TEST_NAME -Dtest.loggc.keyCount=$KEY_COUNT -Dtest.loggc.numReaders=$NUM_READERS -Dtest.accessPercent=$ACCESS_PERCENT -Dtest.initLevel=$INIT_LEVEL
+  echo ant test.loggc -Dtests.to.run=$TEST_NAME -Dtest.loggc.keyCount=$KEY_COUNT -Dtest.loggc.numReaders=$NUM_READERS -Dtest.loggc.hitPercent=$ACCESS_PERCENT -Dtest.loggc.initLevel=$INIT_LEVEL
   echo mv target/logs logs."$i"M
   echo ""
 done

@@ -64,7 +64,7 @@ public abstract class EvalDataStore extends AbstractSeedTest
         StoreWriter<DataStore<byte[], byte[]>, byte[], byte[]> storeWriter = new DataStoreWriter();
         
         StoreTestDriver driver;
-        driver = new StoreTestBytesDriver<DataStore<byte[], byte[]>>(store, storeReader, storeWriter, _lineSeedData, _keyCount, _accessPercent);
+        driver = new StoreTestBytesDriver<DataStore<byte[], byte[]>>(store, storeReader, storeWriter, _lineSeedData, _keyCount, _hitPercent);
         driver.run(numOfReaders, numOfWriters, runDuration);
         
         store.sync();

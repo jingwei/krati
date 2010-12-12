@@ -36,7 +36,7 @@ public class AbstractTest extends TestCase
     public static int _segFileSizeMB = 128;
     public static int _initLevel = 5;
     public static int _numReaders = 4;
-    public static int _accessPercent = 100;
+    public static int _hitPercent = 100;
     
     static
     {
@@ -133,16 +133,16 @@ public class AbstractTest extends TestCase
         
         try
         {
-            _accessPercent = Integer.parseInt(System.getProperty("test.accessPercent"));
-            _accessPercent = Math.min(_accessPercent, 100);
+            _hitPercent = Integer.parseInt(System.getProperty("test.hitPercent"));
+            _hitPercent = Math.min(_hitPercent, 100);
         }
         catch(Exception e)
         {
-            _accessPercent = 100;
+            _hitPercent = 100;
         }
         finally
         {
-            _log.info("test.accessPercent: " + _accessPercent);
+            _log.info("test.hitPercent: " + _hitPercent);
         }
     }
     
@@ -272,8 +272,8 @@ public class AbstractTest extends TestCase
         return _numReaders;
     }
     
-    public static int getAccessPercent()
+    public static int gethitPercent()
     {
-        return _accessPercent;
+        return _hitPercent;
     }
 }

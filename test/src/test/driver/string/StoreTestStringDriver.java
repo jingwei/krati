@@ -22,13 +22,13 @@ public class StoreTestStringDriver<S> implements StoreTestDriver
     private final List<String> _lineSeedData;
     private final int _lineSeedCount;
     private final int _keyCount;
-    private final int _accessPercent;
+    private final int _hitPercent;
     
     public StoreTestStringDriver(S store,
                                  StoreReader<S, String, String> storeReader,
                                  StoreWriter<S, String, String> storeWriter,
                                  List<String> lineSeedData,
-                                 int keyCount, int accessPercent)
+                                 int keyCount, int hitPercent)
     {
         this._store = store;
         this._storeReader = storeReader;
@@ -36,7 +36,7 @@ public class StoreTestStringDriver<S> implements StoreTestDriver
         this._lineSeedData = lineSeedData;
         this._lineSeedCount = lineSeedData.size();
         this._keyCount = keyCount;
-        this._accessPercent = accessPercent;
+        this._hitPercent = hitPercent;
     }
 
     public void validate() throws Exception
@@ -104,7 +104,7 @@ public class StoreTestStringDriver<S> implements StoreTestDriver
     @SuppressWarnings("unchecked")
     public void evalWrite(int writerCnt, int runDuration) throws Exception
     {
-        int accessKeyCount = Math.round(_keyCount * _accessPercent / 100.0f);
+        int hitKeyCount = Math.round(_keyCount * _hitPercent / 100.0f);
         
         try
         {
@@ -112,7 +112,7 @@ public class StoreTestStringDriver<S> implements StoreTestDriver
             StringWriteDriver<S>[] writers = new StringWriteDriver[writerCnt];
             for(int i = 0; i < writers.length; i++)
             {
-                writers[i] = new StringWriteDriver<S>(_store, _storeWriter, _lineSeedData, accessKeyCount);
+                writers[i] = new StringWriteDriver<S>(_store, _storeWriter, _lineSeedData, hitKeyCount);
             }
             
             Thread[] writerThreads = new Thread[writers.length];
@@ -176,7 +176,7 @@ public class StoreTestStringDriver<S> implements StoreTestDriver
     @SuppressWarnings("unchecked")
     public void evalRead(int readerCnt, int runDuration) throws Exception
     {
-        int accessKeyCount = Math.round(_keyCount * _accessPercent / 100.0f);
+        int hitKeyCount = Math.round(_keyCount * _hitPercent / 100.0f);
         
         try
         {
@@ -184,7 +184,7 @@ public class StoreTestStringDriver<S> implements StoreTestDriver
             StringReadDriver<S>[] readers = new StringReadDriver[readerCnt];
             for(int i = 0; i < readers.length; i++)
             {
-                readers[i] = new StringReadDriver<S>(_store, _storeReader, _lineSeedData, accessKeyCount);
+                readers[i] = new StringReadDriver<S>(_store, _storeReader, _lineSeedData, hitKeyCount);
             }
             
             Thread[] threads = new Thread[readers.length];
@@ -235,7 +235,7 @@ public class StoreTestStringDriver<S> implements StoreTestDriver
     @SuppressWarnings("unchecked")
     public void evalReadWrite(int readerCnt, int writerCnt, int runDuration, boolean doValidation) throws Exception
     {
-        int accessKeyCount = Math.round(_keyCount * _accessPercent / 100.0f);
+        int hitKeyCount = Math.round(_keyCount * _hitPercent / 100.0f);
         
         try
         {
@@ -244,8 +244,8 @@ public class StoreTestStringDriver<S> implements StoreTestDriver
             for(int i = 0; i < readers.length; i++)
             {
                 readers[i] = doValidation ?
-                        new StringCheckDriver<S>(_store, _storeReader, _lineSeedData, accessKeyCount) :
-                        new StringReadDriver<S>(_store, _storeReader, _lineSeedData, accessKeyCount);
+                        new StringCheckDriver<S>(_store, _storeReader, _lineSeedData, hitKeyCount) :
+                        new StringReadDriver<S>(_store, _storeReader, _lineSeedData, hitKeyCount);
             }
 
             Thread[] readerThreads = new Thread[readers.length];
@@ -260,7 +260,7 @@ public class StoreTestStringDriver<S> implements StoreTestDriver
             StringWriteDriver<S>[] writers = new StringWriteDriver[writerCnt];
             for(int i = 0; i < writers.length; i++)
             {
-                writers[i] = new StringWriteDriver<S>(_store, _storeWriter, _lineSeedData, accessKeyCount);
+                writers[i] = new StringWriteDriver<S>(_store, _storeWriter, _lineSeedData, hitKeyCount);
             }
             
             Thread[] writerThreads = new Thread[writers.length];
