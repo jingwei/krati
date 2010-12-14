@@ -13,6 +13,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 import org.apache.log4j.Logger;
 
@@ -39,7 +40,7 @@ import krati.util.Chronos;
 class SimpleDataArrayCompactor implements Runnable
 {
     private final static Logger _log = Logger.getLogger(SimpleDataArrayCompactor.class);
-    private final ExecutorService _executor = Executors.newFixedThreadPool(1);
+    private final ExecutorService _executor = Executors.newSingleThreadExecutor(new CompactorThreadFactory());
     private final SimpleDataArray _dataArray;
     private volatile double _compactLoadFactor;
     private volatile State _state = State.DONE;
@@ -339,7 +340,7 @@ class SimpleDataArrayCompactor implements Runnable
                 {
                     reset();
                     _state = State.INIT;
-                    _log.info("cycle started");
+                    _log.info("cycle init");
                     
                     // Inspect the array
                     if(!inspect()) continue;
@@ -349,14 +350,13 @@ class SimpleDataArrayCompactor implements Runnable
                 }
                 catch(Exception e)
                 {
-                    e.printStackTrace(System.err);
-                    _log.error("failed to compact: " + e.getMessage());
+                    _log.error("failed to compact: " + e.getMessage(), e);
                 }
                 finally
                 {
                     reset();
                     _state = State.DONE;
-                    _log.info("cycle ended");
+                    _log.info("cycle done");
                     _lock.unlock();
                 }
             }
@@ -730,6 +730,15 @@ class SimpleDataArrayCompactor implements Runnable
         protected ByteBuffer initByteBuffer() {
             _byteBuffer.clear();
             return _byteBuffer;
+        }
+    }
+    
+    static class CompactorThreadFactory implements ThreadFactory {
+        @Override
+        public Thread newThread(Runnable r) {
+            Thread t = new Thread(r);
+            t.setDaemon(true);
+            return t;
         }
     }
 }

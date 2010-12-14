@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
 
 import org.apache.log4j.Logger;
 
@@ -31,7 +32,7 @@ public final class BytesDB {
     private volatile int _nextIndexCount = 0;
     private final int _nextIndexQueueCapacity = 10000;
     private final LinkedBlockingQueue<Integer> _nextIndexQueue = new LinkedBlockingQueue<Integer>(_nextIndexQueueCapacity);
-    private final ExecutorService _nextIndexExecutor = Executors.newFixedThreadPool(1);
+    private final ExecutorService _nextIndexExecutor = Executors.newSingleThreadExecutor(new LookupThreadFactory());
     
     public BytesDB(File homeDir,
                    int initLevel,
@@ -227,5 +228,14 @@ public final class BytesDB {
         }
         
         _logger.info("load " + (length - _nextIndexCount) + "/" + length);
+    }
+    
+    private static class LookupThreadFactory implements ThreadFactory {
+        @Override
+        public Thread newThread(Runnable r) {
+            Thread t = new Thread(r);
+            t.setDaemon(true);
+            return t;
+        }
     }
 }
