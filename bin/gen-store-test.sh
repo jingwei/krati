@@ -4,7 +4,7 @@ PROG=$0
 
 TEST_NAME=$1
 NUM_READERS=$2
-ACCESS_PERCENT=$3
+HIT_PERCENT=$3
 
 if [ $# -lt 3 ]; then
   echo "NAME"
@@ -39,7 +39,7 @@ do
   fi
   
   echo ant test.clean
-  echo ant test.loggc -Dtests.to.run=$TEST_NAME -Dtest.loggc.keyCount=$KEY_COUNT -Dtest.loggc.numReaders=$NUM_READERS -Dtest.loggc.hitPercent=$ACCESS_PERCENT -Dtest.loggc.initLevel=$INIT_LEVEL
+  echo ant test.loggc -Dtests.to.run=$TEST_NAME -Dtest.loggc.keyCount=$KEY_COUNT -Dtest.loggc.numReaders=$NUM_READERS -Dtest.loggc.hitPercent=$HIT_PERCENT -Dtest.loggc.initLevel=$INIT_LEVEL
   echo mv target/logs logs."$i"M
   echo ""
 done
