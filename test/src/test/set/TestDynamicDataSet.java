@@ -29,7 +29,7 @@ public class TestDynamicDataSet extends EvalDataSet
     
     public void testPerformance() throws Exception
     {
-        String unitTestName = getClass().getSimpleName() + " with " + getSegmentFactory().getClass().getSimpleName(); 
+        String unitTestName = getClass().getSimpleName(); 
         StatsLog.beginUnit(unitTestName);
         
         evalPerformance(_numReaders, 1, _runTimeSeconds);

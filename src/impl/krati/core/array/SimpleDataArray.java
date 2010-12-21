@@ -176,13 +176,17 @@ public class SimpleDataArray implements DataArray, Persistable
                 _compactor.recycleCompactionBatch(updateBatch);
             }
         }
-        
+    }
+    
+    protected void syncCompactor()
+    {
         ConcurrentLinkedQueue<Segment> queue = _compactor.getCompactedQueue();
         while(!queue.isEmpty())
         {
             Segment seg = queue.remove();
             try
             {
+                consumeCompactionBatches();
                 _segmentManager.freeSegment(seg);
             }
             catch(IOException e)
@@ -190,6 +194,8 @@ public class SimpleDataArray implements DataArray, Persistable
                 _log.error("failed to free Segment " + seg.getSegmentId() + ": " + seg.getStatus(), e);
             }
         }
+        
+        consumeCompactionBatches();
     }
     
     protected void init()
@@ -363,8 +369,8 @@ public class SimpleDataArray implements DataArray, Persistable
             if(seg == null) return -1;
             
             // read data length
-            int length = _addressFormat.getDataSize(address);
-            return (length == 0) ? seg.readInt(segPos) : length;
+            int size = _addressFormat.getDataSize(address);
+            return (size == 0) ? seg.readInt(segPos) : size;
         }
         catch(Exception e)
         {
@@ -399,7 +405,8 @@ public class SimpleDataArray implements DataArray, Persistable
             if(seg == null) return null;
             
             // read data length
-            int len = seg.readInt(segPos);
+            int size = _addressFormat.getDataSize(address);
+            int len = (size == 0) ? seg.readInt(segPos) : size;
             
             // read data into byte array
             byte[] data = new byte[len];
@@ -461,7 +468,8 @@ public class SimpleDataArray implements DataArray, Persistable
             if(seg == null) return -1;
             
             // read data length
-            int len = seg.readInt(segPos);
+            int size = _addressFormat.getDataSize(address);
+            int len = (size == 0) ? seg.readInt(segPos) : size;
             
             // read data into byte array
             if (len > 0)
@@ -504,7 +512,8 @@ public class SimpleDataArray implements DataArray, Persistable
             if(seg == null) return -1;
             
             // read data length
-            int len = seg.readInt(segPos);
+            int size = _addressFormat.getDataSize(address);
+            int len = (size == 0) ? seg.readInt(segPos) : size;
             
             // transfer data to a writable channel
             if (len > 0)
@@ -740,7 +749,7 @@ public class SimpleDataArray implements DataArray, Persistable
     @Override
     public synchronized void sync() throws IOException
     {
-        consumeCompactionBatches();
+        syncCompactor();
         
         /* CALLS ORDERED:
          * Need force _segment first and then persist _addressArray.
@@ -755,7 +764,7 @@ public class SimpleDataArray implements DataArray, Persistable
     @Override
     public synchronized void persist() throws IOException
     {
-        consumeCompactionBatches();
+        syncCompactor();
         
         /* CALLS ORDERED:
          * Need force _segment first and then persist _addressArray.

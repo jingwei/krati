@@ -305,7 +305,7 @@ public class TestDataCache extends AbstractSeedTest
     
     public void testDataCache() throws Exception
     {
-        String unitTestName = getClass().getSimpleName() + " with " + getSegmentFactory().getClass().getSimpleName(); 
+        String unitTestName = getClass().getSimpleName(); 
         StatsLog.beginUnit(unitTestName);
         
         TestDataCache eval = new TestDataCache();

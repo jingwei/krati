@@ -151,6 +151,10 @@ public final class SegmentManager
                 _recycleList.add(seg);
                 _log.info("Segment " + seg.getSegmentId() + " recycled");
             }
+            else
+            {
+                _log.info("Segment " + seg.getSegmentId() + " freed");
+            }
             
             return true;
         }

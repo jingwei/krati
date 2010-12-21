@@ -24,18 +24,14 @@ for i in 01 02 03 04 05 06 07 08 09 10 20 30 40 50 60 70 80 90 100
 do
   KEY_COUNT=`expr $i \* 1000000`
   
-  if [ $i -le 4 ]; then
-     INIT_LEVEL=7
+  if [ $i -lt 10 ]; then
+    INIT_LEVEL=8
   else
-     if [ $i -le 10 ]; then
-       INIT_LEVEL=8
-     else
-       if [ $i -le 40 ]; then
-         INIT_LEVEL=10
-       else
-         INIT_LEVEL=11
-       fi
-     fi
+    if [ $i -le 40 ]; then
+      INIT_LEVEL=10
+    else
+      INIT_LEVEL=11
+    fi
   fi
   
   echo ant test.clean

@@ -158,7 +158,7 @@
             </classpath>
             
             <batchtest fork="yes">
-                <fileset dir="${build.test.classes.dir}" includes="**/Test*.class" excludes="**/TestBdb*"/>
+		    <fileset dir="${build.test.classes.dir}" includes="**/Test*.class" excludes="**/TestBdb*,**/TestDynamicDataArray.class"/>
             </batchtest>
         </junit>
     </target>
