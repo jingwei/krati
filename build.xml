@@ -63,6 +63,7 @@
     </target>
     
     <target name="init" depends="resolve">
+        <mkdir dir="${config.dir}"/>
         <mkdir dir="${build.dir}"/>
         <mkdir dir="${build.classes.dir}"/>
     </target>
