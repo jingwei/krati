@@ -86,6 +86,18 @@ public final class BytesDB {
         return new DynamicLongArray(batchSize, numSyncBatches, homeDirectory);
     }
     
+    public boolean hasData(int index) {
+        return _dataArray.hasData(index);
+    }
+    
+    public boolean hasIndex(int index) {
+        return _dataArray.hasIndex(index);
+    }
+    
+    public int getLength(int index) {
+        return _dataArray.getLength(index);
+    }
+    
     public byte[] get(int index) {
         return _dataArray.get(index);
     }

@@ -20,6 +20,12 @@ if [ $# -lt 3 ]; then
   exit 1
 fi
 
+LOGS_DIR="$TEST_NAME-$HIT_PERCENT"
+
+if [ ! -d $LOGS_DIR ]; then
+  mkdir $LOGS_DIR
+fi
+
 for i in 01 02 03 04 05 06 07 08 09 10 20 30 40 50 60 70 80 90 100
 do
   KEY_COUNT=`expr $i \* 1000000`
@@ -36,7 +42,7 @@ do
   
   echo ant test.clean
   echo ant test.loggc -Dtests.to.run=$TEST_NAME -Dtest.loggc.keyCount=$KEY_COUNT -Dtest.loggc.numReaders=$NUM_READERS -Dtest.loggc.hitPercent=$HIT_PERCENT -Dtest.loggc.initLevel=$INIT_LEVEL
-  echo mv target/logs logs."$i"M
+  echo mv target/logs $LOGS_DIR/logs."$i"M
   echo ""
 done
 
