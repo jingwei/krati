@@ -16,7 +16,7 @@ import org.apache.log4j.Logger;
  * @author jwu
  * Sep 24, 2010
  */
-public final class DynamicDataArray extends AbstractDataArray implements DynamicArray {
+public final class DynamicDataArray extends AbstractDataArray implements DynamicArray, ArrayStore {
     private final static Logger _log = Logger.getLogger(DynamicDataArray.class);
     
     /**
@@ -134,5 +134,17 @@ public final class DynamicDataArray extends AbstractDataArray implements Dynamic
     public synchronized void set(int index, byte[] data, int offset, int length, long scn) throws Exception {
         ((DynamicLongArray)_addrArray).expandCapacity(index);
         _dataArray.set(index, data, offset, length, scn);
+    }
+
+    @Override
+    public int capacity() {
+        return length();
+    }
+    
+    @Override
+    public synchronized void delete(int index, long scn) throws Exception {
+        if(hasIndex(index)) {
+            _dataArray.set(index, null, scn);
+        }
     }
 }

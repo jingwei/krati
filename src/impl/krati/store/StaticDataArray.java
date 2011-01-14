@@ -15,7 +15,7 @@ import krati.core.segment.SegmentFactory;
  * @author jwu
  * Sep 24, 2010
  */
-public final class StaticDataArray extends AbstractDataArray {
+public final class StaticDataArray extends AbstractDataArray implements ArrayStore {
     private final static Logger _log = Logger.getLogger(StaticDataArray.class);
     
     /**
@@ -114,5 +114,17 @@ public final class StaticDataArray extends AbstractDataArray {
         }
         
         return addrArray;
+    }
+
+    @Override
+    public int capacity() {
+        return length();
+    }
+
+    @Override
+    public void delete(int index, long scn) throws Exception {
+        if(hasIndex(index)) {
+            _dataArray.set(index, null, scn);
+        }
     }
 }

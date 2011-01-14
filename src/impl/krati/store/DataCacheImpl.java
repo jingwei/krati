@@ -266,6 +266,12 @@ public class DataCacheImpl implements DataCache
         if(memberId < _idStart || _idEnd <= memberId)
             throw new ArrayIndexOutOfBoundsException(memberId);
     }
+
+    @Override
+    public int capacity()
+    {
+        return _idCount;
+    }
     
     @Override
     public int getIdCount()
