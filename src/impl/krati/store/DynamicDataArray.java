@@ -135,16 +135,21 @@ public final class DynamicDataArray extends AbstractDataArray implements Dynamic
         ((DynamicLongArray)_addrArray).expandCapacity(index);
         _dataArray.set(index, data, offset, length, scn);
     }
-
-    @Override
-    public int capacity() {
-        return length();
-    }
     
     @Override
     public synchronized void delete(int index, long scn) throws Exception {
         if(hasIndex(index)) {
             _dataArray.set(index, null, scn);
         }
+    }
+    
+    @Override
+    public final int getIndexStart() {
+        return 0;
+    }
+    
+    @Override
+    public final int capacity() {
+        return length();
     }
 }

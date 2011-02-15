@@ -3,12 +3,12 @@ package test.util;
 import java.util.List;
 import java.util.Random;
 
-import krati.store.DataCache;
+import krati.store.ArrayStorePartition;
 import test.LatencyStats;
 
 public class DataCacheWriter implements Runnable
 {
-    DataCache _cache;
+    ArrayStorePartition _cache;
     Random _rand = new Random();
     boolean _running = true;
     
@@ -19,7 +19,7 @@ public class DataCacheWriter implements Runnable
     LatencyStats _latStats = new LatencyStats();
     final List<String> _lineSeedData;
     
-    public DataCacheWriter(DataCache cache, List<String> seedData)
+    public DataCacheWriter(ArrayStorePartition cache, List<String> seedData)
     {
         this._cache = cache;
         this._length = cache.getIdCount();

@@ -121,7 +121,7 @@ public class ObjectCacheAgent<T> implements ObjectCache<T>
     }
     
     @Override
-    public void clear() throws IOException
+    public void clear()
     {
         synchronized(_cache)
         {
@@ -151,5 +151,20 @@ public class ObjectCacheAgent<T> implements ObjectCache<T>
     public byte[] getBytes(int objectId)
     {
         throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public void expandCapacity(int index) throws Exception {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public boolean hasIndex(int index) {
+        return _cache.hasIndex(index);
+    }
+    
+    @Override
+    public int length() {
+        return _cache.getObjectIdCount();
     }
 }

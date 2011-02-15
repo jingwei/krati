@@ -2,7 +2,8 @@ package krati.sos;
 
 import java.io.IOException;
 
-import krati.store.DataCache;
+import krati.array.DynamicArray;
+import krati.store.ArrayStorePartition;
 
 /**
  * A simple data cache for serializable objects.
@@ -21,7 +22,7 @@ import krati.store.DataCache;
  */
 public class SerializableObjectCache<T> implements ObjectCache<T>
 {
-    protected final DataCache _cache;
+    protected final ArrayStorePartition _cache;
     protected final ObjectSerializer<T> _serializer;
     
     /**
@@ -30,7 +31,7 @@ public class SerializableObjectCache<T> implements ObjectCache<T>
      * @param cache       the underlying data cache to store serializable objects.
      * @param serializer  the object serializer to serialize/de-serialize objects.
      */
-    public SerializableObjectCache(DataCache cache, ObjectSerializer<T> serializer)
+    public SerializableObjectCache(ArrayStorePartition cache, ObjectSerializer<T> serializer)
     {
         this._cache = cache;
         this._serializer = serializer;
@@ -39,7 +40,7 @@ public class SerializableObjectCache<T> implements ObjectCache<T>
     /**
      * @return the underlying data cache.
      */
-    protected DataCache getContentCache()
+    protected ArrayStorePartition getContentCache()
     {
         return _cache;
     }
@@ -150,7 +151,7 @@ public class SerializableObjectCache<T> implements ObjectCache<T>
      * @throws IOException
      */
     @Override
-    public void clear() throws IOException
+    public void clear()
     {
         synchronized(_cache)
         {
@@ -195,5 +196,24 @@ public class SerializableObjectCache<T> implements ObjectCache<T>
     public byte[] getBytes(int objectId)
     {
         return _cache.get(objectId);
+    }
+
+    @Override
+    public void expandCapacity(int index) throws Exception {
+        if(this instanceof DynamicArray) {
+            ((DynamicArray)this).expandCapacity(index);
+        } else {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    @Override
+    public boolean hasIndex(int index) {
+        return _cache.hasIndex(index);
+    }
+
+    @Override
+    public int length() {
+        return _cache.length();
     }
 }

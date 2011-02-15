@@ -4,8 +4,8 @@ import java.io.File;
 import java.io.IOException;
 
 import krati.core.segment.SegmentFactory;
-import krati.store.DataCache;
-import krati.store.DataCacheImpl;
+import krati.store.ArrayStorePartition;
+import krati.store.StaticArrayStorePartition;
 
 import test.AbstractSeedTest;
 import test.StatsLog;
@@ -26,7 +26,7 @@ public class TestDataCache extends AbstractSeedTest
         super(TestDataCache.class.getName());
     }
     
-    public void populate(DataCache cache) throws IOException
+    public void populate(ArrayStorePartition cache) throws IOException
     {
         String line;
         int lineCnt = _lineSeedData.size();
@@ -61,7 +61,7 @@ public class TestDataCache extends AbstractSeedTest
         StatsLog.logger.info("writeCount="+ cache.getIdCount() +" rate="+ rate +" per ms");
     }
     
-    public static void checkData(DataCache cache, int index)
+    public static void checkData(ArrayStorePartition cache, int index)
     {
         String line = _lineSeedData.get(index % _lineSeedData.size());
         
@@ -77,7 +77,7 @@ public class TestDataCache extends AbstractSeedTest
         }
     }
     
-    public static void validate(DataCache cache)
+    public static void validate(ArrayStorePartition cache)
     {
         int cacheSize = cache.getIdCount();
         for(int i = 0; i < cacheSize; i++)
@@ -88,7 +88,7 @@ public class TestDataCache extends AbstractSeedTest
         StatsLog.logger.info("OK");
     }
     
-    public static double evalWrite(DataCache cache, int runDuration) throws Exception
+    public static double evalWrite(ArrayStorePartition cache, int runDuration) throws Exception
     {
         try
         {
@@ -131,7 +131,7 @@ public class TestDataCache extends AbstractSeedTest
         }
     }
     
-    public static void evalRead(DataCache cache, int readerCnt, int runDuration) throws Exception
+    public static void evalRead(ArrayStorePartition cache, int readerCnt, int runDuration) throws Exception
     {
         try
         {
@@ -188,7 +188,7 @@ public class TestDataCache extends AbstractSeedTest
     }
     
     
-    public static void evalReadWrite(DataCache cache, int readerCnt, int runDuration, boolean doValidation) throws Exception
+    public static void evalReadWrite(ArrayStorePartition cache, int readerCnt, int runDuration, boolean doValidation) throws Exception
     {
         try
         {
@@ -293,13 +293,14 @@ public class TestDataCache extends AbstractSeedTest
         return new krati.core.segment.MemorySegmentFactory();
     }
     
-    protected DataCache getDataCache(File cacheDir) throws Exception
+    protected ArrayStorePartition getDataCache(File cacheDir) throws Exception
     {
-        DataCache cache = new DataCacheImpl(_idStart,
-                                            _idCount,
-                                            cacheDir,
-                                            getSegmentFactory(),
-                                            _segFileSizeMB);
+        ArrayStorePartition cache =
+            new StaticArrayStorePartition(_idStart,
+                                          _idCount,
+                                          cacheDir,
+                                          getSegmentFactory(),
+                                          _segFileSizeMB);
         return cache;
     }
     
@@ -323,7 +324,7 @@ public class TestDataCache extends AbstractSeedTest
         try
         {
             File cacheDir = getHomeDirectory();
-            DataCache cache = getDataCache(cacheDir);
+            ArrayStorePartition cache = getDataCache(cacheDir);
             
             if (cache.getLWMark() == 0)
             {

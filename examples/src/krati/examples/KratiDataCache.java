@@ -4,8 +4,8 @@ import java.io.File;
 import java.util.Random;
 
 import krati.core.segment.SegmentFactory;
-import krati.store.DataCache;
-import krati.store.DataCacheImpl;
+import krati.store.ArrayStorePartition;
+import krati.store.StaticArrayStorePartition;
 
 /**
  * Sample code for Krati DataCache.
@@ -15,7 +15,7 @@ import krati.store.DataCacheImpl;
  */
 public class KratiDataCache
 {
-    private final DataCache _cache;
+    private final ArrayStorePartition _cache;
     
     /**
      * Constructs KratiDataCache.
@@ -27,7 +27,7 @@ public class KratiDataCache
      */
     public KratiDataCache(int idStart, int idCount, File homeDir) throws Exception
     {
-        _cache = new DataCacheImpl(idStart,
+        _cache = new StaticArrayStorePartition(idStart,
                                    idCount,
                                    homeDir,
                                    createSegmentFactory(),
@@ -37,7 +37,7 @@ public class KratiDataCache
     /**
      * @return the underlying data cache.
      */
-    public final DataCache getDataCache()
+    public final ArrayStorePartition getDataCache()
     {
         return _cache;
     }

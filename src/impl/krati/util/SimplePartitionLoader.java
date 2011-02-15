@@ -7,22 +7,22 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import krati.store.DataCache;
+import krati.store.ArrayStorePartition;
 
 import org.apache.log4j.Logger;
 
 /**
- * DataCache loader.
+ * SimplePartitionLoader.
  * 
  * @author jwu
  *
  */
-public class DataCacheLoaderImpl implements DataCacheLoader
+public class SimplePartitionLoader implements PartitionLoader
 {
-    private final static Logger _log = Logger.getLogger(DataCacheLoaderImpl.class);
+    private final static Logger _log = Logger.getLogger(SimplePartitionLoader.class);
     
     @Override
-    public void load(DataCache cache, File dataFile) throws IOException
+    public void load(ArrayStorePartition cache, File dataFile) throws IOException
     {
         String line;
         FileReader reader = new FileReader(dataFile);
@@ -51,7 +51,7 @@ public class DataCacheLoaderImpl implements DataCacheLoader
     }
     
     @Override
-    public void dump(DataCache cache, File dumpFile) throws IOException
+    public void dump(ArrayStorePartition cache, File dumpFile) throws IOException
     {
         byte[] data;
         String line;
