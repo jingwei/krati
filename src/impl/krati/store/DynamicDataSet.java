@@ -714,7 +714,7 @@ public class DynamicDataSet implements DataSet<byte[]>
      */
     public String getStatus()
     {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         
         buf.append("level=");
         buf.append(_level);

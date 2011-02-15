@@ -464,7 +464,7 @@ class SimpleDataArrayCompactor implements Runnable
         
         public String toString()
         {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             
             buf.append(getClass().getSimpleName());
             buf.append("{index=");

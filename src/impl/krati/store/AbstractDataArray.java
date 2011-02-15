@@ -73,7 +73,7 @@ public abstract class AbstractDataArray implements DataArray, Persistable {
     
     public String getStatus()
     {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         
         buffer.append("path");
         buffer.append("=");

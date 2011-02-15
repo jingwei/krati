@@ -170,7 +170,7 @@ public class ArrayFile
   
   private String getHeader()
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     
     buf.append("version=");
     buf.append(_version);

@@ -83,7 +83,7 @@ public class Chronos
    */
   public String getElapsedTime()
   {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append(tick());
     sb.append(" ms");
     

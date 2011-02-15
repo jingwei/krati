@@ -693,7 +693,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]>
      */
     public String getStatus()
     {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         
         buf.append("level=");
         buf.append(_level);

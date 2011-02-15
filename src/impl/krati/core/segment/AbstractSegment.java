@@ -71,7 +71,7 @@ public abstract class AbstractSegment implements Segment
     
     protected String getHeader()
     {
-        StringBuffer b = new StringBuffer();
+        StringBuilder b = new StringBuilder();
         
         b.append("lastForcedTime");
         b.append('=');
@@ -94,7 +94,7 @@ public abstract class AbstractSegment implements Segment
     @Override
     public String getStatus()
     {
-        StringBuffer b = new StringBuffer();
+        StringBuilder b = new StringBuilder();
         
         b.append("loadSize");
         b.append('=');

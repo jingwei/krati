@@ -221,7 +221,7 @@ public class StaticArrayStorePartition implements ArrayStorePartition
     
     protected String getStatus()
     {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         
         buffer.append("idStart");
         buffer.append("=");
