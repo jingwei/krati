@@ -115,16 +115,21 @@ public final class StaticDataArray extends AbstractDataArray implements ArraySto
         
         return addrArray;
     }
-
+    
     @Override
-    public int capacity() {
-        return length();
-    }
-
-    @Override
-    public void delete(int index, long scn) throws Exception {
+    public synchronized void delete(int index, long scn) throws Exception {
         if(hasIndex(index)) {
             _dataArray.set(index, null, scn);
         }
+    }
+    
+    @Override
+    public final int getIndexStart() {
+        return 0;
+    }
+    
+    @Override
+    public int capacity() {
+        return length();
     }
 }

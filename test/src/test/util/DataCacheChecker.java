@@ -2,11 +2,11 @@ package test.util;
 
 import java.util.List;
 
-import krati.store.DataCache;
+import krati.store.ArrayStorePartition;
 
 public class DataCacheChecker extends DataCacheReader
 {
-    public DataCacheChecker(DataCache cache, List<String> seedData)
+    public DataCacheChecker(ArrayStorePartition cache, List<String> seedData)
     {
         super(cache, seedData);
     }

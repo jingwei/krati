@@ -9,6 +9,7 @@ import java.util.concurrent.ThreadFactory;
 
 import org.apache.log4j.Logger;
 
+import krati.Persistable;
 import krati.core.array.SimpleDataArray;
 import krati.core.array.basic.DynamicLongArray;
 import krati.core.segment.Segment;
@@ -21,7 +22,7 @@ import krati.core.segment.SegmentManager;
  * @author jwu
  *
  */
-public final class BytesDB {
+public final class BytesDB implements Persistable {
     final static Logger _logger = Logger.getLogger(BytesDB.class);
     
     // Main internal objects
@@ -143,12 +144,29 @@ public final class BytesDB {
         _nextIndexExecutor.shutdown();
     }
     
+    @Override
     public synchronized void sync() throws IOException {
         _dataArray.sync();
     }
     
+    @Override
     public synchronized void persist() throws IOException {
         _dataArray.persist();
+    }
+    
+    @Override
+    public final long getHWMark() {
+        return _dataArray.getHWMark();
+    }
+    
+    @Override
+    public final long getLWMark() {
+        return _dataArray.getLWMark();
+    }
+    
+    @Override
+    public final void saveHWMark(long endOfPeriod) throws Exception {
+        _dataArray.saveHWMark(endOfPeriod);
     }
     
     private class NextIndexLookup implements Runnable {

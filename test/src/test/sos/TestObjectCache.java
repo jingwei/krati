@@ -6,8 +6,8 @@ import java.util.Random;
 
 import krati.sos.ObjectCache;
 import krati.sos.SerializableObjectCache;
-import krati.store.DataCache;
-import krati.store.DataCacheImpl;
+import krati.store.ArrayStorePartition;
+import krati.store.StaticArrayStorePartition;
 import krati.util.Chronos;
 import test.AbstractTest;
 import test.StatsLog;
@@ -28,13 +28,14 @@ public class TestObjectCache extends AbstractTest
         super(TestObjectCache.class.getName());
     }
     
-    private DataCache getDataCache(File cacheDir) throws Exception
+    private ArrayStorePartition getDataCache(File cacheDir) throws Exception
     {
-        DataCache cache = new DataCacheImpl(_idStart,
-                                            _idCount,
-                                            cacheDir,
-                                            new krati.core.segment.MemorySegmentFactory(),
-                                            _segFileSizeMB);
+        ArrayStorePartition cache =
+            new StaticArrayStorePartition(_idStart,
+                                          _idCount,
+                                          cacheDir,
+                                          new krati.core.segment.MemorySegmentFactory(),
+                                          _segFileSizeMB);
         return cache;
     }
     
@@ -45,7 +46,7 @@ public class TestObjectCache extends AbstractTest
         cleanTestOutput();
         
         File objectCacheDir = getHomeDirectory();
-        DataCache dataCache = getDataCache(objectCacheDir);
+        ArrayStorePartition dataCache = getDataCache(objectCacheDir);
         ObjectCache<MemberProtos.Member> memberCache =
             new SerializableObjectCache<MemberProtos.Member>(dataCache, new MemberSerializer());
         
