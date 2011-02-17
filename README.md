@@ -18,7 +18,9 @@ Apache Public License (APL) 2.0
 ### Maven:
 
 groupId: com.sna-projects.krati
+
 artifactId: krati
+
 version: 0.3.7
 
 ### Code Examples:
