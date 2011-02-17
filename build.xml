@@ -4,10 +4,6 @@
     <property file="${basedir}/build.properties"/>
     <property name="jar.file" value="${build.dir}/${project.name}-${version}.jar"/>
     
-    <property name="src.api.dir"  value="${src.dir}/api"/>
-    <property name="src.impl.dir" value="${src.dir}/impl"/>
-    <property name="src.sos.dir"  value="${src.dir}/sos"/>
-    
     <property name="tests.to.run" value="TestDataCache"/>
     
     <path id="main.compile.classpath">
@@ -49,9 +45,7 @@
     
     <target name="compile" depends="init" description="-- compile source">
         <javac debug="true" destdir="${build.classes.dir}">
-            <src path="${src.api.dir}"/>
-            <src path="${src.impl.dir}"/>
-            <src path="${src.sos.dir}"/>
+            <src path="${src.dir}"/>
             <classpath refid="main.compile.classpath"/>
         </javac>
         <copy todir="${build.classes.dir}">
