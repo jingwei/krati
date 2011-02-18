@@ -26,3 +26,14 @@ version: 0.3.7
 ### Code Examples:
 
 https://github.com/jingwei/krati/tree/master/examples/src/krati/examples
+
+### Eclipse
+
+Set up Eclipse for Krati by executing the command below:
+
+mvn eclipse:eclipse
+
+Inside Eclipse, select Preferences > Java > Build Path > Classpath Variables. Define a new classpath variable M2_REPO and assign maven reposistory.
+
+For more information, check out http://maven.apache.org/guides/mini/guide-ide-eclipse.html
+
