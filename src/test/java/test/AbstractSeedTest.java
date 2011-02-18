@@ -13,18 +13,15 @@ import java.util.List;
  * @author jwu
  *
  */
-public abstract class AbstractSeedTest extends AbstractTest
-{
+public abstract class AbstractSeedTest extends AbstractTest {
     protected static List<String> _lineSeedData = new ArrayList<String>(10000);
     
-    protected static void loadSeedData(File dataFile) throws IOException
-    {
+    protected static void loadSeedData(File dataFile) throws IOException {
         String line;
         FileReader reader = new FileReader(dataFile);
         BufferedReader in = new BufferedReader(reader);
         
-        while((line = in.readLine()) != null)
-        {
+        while((line = in.readLine()) != null) {
             _lineSeedData.add(line);
         }
         
@@ -32,17 +29,14 @@ public abstract class AbstractSeedTest extends AbstractTest
         reader.close();
     }
     
-    protected static void loadSeedData() throws IOException
-    {
-        if(_lineSeedData.size() == 0)
-        {
+    protected static void loadSeedData() throws IOException {
+        if(_lineSeedData.size() == 0) {
             File seedDataFile = new File(TEST_RESOURCES_DIR, "seed/seed.dat");
             loadSeedData(seedDataFile);
         }
     }
     
-    protected AbstractSeedTest(String name)
-    {
+    protected AbstractSeedTest(String name) {
         super(name);
     }
 }

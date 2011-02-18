@@ -83,47 +83,47 @@
             <exclude>**/TestBdb*.java</exclude>
           </excludes>
           <forkMode>pertest</forkMode>
-          <argLine>-server -Xms2G -Xmx4G</argLine>
+          <argLine>-server -Xms2g -Xmx16g</argLine>
           <systemProperties>
             <property>
-              <name>test.idStart</name>
-              <value>${test.idStart}</value>
+              <name>krati.test.idStart</name>
+              <value>${krati.test.idStart}</value>
             </property>
             <property>
-              <name>test.idCount</name>
-              <value>${test.idCount}</value>
+              <name>krati.test.idCount</name>
+              <value>${krati.test.idCount}</value>
             </property>
             <property>
-              <name>test.initLevel</name>
-              <value>${test.initLevel}</value>
+              <name>krati.test.initLevel</name>
+              <value>${krati.test.initLevel}</value>
             </property>
             <property>
-              <name>test.keyCount</name>
-              <value>${test.keyCount}</value>
+              <name>krati.test.keyCount</name>
+              <value>${krati.test.keyCount}</value>
             </property>
             <property>
-              <name>test.segFileSizeMB</name>
-              <value>${test.segFileSizeMB}</value>
+              <name>krati.test.segFileSizeMB</name>
+              <value>${krati.test.segFileSizeMB}</value>
             </property>
             <property>
-              <name>test.hitPercent</name>
-              <value>${test.hitPercent}</value>
+              <name>krati.test.hitPercent</name>
+              <value>${krati.test.hitPercent}</value>
             </property>
             <property>
-              <name>test.runTimeSeconds</name>
-              <value>${test.runTimeSeconds}</value>
+              <name>krati.test.runTimeSeconds</name>
+              <value>${krati.test.runTimeSeconds}</value>
             </property>
             <property>
-              <name>test.numReaders</name>
-              <value>${test.numReaders}</value>
+              <name>krati.test.numReaders</name>
+              <value>${krati.test.numReaders}</value>
             </property>
             <property>
-              <name>test.output.dir</name>
-              <value>${test.output.dir}</value>
+              <name>krati.test.output.dir</name>
+              <value>${krati.test.output.dir}</value>
             </property>
             <property>
-              <name>test.resources.dir</name>
-              <value>${test.resources.dir}</value>
+              <name>krati.test.resources.dir</name>
+              <value>${krati.test.resources.dir}</value>
             </property>
           </systemProperties>
         </configuration>
@@ -197,21 +197,21 @@
       UTF-8
     </project.reporting.outputEncoding>
 
-    <test.idStart>0</test.idStart>
-    <test.idCount>10000</test.idCount>
-    <test.initLevel>1</test.initLevel>
-    <test.keyCount>10000</test.keyCount>
-    <test.numReaders>4</test.numReaders>
-    <test.segFileSizeMB>128</test.segFileSizeMB>
-    <test.hitPercent>100</test.hitPercent>
-    <test.runTimeSeconds>10</test.runTimeSeconds>
+    <krati.test.idStart>0</krati.test.idStart>
+    <krati.test.idCount>10000</krati.test.idCount>
+    <krati.test.initLevel>1</krati.test.initLevel>
+    <krati.test.keyCount>10000</krati.test.keyCount>
+    <krati.test.numReaders>4</krati.test.numReaders>
+    <krati.test.segFileSizeMB>128</krati.test.segFileSizeMB>
+    <krati.test.hitPercent>100</krati.test.hitPercent>
+    <krati.test.runTimeSeconds>10</krati.test.runTimeSeconds>
 
-    <test.output.dir>
+    <krati.test.output.dir>
       target/test-output
-    </test.output.dir>
-    <test.resources.dir>
+    </krati.test.output.dir>
+    <krati.test.resources.dir>
       src/test/resources
-    </test.resources.dir>
+    </krati.test.resources.dir>
   </properties>
 
   <repositories>

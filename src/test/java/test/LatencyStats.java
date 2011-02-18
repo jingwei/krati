@@ -5,40 +5,33 @@ import java.util.Arrays;
 
 import org.apache.log4j.Logger;
 
-public class LatencyStats
-{
+/**
+ * LatencyStats
+ * 
+ * @author jwu
+ * 
+ */
+public class LatencyStats {
     final long[] _latencyCountArray = new long[15];
     
-    public LatencyStats()
-    {
+    public LatencyStats() {
         Arrays.fill(_latencyCountArray, 0);
     }
     
-    public void countLatency(int microSeconds)
-    {
+    public void countLatency(int microSeconds) {
         int ind = 0;
-        if(microSeconds <= 1)
-        {
+        
+        if(microSeconds <= 1) {
             ind = 0;
-        }
-        else if(microSeconds <= 5)
-        {
+        } else if(microSeconds <= 5) {
             ind = 1;
-        }
-        else if(microSeconds <= 10)
-        {
+        } else if(microSeconds <= 10) {
             ind = 2;
-        }
-        else if(microSeconds <= 50)
-        {
+        } else if(microSeconds <= 50) {
             ind = 3;
-        }
-        else if(microSeconds <= 100)
-        {
+        } else if(microSeconds <= 100) {
             ind = 4;
-        }
-        else
-        {
+        } else {
             int i = microSeconds/100;
             ind = 4 + ((i < 10) ? i : 10);
         }
@@ -46,8 +39,7 @@ public class LatencyStats
         _latencyCountArray[ind] += 1; 
     }
     
-    public void print(PrintStream out)
-    {
+    public void print(PrintStream out) {
         out.println("   1," + _latencyCountArray[0]);
         out.println("   5," + _latencyCountArray[1]);
         out.println("  10," + _latencyCountArray[2]);
@@ -65,8 +57,7 @@ public class LatencyStats
         out.println("1+ms," + _latencyCountArray[14]);
     }
     
-    public void print(Logger log)
-    {
+    public void print(Logger log) {
         log.info("   1," + _latencyCountArray[0]);
         log.info("   5," + _latencyCountArray[1]);
         log.info("  10," + _latencyCountArray[2]);

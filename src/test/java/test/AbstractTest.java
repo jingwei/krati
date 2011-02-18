@@ -7,23 +7,25 @@ import org.apache.log4j.Logger;
 
 import junit.framework.TestCase;
 
-public class AbstractTest extends TestCase
-{
+/**
+ * AbstractTest
+ * 
+ * @author jwu
+ * 
+ */
+public class AbstractTest extends TestCase {
     public static final File TEST_OUTPUT_DIR;
     public static final File TEST_RESOURCES_DIR;
     static final Logger _log = Logger.getLogger(AbstractTest.class);
     
-    static
-    {
-        TEST_OUTPUT_DIR = new File(System.getProperty("test.output.dir"));
-        if(!TEST_OUTPUT_DIR.exists())
-        {
+    static {
+        TEST_OUTPUT_DIR = new File(System.getProperty("krati.test.output.dir"));
+        if(!TEST_OUTPUT_DIR.exists()) {
             TEST_OUTPUT_DIR.mkdirs();
         }
         
-        TEST_RESOURCES_DIR = new File(System.getProperty("test.resources.dir"));
-        if(!TEST_RESOURCES_DIR.exists())
-        {
+        TEST_RESOURCES_DIR = new File(System.getProperty("krati.test.resources.dir"));
+        if(!TEST_RESOURCES_DIR.exists()) {
             TEST_RESOURCES_DIR.mkdirs();
         }
     }
@@ -38,242 +40,170 @@ public class AbstractTest extends TestCase
     public static int _numReaders = 4;
     public static int _hitPercent = 100;
     
-    static
-    {
-        try
-        {
-            _idStart = Integer.parseInt(System.getProperty("test.idStart"));
-        }
-        catch(Exception e)
-        {
+    static {
+        try {
+            _idStart = Integer.parseInt(System.getProperty("krati.test.idStart"));
+        } catch(Exception e) {
             _idStart = 0;
-        }
-        finally
-        {
-            _log.info("test.idStart: " + _idStart);
+        } finally {
+            _log.info("krati.test.idStart: " + _idStart);
         }
         
-        try
-        {
-            _idCount = Integer.parseInt(System.getProperty("test.idCount"));
-        }
-        catch(Exception e)
-        {
+        try {
+            _idCount = Integer.parseInt(System.getProperty("krati.test.idCount"));
+        } catch(Exception e) {
             _idCount = 500000;
-        }
-        finally
-        {
-            _log.info("test.idCount: " + _idCount);
+        } finally {
+            _log.info("krati.test.idCount: " + _idCount);
         }
         
-        try
-        {
-            _keyCount = Integer.parseInt(System.getProperty("test.keyCount"));
-        }
-        catch(Exception e)
-        {
+        try {
+            _keyCount = Integer.parseInt(System.getProperty("krati.test.keyCount"));
+        } catch(Exception e) {
             _keyCount = (int)(_idCount * 0.75);
-        }
-        finally
-        {
-            _log.info("test.keyCount: " + _keyCount);
+        } finally {
+            _log.info("krati.test.keyCount: " + _keyCount);
         }
         
-        try
-        {
-            _runTimeSeconds = Integer.parseInt(System.getProperty("test.runTimeSeconds"));
-        }
-        catch(Exception e)
-        {
+        try {
+            _runTimeSeconds = Integer.parseInt(System.getProperty("krati.test.runTimeSeconds"));
+        } catch(Exception e) {
             _runTimeSeconds = 120;
-        }
-        finally
-        {
-            _log.info("test.runTimeSeconds: " + _runTimeSeconds);
+        } finally {
+            _log.info("krati.test.runTimeSeconds: " + _runTimeSeconds);
         }
         
-        try
-        {
-            _segFileSizeMB = Integer.parseInt(System.getProperty("test.segFileSizeMB"));
-        }
-        catch(Exception e)
-        {
+        try {
+            _segFileSizeMB = Integer.parseInt(System.getProperty("krati.test.segFileSizeMB"));
+        } catch(Exception e) {
             _segFileSizeMB = 256;
-        }
-        finally
-        {
-            _log.info("test.segFileSizeMB: " + _segFileSizeMB);
+        } finally {
+            _log.info("krati.test.segFileSizeMB: " + _segFileSizeMB);
         }
         
-        try
-        {
-            _initLevel = Integer.parseInt(System.getProperty("test.initLevel"));
-        }
-        catch(Exception e)
-        {
+        try {
+            _initLevel = Integer.parseInt(System.getProperty("krati.test.initLevel"));
+        } catch(Exception e) {
             _initLevel = 5;
-        }
-        finally
-        {
-            _log.info("test.initLevel: " + _initLevel);
+        } finally {
+            _log.info("krati.test.initLevel: " + _initLevel);
         }
         
-        try
-        {
-            _numReaders = Integer.parseInt(System.getProperty("test.numReaders"));
-        }
-        catch(Exception e)
-        {
+        try {
+            _numReaders = Integer.parseInt(System.getProperty("krati.test.numReaders"));
+        } catch(Exception e) {
             _numReaders = 4;
-        }
-        finally
-        {
-            _log.info("test.numReaders: " + _numReaders);
+        } finally {
+            _log.info("krati.test.numReaders: " + _numReaders);
         }
         
-        try
-        {
-            _hitPercent = Integer.parseInt(System.getProperty("test.hitPercent"));
+        try {
+            _hitPercent = Integer.parseInt(System.getProperty("krati.test.hitPercent"));
             _hitPercent = Math.min(_hitPercent, 100);
-        }
-        catch(Exception e)
-        {
+        } catch(Exception e) {
             _hitPercent = 100;
-        }
-        finally
-        {
-            _log.info("test.hitPercent: " + _hitPercent);
+        } finally {
+            _log.info("krati.test.hitPercent: " + _hitPercent);
         }
     }
     
     protected String name;
     
-    protected AbstractTest(String name)
-    {
+    protected AbstractTest(String name) {
         this.name = name;
     }
     
-    public File getHomeDirectory()
-    {
+    public File getHomeDirectory() {
         return new File(TEST_OUTPUT_DIR, getClass().getSimpleName());
     }
     
-    public void cleanHomeDirectory() throws IOException
-    {
+    public void cleanHomeDirectory() throws IOException {
         cleanDirectory(getHomeDirectory());
     }
     
-    public void deleteHomeDirectory() throws IOException
-    {
+    public void deleteHomeDirectory() throws IOException {
         deleteDirectory(getHomeDirectory());
     }
     
-    public void cleanTestOutput() throws Exception
-    {
+    public void cleanTestOutput() throws Exception {
         File[] files = TEST_OUTPUT_DIR.listFiles();
         
-        for (File f : files)
-        {
-            if (f.isFile())
-            {
+        for (File f : files) {
+            if (f.isFile()) {
                 boolean deleted = f.delete();
-                if (!deleted)
-                {
+                if (!deleted) {
                     throw new IOException("file:"+f.getAbsolutePath()+" not deleted");
                 }
-            }
-            else
-            {
+            } else {
                 deleteDirectory(f);
             }
         }
     }
     
-    public static void cleanDirectory(File dir) throws IOException
-    {
+    public static void cleanDirectory(File dir) throws IOException {
         File[] files = dir.listFiles();
         
-        for (File f : files)
-        {
-            if (f.isFile())
-            {
+        for (File f : files) {
+            if (f.isFile()) {
                 boolean deleted = f.delete();
-                if (!deleted)
-                {
+                if (!deleted) {
                     throw new IOException("file:"+f.getAbsolutePath()+" not deleted");
                 }
-            }
-            else
-            {
+            } else {
                 deleteDirectory(f);
             }
         }
     }
     
-    public static void deleteDirectory(File dir) throws IOException
-    {
+    public static void deleteDirectory(File dir) throws IOException {
         File[] files = dir.listFiles();
         
-        for (File f : files)
-        {
-            if (f.isDirectory())
-            {
+        for (File f : files) {
+            if (f.isDirectory()) {
                deleteDirectory(f);
-            }
-            else
-            {
+            } else {
                 boolean deleted = f.delete();
-                if (!deleted)
-                {
+                if (!deleted) {
                     throw new IOException("file:"+f.getAbsolutePath()+" not deleted");
                 }
             }
         }
         
         boolean deleted = dir.delete();
-        if (!deleted)
-        {
+        if (!deleted) {
             throw new IOException("dir:"+dir.getAbsolutePath()+" not deleted");
         }
     }
     
-    public static int getIdStart()
-    {
+    public static int getIdStart() {
         return _idStart;
     }
     
-    public static int getIdCount()
-    {
+    public static int getIdCount() {
         return _idCount;
     }
     
-    public static int getKeyCount()
-    {
+    public static int getKeyCount() {
         return _keyCount;
     }
     
-    public static int getRunTimeSeconds()
-    {
+    public static int getRunTimeSeconds() {
         return _runTimeSeconds;
     }
     
-    public static int getSegFileSizeMB()
-    {
+    public static int getSegFileSizeMB() {
         return _segFileSizeMB;
     }
     
-    public static int getInitLevel()
-    {
+    public static int getInitLevel() {
         return _initLevel;
     }
     
-    public static int getNumReaders()
-    {
+    public static int getNumReaders() {
         return _numReaders;
     }
     
-    public static int gethitPercent()
-    {
+    public static int gethitPercent() {
         return _hitPercent;
     }
 }
