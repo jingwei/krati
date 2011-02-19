@@ -82,8 +82,8 @@
           <excludes>
             <exclude>**/TestBdb*.java</exclude>
           </excludes>
-          <forkMode>pertest</forkMode>
-          <argLine>-server -Xms2g -Xmx16g</argLine>
+          <forkMode>always</forkMode>
+          <argLine>-server -Xms256m -Xmx16g</argLine>
           <systemProperties>
             <property>
               <name>krati.test.idStart</name>

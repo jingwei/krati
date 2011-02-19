@@ -1,11 +1,15 @@
 package krati.core.array;
 
-public class CompactionAbortedException extends RuntimeException
-{
+/**
+ * CompactionAbortedException
+ * 
+ * @author jwu
+ * 
+ */
+public class CompactionAbortedException extends RuntimeException {
     private static final long serialVersionUID = 1L;
-
-    public CompactionAbortedException()
-    {
+    
+    public CompactionAbortedException() {
         super("Compaction aborted");
     }
 }

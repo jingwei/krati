@@ -37,8 +37,7 @@ import krati.util.Chronos;
  * @author jwu
  *
  */
-class SimpleDataArrayCompactor implements Runnable
-{
+class SimpleDataArrayCompactor implements Runnable {
     private final static Logger _log = Logger.getLogger(SimpleDataArrayCompactor.class);
     private final ExecutorService _executor = Executors.newSingleThreadExecutor(new CompactorThreadFactory());
     private final SimpleDataArray _dataArray;
@@ -101,8 +100,7 @@ class SimpleDataArrayCompactor implements Runnable
      * 
      * @param dataArray          the data array to compact
      */
-    public SimpleDataArrayCompactor(SimpleDataArray dataArray)
-    {
+    public SimpleDataArrayCompactor(SimpleDataArray dataArray) {
         this(dataArray, 0.5, 1000);
     }
     
@@ -115,8 +113,7 @@ class SimpleDataArrayCompactor implements Runnable
      * @param dataArray          the data array to compact
      * @param compactLoadFactor  the load factor below which a segment is eligible for compaction
      */
-    public SimpleDataArrayCompactor(SimpleDataArray dataArray, double compactLoadFactor)
-    {
+    public SimpleDataArrayCompactor(SimpleDataArray dataArray, double compactLoadFactor) {
         this(dataArray, compactLoadFactor, 1000);
     }
     
@@ -130,37 +127,31 @@ class SimpleDataArrayCompactor implements Runnable
      * @param compactLoadFactor  the load factor below which a segment is eligible for compaction
      * @param compactBatchSize   the size of compaction updates delivered by the compactor to the writer. 
      */
-    public SimpleDataArrayCompactor(SimpleDataArray dataArray, double compactLoadFactor, int compactBatchSize)
-    {
+    public SimpleDataArrayCompactor(SimpleDataArray dataArray, double compactLoadFactor, int compactBatchSize) {
         this._dataArray = dataArray;
         this._compactLoadFactor = compactLoadFactor;
         this._segSourceList = new ArrayList<Segment>();
         this._updateManager = new CompactionUpdateManager(_dataArray, compactBatchSize);
     }
     
-    public double getCompactLoadFactor()
-    {
+    public double getCompactLoadFactor() {
         return this._compactLoadFactor;
     }
     
-    private static Comparator<Segment> _segmentLoadCmp = new Comparator<Segment>()
-    {
+    private static Comparator<Segment> _segmentLoadCmp = new Comparator<Segment>() {
         @Override
-        public int compare(Segment s1, Segment s2)
-        {
+        public int compare(Segment s1, Segment s2) {
             double load1 = s1.getLoadSize();
             double load2 = s2.getLoadSize();
             return (load1 < load2) ? -1 : ((load1 == load2) ? 0 : 1);
         }
     };
     
-    private boolean inspect() throws IOException
-    {
+    private boolean inspect() throws IOException {
         SegmentManager segManager = _dataArray.getSegmentManager();
         if(segManager == null) return false;
         
-        synchronized(segManager)
-        {
+        synchronized(segManager) {
             Segment segCurrent = _dataArray.getCurrentSegment();
             
             /*
@@ -169,21 +160,17 @@ class SimpleDataArrayCompactor implements Runnable
              */
             ArrayList<Segment> recycleList = new ArrayList<Segment>();
             int cnt = segManager.getSegmentCount();
-            for(int i = 0; i < cnt; i++)
-            {
+            for(int i = 0; i < cnt; i++) {
                 Segment seg = segManager.getSegment(i);
-                if(seg != null && seg.getMode() == Segment.Mode.READ_ONLY && seg != segCurrent)
-                {
-                    if (seg.getLoadFactor() < _compactLoadFactor)
-                    {
+                if(seg != null && seg.getMode() == Segment.Mode.READ_ONLY && seg != segCurrent) {
+                    if (seg.getLoadFactor() < _compactLoadFactor) {
                         recycleList.add(seg);
                     }
                 }
             }
             
             // No segment need compaction
-            if (recycleList.size() == 0)
-            {
+            if (recycleList.size() == 0) {
                 _segPermits.set(0);
                 return false;
             }
@@ -195,19 +182,14 @@ class SimpleDataArrayCompactor implements Runnable
             // The total of segment load factors need to be less than
             // 0.8 to allow 20% inaccuracy (for safety).
             double totalFactor = 0;
-            for(int i = 0, len = Math.min(3, recycleList.size()); i < len; i++)
-            {
+            for(int i = 0, len = Math.min(3, recycleList.size()); i < len; i++) {
                 Segment seg = recycleList.get(i);
-                if(totalFactor < 0.8)
-                {
+                if(totalFactor < 0.8) {
                     totalFactor += seg.getLoadFactor();
-                    if(totalFactor < 0.8)
-                    {
+                    if(totalFactor < 0.8) {
                         _segSourceList.add(seg);
                     }
-                }
-                else
-                {
+                } else {
                     break;
                 }
             }
@@ -215,8 +197,7 @@ class SimpleDataArrayCompactor implements Runnable
             // Delay compaction if only one segment is eligible for compaction but it is not VERY fragmented.
             if (_segSourceList.size() == 1 && _segSourceList.get(0).getLoadFactor() > (_compactLoadFactor/2)) return false;
             
-            for(Segment seg : _segSourceList)
-            {
+            for(Segment seg : _segSourceList) {
                 _log.info("Segment " + seg.getSegmentId() + " load factor=" + ((long)(seg.getLoadFactor() * 10000) / 10000.0));
             }
             
@@ -230,28 +211,20 @@ class SimpleDataArrayCompactor implements Runnable
          */
     }
     
-    private boolean compact() throws IOException
-    {
-        try
-        {
+    private boolean compact() throws IOException {
+        try {
             _segTarget = _dataArray.getSegmentManager().nextSegment();
-            for(Segment seg : _segSourceList)
-            {
-                if(compact(seg, _segTarget))
-                {
+            for(Segment seg : _segSourceList) {
+                if(compact(seg, _segTarget)) {
                     _compactedQueue.add(seg);
-                }
-                else
-                {
+                } else {
                     break;
                 }
             }
             
             _targetQueue.add(_segTarget);
             _log.info("bytes transferred to   " + _segTarget.getSegmentId() + ": " + (_segTarget.getAppendPosition() - Segment.dataStartPosition));
-        }
-        catch(Exception e)
-        {
+        } catch(Exception e) {
             _log.warn(e.getMessage(), e);
             return false;
         }
@@ -260,15 +233,13 @@ class SimpleDataArrayCompactor implements Runnable
         return true;
     }
     
-    private boolean compact(Segment segment, Segment segTarget) throws IOException
-    {
+    private boolean compact(Segment segment, Segment segTarget) throws IOException {
         Segment segSource = segment; 
         int segSourceId = segSource.getSegmentId();
         int segTargetId = segTarget.getSegmentId();
         
         Chronos c = new Chronos();
-        if(!segment.canReadFromBuffer() && segment.getLoadFactor() > 0.1)
-        {
+        if(!segment.canReadFromBuffer() && segment.getLoadFactor() > 0.1) {
             segSource = new BufferedSegment(segment, getByteBuffer((int)segment.getInitialSize()));
             _log.info("buffering time: " + c.tick() + " ms");
         }
@@ -277,26 +248,22 @@ class SimpleDataArrayCompactor implements Runnable
         long bytesTransferred = 0;
         boolean succ = true;
         
-        try
-        {
+        try {
             AddressFormat addrFormat = _dataArray._addressFormat;
             
-            for(int index = 0, cnt = _dataArray.length(); index < cnt; index++)
-            {
+            for(int index = 0, cnt = _dataArray.length(); index < cnt; index++) {
                 long oldAddress = _dataArray.getAddress(index);
                 int oldSegPos = addrFormat.getOffset(oldAddress);
                 int oldSegInd = addrFormat.getSegment(oldAddress);
                 int length = addrFormat.getDataSize(oldAddress);
                 
-                if (oldSegInd == segSourceId && oldSegPos >= Segment.dataStartPosition)
-                {
+                if (oldSegInd == segSourceId && oldSegPos >= Segment.dataStartPosition) {
                     if(length == 0) length = segSource.readInt(oldSegPos);
                     int byteCnt = 4 + length;
                     long newSegPos = segTarget.getAppendPosition();
                     long newAddress = addrFormat.composeAddress((int)newSegPos, segTargetId, length);
                     
-                    if(segTarget.getAppendPosition() + byteCnt >= sizeLimit)
-                    {
+                    if(segTarget.getAppendPosition() + byteCnt >= sizeLimit) {
                         succ = false;
                         break;
                     }
@@ -315,11 +282,8 @@ class SimpleDataArrayCompactor implements Runnable
             
             segTarget.force();
             return succ;
-        }
-        finally
-        {
-            if(segSource.getClass() == BufferedSegment.class)
-            {
+        } finally {
+            if(segSource.getClass() == BufferedSegment.class) {
                 segSource.close(false);
                 segSource = null;
             }
@@ -327,17 +291,13 @@ class SimpleDataArrayCompactor implements Runnable
     }
     
     @Override
-    public void run()
-    {
-        while(true)
-        {
-            if(_newCycle.compareAndSet(true, false))
-            {
+    public void run() {
+        while(true) {
+            if(_newCycle.compareAndSet(true, false)) {
                 // One and only one compactor is at work.
                 _lock.lock();
                 
-                try
-                {
+                try {
                     reset();
                     _state = State.INIT;
                     _log.info("cycle init");
@@ -347,23 +307,16 @@ class SimpleDataArrayCompactor implements Runnable
                     
                     // Compact the array
                     if(!compact()) continue;
-                }
-                catch(Exception e)
-                {
+                } catch(Exception e) {
                     _log.error("failed to compact: " + e.getMessage(), e);
-                }
-                finally
-                {
+                } finally {
                     reset();
                     _state = State.DONE;
                     _log.info("cycle done");
                     _lock.unlock();
                 }
-            }
-            else
-            {
-                try
-                {
+            } else {
+                try {
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
                     _log.warn(e.getMessage());
@@ -372,48 +325,39 @@ class SimpleDataArrayCompactor implements Runnable
         }
     }
     
-    final void start()
-    {
+    final void start() {
         _executor.execute(this);
     }
     
-    public boolean isStarted()
-    {
+    public boolean isStarted() {
         return _state != State.DONE;
     }
     
-    protected void reset()
-    {
+    protected void reset() {
         _segTarget = null;
         _segPermits.set(0);
         _segSourceList.clear();
         _updateManager.clear();
     }
     
-    protected Segment peekTargetSegment()
-    {
+    protected Segment peekTargetSegment() {
         return _targetQueue.peek();
     }
     
-    protected Segment pollTargetSegment()
-    {
+    protected Segment pollTargetSegment() {
         return _targetQueue.poll();
     }
     
-    protected CompactionUpdateBatch pollCompactionBatch()
-    {
+    protected CompactionUpdateBatch pollCompactionBatch() {
         return _updateManager.pollBatch();
     }
     
-    protected boolean recycleCompactionBatch(CompactionUpdateBatch batch)
-    {
+    protected boolean recycleCompactionBatch(CompactionUpdateBatch batch) {
         return _updateManager.recycleBatch(batch);
     }
     
-    protected ByteBuffer getByteBuffer(int bufferLength)
-    {
-        if(_buffer == null)
-        {
+    protected ByteBuffer getByteBuffer(int bufferLength) {
+        if(_buffer == null) {
             _buffer = ByteBuffer.wrap(new byte[bufferLength]);
             _log.info("ByteBuffer allocated for buffering");
         }
@@ -421,49 +365,41 @@ class SimpleDataArrayCompactor implements Runnable
         return _buffer;
     }
     
-    final ConcurrentLinkedQueue<Segment> getCompactedQueue()
-    {
+    final ConcurrentLinkedQueue<Segment> getCompactedQueue() {
         return _compactedQueue;
     }
     
-    final boolean getAndDecrementSegmentPermit()
-    {
+    final boolean getAndDecrementSegmentPermit() {
         return _segPermits.getAndDecrement() > 0;
     }
     
-    final Segment getTargetSegment()
-    {
+    final Segment getTargetSegment() {
         return _segTarget;
     }
     
-    final void startsCycle()
-    {
+    final void startsCycle() {
         _newCycle.set(true);
     }
     
-    static enum State
-    {
+    static enum State {
         INIT,
         DONE;
     }
     
-    static class CompactionUpdate
-    {
+    static class CompactionUpdate {
         int _index;
         int _dataSize;
         long _dataAddr;
         long _origAddr;
         
-        CompactionUpdate(int index, int dataSize, long dataAddr, long origAddr)
-        {
+        CompactionUpdate(int index, int dataSize, long dataAddr, long origAddr) {
             this._index = index;
             this._dataSize = dataSize;
             this._dataAddr = dataAddr;
             this._origAddr = origAddr;
         }
         
-        public String toString()
-        {
+        public String toString() {
             StringBuilder buf = new StringBuilder();
             
             buf.append(getClass().getSimpleName());
@@ -481,8 +417,7 @@ class SimpleDataArrayCompactor implements Runnable
         }
     }
     
-    static class CompactionUpdateBatch
-    {
+    static class CompactionUpdateBatch {
         static int _counter = 0;
         final int _batchId;
         final int _capacity;
@@ -494,16 +429,14 @@ class SimpleDataArrayCompactor implements Runnable
         int _serviceId = 0;
         long _lwMark = 0;
         
-        CompactionUpdateBatch(int capacity)
-        {
+        CompactionUpdateBatch(int capacity) {
             this._capacity = capacity;
             this._batchId = _counter++;
             this._buffer = ByteBuffer.allocate(_capacity * _unitSize);
             _log.info("CompactionUpdateBatch " + _batchId);
         }
         
-        public void clear()
-        {
+        public void clear() {
             _buffer.clear();
             _segTarget = null;
             _dataSizeTotal = 0;
@@ -511,58 +444,47 @@ class SimpleDataArrayCompactor implements Runnable
             _lwMark = 0;
         }
         
-        public int getCapacity()
-        {
+        public int getCapacity() {
             return _capacity;
         }
         
-        public int getByteCapacity()
-        {
+        public int getByteCapacity() {
             return _buffer.capacity();
         }
         
-        public ByteBuffer getInternalBuffer()
-        {
+        public ByteBuffer getInternalBuffer() {
             return _buffer;
         }
         
-        public int size()
-        {
+        public int size() {
             return _buffer.position()/_unitSize;
         }
         
-        public boolean isEmpty()
-        {
+        public boolean isEmpty() {
             return _buffer.position() == 0;
         }
         
-        public int getBatchId()
-        {
+        public int getBatchId() {
             return _batchId;
         }
 
-        public int getServiceId()
-        {
+        public int getServiceId() {
             return _serviceId;
         }
         
-        public String getDescriptiveId()
-        {
+        public String getDescriptiveId() {
             return ((_segTarget == null) ? "?[" : (_segTarget.getSegmentId() + "[")) + _serviceId + "]";
         }
         
-        public long getLWMark()
-        {
+        public long getLWMark() {
             return _lwMark;
         }
         
-        public Segment getTargetSegment()
-        {
+        public Segment getTargetSegment() {
             return _segTarget;
         }
         
-        public void add(int index, int dataSize, long dataAddr, long origAddr)
-        {
+        public void add(int index, int dataSize, long dataAddr, long origAddr) {
             _buffer.putInt(index);
             _buffer.putInt(dataSize);
             _buffer.putLong(dataAddr);
@@ -570,57 +492,47 @@ class SimpleDataArrayCompactor implements Runnable
             _dataSizeTotal += dataSize;
         }
         
-        public CompactionUpdate get(int i)
-        {
+        public CompactionUpdate get(int i) {
             return new CompactionUpdate(getUpdateIndex(i),
                                         getUpdateDataSize(i),
                                         getUpdateDataAddr(i),
                                         getOriginDataAddr(i));
         }
         
-        public int getUpdateIndex(int i)
-        {
+        public int getUpdateIndex(int i) {
             return _buffer.getInt(i * _unitSize);
         }
         
-        public int getUpdateDataSize(int i)
-        {
+        public int getUpdateDataSize(int i) {
             return _buffer.getInt((i * _unitSize) + 4);
         }
         
-        public long getUpdateDataAddr(int i)
-        {
+        public long getUpdateDataAddr(int i) {
             return _buffer.getLong((i * _unitSize) + 8);
         }
         
-        public long getOriginDataAddr(int i)
-        {
+        public long getOriginDataAddr(int i) {
             return _buffer.getLong((i * _unitSize) + 16);
         }
         
-        public int getDataSizeTotal()
-        {
+        public int getDataSizeTotal() {
             return _dataSizeTotal;
         }
         
-        void setLWMark(long waterMark)
-        {
+        void setLWMark(long waterMark) {
             _lwMark = waterMark;
         }
         
-        void setTargetSegment(Segment seg)
-        {
+        void setTargetSegment(Segment seg) {
             _segTarget = seg;
         }
         
-        void setServiceId(int serviceId)
-        {
+        void setServiceId(int serviceId) {
             _serviceId = serviceId;
         }
     }
     
-    static class CompactionUpdateManager
-    {
+    static class CompactionUpdateManager {
         private final int _batchSize;
         private final ConcurrentLinkedQueue<CompactionUpdateBatch> _serviceBatchQueue;
         private final ConcurrentLinkedQueue<CompactionUpdateBatch> _recycleBatchQueue;
@@ -628,8 +540,7 @@ class SimpleDataArrayCompactor implements Runnable
         private int _batchServiceIdCounter = 0; 
         private CompactionUpdateBatch _batch;
         
-        public CompactionUpdateManager(SimpleDataArray dataArray, int batchSize)
-        {
+        public CompactionUpdateManager(SimpleDataArray dataArray, int batchSize) {
             _dataArray = dataArray;
             _batchSize = batchSize;
             _serviceBatchQueue = new ConcurrentLinkedQueue<CompactionUpdateBatch>();
@@ -637,11 +548,9 @@ class SimpleDataArrayCompactor implements Runnable
             nextBatch();
         }
         
-        private void nextBatch()
-        {
+        private void nextBatch() {
             _batch = _recycleBatchQueue.poll();
-            if(_batch == null)
-            {
+            if(_batch == null) {
                 _batch = new CompactionUpdateBatch(_batchSize);
             }
             
@@ -649,35 +558,27 @@ class SimpleDataArrayCompactor implements Runnable
             _batch.setServiceId(_batchServiceIdCounter++);
         }
         
-        public boolean isServiceQueueEmpty()
-        {
+        public boolean isServiceQueueEmpty() {
             return _serviceBatchQueue.isEmpty();
         }
 
-        public boolean isRecycleQueueEmpty()
-        {
+        public boolean isRecycleQueueEmpty() {
             return _recycleBatchQueue.isEmpty();
         }
         
-        public CompactionUpdateBatch pollBatch()
-        {
+        public CompactionUpdateBatch pollBatch() {
             return _serviceBatchQueue.poll();
         }
 
-        public boolean recycleBatch(CompactionUpdateBatch batch)
-        {
+        public boolean recycleBatch(CompactionUpdateBatch batch) {
             batch.clear();
             return _recycleBatchQueue.add(batch);
         }
         
-        public void addUpdate(int index, int dataSize, long dataAddr, long origAddr, Segment segTarget) throws IOException
-        {
-            try
-            {
+        public void addUpdate(int index, int dataSize, long dataAddr, long origAddr, Segment segTarget) throws IOException {
+            try {
                 _batch.add(index, dataSize, dataAddr, origAddr);
-            }
-            catch(BufferOverflowException e)
-            {
+            } catch(BufferOverflowException e) {
                 segTarget.force();
                 _batch.setTargetSegment(segTarget);
                 _batch.setLWMark(_dataArray.getLWMark());
@@ -691,8 +592,7 @@ class SimpleDataArrayCompactor implements Runnable
             }
         }
         
-        public void endUpdate(Segment segTarget) throws IOException
-        {
+        public void endUpdate(Segment segTarget) throws IOException {
             segTarget.force();
             _batch.setTargetSegment(segTarget);
             _batch.setLWMark(_dataArray.getLWMark());
@@ -703,8 +603,7 @@ class SimpleDataArrayCompactor implements Runnable
             nextBatch();
         }
         
-        public void clear()
-        {
+        public void clear() {
             _batchServiceIdCounter = 0;
             _batch.clear();
             _batch.setServiceId(_batchServiceIdCounter++);
