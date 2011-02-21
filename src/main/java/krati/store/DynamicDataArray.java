@@ -144,12 +144,12 @@ public final class DynamicDataArray extends AbstractDataArray implements Dynamic
     }
     
     @Override
-    public final int getIndexStart() {
+    public int getIndexStart() {
         return 0;
     }
     
     @Override
-    public final int capacity() {
+    public int capacity() {
         return length();
     }
 }

@@ -83,7 +83,7 @@
             <exclude>**/TestBdb*.java</exclude>
           </excludes>
           <forkMode>always</forkMode>
-          <argLine>-server -Xms256m -Xmx16g</argLine>
+          <argLine>-server -Xms256m -Xmx16g ${krati.test.jvm.args}</argLine>
           <systemProperties>
             <property>
               <name>krati.test.idStart</name>
@@ -205,7 +205,8 @@
     <krati.test.segFileSizeMB>128</krati.test.segFileSizeMB>
     <krati.test.hitPercent>100</krati.test.hitPercent>
     <krati.test.runTimeSeconds>10</krati.test.runTimeSeconds>
-
+    <krati.test.jvm.args>
+    </krati.test.jvm.args>
     <krati.test.output.dir>
       target/test-output
     </krati.test.output.dir>

@@ -71,8 +71,7 @@ public abstract class AbstractDataArray implements DataArray, Persistable {
         return _homePath;
     }
     
-    public String getStatus()
-    {
+    public String getStatus() {
         StringBuilder buffer = new StringBuilder();
         
         buffer.append("path");

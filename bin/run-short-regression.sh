@@ -1,0 +1,1 @@
+mvn test -Dkrati.test.jvm.args="-Xloggc:target/logs/krati.gc -XX:+PrintGCDetails" -Dkrati.test.idCount=5000000 -Dkrati.test.keyCount=5000000 -Dkrati.test.segFileSizeMB=256 -Dkrati.test.runTimeSeconds=600 -Dkrati.test.initLevel=7

@@ -12,15 +12,19 @@ import test.util.DataArrayChecker;
 import test.util.DataArrayReader;
 import test.util.DataArrayWriter;
 
-public abstract class EvalDataArray extends AbstractSeedTest
-{
-    public EvalDataArray()
-    {
+/**
+ * EvalDataArray
+ * 
+ * @author jwu
+ * 2010
+ */
+public abstract class EvalDataArray extends AbstractSeedTest {
+    
+    public EvalDataArray() {
         super(EvalDataArray.class.getName());
     }
     
-    public void populate(DataArray dataArray) throws IOException
-    {
+    public void populate(DataArray dataArray) throws IOException {
         String line;
         int index = 0;
         int length = dataArray.length();
@@ -28,15 +32,11 @@ public abstract class EvalDataArray extends AbstractSeedTest
         
         long startTime = System.currentTimeMillis();
         
-        while(index < length)
-        {
-            try
-            {
+        while(index < length) {
+            try {
                 line = _lineSeedData.get(index % lineCnt);
                 dataArray.set(index, line.getBytes(), System.currentTimeMillis());
-            }
-            catch(Exception e)
-            {
+            } catch(Exception e) {
                 e.printStackTrace();
             }
             index++;
@@ -51,36 +51,38 @@ public abstract class EvalDataArray extends AbstractSeedTest
         StatsLog.logger.info("writeCount="+ dataArray.length() +" rate="+ rate +" per ms");
     }
     
-    public static void checkData(DataArray dataArray, int index)
-    {
+    public static void checkData(DataArray dataArray, int index) {
         String line = _lineSeedData.get(index % _lineSeedData.size());
         
         byte[] b = dataArray.get(index);
-        if (b != null)
-        {
+        if (b != null) {
             String s = new String(b);
             assertTrue("[" + index + "]=" + s + " expected=" + line, s.equals(line));
-        }
-        else
-        {
+        } else {
             assertTrue("[" + index + "]=null", line == null);
         }
     }
     
-    public static void validate(DataArray dataArray)
-    {
+    public static void validate(DataArray dataArray) {
+        long startTime = System.currentTimeMillis();
+        
         int len = dataArray.length();
-        for(int i = 0; i < len; i++)
-        {
+        for(int i = 0; i < len; i++) {
             checkData(dataArray, i);
         }
         StatsLog.logger.info("OK");
+        
+        long endTime = System.currentTimeMillis();
+        long elapsedTime = endTime - startTime;
+        StatsLog.logger.info("elapsedTime="+ elapsedTime +" ms");
+        
+        double rate = dataArray.length()/(double)elapsedTime;
+        rate = Math.round(rate * 100) / 100.0;
+        StatsLog.logger.info("validateCount="+ dataArray.length() +" rate="+ rate +" per ms");
     }
     
-    public static double evalWrite(DataArray dataArray, int runDuration) throws Exception
-    {
-        try
-        {
+    public static double evalWrite(DataArray dataArray, int runDuration) throws Exception {
+        try {
             // Start writer
             DataArrayWriter writer = new DataArrayWriter(dataArray, _lineSeedData);
             Thread writerThread = new Thread(writer);
@@ -91,8 +93,7 @@ public abstract class EvalDataArray extends AbstractSeedTest
             long writeCount = 0;
             int heartBeats = runDuration/10;
             long sleepTime = Math.min(runDuration * 1000, 10000);
-            for(int i = 0; i < heartBeats; i++)
-            {
+            for(int i = 0; i < heartBeats; i++) {
                 Thread.sleep(sleepTime);
                 long newWriteCount = writer.getWriteCount();
                 StatsLog.logger.info("writeCount=" + (newWriteCount - writeCount));
@@ -113,27 +114,22 @@ public abstract class EvalDataArray extends AbstractSeedTest
             
             return rate;
         }
-        catch(Exception e)
-        {
+        catch(Exception e) {
             e.printStackTrace();
             throw e;
         }
     }
     
-    public static void evalRead(DataArray dataArray, int readerCnt, int runDuration) throws Exception
-    {
-        try
-        {
+    public static void evalRead(DataArray dataArray, int readerCnt, int runDuration) throws Exception {
+        try {
             // Start readers
             DataArrayReader[] readers = new DataArrayReader[readerCnt];
-            for(int i = 0; i < readers.length; i++)
-            {
+            for(int i = 0; i < readers.length; i++) {
                 readers[i] = new DataArrayReader(dataArray, _lineSeedData);
             }
             
             Thread[] threads = new Thread[readers.length];
-            for(int i = 0; i < threads.length; i++)
-            {
+            for(int i = 0; i < threads.length; i++) {
                 threads[i] = new Thread(readers[i]);
                 threads[i].start();
                 StatsLog.logger.info("Reader " + i + " started");
@@ -144,12 +140,10 @@ public abstract class EvalDataArray extends AbstractSeedTest
             // Sleep until run time is exhausted
             Thread.sleep(runDuration * 1000);
             
-            for(int i = 0; i < readers.length; i++)
-            {
+            for(int i = 0; i < readers.length; i++) {
                 readers[i].stop();
             }
-            for(int i = 0; i < threads.length; i++)
-            {
+            for(int i = 0; i < threads.length; i++) {
                 threads[i].join();
             }
             
@@ -158,8 +152,7 @@ public abstract class EvalDataArray extends AbstractSeedTest
             double sumReadRate = 0;
             long elapsedTime = endTime - startTime;
             StatsLog.logger.info("elapsedTime="+ elapsedTime +" ms");
-            for(int i = 0; i < readers.length; i++)
-            {
+            for(int i = 0; i < readers.length; i++) {
                 double rate = readers[i].getReadCount()/(double)elapsedTime;
                 rate = Math.round(rate * 100) / 100.0;
                 StatsLog.logger.info("readCount["+ i +"]="+ readers[i].getReadCount() +" rate="+ rate +" per ms");
@@ -168,29 +161,22 @@ public abstract class EvalDataArray extends AbstractSeedTest
             
             sumReadRate = Math.round(sumReadRate * 100) / 100.0;
             StatsLog.logger.info("Total Read Rate="+ sumReadRate +" per ms");
-        }
-        catch(Exception e)
-        {
+        } catch(Exception e) {
             e.printStackTrace();
             throw e;
         }
     }
     
-    
-    public static void evalReadWrite(DataArray dataArray, int readerCnt, int runDuration, boolean doValidation) throws Exception
-    {
-        try
-        {
+    public static void evalReadWrite(DataArray dataArray, int readerCnt, int runDuration, boolean doValidation) throws Exception {
+        try {
             // Start readers
             DataArrayReader[] readers = new DataArrayReader[readerCnt];
-            for(int i = 0; i < readers.length; i++)
-            {
+            for(int i = 0; i < readers.length; i++) {
                 readers[i] = doValidation ? new DataArrayChecker(dataArray, _lineSeedData) : new DataArrayReader(dataArray, _lineSeedData);
             }
 
             Thread[] threads = new Thread[readers.length];
-            for(int i = 0; i < threads.length; i++)
-            {
+            for(int i = 0; i < threads.length; i++) {
                 threads[i] = new Thread(readers[i]);
                 threads[i].start();
                 StatsLog.logger.info("Reader " + i + " started");
@@ -208,13 +194,11 @@ public abstract class EvalDataArray extends AbstractSeedTest
             long writeCount = 0;
             int heartBeats = runDuration/10;
             long sleepTime = Math.min(runDuration * 1000, 10000);
-            for(int i = 0; i < heartBeats; i++)
-            {
+            for(int i = 0; i < heartBeats; i++) {
                 Thread.sleep(sleepTime);
 
                 long newReadCount = 0;
-                for(int r = 0; r < readers.length; r++)
-                {
+                for(int r = 0; r < readers.length; r++) {
                     newReadCount += readers[r].getReadCount();
                 }
                 
@@ -227,12 +211,10 @@ public abstract class EvalDataArray extends AbstractSeedTest
             }
             
             // Stop reader
-            for(int i = 0; i < readers.length; i++)
-            {
+            for(int i = 0; i < readers.length; i++) {
                 readers[i].stop();
             }
-            for(int i = 0; i < threads.length; i++)
-            {
+            for(int i = 0; i < threads.length; i++) {
                 threads[i].join();
             }
             
@@ -250,8 +232,7 @@ public abstract class EvalDataArray extends AbstractSeedTest
             StatsLog.logger.info("writeCount="+ writer.getWriteCount() +" rate="+ rate +" per ms");
             
             double sumReadRate = 0;
-            for(int i = 0; i < readers.length; i++)
-            {
+            for(int i = 0; i < readers.length; i++) {
                 rate = readers[i].getReadCount()/(double)elapsedTime;
                 rate = Math.round(rate * 100) / 100.0;
                 StatsLog.logger.info("readCount["+ i +"]="+ readers[i].getReadCount() +" rate="+ rate +" per ms");
@@ -264,14 +245,11 @@ public abstract class EvalDataArray extends AbstractSeedTest
             StatsLog.logger.info("writer latency stats:");
             writer.getLatencyStats().print(StatsLog.logger);
             
-            if(!doValidation)
-            {
+            if(!doValidation) {
                 StatsLog.logger.info("reader latency stats:");
                 readers[0].getLatencyStats().print(StatsLog.logger);
             }
-        }
-        catch(Exception e)
-        {
+        } catch(Exception e) {
             e.printStackTrace();
             throw e;
         }
@@ -281,28 +259,22 @@ public abstract class EvalDataArray extends AbstractSeedTest
     
     protected abstract AbstractDataArray createDataArray(File homeDir) throws Exception;
         
-    public void testDataArray() throws Exception
-    {
+    public void testDataArray() throws Exception {
         String unitTestName = getClass().getSimpleName(); 
         StatsLog.beginUnit(unitTestName);
         
-        try
-        {
+        try {
             AbstractSeedTest.loadSeedData();
-        }
-        catch(Exception e)
-        {
+        } catch(Exception e) {
             e.printStackTrace();
             return;
         }
         
-        try
-        {
+        try {
             File homeDir = getHomeDirectory();
             AbstractDataArray dataArray = createDataArray(homeDir);
             
-            if (dataArray.getLWMark() == 0)
-            {
+            if (dataArray.getLWMark() == 0) {
                 StatsLog.logger.info(">>> populate");
                 populate(dataArray);
                 
@@ -337,9 +309,7 @@ public abstract class EvalDataArray extends AbstractSeedTest
             validate(dataArray);
             
             dataArray.sync();
-        }
-        catch(Exception e)
-        {
+        } catch(Exception e) {
             e.printStackTrace();
         }
         
@@ -347,4 +317,3 @@ public abstract class EvalDataArray extends AbstractSeedTest
         StatsLog.endUnit(unitTestName);
     }
 }
-
