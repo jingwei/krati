@@ -9,8 +9,8 @@ import java.io.IOException;
  * @author jwu
  *
  */
-public interface DataWriter
-{
+public interface DataWriter {
+    
     public File getFile();
     
     public void open() throws IOException;

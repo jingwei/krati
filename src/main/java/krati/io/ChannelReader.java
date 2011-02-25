@@ -12,8 +12,7 @@ import java.nio.channels.FileChannel;
  * @author jwu
  *
  */
-public class ChannelReader implements DataReader
-{
+public class ChannelReader implements DataReader {
     private final File _file;
     private FileChannel _channel;
     private RandomAccessFile _raf;
@@ -22,27 +21,22 @@ public class ChannelReader implements DataReader
     private final ByteBuffer _bbLong = ByteBuffer.wrap(new byte[8]);
     private final ByteBuffer _bbShort = ByteBuffer.wrap(new byte[2]);
     
-    public ChannelReader(File file)
-    {
+    public ChannelReader(File file) {
         this._file = file;
     }
     
     @Override
-    public File getFile()
-    {
+    public File getFile() {
         return _file;
     }
     
     @Override
-    public void open() throws IOException
-    {
-        if(!_file.exists())
-        {
+    public void open() throws IOException {
+        if(!_file.exists()) {
             throw new IOException("Cannot find file " + _file.getAbsolutePath());
         }
         
-        if(_file.isDirectory())
-        {
+        if(_file.isDirectory()) {
             throw new IOException("Cannot open directory " + _file.getAbsolutePath());
         }
         
@@ -51,23 +45,18 @@ public class ChannelReader implements DataReader
     }
     
     @Override
-    public void close() throws IOException
-    {
-        try
-        {
+    public void close() throws IOException {
+        try {
             if(_channel != null) _channel.close();
             if(_raf != null) _raf.close();
-        }
-        finally
-        {
+        } finally {
             _channel = null;
             _raf = null;
         }
     }
     
     @Override
-    public int readInt() throws IOException
-    {
+    public int readInt() throws IOException {
         _bbInt.clear();
         _channel.read(_bbInt);
         _bbInt.flip();
@@ -75,8 +64,7 @@ public class ChannelReader implements DataReader
     }
     
     @Override
-    public long readLong() throws IOException
-    {
+    public long readLong() throws IOException {
         _bbLong.clear();
         _channel.read(_bbLong);
         _bbLong.flip();
@@ -84,8 +72,7 @@ public class ChannelReader implements DataReader
     }
     
     @Override
-    public short readShort() throws IOException
-    {
+    public short readShort() throws IOException {
         _bbShort.clear();
         _channel.read(_bbShort);
         _bbShort.flip();
@@ -93,8 +80,7 @@ public class ChannelReader implements DataReader
     }
     
     @Override
-    public int readInt(long position) throws IOException
-    {
+    public int readInt(long position) throws IOException {
         _bbInt.clear();
         _channel.read(_bbInt, position);
         _bbInt.flip();
@@ -102,8 +88,7 @@ public class ChannelReader implements DataReader
     }
     
     @Override
-    public long readLong(long position) throws IOException
-    {
+    public long readLong(long position) throws IOException {
         _bbLong.clear();
         _channel.read(_bbLong, position);
         _bbLong.flip();
@@ -111,8 +96,7 @@ public class ChannelReader implements DataReader
     }
     
     @Override
-    public short readShort(long position) throws IOException
-    {
+    public short readShort(long position) throws IOException {
         _bbShort.clear();
         _channel.read(_bbShort, position);
         _bbShort.flip();
@@ -120,14 +104,12 @@ public class ChannelReader implements DataReader
     }
     
     @Override
-    public long position() throws IOException
-    {
+    public long position() throws IOException {
         return _channel.position();
     }
     
     @Override
-    public void position(long newPosition) throws IOException
-    {
+    public void position(long newPosition) throws IOException {
         _channel.position(newPosition);
     }
 }

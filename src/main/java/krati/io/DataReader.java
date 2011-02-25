@@ -9,8 +9,8 @@ import java.io.IOException;
  * @author jwu
  *
  */
-public interface DataReader
-{
+public interface DataReader {
+    
     public File getFile();
     
     public void open() throws IOException;
