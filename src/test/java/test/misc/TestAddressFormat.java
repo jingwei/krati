@@ -3,6 +3,12 @@ package test.misc;
 import krati.core.segment.AddressFormat;
 import test.AbstractTest;
 
+/**
+ * TestAddressFormat
+ * 
+ * @author jwu
+ * 
+ */
 public class TestAddressFormat extends AbstractTest {
 
     public TestAddressFormat() {

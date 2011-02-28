@@ -4,20 +4,23 @@ import krati.store.DataSetHandler;
 import krati.store.DefaultDataSetHandler;
 import test.AbstractTest;
 
-public class TestSetDataHandler extends AbstractTest
-{
+/**
+ * TestSetDataHandler
+ * 
+ * @author jwu
+ * 
+ */
+public class TestSetDataHandler extends AbstractTest {
     DataSetHandler _dataHandler = new DefaultDataSetHandler();
     static String str1 = "0123456789A0123456789B0123456789C";
     static String str2 = "0123456789D0123456789E0123456789F";
     static String str3 = "0123456789G0123456789H0123456789I";
     
-    public TestSetDataHandler()
-    {
+    public TestSetDataHandler() {
         super(TestSetDataHandler.class.getSimpleName());
     }
     
-    public void test()
-    {
+    public void test() {
         int valCnt;
         
         byte[] value1 = str1.getBytes();

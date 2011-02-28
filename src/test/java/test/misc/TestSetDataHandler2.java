@@ -3,20 +3,23 @@ package test.misc;
 import krati.store.DataSetHandler;
 import test.AbstractTest;
 
-public class TestSetDataHandler2 extends AbstractTest
-{
+/**
+ * TestSetDataHandler2
+ * 
+ * @author jwu
+ * 
+ */
+public class TestSetDataHandler2 extends AbstractTest {
     DataSetHandler _dataHandler = new DataSetHandler2();
     static String str1 = "0123456789A0123456789B0123456789C";
     static String str2 = "0123456789D0123456789E0123456789F";
     static String str3 = "0123456789G0123456789H0123456789I";
     
-    public TestSetDataHandler2()
-    {
+    public TestSetDataHandler2() {
         super(TestSetDataHandler2.class.getSimpleName());
     }
     
-    public void test()
-    {
+    public void test() {
         int valCnt;
         
         byte[] value1 = str1.getBytes();

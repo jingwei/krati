@@ -1,25 +1,28 @@
-package test.misc;
+package test.io;
 
 import java.io.File;
 
-import krati.io.ChannelWriter;
+
 import krati.io.DataReader;
 import krati.io.DataWriter;
 import krati.io.MappedReader;
+import krati.io.MappedWriter;
 
-public class TestMappedReaderChannelWriter extends AbstractTestDataRW {
-
-    public TestMappedReaderChannelWriter() {
-        super(TestMappedReaderChannelWriter.class.getSimpleName());
-    }
+/**
+ * TestMappedReaderMappedWriter
+ * 
+ * @author jwu
+ * 
+ */
+public class TestMappedReaderMappedWriter extends AbstractTestDataRW {
     
     @Override
     protected DataReader createDataReader(File file) {
         return new MappedReader(file);
     }
-
+    
     @Override
     protected DataWriter createDataWriter(File file) {
-        return new ChannelWriter(file);
+        return new MappedWriter(file);
     }
 }

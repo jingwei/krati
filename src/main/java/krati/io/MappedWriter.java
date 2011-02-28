@@ -14,7 +14,6 @@ import java.nio.channels.FileChannel;
  */
 public class MappedWriter implements DataWriter {
     private final File _file;
-    private FileChannel _channel;
     private RandomAccessFile _raf;
     private MappedByteBuffer _mmapBuffer;
     
@@ -41,25 +40,23 @@ public class MappedWriter implements DataWriter {
         }
         
         _raf = new RandomAccessFile(_file, "rw");
-        _channel = _raf.getChannel();
-        _mmapBuffer = _channel.map(FileChannel.MapMode.READ_WRITE, 0, _raf.length());
+        _mmapBuffer = _raf.getChannel().map(FileChannel.MapMode.READ_WRITE, 0, _raf.length());
     }
     
     @Override
     public void close() throws IOException {
         try {
-            _channel.force(true);
-            _channel.close();
+            _mmapBuffer.force();
             _raf.close();
         } finally {
-            _channel = null;
+            _mmapBuffer = null;
             _raf = null;
         }
     }
     
     @Override
     public void flush() throws IOException {
-        _channel.force(true);
+        _mmapBuffer.force();
     }
     
     @Override

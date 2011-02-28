@@ -8,8 +8,7 @@ import java.nio.channels.WritableByteChannel;
  * @author jwu
  *
  */
-public interface DataArray extends Array
-{
+public interface DataArray extends Array {
     /**
      * @return <code>true</code> if data exists at a given index. Otherwise, <code>false</code>.
      */

@@ -1,39 +1,50 @@
-package test.misc;
+package test.io;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
+import junit.framework.TestCase;
+
 import krati.io.DataReader;
 import krati.io.DataWriter;
-import test.AbstractTest;
+import test.util.FileUtils;
 
 /**
+ * AbstractTestDataRW
  * 
  * @author jwu
  *
  */
-public abstract class AbstractTestDataRW extends AbstractTest {
-
-    public AbstractTestDataRW(String name) {
-        super(name);
-    }
+public abstract class AbstractTestDataRW extends TestCase {
+    protected File file;
     
     protected abstract DataWriter createDataWriter(File file);
+    
     protected abstract DataReader createDataReader(File file);
     
-    public void testDataReadWrite() throws IOException
-    {
-        File dir = getHomeDirectory();
-        if(!dir.exists()) dir.mkdirs();
-        cleanDirectory(dir);
-        
-        int fileLength = 0;
-        File file = new File(dir, getClass().getSimpleName() + ".dat");
+    @Override
+    protected void setUp() {
+        try {
+            file = FileUtils.getTestFile(getClass().getSimpleName() + ".dat");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    @Override
+    protected void tearDown() {
+        if(file != null && file.exists()) {
+            file.delete();
+        }
+    }
+    
+    public void testDataReadWrite() throws IOException {
         RandomAccessFile raf = new RandomAccessFile(file, "rw");
         
-        fileLength = 1000;
+        int fileLength = 1000;
         raf.setLength(fileLength);
+        
         DataWriter writer = createDataWriter(file);
         writer.open();
         
@@ -84,7 +95,5 @@ public abstract class AbstractTestDataRW extends AbstractTest {
         
         writer.close();
         reader.close();
-        
-        cleanDirectory(dir);
     }
 }

@@ -6,8 +6,7 @@ package krati.array;
  * @author jwu
  *
  */
-public interface DynamicArray extends Array
-{
+public interface DynamicArray extends Array {
   /**
    * Expands the capacity of array to accommodate a given index.
    * 

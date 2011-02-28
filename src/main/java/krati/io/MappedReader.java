@@ -17,6 +17,13 @@ public class MappedReader implements DataReader {
     private RandomAccessFile _raf;
     private MappedByteBuffer _mmapBuffer;
     
+    /**
+     * Create a file reader based on MappedByteBuffer.
+     * 
+     * The mapped region starts at position 0 (i.e. the first byte) and has a size up to the maximum integer.
+     *   
+     * @param file - file to read from.
+     */
     public MappedReader(File file) {
         this._file = file;
     }
@@ -37,7 +44,8 @@ public class MappedReader implements DataReader {
         }
         
         _raf = new RandomAccessFile(_file, "r");
-        _mmapBuffer = _raf.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, _raf.length());
+        long size = Math.min(_raf.length(), Integer.MAX_VALUE);
+        _mmapBuffer = _raf.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, size);
     }
     
     @Override

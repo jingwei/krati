@@ -6,8 +6,7 @@ package krati.array;
  * @author jwu
  *
  */
-public interface ShortArray extends Array
-{
+public interface ShortArray extends Array {
   /**
    * Gets data at a specified index.
    * 

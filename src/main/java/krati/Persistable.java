@@ -8,8 +8,7 @@ import java.io.IOException;
  * @author jwu
  *
  */
-public interface Persistable
-{
+public interface Persistable {
     /**
      * Force all updates from memory buffer and redo log files to synchronize with
      * the underlying persistent file in blocking mode.

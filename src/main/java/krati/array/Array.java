@@ -6,8 +6,7 @@ package krati.array;
  * @author jwu
  *
  */
-public interface Array
-{
+public interface Array {
   /**
    * Clears this Array.
    */
