@@ -11,8 +11,10 @@ import org.apache.log4j.Logger;
 import krati.core.array.entry.Entry;
 import krati.core.array.entry.EntryUtility;
 import krati.core.array.entry.EntryValue;
-import krati.io.ChannelReader;
 import krati.io.ChannelWriter;
+import krati.io.DataReader;
+import krati.io.IOFactory;
+import krati.io.IOType;
 import krati.io.MappedWriter;
 import krati.io.DataWriter;
 import krati.util.Chronos;
@@ -53,6 +55,7 @@ public class ArrayFile {
   static final Logger _log = Logger.getLogger(ArrayFile.class);
 
   private File _file;
+  private IOType _type;
   private DataWriter _writer;
   
   // header information
@@ -71,6 +74,19 @@ public class ArrayFile {
    * @throws IOException
    */
   public ArrayFile(File file, int initialLength, int elementSize) throws IOException {
+      this(file, initialLength, elementSize, IOType.MAPPED);
+  }
+  
+  /**
+   * Creates a new ArrayFile based on a given length and element size.
+   * 
+   * @param file           the file on disk
+   * @param initialLength  the initial length (number of elements) of array
+   * @param elementSize    the size (number of bytes) of every array element
+   * @param type           the I/O type
+   * @throws IOException
+   */
+  public ArrayFile(File file, int initialLength, int elementSize, IOType type) throws IOException {
     boolean newFile = false;
     long initialFileLength = DATA_START_POSITION + (initialLength * elementSize);
     
@@ -88,7 +104,8 @@ public class ArrayFile {
     }
     
     this._file = file;
-    this._writer = createWriter(_file, raf.length());
+    this._type = type;
+    this._writer = IOFactory.createDataWriter(_file, _type);;
     this._writer.open();
     
     if(newFile) {
@@ -106,10 +123,6 @@ public class ArrayFile {
     this.initCheck();
     
     _log.info(_file.getName() + " header: " + getHeader());
-  }
-  
-  protected DataWriter createWriter(File file, long fileLength) {
-      return  (fileLength < Integer.MAX_VALUE) ? new MappedWriter(file) : new ChannelWriter(file);
   }
   
   protected void initCheck() throws IOException {
@@ -227,19 +240,19 @@ public class ArrayFile {
     }
     
     Chronos c = new Chronos();
-    ChannelReader in = new ChannelReader(_file);
+    DataReader r = IOFactory.createDataReader(_file, _type);
     
     try {
-      in.open();
-      in.position(DATA_START_POSITION);
+      r.open();
+      r.position(DATA_START_POSITION);
       
       for (int i = 0; i < _arrayLength; i++) {
-        intArray.set(i, in.readInt());
+        intArray.set(i, r.readInt());
       }
       
       _log.info(_file.getName() + " loaded in " + c.getElapsedTime());
     } finally {
-      in.close();
+      r.close();
     }
   }
   
@@ -254,19 +267,19 @@ public class ArrayFile {
     }
     
     Chronos c = new Chronos();
-    ChannelReader in = new ChannelReader(_file);
+    DataReader r = IOFactory.createDataReader(_file, _type);
     
     try {
-      in.open();
-      in.position(DATA_START_POSITION);
+      r.open();
+      r.position(DATA_START_POSITION);
       
       for (int i = 0; i < _arrayLength; i++) {
-        longArray.set(i, in.readLong());
+        longArray.set(i, r.readLong());
       }
       
       _log.info(_file.getName() + " loaded in " + c.getElapsedTime());
     } finally {
-      in.close();
+      r.close();
     }
   }
   
@@ -281,19 +294,19 @@ public class ArrayFile {
     }
     
     Chronos c = new Chronos();
-    ChannelReader in = new ChannelReader(_file);
+    DataReader r = IOFactory.createDataReader(_file, _type);
     
     try {
-      in.open();
-      in.position(DATA_START_POSITION);
+      r.open();
+      r.position(DATA_START_POSITION);
       
       for (int i = 0; i < _arrayLength; i++) {
-        shortArray.set(i, in.readShort());
+        shortArray.set(i, r.readShort());
       }
       
       _log.info(_file.getName() + " loaded in " + c.getElapsedTime());
     } finally {
-      in.close();
+      r.close();
     }
   }
   
@@ -309,21 +322,21 @@ public class ArrayFile {
     }
     
     Chronos c = new Chronos();
-    ChannelReader in = new ChannelReader(_file);
+    DataReader r = IOFactory.createDataReader(_file, _type);
     
     try {
-      in.open();
-      in.position(DATA_START_POSITION);
+      r.open();
+      r.position(DATA_START_POSITION);
       
       int[] array = new int[_arrayLength];
       for (int i = 0; i < _arrayLength; i++) {
-        array[i] = in.readInt();
+        array[i] = r.readInt();
       }
       
       _log.info(_file.getName() + " loaded in " + c.getElapsedTime());
       return array;
     } finally {
-      in.close();
+      r.close();
     }
   }
   
@@ -339,21 +352,21 @@ public class ArrayFile {
     }
     
     Chronos c = new Chronos();
-    ChannelReader in = new ChannelReader(_file);
+    DataReader r = IOFactory.createDataReader(_file, _type);
     
     try {
-      in.open();
-      in.position(DATA_START_POSITION);
+      r.open();
+      r.position(DATA_START_POSITION);
       
       long[] array = new long[_arrayLength];
       for (int i = 0; i < _arrayLength; i++) {
-        array[i] = in.readLong();
+        array[i] = r.readLong();
       }
       
       _log.info(_file.getName() + " loaded in " + c.getElapsedTime());
       return array;
     } finally {
-      in.close();
+      r.close();
     }
   }
   
@@ -369,21 +382,21 @@ public class ArrayFile {
     }
     
     Chronos c = new Chronos();
-    ChannelReader in = new ChannelReader(_file);
+    DataReader r = IOFactory.createDataReader(_file, _type);
     
     try {
-      in.open();
-      in.position(DATA_START_POSITION);
+      r.open();
+      r.position(DATA_START_POSITION);
         
       short[] array = new short[_arrayLength];
       for (int i = 0; i < _arrayLength; i++) {
-        array[i] = in.readShort();
+        array[i] = r.readShort();
       }
       
       _log.info(_file.getName() + " loaded in " + c.getElapsedTime());
       return array;
     } finally {
-      in.close();
+      r.close();
     }
   }
   
@@ -635,7 +648,7 @@ public class ArrayFile {
           if(_file.renameTo(renameToFile)) {
               _writer.close();
               _file = renameToFile;
-              _writer = createWriter(_file, fileLength);
+              _writer = IOFactory.createDataWriter(_file, _type);
               _writer.open();
               return;
           } else {
@@ -644,7 +657,7 @@ public class ArrayFile {
       }
       
       _writer.close();
-      _writer = createWriter(_file, fileLength);
+      _writer = IOFactory.createDataWriter(_file, _type);
       _writer.open();
   }
 }
