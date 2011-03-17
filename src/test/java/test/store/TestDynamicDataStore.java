@@ -18,25 +18,21 @@ import test.util.HashFunctionInteger;
  * @author jwu
  *
  */
-public class TestDynamicDataStore extends AbstractTest
-{
-    public TestDynamicDataStore()
-    {
+public class TestDynamicDataStore extends AbstractTest {
+    
+    public TestDynamicDataStore() {
         super(TestDynamicDataStore.class.getName());
     }
     
-    protected SegmentFactory getSegmentFactory()
-    {
+    protected SegmentFactory getSegmentFactory() {
         return new krati.core.segment.MemorySegmentFactory();
     }
     
-    protected DynamicDataStore getDynamicDataStore(File storeDir, int initLevel, int segFileSizeMB) throws Exception
-    {
+    protected DynamicDataStore getDynamicDataStore(File storeDir, int initLevel, int segFileSizeMB) throws Exception {
         return new DynamicDataStore(storeDir, initLevel, 10000, 5, segFileSizeMB, getSegmentFactory(), 0.75, new HashFunctionInteger());
     }
     
-    public void testCapacityGrowth() throws Exception
-    {
+    public void testCapacityGrowth() throws Exception {
         StatsLog.logger.info(">>> testCapacityGrowth");
         
         // Create DynamicDataStore 1
@@ -182,27 +178,21 @@ public class TestDynamicDataStore extends AbstractTest
         
         // Compare two data stores
         boolean b = true;
-        for(int i = 0, cnt = dynStore1.getCapacity(); i < cnt; i++)
-        {
+        for (int i = 0, cnt = dynStore1.getCapacity(); i < cnt; i++) {
             byte[] value1 = get(i, dynStore1);
             byte[] value2 = get(i, dynStore2);
             
-            if(value1 == null && value2 == null)
-            {
+            if (value1 == null && value2 == null) {
                 continue;
             }
             
-            if(value1 != null && value2 != null)
-            {
+            if (value1 != null && value2 != null) {
                 b = Arrays.equals(value1, value2);
-            }
-            else
-            {
+            } else {
                 b = false;
             }
             
-            if(!b)
-            {
+            if (!b) {
                 throw new RuntimeException("DynamicDataStore 1 and 2 differ at key=" + i
                         + " value1=" + (value1 == null ? "null" : new String(value1))
                         + " value2=" + (value2 == null ? "null" : new String(value2)));
@@ -213,8 +203,7 @@ public class TestDynamicDataStore extends AbstractTest
         cleanTestOutput();
     }
     
-    public void testUpdates() throws Exception
-    {
+    public void testUpdates() throws Exception {
         StatsLog.logger.info(">>> testUpdates");
         
         // Create DynamicDataStore
@@ -233,8 +222,7 @@ public class TestDynamicDataStore extends AbstractTest
         cleanTestOutput();
     }
     
-    public void testClear() throws Exception
-    {
+    public void testClear() throws Exception {
         StatsLog.logger.info(">>> testClear");
         
         // Create DynamicDataStore
@@ -267,15 +255,13 @@ public class TestDynamicDataStore extends AbstractTest
     private byte[] intByteArray = new byte[4];
     private ByteBuffer intByteBuffer = ByteBuffer.wrap(intByteArray);
     
-    private byte[] get(int key, DataStore<byte[], byte[]> dataStore)
-    {
+    private byte[] get(int key, DataStore<byte[], byte[]> dataStore) {
         intByteBuffer.clear();
         intByteBuffer.putInt(key);
         return dataStore.get(intByteArray);
     }
 
-    private void put(int key, DataStore<byte[], byte[]> dataStore) throws Exception
-    {
+    private void put(int key, DataStore<byte[], byte[]> dataStore) throws Exception {
         intByteBuffer.clear();
         intByteBuffer.putInt(key);
         
@@ -283,17 +269,14 @@ public class TestDynamicDataStore extends AbstractTest
         dataStore.put(intByteArray, val);
     }
     
-    private void delete(int key, DataStore<byte[], byte[]> dataStore) throws Exception
-    {
+    private void delete(int key, DataStore<byte[], byte[]> dataStore) throws Exception {
         intByteBuffer.clear();
         intByteBuffer.putInt(key);
         dataStore.delete(intByteArray);
     }
     
-    private void write(int keyStart, int keyCount, DataStore<byte[], byte[]> dataStore) throws Exception
-    {
-        for(int i = 0; i < keyCount; i++)
-        {
+    private void write(int keyStart, int keyCount, DataStore<byte[], byte[]> dataStore) throws Exception {
+        for (int i = 0; i < keyCount; i++) {
             int index = keyStart + i;
             
             intByteBuffer.clear();
@@ -305,52 +288,43 @@ public class TestDynamicDataStore extends AbstractTest
         }
     }
     
-    private void checkRandomPuts(DynamicDataStore dynStore, double ratio) throws Exception
-    {
+    private void checkRandomPuts(DynamicDataStore dynStore, double ratio) throws Exception {
         int capacity = dynStore.getCapacity();
         int[] keys = new int[(int)(capacity  * ratio)];
         
         Random rand = new Random(capacity);
-        for(int i = 0; i < keys.length; i++)
-        {
+        for (int i = 0; i < keys.length; i++) {
             keys[i] = rand.nextInt(capacity);
             put(keys[i], dynStore);
         }
         
-        for(int i = 0; i < keys.length; i++)
-        {
+        for (int i = 0; i < keys.length; i++) {
             byte[] val = get(keys[i], dynStore);
-            if(val == null || !("value." + keys[i]).equals(new String(val)))
-            {
+            if (val == null || !("value." + keys[i]).equals(new String(val))) {
                 throw new RuntimeException("Failed at key=" + keys[i] + " value= " + (val == null ? "null" : new String(val)));
             }
         }
     }
     
-    private void checkRandomDeletes(DynamicDataStore dynStore, double ratio) throws Exception
-    {
+    private void checkRandomDeletes(DynamicDataStore dynStore, double ratio) throws Exception {
         int capacity = dynStore.getCapacity();
         int[] keys = new int[(int)(capacity  * ratio)];
         
         Random rand = new Random(capacity);
-        for(int i = 0; i < keys.length; i++)
-        {
+        for (int i = 0; i < keys.length; i++) {
             keys[i] = rand.nextInt(capacity);
             delete(keys[i], dynStore);
         }
         
-        for(int i = 0; i < keys.length; i++)
-        {
+        for (int i = 0; i < keys.length; i++) {
             byte[] val = get(keys[i], dynStore);
-            if(val != null)
-            {
+            if (val != null) {
                 throw new RuntimeException("Failed to delete key=" + keys[i] + " value= " + (val == null ? "null" : new String(val)));
             }
         }
     }
     
-    public void testHashFunction()
-    {
+    public void testHashFunction() {
         StatsLog.logger.info(">>> testHashFunction");
         
         int i = 0;
@@ -358,8 +332,7 @@ public class TestDynamicDataStore extends AbstractTest
         ByteBuffer intByteBuffer = ByteBuffer.wrap(intByteArray);
         HashFunctionInteger intHash = new HashFunctionInteger();
         
-        try
-        {
+        try {
             i = 0;
             intByteBuffer.clear();
             intByteBuffer.putInt(i);
@@ -384,9 +357,7 @@ public class TestDynamicDataStore extends AbstractTest
             intByteBuffer.clear();
             intByteBuffer.putInt(i);
             assertEquals(i, intHash.hash(intByteArray));
-        }
-        catch(RuntimeException e)
-        {
+        } catch (RuntimeException e) {
             System.err.printf("hash(%d)=%d%n", i, intHash.hash(intByteArray));
             throw e;
         }

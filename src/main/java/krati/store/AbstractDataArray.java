@@ -15,7 +15,7 @@ import krati.core.segment.SegmentManager;
  * AbstractDataArray
  * 
  * @author jwu
- * Sep 24, 2010
+ * 09/24, 2010
  */
 public abstract class AbstractDataArray implements DataArray, Persistable {
     protected final SimpleDataArray _dataArray;

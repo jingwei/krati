@@ -14,7 +14,7 @@ import org.apache.log4j.Logger;
  * DynamicDataArray - a convenient class for creating a dynamic data array.
  * 
  * @author jwu
- * Sep 24, 2010
+ * 09/24, 2010
  */
 public final class DynamicDataArray extends AbstractDataArray implements DynamicArray, ArrayStore {
     private final static Logger _log = Logger.getLogger(DynamicDataArray.class);

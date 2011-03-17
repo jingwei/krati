@@ -10,11 +10,10 @@ import krati.store.DataSetHandler;
  * @author jwu
  *
  */
-public final class DefaultDataSetHandler implements DataSetHandler
-{    
+public final class DefaultDataSetHandler implements DataSetHandler {
+    
     @Override
-    public final byte[] assemble(byte[] value)
-    {
+    public final byte[] assemble(byte[] value) {
         byte[] result = new byte[4 + 4 + value.length];
         ByteBuffer bb = ByteBuffer.wrap(result);
         
@@ -29,8 +28,7 @@ public final class DefaultDataSetHandler implements DataSetHandler
     }
     
     @Override
-    public final byte[] assemble(byte[] value, byte[] data)
-    {
+    public final byte[] assemble(byte[] value, byte[] data) {
         byte[] result = new byte[data.length + 4 + value.length];
         System.arraycopy(data, 0, result, 0, data.length);
         ByteBuffer bb = ByteBuffer.wrap(result);
@@ -49,10 +47,8 @@ public final class DefaultDataSetHandler implements DataSetHandler
     }
     
     @Override
-    public final int count(byte[] data)
-    {
-        if(data.length >= 4)
-        {
+    public final int count(byte[] data) {
+        if(data.length >= 4) {
             ByteBuffer bb = ByteBuffer.wrap(data, 0, 4);
             return bb.getInt();
         }
@@ -61,19 +57,15 @@ public final class DefaultDataSetHandler implements DataSetHandler
     }
     
     @Override
-    public final int countCollisions(byte[] value, byte[] data)
-    {
-        try
-        {
+    public final int countCollisions(byte[] value, byte[] data) {
+        try {
             ByteBuffer bb = ByteBuffer.wrap(data);
             int originalCnt = bb.getInt();
             int cnt = originalCnt;
-            while(cnt > 0)
-            {
+            while(cnt > 0) {
                 // Process data value
                 int len = bb.getInt();
-                if(bytesEqual(value, data, bb.position(), len))
-                {
+                if(bytesEqual(value, data, bb.position(), len)) {
                     return originalCnt;
                 }
                 bb.position(bb.position() + len);
@@ -81,30 +73,25 @@ public final class DefaultDataSetHandler implements DataSetHandler
             }
             
             return -originalCnt;
-        }
-        catch(Exception e)
-        {
+        } catch(Exception e) {
             return 0;
         }
     }
     
     @Override
-    public final int remove(byte[] value, byte[] data)
-    {
+    public final int remove(byte[] value, byte[] data) {
         int offset1 = 0;
         int offset2 = 0;
         ByteBuffer bb = ByteBuffer.wrap(data);
         
         int originalCnt = bb.getInt();
         int cnt = originalCnt;
-        while(cnt > 0)
-        {
+        while(cnt > 0) {
             offset1 = bb.position();
             
             // Process data value
             int len = bb.getInt();
-            if(bytesEqual(value, data, bb.position(), len))
-            {
+            if(bytesEqual(value, data, bb.position(), len)) {
                 offset2 = bb.position() + len;
                 break;
             }
@@ -114,8 +101,7 @@ public final class DefaultDataSetHandler implements DataSetHandler
         }
         
         // value is found and remove value from data
-        if(offset1 < offset2)
-        {
+        if(offset1 < offset2) {
             int newLength = data.length - (offset2 - offset1);
             
             /*
@@ -132,8 +118,7 @@ public final class DefaultDataSetHandler implements DataSetHandler
             bb.putInt(originalCnt - 1);
             
             // Shift data to the left
-            for(int i = 0, len = data.length - offset2; i < len; i++)
-            {
+            for(int i = 0, len = data.length - offset2; i < len; i++) {
                 data[offset1 + i] = data[offset2 + i];
             }
             
@@ -145,18 +130,14 @@ public final class DefaultDataSetHandler implements DataSetHandler
     }
     
     @Override
-    public final boolean find(byte[] value, byte[] data)
-    {
-        try
-        {
+    public final boolean find(byte[] value, byte[] data) {
+        try {
             ByteBuffer bb = ByteBuffer.wrap(data);
             int cnt = bb.getInt();
-            while(cnt > 0)
-            {
+            while(cnt > 0) {
                 // Process data value
                 int len = bb.getInt();
-                if(bytesEqual(value, data, bb.position(), len))
-                {
+                if(bytesEqual(value, data, bb.position(), len)) {
                     return true;
                 }
                 bb.position(bb.position() + len);
@@ -164,24 +145,20 @@ public final class DefaultDataSetHandler implements DataSetHandler
             }
             
             return false;
-        }
-        catch(Exception e)
-        {
+        } catch(Exception e) {
             return false;
         }
     }
     
-    static boolean bytesEqual(byte[] bytes, byte[] bytesSource, int offset, int length)
-    {
-        if(bytes.length == length)
-        {
-            for(int i = 0; i < length; i++)
-            {
-                if(bytes[i] != bytesSource[offset + i]) return false;
+    static boolean bytesEqual(byte[] bytes, byte[] bytesSource, int offset, int length) {
+        if (bytes.length == length) {
+            for (int i = 0; i < length; i++) {
+                if (bytes[i] != bytesSource[offset + i])
+                    return false;
             }
             return true;
         }
-        
+
         return false;
     }
 }

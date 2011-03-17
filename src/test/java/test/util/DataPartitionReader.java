@@ -6,9 +6,14 @@ import java.util.Random;
 import krati.store.ArrayStorePartition;
 import test.LatencyStats;
 
-public class DataCacheReader implements Runnable
-{
-    ArrayStorePartition _cache;
+/**
+ * DataPartitionReader
+ * 
+ * @author jwu
+ * 
+ */
+public class DataPartitionReader implements Runnable {
+    ArrayStorePartition _partition;
     Random _rand = new Random();
     byte[] _data = new byte[1 << 13];
     boolean _running = true;
@@ -19,42 +24,35 @@ public class DataCacheReader implements Runnable
     LatencyStats _latStats = new LatencyStats();
     final List<String> _lineSeedData;
     
-    public DataCacheReader(ArrayStorePartition cache, List<String> seedData)
-    {
-        this._cache = cache;
-        this._length = cache.getIdCount();
-        this._indexStart = cache.getIdStart();
+    public DataPartitionReader(ArrayStorePartition partition, List<String> seedData) {
+        this._partition = partition;
+        this._length = partition.getIdCount();
+        this._indexStart = partition.getIdStart();
         this._lineSeedData = seedData;
     }
     
-    public long getReadCount()
-    {
+    public long getReadCount() {
         return this._cnt;
     }
     
-    public LatencyStats getLatencyStats()
-    {
+    public LatencyStats getLatencyStats() {
         return this._latStats;
     }
     
-    public void stop()
-    {
+    public void stop() {
         _running = false;
     }
     
-    int read(int index)
-    {
-        return _cache.get(index, _data);
+    int read(int index) {
+        return _partition.get(index, _data);
     }
     
     @Override
-    public void run()
-    {
+    public void run() {
         long prevTime = System.nanoTime();
         long currTime = prevTime;
         
-        while(_running)
-        {
+        while (_running) {
             read(_indexStart + _rand.nextInt(_length));
             _cnt++;
             

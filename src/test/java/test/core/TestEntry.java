@@ -17,12 +17,10 @@ import krati.core.array.entry.SimpleEntry;
  * @author jwu
  *
  */
-public class TestEntry extends AbstractTest
-{
+public class TestEntry extends AbstractTest {
     static Random random = new Random(System.currentTimeMillis());
     
-    public TestEntry()
-    {
+    public TestEntry() {
         super(TestEntry.class.getCanonicalName());
     }
     
@@ -30,16 +28,14 @@ public class TestEntry extends AbstractTest
      * Write an entry to disk and then load it into a new entry.
      * Verify that these two entries are the same.
      */
-    public void testWriteReadEntry() throws Exception
-    {
+    public void testWriteReadEntry() throws Exception {
         cleanTestOutput();
         
         for(int run = 1; run <= 10; run++) {
             File file = new File(TEST_OUTPUT_DIR, "entry_test" + run + ".dat");
             Entry<EntryValueInt> entry = new SimpleEntry<EntryValueInt>(0, new EntryValueIntFactory(), 1000);
             
-            for (int i = 0; i < 1000; i++)
-            {
+            for(int i = 0; i < 1000; i++) {
                 entry.add(new EntryValueInt(i, random.nextInt(50000), i));
             }
             entry.save(file);
@@ -62,22 +58,19 @@ public class TestEntry extends AbstractTest
      * Test SortEntriesByPos by having it sort values then 
      * iterate over them to insure they're sorted.
      */
-    public void testSortedEntryValues()
-    {
+    public void testSortedEntryValues() {
         int c;
         EntryValueIntFactory valFactory = new EntryValueIntFactory();
         
         c = 0;
         Entry<EntryValueInt> e1 = new SimpleEntry<EntryValueInt>(0, valFactory, 10);
-        for (int i = 9; i >= 0; i--)
-        {
+        for (int i = 9; i >= 0; i--) {
             e1.add(new EntryValueInt(i, c, c++));
         }
         
         c = 0;
         Entry<EntryValueInt> e2 = new SimpleEntry<EntryValueInt>(1, valFactory, 10);
-        for (int i = 19; i >= 10; i--)
-        {
+        for (int i = 19; i >= 10; i--) {
             e2.add(new EntryValueInt(i, c, c++));
         }
         
@@ -87,8 +80,7 @@ public class TestEntry extends AbstractTest
         
         // verify the values are in sorted order
         long pos = 0;
-        for (EntryValueInt value : values)
-        {
+        for (EntryValueInt value : values) {
             assertEquals(value.pos, pos);
             pos++;
         }

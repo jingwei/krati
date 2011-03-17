@@ -18,8 +18,7 @@ import krati.core.segment.SegmentManager;
  * @author jwu
  * 
  */
-public class StaticArrayStorePartition implements ArrayStorePartition
-{
+public class StaticArrayStorePartition implements ArrayStorePartition {
     private final static Logger _log = Logger.getLogger(StaticArrayStorePartition.class);
     private final SimpleDataArray _dataArray;
     private final int _idCount;
@@ -42,8 +41,7 @@ public class StaticArrayStorePartition implements ArrayStorePartition
      * @param homeDir            Directory where persistent data will be stored
      * @throws Exception
      */
-    public StaticArrayStorePartition(int idStart, int idCount, File homeDir) throws Exception
-    {
+    public StaticArrayStorePartition(int idStart, int idCount, File homeDir) throws Exception {
         this(idStart, idCount, homeDir, new MemorySegmentFactory(), 256);
     }
     
@@ -63,8 +61,7 @@ public class StaticArrayStorePartition implements ArrayStorePartition
      * @param segmentFileSizeMB  Segment size in MB
      * @throws Exception
      */
-    public StaticArrayStorePartition(int idStart, int idCount, File homeDir, int segmentFileSizeMB) throws Exception
-    {
+    public StaticArrayStorePartition(int idStart, int idCount, File homeDir, int segmentFileSizeMB) throws Exception {
         this(idStart, idCount, homeDir, new MemorySegmentFactory(), segmentFileSizeMB);
     }
     
@@ -87,8 +84,7 @@ public class StaticArrayStorePartition implements ArrayStorePartition
     public StaticArrayStorePartition(int idStart,
                                      int idCount,
                                      File homeDir,
-                                     SegmentFactory segmentFactory) throws Exception
-    {
+                                     SegmentFactory segmentFactory) throws Exception {
         this(idStart, idCount, homeDir, segmentFactory, 256);
     }
     
@@ -109,8 +105,7 @@ public class StaticArrayStorePartition implements ArrayStorePartition
      * @throws Exception
      */
     public StaticArrayStorePartition(int idStart, int idCount, File homeDir,
-                                     SegmentFactory segmentFactory, int segmentFileSizeMB) throws Exception
-    {
+                                     SegmentFactory segmentFactory, int segmentFileSizeMB) throws Exception {
         this(idStart, idCount, 10000, 5, homeDir, segmentFactory, segmentFileSizeMB, false);
     }
     
@@ -134,8 +129,7 @@ public class StaticArrayStorePartition implements ArrayStorePartition
                                      File homeDir,
                                      SegmentFactory segmentFactory,
                                      int segmentFileSizeMB,
-                                     boolean checked) throws Exception
-    {
+                                     boolean checked) throws Exception {
         this._idStart = idStart;
         this._idCount = idCount;
         this._idEnd = idStart + idCount;
@@ -146,8 +140,7 @@ public class StaticArrayStorePartition implements ArrayStorePartition
                                 numSyncBatches,
                                 homeDir);
         
-        if(addressArray.length() != idCount)
-        {
+        if (addressArray.length() != idCount) {
             throw new IOException("Capacity expected: " + addressArray.length() + " not " + idCount);
         }
         
@@ -157,8 +150,7 @@ public class StaticArrayStorePartition implements ArrayStorePartition
                                                                segmentFileSizeMB);
         _dataArray = new SimpleDataArray(addressArray, segManager);
         
-        if(checked)
-        {
+        if (checked) {
             // TODO
         }
         
@@ -187,8 +179,7 @@ public class StaticArrayStorePartition implements ArrayStorePartition
                                      SegmentFactory segmentFactory,
                                      int segmentFileSizeMB,
                                      double segmentCompactFactor,
-                                     boolean checked) throws Exception
-    {
+                                     boolean checked) throws Exception {
         this._idStart = idStart;
         this._idCount = idCount;
         this._idEnd = idStart + idCount;
@@ -199,8 +190,7 @@ public class StaticArrayStorePartition implements ArrayStorePartition
                                 numSyncBatches,
                                 homeDir);
         
-        if(addressArray.length() != idCount)
-        {
+        if(addressArray.length() != idCount) {
             throw new IOException("Capacity expected: " + addressArray.length() + " not " + idCount);
         }
         
@@ -211,16 +201,14 @@ public class StaticArrayStorePartition implements ArrayStorePartition
         
         _dataArray = new SimpleDataArray(addressArray, segManager, segmentCompactFactor);
         
-        if (checked)
-        {
+        if (checked) {
             // TODO
         }
         
         _log.info("Partition init: " + getStatus());
     }
     
-    protected String getStatus()
-    {
+    protected String getStatus() {
         StringBuilder buffer = new StringBuilder();
         
         buffer.append("idStart");
@@ -245,53 +233,45 @@ public class StaticArrayStorePartition implements ArrayStorePartition
         return buffer.toString();
     }
     
-    private void rangeCheck(int memberId)
-    {
+    private void rangeCheck(int memberId) {
         if(memberId < _idStart || _idEnd <= memberId)
             throw new ArrayIndexOutOfBoundsException(memberId);
     }
     
     @Override
-    public int getIndexStart()
-    {
+    public int getIndexStart() {
         return _idStart;
     }
     
     @Override
-    public int capacity()
-    {
+    public int capacity() {
         return _idCount;
     }
     
     @Override
-    public int getIdCount()
-    {
+    public int getIdCount() {
         return _idCount;
     }
     
     @Override
-    public int getIdStart()
-    {
+    public int getIdStart() {
         return _idStart;
     }
     
     @Override
-    public byte[] get(int index)
-    {
+    public byte[] get(int index) {
         rangeCheck(index);
         return _dataArray.get(index - _idStart);
     }
     
     @Override
-    public int get(int index, byte[] dst)
-    {
+    public int get(int index, byte[] dst) {
         rangeCheck(index);
         return _dataArray.get(index - _idStart, dst);
     }
     
     @Override
-    public int get(int index, byte[] dst, int offset)
-    {
+    public int get(int index, byte[] dst, int offset) {
         rangeCheck(index);
         return _dataArray.get(index - _idStart, dst, offset);
     }

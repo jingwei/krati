@@ -13,8 +13,7 @@ import test.driver.StoreWriter;
  *
  * @param <S> Data Store
  */
-public class BytesWriteDriver<S> implements Runnable
-{
+public class BytesWriteDriver<S> implements Runnable {
     private final S _store;
     private final StoreWriter<S, byte[], byte[]> _writer;
     private final LatencyStats _latencyStats = new LatencyStats();
@@ -26,8 +25,7 @@ public class BytesWriteDriver<S> implements Runnable
     volatile long _cnt = 0;
     volatile boolean _running = true;
     
-    public BytesWriteDriver(S ds, StoreWriter<S, byte[], byte[]> writer, List<String> lineSeedData, int keyCount)
-    {
+    public BytesWriteDriver(S ds, StoreWriter<S, byte[], byte[]> writer, List<String> lineSeedData, int keyCount) {
         this._store = ds;
         this._writer = writer;
         this._lineSeedData = lineSeedData;
@@ -35,29 +33,24 @@ public class BytesWriteDriver<S> implements Runnable
         this._keyCount = keyCount;
     }
     
-    public LatencyStats getLatencyStats()
-    {
+    public LatencyStats getLatencyStats() {
         return this._latencyStats;
     }
     
-    public long getWriteCount()
-    {
+    public long getWriteCount() {
         return this._cnt;
     }
     
-    public void stop()
-    {
+    public void stop() {
         _running = false;
     }
     
     @Override
-    public void run()
-    {
+    public void run() {
         long prevTime = System.nanoTime();
         long currTime = prevTime;
         
-        while(_running)
-        {
+        while (_running) {
             write();
 
             currTime = System.nanoTime();
@@ -66,18 +59,14 @@ public class BytesWriteDriver<S> implements Runnable
         }
     }
 
-    protected void write()
-    {
-        try
-        {
+    protected void write() {
+        try {
             int i = _rand.nextInt(_keyCount);
             String s = _lineSeedData.get(i%_lineSeedCount);
             String k = s.substring(0, 30) + i;
             _writer.put(_store, k.getBytes(), s.getBytes());
             _cnt++;
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

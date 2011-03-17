@@ -30,8 +30,7 @@ import krati.util.HashFunction;
  * @author jwu
  *
  */
-public class StaticDataStore implements DataStore<byte[], byte[]>
-{
+public class StaticDataStore implements DataStore<byte[], byte[]> {
     private final static Logger _log = Logger.getLogger(StaticDataStore.class);
     
     private final SimpleDataArray _dataArray;
@@ -54,8 +53,7 @@ public class StaticDataStore implements DataStore<byte[], byte[]>
      * @param segmentFactory       the segment factory
      * @throws Exception
      */
-    public StaticDataStore(File homeDir, int capacity, SegmentFactory segmentFactory) throws Exception
-    {
+    public StaticDataStore(File homeDir, int capacity, SegmentFactory segmentFactory) throws Exception {
         this(homeDir,
              capacity,
              10000,
@@ -85,8 +83,7 @@ public class StaticDataStore implements DataStore<byte[], byte[]>
     public StaticDataStore(File homeDir,
                            int capacity,
                            int segmentFileSizeMB,
-                           SegmentFactory segmentFactory) throws Exception
-    {
+                           SegmentFactory segmentFactory) throws Exception {
         this(homeDir,
              capacity,
              10000,
@@ -118,8 +115,7 @@ public class StaticDataStore implements DataStore<byte[], byte[]>
                            int entrySize,
                            int maxEntries,
                            int segmentFileSizeMB,
-                           SegmentFactory segmentFactory) throws Exception
-    {
+                           SegmentFactory segmentFactory) throws Exception {
         this(homeDir,
              capacity,
              entrySize,
@@ -152,8 +148,7 @@ public class StaticDataStore implements DataStore<byte[], byte[]>
                            int maxEntries,
                            int segmentFileSizeMB,
                            SegmentFactory segmentFactory,
-                           HashFunction<byte[]> hashFunction) throws Exception
-    {
+                           HashFunction<byte[]> hashFunction) throws Exception {
         this(homeDir,
              capacity,
              entrySize,
@@ -184,16 +179,14 @@ public class StaticDataStore implements DataStore<byte[], byte[]>
                            int segmentFileSizeMB,
                            SegmentFactory segmentFactory,
                            double segmentCompactFactor,
-                           HashFunction<byte[]> hashFunction) throws Exception
-    {
+                           HashFunction<byte[]> hashFunction) throws Exception {
         // Create data store handler
         _dataHandler = new DefaultDataStoreHandler();
         
         // Create address array
         AddressArray addressArray = createAddressArray(capacity, entrySize, maxEntries, homeDir);
         
-        if(addressArray.length() != capacity)
-        {
+        if (addressArray.length() != capacity) {
             throw new IOException("Capacity expected: " + addressArray.length() + " not " + capacity);
         }
         
@@ -208,36 +201,30 @@ public class StaticDataStore implements DataStore<byte[], byte[]>
     protected AddressArray createAddressArray(int length,
                                               int entrySize,
                                               int maxEntries,
-                                              File homeDirectory) throws Exception
-    {
+                                              File homeDirectory) throws Exception {
         return new StaticLongArray(length, entrySize, maxEntries, homeDirectory);
     }
     
-    protected long hash(byte[] key)
-    {
+    protected long hash(byte[] key) {
         return _hashFunction.hash(key);
     }
     
-    protected long nextScn()
-    {
+    protected long nextScn() {
         return System.currentTimeMillis();
     }
     
     @Override
-    public void sync() throws IOException
-    {
+    public void sync() throws IOException {
         _dataArray.sync();
     }
     
     @Override
-    public void persist() throws IOException
-    {
+    public void persist() throws IOException {
         _dataArray.persist();
     }
     
     @Override
-    public byte[] get(byte[] key)
-    {
+    public byte[] get(byte[] key) {
         long hashCode = hash(key);
         int index = (int)(hashCode % _dataArray.length());
         if (index < 0) index = -index;
@@ -247,8 +234,7 @@ public class StaticDataStore implements DataStore<byte[], byte[]>
     }
     
     @Override
-    public synchronized boolean put(byte[] key, byte[] value) throws Exception
-    {
+    public synchronized boolean put(byte[] key, byte[] value) throws Exception {
         if(value == null) return delete(key);
         
         long hashCode = hash(key);
@@ -256,19 +242,13 @@ public class StaticDataStore implements DataStore<byte[], byte[]>
         if (index < 0) index = -index;
         
         byte[] existingData = _dataArray.get(index);
-        if(existingData == null || existingData.length == 0)
-        {
+        if (existingData == null || existingData.length == 0) {
             _dataArray.set(index, _dataHandler.assemble(key, value), nextScn());
-        }
-        else
-        {
-            try
-            {
+        } else {
+            try {
                 _dataArray.set(index, _dataHandler.assemble(key, value, existingData), nextScn());
-            }
-            catch(Exception e)
-            {
-                _log.warn("Value reset at index="+ index + " key=\"" + new String(key) + "\"");
+            } catch (Exception e) {
+                _log.warn("Value reset at index=" + index + " key=\"" + new String(key) + "\"");
                 _dataArray.set(index, _dataHandler.assemble(key, value), nextScn());
             }
         }
@@ -277,35 +257,27 @@ public class StaticDataStore implements DataStore<byte[], byte[]>
     }
     
     @Override
-    public synchronized boolean delete(byte[] key) throws Exception
-    {
+    public synchronized boolean delete(byte[] key) throws Exception {
         long hashCode = hash(key);
         int index = (int)(hashCode % _dataArray.length());
         if (index < 0) index = -index;
         
-        try
-        {
+        try {
             byte[] existingData = _dataArray.get(index);
-            if(existingData != null)
-            {
-               int newLength = _dataHandler.removeByKey(key, existingData);
-               if(newLength == 0)
-               {
-                   // entire data is removed
-                   _dataArray.set(index, null, nextScn());
-                   return true;
-               }
-               else if(newLength < existingData.length)
-               {
-                   // partial data is removed
-                   _dataArray.set(index, existingData, 0, newLength, nextScn());
-                   return true;
-               }
+            if (existingData != null) {
+                int newLength = _dataHandler.removeByKey(key, existingData);
+                if (newLength == 0) {
+                    // entire data is removed
+                    _dataArray.set(index, null, nextScn());
+                    return true;
+                } else if (newLength < existingData.length) {
+                    // partial data is removed
+                    _dataArray.set(index, existingData, 0, newLength, nextScn());
+                    return true;
+                }
             }
-        }
-        catch(Exception e)
-        {
-            _log.warn("Failed to delete key=\""+ new String(key) + "\" : " + e.getMessage());
+        } catch (Exception e) {
+            _log.warn("Failed to delete key=\"" + new String(key) + "\" : " + e.getMessage());
             _dataArray.set(index, null, nextScn());
         }
         
@@ -314,19 +286,17 @@ public class StaticDataStore implements DataStore<byte[], byte[]>
     }
     
     @Override
-    public synchronized void clear() throws IOException
-    {
+    public synchronized void clear() throws IOException {
         _dataArray.clear();
     }
     
     /**
      * @return the underlying data array.
      */
-    public DataArray getDataArray()
-    {
+    public DataArray getDataArray() {
         return _dataArray;
     }
-
+    
     @Override
     public Iterator<byte[]> keyIterator() {
         return new DataStoreKeyIterator(_dataArray, _dataHandler);

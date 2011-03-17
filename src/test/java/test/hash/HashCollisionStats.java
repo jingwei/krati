@@ -6,29 +6,24 @@ import java.util.Arrays;
 
 import org.apache.log4j.Logger;
 
-public class HashCollisionStats
-{
+public class HashCollisionStats {
     long _largeCollisionCount = 0;
     final long[] _collisionCountArray = new long[20];
     
-    public HashCollisionStats()
-    {
+    public HashCollisionStats() {
         Arrays.fill(_collisionCountArray, 0);
     }
     
-    public void addCollisionCount(int collisionCount)
-    {
+    public void addCollisionCount(int collisionCount) {
         if(collisionCount < _collisionCountArray.length)
             _collisionCountArray[collisionCount] += 1;
         else
             _largeCollisionCount++;
     }
     
-    private long getTotal()
-    {
+    private long getTotal() {
         long cnt = 0;
-        for(int i = 0; i < _collisionCountArray.length; i++)
-        {
+        for (int i = 0; i < _collisionCountArray.length; i++) {
             cnt += _collisionCountArray[i];
         }
         
@@ -36,28 +31,23 @@ public class HashCollisionStats
         return cnt;
     }
     
-    public void print(PrintStream out)
-    {
-        for(int i = 0; i < _collisionCountArray.length; i++)
-        {
+    public void print(PrintStream out) {
+        for (int i = 0; i < _collisionCountArray.length; i++) {
             out.printf("%2d,%12d%n", i, _collisionCountArray[i]);
         }
         
-        if(_largeCollisionCount > 0)
-        {
+        if (_largeCollisionCount > 0) {
             out.printf("++,%12d%n", _largeCollisionCount);
         }
         
         out.printf("Sum%12d%n", getTotal());
     }
     
-    public void print(Logger log)
-    {
+    public void print(Logger log) {
         ByteArrayOutputStream bos;
         PrintStream out;
         
-        for(int i = 0; i < _collisionCountArray.length; i++)
-        {
+        for (int i = 0; i < _collisionCountArray.length; i++) {
             bos = new ByteArrayOutputStream(15);
             out = new PrintStream(bos);
             
@@ -67,8 +57,7 @@ public class HashCollisionStats
             out.close();
         }
         
-        if(_largeCollisionCount > 0)
-        {
+        if (_largeCollisionCount > 0) {
             bos = new ByteArrayOutputStream(15);
             out = new PrintStream(bos);
             
@@ -79,14 +68,12 @@ public class HashCollisionStats
         }
         
         // Print total
-        {
-            bos = new ByteArrayOutputStream(15);
-            out = new PrintStream(bos);
-            
-            out.printf("Sum%12d", getTotal());
-            log.info(bos.toString());
-            
-            out.close();
-        }
+        bos = new ByteArrayOutputStream(15);
+        out = new PrintStream(bos);
+        
+        out.printf("Sum%12d", getTotal());
+        log.info(bos.toString());
+        
+        out.close();
     }
 }

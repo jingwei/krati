@@ -2,6 +2,12 @@ package krati.sos;
 
 import java.util.Iterator;
 
+/**
+ * ObjectStoreKeyIterator
+ * 
+ * @author jwu
+ * 
+ */
 public class ObjectStoreKeyIterator<K> implements Iterator<K> {
     private final Iterator<byte[]> _rawKeyIterator;
     private final ObjectSerializer<K> _keySerializer;

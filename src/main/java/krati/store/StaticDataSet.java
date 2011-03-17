@@ -28,8 +28,7 @@ import krati.util.HashFunction;
  * @author jwu
  *
  */
-public class StaticDataSet implements DataSet<byte[]>
-{
+public class StaticDataSet implements DataSet<byte[]> {
     private final static Logger _log = Logger.getLogger(StaticDataSet.class);
     
     private final SimpleDataArray _dataArray;
@@ -52,8 +51,7 @@ public class StaticDataSet implements DataSet<byte[]>
      * @param segmentFactory       the segment factory
      * @throws Exception
      */
-    public StaticDataSet(File homeDir, int capacity, SegmentFactory segmentFactory) throws Exception
-    {
+    public StaticDataSet(File homeDir, int capacity, SegmentFactory segmentFactory) throws Exception {
         this(homeDir,
              capacity,
              10000,
@@ -83,8 +81,7 @@ public class StaticDataSet implements DataSet<byte[]>
     public StaticDataSet(File homeDir,
                          int capacity,
                          int segmentFileSizeMB,
-                         SegmentFactory segmentFactory) throws Exception
-    {
+                         SegmentFactory segmentFactory) throws Exception {
         this(homeDir,
              capacity,
              10000,
@@ -116,8 +113,7 @@ public class StaticDataSet implements DataSet<byte[]>
                          int entrySize,
                          int maxEntries,
                          int segmentFileSizeMB,
-                         SegmentFactory segmentFactory) throws Exception
-    {
+                         SegmentFactory segmentFactory) throws Exception {
         this(homeDir,
              capacity,
              entrySize,
@@ -150,8 +146,7 @@ public class StaticDataSet implements DataSet<byte[]>
                          int maxEntries,
                          int segmentFileSizeMB,
                          SegmentFactory segmentFactory,
-                         HashFunction<byte[]> hashFunction) throws Exception
-    {
+                         HashFunction<byte[]> hashFunction) throws Exception {
         this(homeDir,
              capacity,
              entrySize,
@@ -182,15 +177,13 @@ public class StaticDataSet implements DataSet<byte[]>
                          int segmentFileSizeMB,
                          SegmentFactory segmentFactory,
                          double segmentCompactFactor,
-                         HashFunction<byte[]> hashFunction) throws Exception
-    {
+                         HashFunction<byte[]> hashFunction) throws Exception {
         _dataHandler = new DefaultDataSetHandler();
         
         // Create address array
         AddressArray addressArray = createAddressArray(capacity, entrySize, maxEntries, homeDir);
         
-        if(addressArray.length() != capacity)
-        {
+        if (addressArray.length() != capacity) {
             throw new IOException("Capacity expected: " + addressArray.length() + " not " + capacity);
         }
         
@@ -205,36 +198,30 @@ public class StaticDataSet implements DataSet<byte[]>
     protected AddressArray createAddressArray(int length,
                                               int entrySize,
                                               int maxEntries,
-                                              File homeDirectory) throws Exception
-    {
+                                              File homeDirectory) throws Exception {
         return new StaticLongArray(length, entrySize, maxEntries, homeDirectory);
     }
     
-    protected long hash(byte[] value)
-    {
+    protected long hash(byte[] value) {
         return _hashFunction.hash(value);
     }
     
-    protected long nextScn()
-    {
+    protected long nextScn() {
         return System.currentTimeMillis();
     }
     
     @Override
-    public void sync() throws IOException
-    {
+    public void sync() throws IOException {
         _dataArray.sync();
     }
     
     @Override
-    public void persist() throws IOException
-    {
+    public void persist() throws IOException {
         _dataArray.persist();
     }
     
     @Override
-    public boolean has(byte[] value)
-    {
+    public boolean has(byte[] value) {
         if(value == null) return false;
         
         long hashCode = hash(value);
@@ -245,8 +232,7 @@ public class StaticDataSet implements DataSet<byte[]>
         return existingData == null ? false : _dataHandler.find(value, existingData);
     }
     
-    public final int countCollisions(byte[] value)
-    {
+    public final int countCollisions(byte[] value) {
         if(value == null) return 0;
         
         long hashCode = hash(value);
@@ -257,14 +243,12 @@ public class StaticDataSet implements DataSet<byte[]>
         return existingData == null ? 0 : _dataHandler.countCollisions(value, existingData);
     }
     
-    public final boolean hasWithoutCollisions(byte[] value)
-    {
+    public final boolean hasWithoutCollisions(byte[] value) {
         return countCollisions(value) == 1;
     }
     
     @Override
-    public synchronized boolean add(byte[] value) throws Exception
-    {
+    public synchronized boolean add(byte[] value) throws Exception {
         if(value == null) return false;
         
         long hashCode = hash(value);
@@ -273,23 +257,16 @@ public class StaticDataSet implements DataSet<byte[]>
         
         byte[] existingData = _dataArray.get(index);
         
-        try
-        {
-            if(existingData == null || existingData.length == 0)
-            {
+        try {
+            if (existingData == null || existingData.length == 0) {
                 _dataArray.set(index, _dataHandler.assemble(value), nextScn());
-            }
-            else
-            {
-                if(!_dataHandler.find(value, existingData))
-                {
+            } else {
+                if (!_dataHandler.find(value, existingData)) {
                     _dataArray.set(index, _dataHandler.assemble(value, existingData), nextScn());
                 }
             }
-        }
-        catch(Exception e)
-        {
-            _log.warn("Value reset at index="+ index + " value=\"" + new String(value) + "\"", e);
+        } catch (Exception e) {
+            _log.warn("Value reset at index=" + index + " value=\"" + new String(value) + "\"", e);
             _dataArray.set(index, _dataHandler.assemble(value), nextScn());
         }
         
@@ -297,35 +274,27 @@ public class StaticDataSet implements DataSet<byte[]>
     }
     
     @Override
-    public synchronized boolean delete(byte[] value) throws Exception
-    {
+    public synchronized boolean delete(byte[] value) throws Exception {
         long hashCode = hash(value);
         int index = (int)(hashCode % _dataArray.length());
         if (index < 0) index = -index;
         
-        try
-        {
+        try {
             byte[] existingData = _dataArray.get(index);
-            if(existingData != null)
-            {
-               int newLength = _dataHandler.remove(value, existingData);
-               if(newLength == 0)
-               {
-                   // entire data is removed
-                   _dataArray.set(index, null, nextScn());
-                   return true;
-               }
-               else if(newLength < existingData.length)
-               {
-                   // partial data is removed
-                   _dataArray.set(index, existingData, 0, newLength, nextScn());
-                   return true;
-               }
+            if (existingData != null) {
+                int newLength = _dataHandler.remove(value, existingData);
+                if (newLength == 0) {
+                    // entire data is removed
+                    _dataArray.set(index, null, nextScn());
+                    return true;
+                } else if (newLength < existingData.length) {
+                    // partial data is removed
+                    _dataArray.set(index, existingData, 0, newLength, nextScn());
+                    return true;
+                }
             }
-        }
-        catch(Exception e)
-        {
-            _log.warn("Failed to delete value=\""+ new String(value) + "\"", e);
+        } catch (Exception e) {
+            _log.warn("Failed to delete value=\"" + new String(value) + "\"", e);
             _dataArray.set(index, null, nextScn());
         }
         
@@ -334,16 +303,14 @@ public class StaticDataSet implements DataSet<byte[]>
     }
     
     @Override
-    public synchronized void clear() throws IOException
-    {
+    public synchronized void clear() throws IOException {
         _dataArray.clear();
     }
     
     /**
      * @return the underlying data array.
      */
-    public final DataArray getDataArray()
-    {
+    public final DataArray getDataArray() {
         return _dataArray;
     }
 }

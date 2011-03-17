@@ -13,8 +13,7 @@ import krati.store.StaticDataStore;
  * @author jwu
  *
  */
-public class KratiDataStore
-{
+public class KratiDataStore {
     private final int _keyCount;
     private final DataStore<byte[], byte[]> _store;
     
@@ -25,8 +24,7 @@ public class KratiDataStore
      * @param homeDir    the home directory for storing data.
      * @throws Exception if a DataStore instance can not be created.
      */
-    public KratiDataStore(int keyCount, File homeDir) throws Exception
-    {
+    public KratiDataStore(int keyCount, File homeDir) throws Exception {
         _keyCount = keyCount;
         _store = createDataStore(keyCount, homeDir);
     }
@@ -34,18 +32,16 @@ public class KratiDataStore
     /**
      * @return the underlying data store.
      */
-    public final DataStore<byte[], byte[]> getDataStore()
-    {
+    public final DataStore<byte[], byte[]> getDataStore() {
         return _store;
     }
     
     /**
      * Creates a data store instance.
      * Subclasses can override this method to provide a specific DataStore implementation
-     * such as DynamicDataStore.
+     * such as DynamicDataStore and IndexedDataStore.
      */
-    protected DataStore<byte[], byte[]> createDataStore(int keyCount, File storeDir) throws Exception
-    {
+    protected DataStore<byte[], byte[]> createDataStore(int keyCount, File storeDir) throws Exception {
         int capacity = (int)(keyCount * 1.5);
         return new StaticDataStore(storeDir,
                                    capacity, /* capacity */
@@ -62,8 +58,7 @@ public class KratiDataStore
      * 
      * @return the segment factory. 
      */
-    protected SegmentFactory createSegmentFactory()
-    {
+    protected SegmentFactory createSegmentFactory() {
         return new krati.core.segment.MemorySegmentFactory();
     }
     
@@ -71,8 +66,7 @@ public class KratiDataStore
      * Creates data for a given key.
      * Subclasses can override this method to provide specific values for a given key.
      */
-    protected byte[] createDataForKey(String key)
-    {
+    protected byte[] createDataForKey(String key) {
         return ("Here is your data for " + key).getBytes();
     }
     
@@ -81,10 +75,8 @@ public class KratiDataStore
      * 
      * @throws Exception
      */
-    public void populate() throws Exception
-    {
-        for(int i = 0; i < _keyCount; i++)
-        {
+    public void populate() throws Exception {
+        for (int i = 0; i < _keyCount; i++) {
             String str = "key." + i;
             byte[] key = str.getBytes();
             byte[] value = createDataForKey(str);
@@ -98,11 +90,9 @@ public class KratiDataStore
      * 
      * @param readCnt the number of reads
      */
-    public void doRandomReads(int readCnt)
-    {
+    public void doRandomReads(int readCnt) {
         Random rand = new Random();
-        for(int i = 0; i < readCnt; i++)
-        {
+        for (int i = 0; i < readCnt; i++) {
             int keyId = rand.nextInt(_keyCount);
             String str = "key." + keyId;
             byte[] key = str.getBytes();
@@ -113,13 +103,9 @@ public class KratiDataStore
     
     /**
      * java -Xmx4G krati.examples.KratiDataStore keyCount homeDir
-     * 
-     * @param args
      */
-    public static void main(String[] args)
-    {
-        try
-        {
+    public static void main(String[] args) {
+        try {
             // Parse arguments: keyCount homeDir
             int keyCount = Integer.parseInt(args[0]);
             File homeDir = new File(args[1]);
@@ -133,9 +119,7 @@ public class KratiDataStore
             
             // Perform some random reads from data store.
             store.doRandomReads(10);
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

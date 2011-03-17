@@ -9,16 +9,20 @@ import krati.core.segment.SegmentFactory;
 import krati.store.DataSet;
 import krati.store.StaticDataSet;
 
-public class TestStaticDataSet extends EvalDataSet
-{
-    public TestStaticDataSet()
-    {
+/**
+ * TestStaticDataSet
+ * 
+ * @author jwu
+ * 
+ */
+public class TestStaticDataSet extends EvalDataSet {
+    
+    public TestStaticDataSet() {
         super(TestStaticDataSet.class.getSimpleName());
     }
     
     @Override
-    protected DataSet<byte[]> getDataSet(File storeDir) throws Exception
-    {
+    protected DataSet<byte[]> getDataSet(File storeDir) throws Exception {
         int capacity = (int)(_keyCount * 1.5);
         return new StaticDataSet(storeDir,
                                  capacity, /* capacity */
@@ -29,13 +33,11 @@ public class TestStaticDataSet extends EvalDataSet
     }
     
     @Override
-    protected SegmentFactory getSegmentFactory()
-    {
+    protected SegmentFactory getSegmentFactory() {
         return new MemorySegmentFactory();
     }
     
-    public void testPerformance() throws Exception
-    {
+    public void testPerformance() throws Exception {
         String unitTestName = getClass().getSimpleName(); 
         StatsLog.beginUnit(unitTestName);
         

@@ -1,5 +1,11 @@
 package krati.core.segment;
 
+/**
+ * SegmentException
+ * 
+ * @author jwu
+ * 
+ */
 public class SegmentException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 

@@ -16,41 +16,32 @@ import test.driver.raw.StoreTestBytesDriver;
  * 
  * @author jwu
  */
-public abstract class EvalDataStore extends AbstractSeedTest
-{
-    public EvalDataStore(String name)
-    {
+public abstract class EvalDataStore extends AbstractSeedTest {
+    
+    public EvalDataStore(String name) {
         super(name);
     }
     
     protected abstract DataStore<byte[], byte[]> getDataStore(File DataStoreDir) throws Exception;
     
-    static class DataStoreReader implements StoreReader<DataStore<byte[], byte[]>, byte[], byte[]>
-    {
+    static class DataStoreReader implements StoreReader<DataStore<byte[], byte[]>, byte[], byte[]> {
         @Override
-        public final byte[] get(DataStore<byte[], byte[]> store, byte[] key)
-        {
+        public final byte[] get(DataStore<byte[], byte[]> store, byte[] key) {
             return (key == null) ? null : store.get(key);
         }
     }
     
-    static class DataStoreWriter implements StoreWriter<DataStore<byte[], byte[]>, byte[], byte[]>
-    {
+    static class DataStoreWriter implements StoreWriter<DataStore<byte[], byte[]>, byte[], byte[]> {
         @Override
-        public final void put(DataStore<byte[], byte[]> store, byte[] key, byte[] value) throws Exception
-        {
+        public final void put(DataStore<byte[], byte[]> store, byte[] key, byte[] value) throws Exception {
             store.put(key, value);
         }
     }
     
-    public void evalPerformance(int numOfReaders, int numOfWriters, int runDuration) throws Exception
-    {
-        try
-        {
+    public void evalPerformance(int numOfReaders, int numOfWriters, int runDuration) throws Exception {
+        try {
             AbstractSeedTest.loadSeedData();
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
             return;
         }
@@ -69,15 +60,12 @@ public abstract class EvalDataStore extends AbstractSeedTest
         
         store.sync();
         
-        try
-        {
+        try {
             iterate(store, 100);
-        }
-        catch(UnsupportedOperationException e) {}
+        } catch(UnsupportedOperationException e) {}
     }
     
-    protected void iterate(DataStore<byte[], byte[]> store, int runTimeSeconds)
-    {
+    protected void iterate(DataStore<byte[], byte[]> store, int runTimeSeconds) {
         int cnt = 0;
         long total = runTimeSeconds * 1000;
         long start = System.currentTimeMillis();
@@ -85,8 +73,7 @@ public abstract class EvalDataStore extends AbstractSeedTest
         StatsLog.logger.info(">>> iterate");
         
         byte[] key = null;
-        while(iter.hasNext())
-        {
+        while (iter.hasNext()) {
             key = iter.next();
             store.get(key);
             cnt++;

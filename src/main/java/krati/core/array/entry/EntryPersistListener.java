@@ -9,6 +9,8 @@ import java.io.IOException;
  * 
  */
 public interface EntryPersistListener {
+    
     public void beforePersist(Entry<? extends EntryValue> e) throws IOException;
+    
     public void afterPersist(Entry<? extends EntryValue> e) throws IOException;
 }

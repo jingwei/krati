@@ -34,44 +34,38 @@ import krati.io.ChannelWriter;
  *
  * @param <T> Generic entry value representing an update to array file.
  */
-public class EntryFileWriter
-{
+public class EntryFileWriter {
     private final static Logger _log = Logger.getLogger(EntryFileWriter.class);
     
     private final static long STORAGE_VERESION_POSITION = 0;
     private final static long HEAD_MIN_SCN_POSITION     = 8;
     private final static long HEAD_MAX_SCN_POSITION     = 16;
     private final static long ENTRY_VALUE_CNT_POSITION  = 24;
-    private final static long DATA_START_POSITION       = 28; 
+    private final static long DATA_START_POSITION       = 28;
     
     private final ChannelWriter _writer;
     private int  _valCnt = 0;
     private long _minScn = 0;
     private long _maxScn = 0;
     
-    public EntryFileWriter(File file)
-    {
+    public EntryFileWriter(File file) {
         this._writer = new ChannelWriter(file);
         this._valCnt = 0;
     }
-
-    public File getFile()
-    {
+    
+    public File getFile() {
         return _writer.getFile();
     }
     
-    public long getMinScn()
-    {
+    public long getMinScn() {
         return _minScn;
     }
     
-    public long getMaxScn()
-    {
+    public long getMaxScn() {
         return _maxScn;
     }
     
-    public void open(long minScn, long maxScn) throws IOException
-    {
+    public void open(long minScn, long maxScn) throws IOException {
         _writer.open();
         _valCnt = 0;
         _minScn = minScn;
@@ -87,8 +81,7 @@ public class EntryFileWriter
         _log.info("opened: minScn=" + _minScn + " maxScn="  + _maxScn + " valCnt=" + _valCnt + " file=" + _writer.getFile().getName());
     }
     
-    public void close() throws IOException
-    {
+    public void close() throws IOException {
         // Update the total count of entry values
         _writer.writeInt(ENTRY_VALUE_CNT_POSITION, _valCnt);
         
@@ -97,36 +90,32 @@ public class EntryFileWriter
         _writer.writeLong(_maxScn);
         
         _writer.close();
-        _log.info("closed: minScn=" + _minScn + " maxScn="  + _maxScn + " valCnt=" + _valCnt);
+        _log.info("closed: minScn=" + _minScn + " maxScn=" + _maxScn + " valCnt=" + _valCnt);
         
         _valCnt = 0;
         _minScn = 0;
         _maxScn = 0;
     }
     
-    public void flush() throws IOException
-    {
+    public void flush() throws IOException {
         _writer.flush();
     }
     
-    public void write(int pos, int val, long scn) throws IOException
-    {
+    public void write(int pos, int val, long scn) throws IOException {
         _writer.writeInt(pos);   /* array position */
         _writer.writeInt(val);   /* data value     */
         _writer.writeLong(scn);  /* SCN value      */
         _valCnt++;
     }
     
-    public void write(int pos, long val, long scn) throws IOException
-    {
+    public void write(int pos, long val, long scn) throws IOException {
         _writer.writeInt(pos);   /* array position */
         _writer.writeLong(val);  /* data value     */
         _writer.writeLong(scn);  /* SCN value      */
         _valCnt++;
     }
     
-    public void write(int pos, short val, long scn) throws IOException
-    {
+    public void write(int pos, short val, long scn) throws IOException {
         _writer.writeInt(pos);   /* array position */
         _writer.writeShort(val); /* data value     */
         _writer.writeLong(scn);  /* SCN value      */

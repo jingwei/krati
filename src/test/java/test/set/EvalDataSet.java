@@ -12,29 +12,29 @@ import test.util.DataSetReader;
 import test.util.DataSetRunner;
 import test.util.DataSetWriter;
 
-public abstract class EvalDataSet extends AbstractSeedTest
-{
-    protected EvalDataSet(String name)
-    {
+/**
+ * EvalDataSet
+ * 
+ * @author jwu
+ * 
+ */
+public abstract class EvalDataSet extends AbstractSeedTest {
+    
+    protected EvalDataSet(String name) {
         super(name);
     }
     
-    public void populate(DataSet<byte[]> store) throws IOException
-    {
+    public void populate(DataSet<byte[]> store) throws IOException {
         int lineCnt = _lineSeedData.size();
         long startTime = System.currentTimeMillis();
         
-        try
-        {
-            for(int i = 0; i < _keyCount; i++)
-            {
+        try {
+            for (int i = 0; i < _keyCount; i++) {
                 String s = _lineSeedData.get(i%lineCnt);
                 String k = s.substring(0, 30) + i;
                 store.add(k.getBytes());
             }
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         
@@ -47,33 +47,26 @@ public abstract class EvalDataSet extends AbstractSeedTest
         StatsLog.logger.info("writeCount="+ _keyCount +" rate="+ rate +" per ms");
     }
     
-    public void validate(DataSet<byte[]> store)
-    {
+    public void validate(DataSet<byte[]> store) {
         int i = 0;
         int errCnt = 0;
         int lineCnt = _lineSeedData.size();
         long startTime = System.currentTimeMillis();
         
-        try
-        {
-            for(; i < _keyCount; i++)
-            {
-                String s = _lineSeedData.get(i%lineCnt);
+        try {
+            for (; i < _keyCount; i++) {
+                String s = _lineSeedData.get(i % lineCnt);
                 String k = s.substring(0, 30) + i;
-                if(!store.has(k.getBytes()))
-                {
+                if (!store.has(k.getBytes())) {
                     errCnt++;
-                    System.err.println("validate: value=\""+ k +"\" not found");
-                    if(errCnt == 10)
-                    {
+                    System.err.println("validate: value=\"" + k + "\" not found");
+                    if (errCnt == 10) {
                         System.err.flush();
-                        throw new RuntimeException("validate: value=\""+ k +"\" not found");
+                        throw new RuntimeException("validate: value=\"" + k + "\" not found");
                     }
                 }
             }
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         
@@ -84,10 +77,8 @@ public abstract class EvalDataSet extends AbstractSeedTest
         StatsLog.logger.info("OK");
     }
     
-    public double evalWrite(DataSet<byte[]> store, int runDuration) throws Exception
-    {
-        try
-        {
+    public double evalWrite(DataSet<byte[]> store, int runDuration) throws Exception {
+        try {
             // Start writer
             DataSetWriter writer = new DataSetWriter(store, _lineSeedData, _keyCount);
             Thread writerThread = new Thread(writer);
@@ -98,8 +89,7 @@ public abstract class EvalDataSet extends AbstractSeedTest
             long writeCount = 0;
             int heartBeats = runDuration/10;
             long sleepTime = Math.min(runDuration * 1000, 10000);
-            for(int i = 0; i < heartBeats; i++)
-            {
+            for (int i = 0; i < heartBeats; i++) {
                 Thread.sleep(sleepTime);
                 long newWriteCount = writer.getOpCount();
                 StatsLog.logger.info("writeCount=" + (newWriteCount - writeCount));
@@ -110,7 +100,7 @@ public abstract class EvalDataSet extends AbstractSeedTest
             writerThread.join();
             
             long endTime = System.currentTimeMillis();
-
+            
             long elapsedTime = endTime - startTime;
             StatsLog.logger.info("elapsedTime="+ elapsedTime +" ms");
             
@@ -119,28 +109,22 @@ public abstract class EvalDataSet extends AbstractSeedTest
             StatsLog.logger.info("writeCount="+ writer.getOpCount() +" rate="+ rate +" per ms");
             
             return rate;
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
             throw e;
         }
     }
     
-    public void evalRead(DataSet<byte[]> store, int readerCnt, int runDuration) throws Exception
-    {
-        try
-        {
+    public void evalRead(DataSet<byte[]> store, int readerCnt, int runDuration) throws Exception {
+        try {
             // Start readers
             DataSetReader[] readers = new DataSetReader[readerCnt];
-            for(int i = 0; i < readers.length; i++)
-            {
+            for (int i = 0; i < readers.length; i++) {
                 readers[i] = new DataSetReader(store, _lineSeedData, _keyCount);
             }
             
             Thread[] threads = new Thread[readers.length];
-            for(int i = 0; i < threads.length; i++)
-            {
+            for (int i = 0; i < threads.length; i++) {
                 threads[i] = new Thread(readers[i]);
                 threads[i].start();
                 StatsLog.logger.info("Reader " + i + " started");
@@ -151,12 +135,10 @@ public abstract class EvalDataSet extends AbstractSeedTest
             // Sleep until run time is exhausted
             Thread.sleep(runDuration * 1000);
             
-            for(int i = 0; i < readers.length; i++)
-            {
+            for (int i = 0; i < readers.length; i++) {
                 readers[i].stop();
             }
-            for(int i = 0; i < threads.length; i++)
-            {
+            for (int i = 0; i < threads.length; i++) {
                 threads[i].join();
             }
             
@@ -165,8 +147,7 @@ public abstract class EvalDataSet extends AbstractSeedTest
             double sumReadRate = 0;
             long elapsedTime = endTime - startTime;
             StatsLog.logger.info("elapsedTime="+ elapsedTime +" ms");
-            for(int i = 0; i < readers.length; i++)
-            {
+            for (int i = 0; i < readers.length; i++) {
                 double rate = readers[i].getOpCount()/(double)elapsedTime;
                 rate = Math.round(rate * 100) / 100.0;
                 StatsLog.logger.info("readCount["+ i +"]="+ readers[i].getOpCount() +" rate="+ rate +" per ms");
@@ -175,28 +156,22 @@ public abstract class EvalDataSet extends AbstractSeedTest
             
             sumReadRate = Math.round(sumReadRate * 100) / 100.0;
             StatsLog.logger.info("Total Read Rate="+ sumReadRate +" per ms");
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
             throw e;
         }
     }
     
-    public void evalReadWrite(DataSet<byte[]> store, int readerCnt, int runDuration, boolean doValidation) throws Exception
-    {
-        try
-        {
+    public void evalReadWrite(DataSet<byte[]> store, int readerCnt, int runDuration, boolean doValidation) throws Exception {
+        try {
             // Start readers
             DataSetRunner[] readers = new DataSetRunner[readerCnt];
-            for(int i = 0; i < readers.length; i++)
-            {
+            for (int i = 0; i < readers.length; i++) {
                 readers[i] = doValidation ? new DataSetChecker(store, _lineSeedData, _keyCount) : new DataSetReader(store, _lineSeedData, _keyCount);
             }
             
             Thread[] threads = new Thread[readers.length];
-            for(int i = 0; i < threads.length; i++)
-            {
+            for (int i = 0; i < threads.length; i++) {
                 threads[i] = new Thread(readers[i]);
                 threads[i].start();
                 StatsLog.logger.info("Reader " + i + " started");
@@ -214,13 +189,11 @@ public abstract class EvalDataSet extends AbstractSeedTest
             long writeCount = 0;
             int heartBeats = runDuration/10;
             long sleepTime = Math.min(runDuration * 1000, 10000);
-            for(int i = 0; i < heartBeats; i++)
-            {
+            for (int i = 0; i < heartBeats; i++) {
                 Thread.sleep(sleepTime);
 
                 long newReadCount = 0;
-                for(int r = 0; r < readers.length; r++)
-                {
+                for (int r = 0; r < readers.length; r++) {
                     newReadCount += readers[r].getOpCount();
                 }
                 
@@ -233,12 +206,10 @@ public abstract class EvalDataSet extends AbstractSeedTest
             }
             
             // Stop reader
-            for(int i = 0; i < readers.length; i++)
-            {
+            for (int i = 0; i < readers.length; i++) {
                 readers[i].stop();
             }
-            for(int i = 0; i < threads.length; i++)
-            {
+            for (int i = 0; i < threads.length; i++) {
                 threads[i].join();
             }
             
@@ -256,8 +227,7 @@ public abstract class EvalDataSet extends AbstractSeedTest
             StatsLog.logger.info("writeCount="+ writer.getOpCount() +" rate="+ rate +" per ms");
             
             double sumReadRate = 0;
-            for(int i = 0; i < readers.length; i++)
-            {
+            for (int i = 0; i < readers.length; i++) {
                 rate = readers[i].getOpCount()/(double)elapsedTime;
                 rate = Math.round(rate * 100) / 100.0;
                 StatsLog.logger.info("readCount["+ i +"]="+ readers[i].getOpCount() +" rate="+ rate +" per ms");
@@ -270,14 +240,11 @@ public abstract class EvalDataSet extends AbstractSeedTest
             StatsLog.logger.info("writer latency stats:");
             writer.getLatencyStats().print(StatsLog.logger);
             
-            if(!doValidation)
-            {
+            if (!doValidation) {
                 StatsLog.logger.info("reader latency stats:");
                 readers[0].getLatencyStats().print(StatsLog.logger);
             }
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
             throw e;
         }
@@ -287,14 +254,10 @@ public abstract class EvalDataSet extends AbstractSeedTest
     
     protected abstract DataSet<byte[]> getDataSet(File storeDir) throws Exception;
     
-    public void evalPerformance(int numOfReaders, int numOfWriters, int runDuration) throws Exception
-    {
-        try
-        {
+    public void evalPerformance(int numOfReaders, int numOfWriters, int runDuration) throws Exception {
+        try {
             AbstractSeedTest.loadSeedData();
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
             return;
         }
@@ -305,8 +268,7 @@ public abstract class EvalDataSet extends AbstractSeedTest
         
         DataSet<byte[]> store = getDataSet(storeDir);
         
-        try
-        {
+        try {
             int timeAllocated = Math.round((float)_runTimeSeconds/3);
             
             StatsLog.logger.info(">>> populate");
@@ -338,9 +300,7 @@ public abstract class EvalDataSet extends AbstractSeedTest
             validate(store);
             
             store.sync();
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

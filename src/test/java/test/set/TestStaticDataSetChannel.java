@@ -3,11 +3,15 @@ package test.set;
 import krati.core.segment.ChannelSegmentFactory;
 import krati.core.segment.SegmentFactory;
 
-public class TestStaticDataSetChannel extends TestStaticDataSet
-{
+/**
+ * TestStaticDataSetChannel
+ * 
+ * @author jwu
+ * 
+ */
+public class TestStaticDataSetChannel extends TestStaticDataSet {
     @Override
-    protected SegmentFactory getSegmentFactory()
-    {
+    protected SegmentFactory getSegmentFactory() {
         return new ChannelSegmentFactory();
     }
 }

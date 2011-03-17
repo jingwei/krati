@@ -17,38 +17,32 @@ import test.StatsLog;
  * @author jwu
  *
  */
-public class TestSimpleArray extends AbstractSeedTest
-{
-    public TestSimpleArray()
-    {
+public class TestSimpleArray extends AbstractSeedTest {
+    
+    public TestSimpleArray() {
         super(TestSimpleArray.class.getSimpleName());
     }
     
-    protected SegmentFactory getSegmentFactory()
-    {
+    protected SegmentFactory getSegmentFactory() {
         return new krati.core.segment.ChannelSegmentFactory();
     }
     
-    protected AddressArray getAddressArray(File homeDir) throws Exception
-    {
+    protected AddressArray getAddressArray(File homeDir) throws Exception {
         return new StaticLongArray(_idCount, 10000, 5, homeDir);
     }
     
-    protected SegmentManager getSegmentManager(File homeDir) throws IOException
-    {
+    protected SegmentManager getSegmentManager(File homeDir) throws IOException {
         String segmentHome = homeDir.getCanonicalPath() + File.separator + "segs";
         return SegmentManager.getInstance(segmentHome, getSegmentFactory(), _segFileSizeMB);
     }
     
-    protected SimpleDataArray getDataArray(File homeDir) throws Exception
-    {
+    protected SimpleDataArray getDataArray(File homeDir) throws Exception {
         SimpleDataArray array = new SimpleDataArray(getAddressArray(homeDir),
                                                     getSegmentManager(homeDir));
         return array;
     }
     
-    public void populate(SimpleDataArray dataArray) throws IOException
-    {
+    public void populate(SimpleDataArray dataArray) throws IOException {
         String line;
         int index = 0;
         int length = dataArray.length();
@@ -57,15 +51,11 @@ public class TestSimpleArray extends AbstractSeedTest
         long scn = dataArray.getHWMark();
         long startTime = System.currentTimeMillis();
         
-        while(index < length)
-        {
-            try
-            {
+        while (index < length) {
+            try {
                 line = _lineSeedData.get(index % lineCnt);
                 dataArray.set(index, line.getBytes(), scn++);
-            }
-            catch(Exception e)
-            {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             index++;
@@ -82,23 +72,18 @@ public class TestSimpleArray extends AbstractSeedTest
         StatsLog.logger.info("elapsedTime=" + elapsedTime + " ms");
     }
     
-    public void testPopulate()
-    {
+    public void testPopulate() {
         String unitTestName = getClass().getSimpleName() + " with " + getSegmentFactory().getClass().getSimpleName(); 
         StatsLog.beginUnit(unitTestName);
         
-        try
-        {
+        try {
             AbstractSeedTest.loadSeedData();
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
             return;
         }
         
-        try
-        {
+        try {
             SimpleDataArray array;
             
             File homeDir = getHomeDirectory();
@@ -108,9 +93,7 @@ public class TestSimpleArray extends AbstractSeedTest
             populate(array);
             
             array.sync();
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             StatsLog.logger.info(e.getMessage(), e);
             e.printStackTrace();
         }

@@ -10,8 +10,13 @@ import krati.core.array.entry.Entry;
 import krati.core.array.entry.EntryFactory;
 import krati.core.array.entry.EntryValue;
 
-abstract class AbstractRecoverableArray<V extends EntryValue> implements RecoverableArray<V>
-{
+/**
+ * AbstractRecoverableArray
+ * 
+ * @author jwu
+ * 
+ */
+abstract class AbstractRecoverableArray<V extends EntryValue> implements RecoverableArray<V> {
   static final Logger _log = Logger.getLogger(RecoverableArray.class);
   
   protected int                  _length;         // Length of this array
@@ -35,15 +40,13 @@ abstract class AbstractRecoverableArray<V extends EntryValue> implements Recover
                                      int entrySize,
                                      int maxEntries,
                                      File directory,
-                                     EntryFactory<V> entryFactory) throws Exception
-  {
+                                     EntryFactory<V> entryFactory) throws Exception {
     _length = length;
     _directory = directory;
     _entryFactory = entryFactory;
     _entryManager = new ArrayEntryManager<V>(this, maxEntries, entrySize);
     
-    if (!_directory.exists())
-    {
+    if (!_directory.exists()) {
       _directory.mkdirs();
     }
     
@@ -63,14 +66,11 @@ abstract class AbstractRecoverableArray<V extends EntryValue> implements Recover
   /**
    * Loads data from the array file.
    */
-  protected void init() throws IOException
-  {
-    try
-    {
+  protected void init() throws IOException {
+    try {
       long lwmScn = _arrayFile.getLwmScn();
       long hwmScn = _arrayFile.getHwmScn();
-      if (hwmScn < lwmScn)
-      {
+      if (hwmScn < lwmScn) {
         throw new IOException(_arrayFile.getAbsolutePath() + " is corrupted: lwmScn=" + lwmScn + " hwmScn=" + hwmScn);
       }
       
@@ -79,16 +79,13 @@ abstract class AbstractRecoverableArray<V extends EntryValue> implements Recover
       
       // Load data from the array file on disk.
       loadArrayFileData();
-    }
-    catch (IOException e)
-    {
+    } catch (IOException e) {
       _log.error(e.getMessage(), e);
       throw e;
     }
   }
   
-  protected final ArrayFile openArrayFile(File file, int initialLength, int elementSize) throws IOException
-  {
+  protected final ArrayFile openArrayFile(File file, int initialLength, int elementSize) throws IOException {
       boolean isNew = true;
       if(file.exists()) isNew = false;
       
@@ -98,37 +95,31 @@ abstract class AbstractRecoverableArray<V extends EntryValue> implements Recover
       return arrayFile;
   }
   
-  protected void initArrayFile()
-  {
+  protected void initArrayFile() {
     // Subclasses need to initialize ArrayFile
   }
   
   protected abstract void loadArrayFileData();
   
-  public File getDirectory()
-  {
+  public File getDirectory() {
     return _directory;
   }
   
-  public EntryFactory<V> getEntryFactory()
-  {
+  public EntryFactory<V> getEntryFactory() {
     return _entryFactory;
   }
   
-  public ArrayEntryManager<V> getEntryManager()
-  {
+  public ArrayEntryManager<V> getEntryManager() {
     return _entryManager;
   }
   
   @Override
-  public boolean hasIndex(int index)
-  {
+  public boolean hasIndex(int index) {
     return (0 <= index && index < _length);
   }
   
   @Override
-  public int length()
-  {
+  public int length() {
     return _length;
   }
   
@@ -136,8 +127,7 @@ abstract class AbstractRecoverableArray<V extends EntryValue> implements Recover
    * Sync array file with all entry logs. The writer will be blocked until all entry logs are applied.
    */
   @Override
-  public void sync() throws IOException
-  {
+  public void sync() throws IOException {
     _entryManager.sync();
     _log.info("array saved: length=" + length());
   }
@@ -146,27 +136,23 @@ abstract class AbstractRecoverableArray<V extends EntryValue> implements Recover
    * Persists this array.
    */
   @Override
-  public void persist() throws IOException
-  {
+  public void persist() throws IOException {
     _entryManager.persist();
     _log.info("array persisted: length=" + length());
   }
   
   @Override
-  public long getHWMark()
-  {
+  public long getHWMark() {
     return _entryManager.getHWMark();
   }
   
   @Override
-  public long getLWMark()
-  {
+  public long getLWMark() {
     return _entryManager.getLWMark();
   }
   
   @Override
-  public void updateArrayFile(List<Entry<V>> entryList) throws IOException
-  {
+  public void updateArrayFile(List<Entry<V>> entryList) throws IOException {
     _arrayFile.update(entryList);
   }
 }

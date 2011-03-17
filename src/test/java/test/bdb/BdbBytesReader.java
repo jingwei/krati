@@ -6,11 +6,15 @@ import com.sleepycat.je.Database;
 import com.sleepycat.je.DatabaseEntry;
 import com.sleepycat.je.OperationStatus;
 
-public class BdbBytesReader implements StoreReader<Database, byte[], byte[]>
-{
+/**
+ * BdbBytesReader
+ * 
+ * @author jwu
+ * 
+ */
+public class BdbBytesReader implements StoreReader<Database, byte[], byte[]> {
     @Override
-    public final byte[] get(Database db, byte[] key)
-    {
+    public final byte[] get(Database db, byte[] key) {
         DatabaseEntry dbKey = new DatabaseEntry(key);
         DatabaseEntry dbValue = new DatabaseEntry();
         OperationStatus status = db.get(null, dbKey, dbValue, null);

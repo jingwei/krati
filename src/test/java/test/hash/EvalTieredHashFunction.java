@@ -11,63 +11,51 @@ import krati.store.DataSet;
 import krati.store.StaticDataSet;
 import krati.util.HashFunction;
 
-public abstract class EvalTieredHashFunction extends AbstractSeedTest
-{
+public abstract class EvalTieredHashFunction extends AbstractSeedTest {
     protected HashCollisionStats _collisionStats = new HashCollisionStats();
     
-    protected EvalTieredHashFunction(String name)
-    {
+    protected EvalTieredHashFunction(String name) {
         super(name);
     }
     
     protected abstract HashFunction<byte[]> createHashFunction();
     
-    protected SegmentFactory createSegmentFactory()
-    {
+    protected SegmentFactory createSegmentFactory() {
         return new MemorySegmentFactory();
     }
     
-    protected StaticDataSet createDataSet(File storeDir, int capacity, SegmentFactory segmentFactory, HashFunction<byte[]> hashFunction) throws Exception
-    {
+    protected StaticDataSet createDataSet(File storeDir, int capacity, SegmentFactory segmentFactory, HashFunction<byte[]> hashFunction) throws Exception {
         return new StaticDataSet(storeDir, capacity, 10000, 5, 32, segmentFactory, hashFunction);
     }
     
-    private void populate(StaticDataSet[] tieredStores) throws IOException
-    {
+    private void populate(StaticDataSet[] tieredStores) throws IOException {
         int storeCnt = tieredStores.length;
         int lineCnt = _lineSeedData.size();
         long startTime = System.currentTimeMillis();
         long[] tieredDist = new long[tieredStores.length];
         
-        try
-        {
-            for(int i = 0; i < _keyCount; i++)
-            {
-                String s = _lineSeedData.get(i%lineCnt);
+        try {
+            for (int i = 0; i < _keyCount; i++) {
+                String s = _lineSeedData.get(i % lineCnt);
                 String k = s.substring(0, 30) + i;
                 byte[] b = k.getBytes();
-                
+
                 int j = 0;
-                for(; j < storeCnt; j++)
-                {
-                    if(tieredStores[j].countCollisions(b) == 0)
-                    {
+                for (; j < storeCnt; j++) {
+                    if (tieredStores[j].countCollisions(b) == 0) {
                         tieredStores[j].add(b);
                         tieredDist[j] += 1;
                         break;
                     }
                 }
-                
-                if(j == storeCnt)
-                {
+
+                if (j == storeCnt) {
                     j--;
                     tieredStores[j].add(b);
                     tieredDist[j] += 1;
                 }
             }
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         
@@ -79,49 +67,40 @@ public abstract class EvalTieredHashFunction extends AbstractSeedTest
         StatsLog.logger.info("writeCount="+ _keyCount +" rate="+ rate +" per ms");
 
         StatsLog.logger.info("Tier Distribution");
-        for(int j = 0; j < tieredDist.length; j++)
-        {
+        for (int j = 0; j < tieredDist.length; j++) {
             StatsLog.logger.info("Tier" + j + " " + tieredDist[j]);
         }
         
         StatsLog.logger.info("elapsedTime="+ elapsedTime +" ms");
     }
     
-    private void collect(StaticDataSet[] tieredStores)
-    {
+    private void collect(StaticDataSet[] tieredStores) {
         int storeCnt = tieredStores.length;
         int lineCnt = _lineSeedData.size();
         long startTime = System.currentTimeMillis();
         long[] tieredDist = new long[tieredStores.length];
         
-        try
-        {
-            for(int i = 0; i < _keyCount; i++)
-            {
+        try {
+            for (int i = 0; i < _keyCount; i++) {
                 String s = _lineSeedData.get(i%lineCnt);
                 String k = s.substring(0, 30) + i;
                 byte[] b = k.getBytes();
                 
-                for(int j = 0; j < storeCnt; j++)
-                {
+                for (int j = 0; j < storeCnt; j++) {
                     int collisionCnt = tieredStores[j].countCollisions(b);
-                    if(collisionCnt > 0)
-                    {
+                    if (collisionCnt > 0) {
                         tieredDist[j] += 1;
                         _collisionStats.addCollisionCount(Math.abs(collisionCnt));
                         break;
                     }
                 }
             }
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         
         StatsLog.logger.info("Tier Distribution");
-        for(int j = 0; j < tieredDist.length; j++)
-        {
+        for (int j = 0; j < tieredDist.length; j++) {
             StatsLog.logger.info("Tier" + j + " " + tieredDist[j]);
         }
         
@@ -133,14 +112,10 @@ public abstract class EvalTieredHashFunction extends AbstractSeedTest
         StatsLog.logger.info("elapsedTime="+ elapsedTime +" ms");
     }
     
-    protected void evaluate(int... tierCapacities) throws Exception
-    {
-        try
-        {
+    protected void evaluate(int... tierCapacities) throws Exception {
+        try {
             AbstractSeedTest.loadSeedData();
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
             return;
         }
@@ -151,8 +126,7 @@ public abstract class EvalTieredHashFunction extends AbstractSeedTest
         File storeHomeDir = getHomeDirectory();
         
         StaticDataSet[] tieredStores = new StaticDataSet[tierCapacities.length];
-        for(int i = 0; i < tierCapacities.length; i++)
-        {
+        for (int i = 0; i < tierCapacities.length; i++) {
             tieredStores[i] = createDataSet(new File(storeHomeDir, "T" + i), tierCapacities[i], segmentFactory, hashFunction);
         }
         
@@ -161,8 +135,7 @@ public abstract class EvalTieredHashFunction extends AbstractSeedTest
         populate(tieredStores);
         
         // sync tiered stores
-        for(DataSet<byte[]> store : tieredStores)
-        {
+        for (DataSet<byte[]> store : tieredStores) {
             store.sync();
         }
         
@@ -171,8 +144,7 @@ public abstract class EvalTieredHashFunction extends AbstractSeedTest
         collect(tieredStores);
     }
     
-    public void test() throws Exception
-    {
+    public void test() throws Exception {
         String unitTestName = getClass().getSimpleName(); 
         StatsLog.beginUnit(unitTestName);
         cleanTestOutput();

@@ -12,8 +12,7 @@ import java.util.Random;
 
 import org.apache.log4j.Logger;
 
-public class SegmentUnit
-{
+public class SegmentUnit {
     private final static Logger log = Logger.getLogger(SegmentUnit.class);
     private final File segFile;
     private final int initSizeMB;
@@ -22,103 +21,82 @@ public class SegmentUnit
     private ByteBuffer byteBuffer;
     private RandomAccessFile rafRead;
     
-    public SegmentUnit(File segmentFile, int initialSizeMB, boolean memoryMapped) throws IOException
-    {
+    public SegmentUnit(File segmentFile, int initialSizeMB, boolean memoryMapped) throws IOException {
         this.segFile = segmentFile;
         this.initSizeMB = initialSizeMB;
         this.memMapped = memoryMapped;
         this.init();
     }
     
-    public File getSegmentFile()
-    {
+    public File getSegmentFile() {
         return segFile;
     }
     
-    public int getInitialSize()
-    {
+    public int getInitialSize() {
         return initSizeMB * 1024 * 1024;
     }
     
-    public int getInitialSizeMB()
-    {
+    public int getInitialSizeMB() {
         return initSizeMB;
     }
     
-    public boolean isMemoryMapped()
-    {
+    public boolean isMemoryMapped() {
         return memMapped;
     }
     
-    protected void init() throws FileNotFoundException, IOException
-    {
+    protected void init() throws FileNotFoundException, IOException {
         int initSizeBytes = getInitialSize();
         
-        if (!getSegmentFile().exists())
-        {
-            if (!getSegmentFile().createNewFile())
-            {
+        if (!getSegmentFile().exists()) {
+            if (!getSegmentFile().createNewFile()) {
                 String msg = "Failed to create " + getSegmentFile().getAbsolutePath();
-                
+
                 log.error(msg);
                 throw new IOException(msg);
             }
         }
         
-        if (getSegmentFile().exists())
-        {
+        if (getSegmentFile().exists()) {
             RandomAccessFile raf = new RandomAccessFile(getSegmentFile(), "rw");
-            if(raf.length() < initSizeBytes)
-            {
+            if (raf.length() < initSizeBytes) {
                 raf.setLength(initSizeBytes);
             }
         }
         
-        if(memMapped)
-        {
+        if (memMapped) {
             // Create MappedByteBuffer
             RandomAccessFile raf = new RandomAccessFile(getSegmentFile(), "rw");
             byteBuffer = raf.getChannel().map(FileChannel.MapMode.READ_WRITE, 0, initSizeBytes);
-        }
-        else
-        {
+        } else {
             byteBuffer = ByteBuffer.allocate(initSizeBytes);
         }
         
         rafRead = new RandomAccessFile(getSegmentFile(), "r");
     }
     
-    public void append(byte[] data) throws BufferOverflowException
-    {
+    public void append(byte[] data) throws BufferOverflowException {
         byteBuffer.put(data, 0, data.length);
     }
     
-    public void read(int pos, byte[] dst)
-    {
-        if(memMapped)
-        {
-            for(int i = 0; i < dst.length; i++)
-            {
+    public void read(int pos, byte[] dst) {
+        if (memMapped) {
+            for (int i = 0; i < dst.length; i++) {
                 dst[i] = byteBuffer.get(pos + i);
             }
-        }
-        else
-        {
+        } else {
             byte[] array = byteBuffer.array();
             System.arraycopy(array, pos, dst, 0, dst.length);
         }
     }
     
-    public void rafRead(long pos, byte[] dst) throws IOException
-    {
+    public void rafRead(long pos, byte[] dst) throws IOException {
         rafRead.seek(pos);
         rafRead.read(dst);
     }
     
     static Random random = new Random(System.currentTimeMillis());
     
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         final int initSizeMB = 1024;
         final int initSizeBytes = initSizeMB * 1024 * 1024;
         final int POS = 0;
@@ -132,15 +110,13 @@ public class SegmentUnit
         datArray[0][POS] = 0;
         datArray[0][SIZE] = random.nextInt(maxDataBytes);
         
-        for(int i = 1; i < datLength; i++)
-        {
+        for (int i = 1; i < datLength; i++) {
             datArray[i][POS] = datArray[i-1][POS] + datArray[i-1][SIZE];
             datArray[i][SIZE] = random.nextInt(maxDataBytes);
         }
         
         byte[][] bArray = new byte[datLength][];
-        for(int i = 0; i < datLength; i++)
-        {
+        for (int i = 0; i < datLength; i++) {
             int[] dat = datArray[i]; 
             bArray[i] = new byte[dat[SIZE]];
         }
@@ -149,8 +125,7 @@ public class SegmentUnit
         
         System.out.println("APPEND");
         
-        try
-        {
+        try {
             startTime = System.currentTimeMillis();
             segment = new SegmentUnit(new File("test/test_data/segment"), initSizeMB, false);
             endTime = System.currentTimeMillis();
@@ -159,8 +134,7 @@ public class SegmentUnit
             System.out.printf("mmap=false init: %d ms%n", diffTime);
             
             startTime = System.currentTimeMillis();
-            for(byte[] b: bArray)
-            {
+            for (byte[] b : bArray) {
                 segment.append(b);
             }
             endTime = System.currentTimeMillis();
@@ -168,14 +142,11 @@ public class SegmentUnit
             diffTime = endTime - startTime;
             System.out.printf("mmap=false append: %d ms avg %7.5f ms%n", diffTime, ((float)diffTime/datLength));
             System.out.println();
-        }
-        catch(IOException ioe)
-        {
+        } catch (IOException ioe) {
             ioe.printStackTrace();
         }
         
-        try
-        {
+        try {
             startTime = System.currentTimeMillis();
             segment = new SegmentUnit(new File("test/test_data/segment"), initSizeMB, true);
             endTime = System.currentTimeMillis();
@@ -184,8 +155,7 @@ public class SegmentUnit
             System.out.printf("mmap=true init: %d ms%n", diffTime);
             
             startTime = System.currentTimeMillis();
-            for(byte[] b: bArray)
-            {
+            for (byte[] b : bArray) {
                 segment.append(b);
             }
             endTime = System.currentTimeMillis();
@@ -193,21 +163,17 @@ public class SegmentUnit
             diffTime = endTime - startTime;
             System.out.printf("mmap=true append: %d ms avg %7.5f ms%n", diffTime, ((float)diffTime/datLength));
             System.out.println();
-        }
-        catch(IOException ioe)
-        {
+        } catch (IOException ioe) {
             ioe.printStackTrace();
         }
         
         int[] posArrayRandom = new int[datLength];
-        for(int i = 0; i < datLength; i++)
-        {
+        for (int i = 0; i < datLength; i++) {
             posArrayRandom[i] = random.nextInt(initSizeBytes);
         }
         
         System.out.println("READ");
-        try
-        {
+        try {
             startTime = System.currentTimeMillis();
             segment = new SegmentUnit(new File("test/test_data/segment"), initSizeMB, false);
             endTime = System.currentTimeMillis();
@@ -215,14 +181,10 @@ public class SegmentUnit
             System.out.printf("mmap=false init: %d ms%n", endTime - startTime);
             
             startTime = System.currentTimeMillis();
-            for(int i = 0; i < datLength; i++)
-            {
-                try
-                {
+            for (int i = 0; i < datLength; i++) {
+                try {
                     segment.read(posArrayRandom[i], bArray[i]);
-                }
-                catch (IndexOutOfBoundsException e)
-                {
+                } catch (IndexOutOfBoundsException e) {
                     // do nothing
                 }
             }
@@ -231,14 +193,11 @@ public class SegmentUnit
             diffTime = endTime - startTime;
             System.out.printf("mmap=false read: %d ms avg %7.5f ms%n", diffTime, ((float)diffTime/datLength));
             System.out.println();
-        }
-        catch(IOException ioe)
-        {
+        } catch (IOException ioe) {
             ioe.printStackTrace();
         }
         
-        try
-        {
+        try {
             startTime = System.currentTimeMillis();
             segment = new SegmentUnit(new File("test/test_data/segment"), initSizeMB, true);
             endTime = System.currentTimeMillis();
@@ -246,14 +205,10 @@ public class SegmentUnit
             System.out.printf("mmap=true init: %d ms%n", endTime - startTime);
             
             startTime = System.currentTimeMillis();
-            for(int i = 0; i < datLength; i++)
-            {
-                try
-                {
+            for (int i = 0; i < datLength; i++) {
+                try {
                     segment.read(posArrayRandom[i], bArray[i]);
-                }
-                catch (IndexOutOfBoundsException e)
-                {
+                } catch (IndexOutOfBoundsException e) {
                     // do nothing
                 }
             }
@@ -264,14 +219,10 @@ public class SegmentUnit
             System.out.println();
             
             startTime = System.currentTimeMillis();
-            for(int i = 0; i < datLength; i++)
-            {
-                try
-                {
+            for (int i = 0; i < datLength; i++) {
+                try {
                     segment.rafRead(posArrayRandom[i], bArray[i]);
-                }
-                catch (IndexOutOfBoundsException e)
-                {
+                } catch (IndexOutOfBoundsException e) {
                     // do nothing
                 }
             }
@@ -280,9 +231,7 @@ public class SegmentUnit
             diffTime = endTime - startTime;
             System.out.printf("mmap=true rafRead: %d ms avg %7.5f ms%n", diffTime, ((float)diffTime/datLength));
             System.out.println();
-        }
-        catch(IOException ioe)
-        {
+        } catch (IOException ioe) {
             ioe.printStackTrace();
         }
     }

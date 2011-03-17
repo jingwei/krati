@@ -10,8 +10,14 @@ import krati.core.array.entry.Entry;
 import krati.core.array.entry.EntryFactory;
 import krati.core.array.entry.EntryValue;
 
-public interface RecoverableArray<V extends EntryValue> extends Array, Persistable
-{
+/**
+ * RecoverableArray
+ * 
+ * @author jwu
+ * 
+ */
+public interface RecoverableArray<V extends EntryValue> extends Array, Persistable {
+    
     public File getDirectory();
     
     public EntryFactory<V> getEntryFactory();

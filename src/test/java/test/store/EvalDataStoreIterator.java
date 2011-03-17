@@ -38,8 +38,7 @@ public abstract class EvalDataStoreIterator extends AbstractSeedTest {
         long startTime = System.currentTimeMillis();
         int lineSeedCount = _lineSeedData.size();
         
-        for(int i = 0; i < _keyCount; i++)
-        {
+        for (int i = 0; i < _keyCount; i++) {
             String s = _lineSeedData.get(i%lineSeedCount);
             String k = s.substring(0, 30) + i;
             _store.put(k.getBytes(), s.getBytes());
@@ -77,8 +76,7 @@ public abstract class EvalDataStoreIterator extends AbstractSeedTest {
         StatsLog.logger.info(">>> iterate keys");
         
         byte[] key = null;
-        while(iter.hasNext())
-        {
+        while (iter.hasNext()) {
             key = iter.next();
             _store.get(key);
             cnt++;

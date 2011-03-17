@@ -4,6 +4,12 @@ import java.util.AbstractMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
+/**
+ * ObjectStoreIterator
+ * 
+ * @author jwu
+ * 
+ */
 public class ObjectStoreIterator<K, V> implements Iterator<Entry<K, V>>{
     private final Iterator<Entry<byte[], byte[]>> _rawIterator;
     private final ObjectSerializer<K> _keySerializer;

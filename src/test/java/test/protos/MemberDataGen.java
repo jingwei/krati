@@ -7,14 +7,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-public class MemberDataGen
-{
-    public static MemberBook generateMemberBook(int memberCount)
-    {
+public class MemberDataGen {
+    public static MemberBook generateMemberBook(int memberCount) {
         MemberProtos.MemberBook.Builder bookBuilder = MemberProtos.MemberBook.newBuilder();
         
-        for(int i = 0; i < memberCount; i++)
-        {
+        for (int i = 0; i < memberCount; i++) {
             MemberProtos.Member.Builder builder = MemberProtos.Member.newBuilder();
             
             Member.PhoneNumber.Builder phoneNumber1 =
@@ -54,8 +51,7 @@ public class MemberDataGen
      * @throws NumberFormatException
      * @throws IOException
      */
-    public static void main(String[] args) throws NumberFormatException, IOException
-    {
+    public static void main(String[] args) throws NumberFormatException, IOException {
         File filePath = new File(args[0]);
         int memberCount = Integer.parseInt(args[1]);
         

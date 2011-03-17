@@ -8,7 +8,13 @@ import java.util.Map.Entry;
 
 import krati.array.DataArray;
 
-final class DataStoreIterator implements Iterator<Entry<byte[], byte[]>>  {
+/**
+ * DataStoreIterator
+ * 
+ * @author jwu
+ * 
+ */
+final class DataStoreIterator implements Iterator<Entry<byte[], byte[]>> {
     private final ArrayList<Entry<byte[], byte[]>> _keyBucket;
     private final DataStoreHandler _dataHandler;
     private final DataArray _dataArray;

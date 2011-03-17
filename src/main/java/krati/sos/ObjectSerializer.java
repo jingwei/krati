@@ -7,8 +7,7 @@ package krati.sos;
  *
  * @param <V> An object to serialize or to construct.
  */
-public interface ObjectSerializer<V>
-{
+public interface ObjectSerializer<V> {
     /**
      * Serializes an object.
      * 

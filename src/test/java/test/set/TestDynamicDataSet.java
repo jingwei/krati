@@ -8,27 +8,29 @@ import krati.store.DataSet;
 import krati.store.DynamicDataSet;
 import test.StatsLog;
 
-public class TestDynamicDataSet extends EvalDataSet
-{
-    public TestDynamicDataSet()
-    {
+/**
+ * TestDynamicDataSet
+ * 
+ * @author jwu
+ * 
+ */
+public class TestDynamicDataSet extends EvalDataSet {
+    
+    public TestDynamicDataSet() {
         super(TestDynamicDataSet.class.getSimpleName());
     }
     
     @Override
-    protected DataSet<byte[]> getDataSet(File storeDir) throws Exception
-    {
+    protected DataSet<byte[]> getDataSet(File storeDir) throws Exception {
         return new DynamicDataSet(storeDir, 2 /* initLevel */, _segFileSizeMB, getSegmentFactory());
     }
     
     @Override
-    protected SegmentFactory getSegmentFactory()
-    {
+    protected SegmentFactory getSegmentFactory() {
         return new MemorySegmentFactory();
     }
     
-    public void testPerformance() throws Exception
-    {
+    public void testPerformance() throws Exception {
         String unitTestName = getClass().getSimpleName(); 
         StatsLog.beginUnit(unitTestName);
         

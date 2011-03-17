@@ -16,8 +16,7 @@ import krati.core.array.basic.DynamicShortArray;
  * @author jwu
  *
  */
-public class TestDynamicArray extends AbstractTest
-{
+public class TestDynamicArray extends AbstractTest {
     static long scn = 0;
     static Random random = new Random(System.currentTimeMillis());
     
@@ -26,14 +25,12 @@ public class TestDynamicArray extends AbstractTest
     int maxEntrySize = 1000;
     int maxEntries = 10;
     
-    public TestDynamicArray()
-    {
+    public TestDynamicArray() {
         super(TestDynamicArray.class.getCanonicalName());
     }
     
     @Test
-    public void testDynamicIntArray() throws Exception
-    {
+    public void testDynamicIntArray() throws Exception {
         cleanTestOutput();
         
         // Create the first long array and do random updates
@@ -47,8 +44,7 @@ public class TestDynamicArray extends AbstractTest
         MemberDataUpdate[] updates3 = MemberDataUpdate.generateUpdates(memberIdStart, subArraySize);
         
         // 1st batch of updates
-        for(MemberDataUpdate u : updates1) 
-        {
+        for (MemberDataUpdate u : updates1) {
             array1.set(u.getMemberId(), u.getData(), u.getScn());
         }
         
@@ -59,8 +55,7 @@ public class TestDynamicArray extends AbstractTest
         assertTrue("incorrect array size", array1.length() == subArraySize);
         
         // 2nd batch of updates
-        for(MemberDataUpdate u : updates2) 
-        {
+        for (MemberDataUpdate u : updates2) {
             array1.set(u.getMemberId(), u.getData(), u.getScn());
         }
         
@@ -70,8 +65,7 @@ public class TestDynamicArray extends AbstractTest
         assertTrue("incorrect array size", array1.length() == subArraySize * 2);
         
         // 3rd batch of updates
-        for(MemberDataUpdate u : updates3) 
-        {
+        for (MemberDataUpdate u : updates3) {
             array1.set(u.getMemberId(), u.getData(), u.getScn());
         }
         
@@ -83,13 +77,11 @@ public class TestDynamicArray extends AbstractTest
         // Random-update the entire array
         MemberDataUpdate[] updates = MemberDataUpdate.generateUpdates(0, array1.length());
 
-        for(MemberDataUpdate u : updates) 
-        {
+        for (MemberDataUpdate u : updates) {
             array1.set(u.getMemberId(), u.getData(), u.getScn());
         }
         
-        for(MemberDataUpdate u : updates) 
-        {
+        for (MemberDataUpdate u : updates) {
             assertEquals(array1.get(u.getMemberId()), u.getData());
         }
         
@@ -105,8 +97,7 @@ public class TestDynamicArray extends AbstractTest
         assertTrue("array3.getHWMark() is greater than array1.getHWMark()", array3.getHWMark() <= array1.getHWMark());
         
         int nonZeroCount = 0;
-        for(int index = 0; index < array1.length(); index++)
-        {
+        for (int index = 0; index < array1.length(); index++) {
             if (array1.get(index) > 0) nonZeroCount++;
             assertEquals(array1.get(index), array3.get(index));
         }
@@ -117,8 +108,7 @@ public class TestDynamicArray extends AbstractTest
     }
     
     @Test
-    public void testDynamicLongArray() throws Exception
-    {
+    public void testDynamicLongArray() throws Exception {
         cleanTestOutput();
         
         // Create the first long array and do random updates
@@ -132,8 +122,7 @@ public class TestDynamicArray extends AbstractTest
         MemberDataUpdate[] updates3 = MemberDataUpdate.generateUpdates(memberIdStart, subArraySize);
         
         // 1st batch of updates
-        for(MemberDataUpdate u : updates1) 
-        {
+        for (MemberDataUpdate u : updates1) {
             array1.set(u.getMemberId(), u.getData(), u.getScn());
         }
         
@@ -144,8 +133,7 @@ public class TestDynamicArray extends AbstractTest
         assertTrue("incorrect array size", array1.length() == subArraySize);
         
         // 2nd batch of updates
-        for(MemberDataUpdate u : updates2) 
-        {
+        for (MemberDataUpdate u : updates2) {
             array1.set(u.getMemberId(), u.getData(), u.getScn());
         }
         
@@ -155,8 +143,7 @@ public class TestDynamicArray extends AbstractTest
         assertTrue("incorrect array size", array1.length() == subArraySize * 2);
         
         // 3rd batch of updates
-        for(MemberDataUpdate u : updates3) 
-        {
+        for (MemberDataUpdate u : updates3) {
             array1.set(u.getMemberId(), u.getData(), u.getScn());
         }
         
@@ -168,13 +155,11 @@ public class TestDynamicArray extends AbstractTest
         // Random-update the entire array
         MemberDataUpdate[] updates = MemberDataUpdate.generateUpdates(0, array1.length());
 
-        for(MemberDataUpdate u : updates) 
-        {
+        for (MemberDataUpdate u : updates) {
             array1.set(u.getMemberId(), u.getData(), u.getScn());
         }
         
-        for(MemberDataUpdate u : updates) 
-        {
+        for (MemberDataUpdate u : updates) {
             assertEquals(array1.get(u.getMemberId()), u.getData());
         }
         
@@ -190,8 +175,7 @@ public class TestDynamicArray extends AbstractTest
         assertTrue("array3.getHWMark() is greater than array1.getHWMark()", array3.getHWMark() <= array1.getHWMark());
         
         int nonZeroCount = 0;
-        for(int index = 0; index < array1.length(); index++)
-        {
+        for (int index = 0; index < array1.length(); index++) {
             if (array1.get(index) > 0) nonZeroCount++;
             assertEquals(array1.get(index), array3.get(index));
         }
@@ -202,8 +186,7 @@ public class TestDynamicArray extends AbstractTest
     }
     
     @Test
-    public void testDynamicShortArray() throws Exception
-    {
+    public void testDynamicShortArray() throws Exception {
         cleanTestOutput();
         
         // Create the first long array and do random updates
@@ -217,8 +200,7 @@ public class TestDynamicArray extends AbstractTest
         MemberDataUpdate[] updates3 = MemberDataUpdate.generateUpdates(memberIdStart, subArraySize);
         
         // 1st batch of updates
-        for(MemberDataUpdate u : updates1) 
-        {
+        for (MemberDataUpdate u : updates1) {
             array1.set(u.getMemberId(), (short)u.getData(), u.getScn());
         }
         
@@ -229,8 +211,7 @@ public class TestDynamicArray extends AbstractTest
         assertTrue("incorrect array size", array1.length() == subArraySize);
         
         // 2nd batch of updates
-        for(MemberDataUpdate u : updates2) 
-        {
+        for (MemberDataUpdate u : updates2) {
             array1.set(u.getMemberId(), (short)u.getData(), u.getScn());
         }
         
@@ -240,8 +221,7 @@ public class TestDynamicArray extends AbstractTest
         assertTrue("incorrect array size", array1.length() == subArraySize * 2);
         
         // 3rd batch of updates
-        for(MemberDataUpdate u : updates3) 
-        {
+        for (MemberDataUpdate u : updates3) {
             array1.set(u.getMemberId(), (short)u.getData(), u.getScn());
         }
         
@@ -253,13 +233,11 @@ public class TestDynamicArray extends AbstractTest
         // Random-update the entire array
         MemberDataUpdate[] updates = MemberDataUpdate.generateUpdates(0, array1.length());
 
-        for(MemberDataUpdate u : updates) 
-        {
+        for (MemberDataUpdate u : updates) {
             array1.set(u.getMemberId(), (short)u.getData(), u.getScn());
         }
         
-        for(MemberDataUpdate u : updates) 
-        {
+        for (MemberDataUpdate u : updates) {
             assertEquals(array1.get(u.getMemberId()), (short)u.getData());
         }
         
@@ -275,8 +253,7 @@ public class TestDynamicArray extends AbstractTest
         assertTrue("array3.getHWMark() is greater than array1.getHWMark()", array3.getHWMark() <= array1.getHWMark());
         
         int nonZeroCount = 0;
-        for(int index = 0; index < array1.length(); index++)
-        {
+        for (int index = 0; index < array1.length(); index++) {
             if (array1.get(index) > 0) nonZeroCount++;
             assertEquals(array1.get(index), array3.get(index));
         }

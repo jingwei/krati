@@ -13,8 +13,7 @@ import test.driver.StoreWriter;
  *
  * @param <S> Data Store
  */
-public class StringWriteDriver<S> implements Runnable
-{
+public class StringWriteDriver<S> implements Runnable {
     private final S _store;
     private final StoreWriter<S, String, String> _writer;
     private final LatencyStats _latencyStats = new LatencyStats();
@@ -26,8 +25,7 @@ public class StringWriteDriver<S> implements Runnable
     volatile long _cnt = 0;
     volatile boolean _running = true;
     
-    public StringWriteDriver(S ds, StoreWriter<S, String, String> writer, List<String> lineSeedData, int keyCount)
-    {
+    public StringWriteDriver(S ds, StoreWriter<S, String, String> writer, List<String> lineSeedData, int keyCount) {
         this._store = ds;
         this._writer = writer;
         this._lineSeedData = lineSeedData;
@@ -35,49 +33,40 @@ public class StringWriteDriver<S> implements Runnable
         this._keyCount = keyCount;
     }
     
-    public LatencyStats getLatencyStats()
-    {
+    public LatencyStats getLatencyStats() {
         return this._latencyStats;
     }
     
-    public long getWriteCount()
-    {
+    public long getWriteCount() {
         return this._cnt;
     }
     
-    public void stop()
-    {
+    public void stop() {
         _running = false;
     }
     
     @Override
-    public void run()
-    {
+    public void run() {
         long prevTime = System.nanoTime();
         long currTime = prevTime;
         
-        while(_running)
-        {
+        while (_running) {
             write();
 
             currTime = System.nanoTime();
-            _latencyStats.countLatency((int)(currTime - prevTime)/1000);
+            _latencyStats.countLatency((int) (currTime - prevTime) / 1000);
             prevTime = currTime;
         }
     }
 
-    protected void write()
-    {
-        try
-        {
+    protected void write() {
+        try {
             int i = _rand.nextInt(_keyCount);
-            String s = _lineSeedData.get(i%_lineSeedCount);
+            String s = _lineSeedData.get(i % _lineSeedCount);
             String key = s.substring(0, 30) + i;
             _writer.put(_store, key, s);
             _cnt++;
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

@@ -21,8 +21,7 @@ import krati.util.HashFunction;
  * @author jwu
  *
  */
-public class PartitionedDataStore implements DataStore<byte[], byte[]>
-{
+public class PartitionedDataStore implements DataStore<byte[], byte[]> {
     private final static Logger _log = Logger.getLogger(PartitionedDataStore.class);
     
     private final File _partitionHome;
@@ -46,8 +45,7 @@ public class PartitionedDataStore implements DataStore<byte[], byte[]>
      * @throws Exception         if the store cannot be initiated.
      */
     public PartitionedDataStore(File partitionHome,
-                                int partitionCount, int partitionCapacity) throws Exception
-    {
+                                int partitionCount, int partitionCapacity) throws Exception {
         this._partitionHome= partitionHome;
         this._partitionCount = partitionCount;
         this._partitionCapacity = partitionCapacity;
@@ -68,8 +66,7 @@ public class PartitionedDataStore implements DataStore<byte[], byte[]>
      */
     public PartitionedDataStore(File partitionHome,
                                 int partitionCount, int partitionCapacity,
-                                SegmentFactory segFactory, int segFileSizeMB) throws Exception
-    {
+                                SegmentFactory segFactory, int segFileSizeMB) throws Exception {
         this._partitionHome= partitionHome;
         this._partitionCount = partitionCount;
         this._partitionCapacity = partitionCapacity;
@@ -78,8 +75,7 @@ public class PartitionedDataStore implements DataStore<byte[], byte[]>
         this.init(segFactory, segFileSizeMB);
     }
     
-    protected void init(SegmentFactory segFactory, int segFileSizeMB) throws Exception
-    {
+    protected void init(SegmentFactory segFactory, int segFileSizeMB) throws Exception {
         _log.info("partitionHome=" + _partitionHome.getCanonicalPath() +
                   " partitionCount=" + _partitionCount +
                   " partitionCapacity=" + _partitionCapacity +
@@ -87,8 +83,7 @@ public class PartitionedDataStore implements DataStore<byte[], byte[]>
                   " segmentFileSizeMB=" + segFileSizeMB + "MB");
         
         _partitionList = new ArrayList<DataStore<byte[], byte[]>>(_partitionCount);
-        for(int i = 0; i < _partitionCount; i++)
-        {
+        for (int i = 0; i < _partitionCount; i++) {
             StaticDataStore subStore =
                 new StaticDataStore(
                     new File(_partitionHome, "P" + i),
@@ -103,34 +98,28 @@ public class PartitionedDataStore implements DataStore<byte[], byte[]>
         _log.info("init done");
     }
     
-    public File getPartitionHome()
-    {
+    public File getPartitionHome() {
         return _partitionHome;
     }
     
-    public int getPartitionCount()
-    {
+    public int getPartitionCount() {
         return _partitionCount;
     }
     
-    public int getPartitionCapacity()
-    {
+    public int getPartitionCapacity() {
         return _partitionCapacity;
     }
     
-    public long getTotalCapacity()
-    {
+    public long getTotalCapacity() {
         return _totalCapacity;
     }
     
-    protected long hash(byte[] key)
-    {
+    protected long hash(byte[] key) {
         return _hashFunction.hash(key);
     }
     
     @Override
-    public byte[] get(byte[] key)
-    {
+    public byte[] get(byte[] key) {
         long hashCode = hash(key);
         long index = hashCode % _totalCapacity;
         if (index < 0) index = -index;
@@ -140,8 +129,7 @@ public class PartitionedDataStore implements DataStore<byte[], byte[]>
     }
     
     @Override
-    public boolean put(byte[] key, byte[] value) throws Exception
-    {
+    public boolean put(byte[] key, byte[] value) throws Exception {
         long hashCode = hash(key);
         long index = hashCode % _totalCapacity;
         if (index < 0) index = -index;
@@ -151,8 +139,7 @@ public class PartitionedDataStore implements DataStore<byte[], byte[]>
     }
 
     @Override
-    public boolean delete(byte[] key) throws Exception
-    {
+    public boolean delete(byte[] key) throws Exception {
         long hashCode = hash(key);
         long index = hashCode % _totalCapacity;
         if (index < 0) index = -index;
@@ -162,10 +149,8 @@ public class PartitionedDataStore implements DataStore<byte[], byte[]>
     }
     
     @Override
-    public void sync() throws IOException
-    {
-        for(DataStore<byte[], byte[]> storeImpl: _partitionList)
-        {
+    public void sync() throws IOException {
+        for (DataStore<byte[], byte[]> storeImpl : _partitionList) {
             storeImpl.sync();
         }
         
@@ -173,10 +158,8 @@ public class PartitionedDataStore implements DataStore<byte[], byte[]>
     }
     
     @Override
-    public void persist() throws IOException
-    {
-        for(DataStore<byte[], byte[]> storeImpl: _partitionList)
-        {
+    public void persist() throws IOException {
+        for (DataStore<byte[], byte[]> storeImpl : _partitionList) {
             storeImpl.persist();
         }
         
@@ -184,23 +167,19 @@ public class PartitionedDataStore implements DataStore<byte[], byte[]>
     }
     
     @Override
-    public void clear() throws IOException
-    {
-        for(DataStore<byte[], byte[]> storeImpl: _partitionList)
-        {
+    public void clear() throws IOException {
+        for (DataStore<byte[], byte[]> storeImpl : _partitionList) {
             storeImpl.clear();
         }
     }
     
     @Override
     public Iterator<byte[]> keyIterator() {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException();
     }
     
     @Override
     public Iterator<Entry<byte[], byte[]>> iterator() {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException();
     }
 }

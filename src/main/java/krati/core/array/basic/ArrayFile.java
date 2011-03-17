@@ -36,9 +36,10 @@ import krati.util.Chronos;
  * +--------------------------+
  * </pre>
  * 
+ * @author jwu
+ * 
  */
-public class ArrayFile
-{
+public class ArrayFile {
   public static final long STORAGE_VERSION  = 0;
   public static final int ARRAY_HEADER_LENGTH = 1024;
   
@@ -69,15 +70,12 @@ public class ArrayFile
    * @param elementSize    the size (number of bytes) of every array element
    * @throws IOException
    */
-  public ArrayFile(File file, int initialLength, int elementSize) throws IOException
-  {
+  public ArrayFile(File file, int initialLength, int elementSize) throws IOException {
     boolean newFile = false;
     long initialFileLength = DATA_START_POSITION + (initialLength * elementSize);
     
-    if (!file.exists())
-    {
-      if (!file.createNewFile())
-      {
+    if (!file.exists()) {
+      if (!file.createNewFile()) {
         throw new IOException("Failed to create " + file.getAbsolutePath());
       }
       newFile = true;
@@ -85,8 +83,7 @@ public class ArrayFile
     
     RandomAccessFile raf = new RandomAccessFile(file, "rw");
     if (newFile) raf.setLength(initialFileLength);
-    if (raf.length() < DATA_START_POSITION)
-    {
+    if (raf.length() < DATA_START_POSITION) {
       throw new IOException("Failed to open " + file.getAbsolutePath());
     }
     
@@ -94,8 +91,7 @@ public class ArrayFile
     this._writer = createWriter(_file, raf.length());
     this._writer.open();
     
-    if(newFile)
-    {
+    if(newFile) {
       this._version = STORAGE_VERSION;
       this._arrayLwmScn = 0;
       this._arrayHwmScn = 0;
@@ -103,9 +99,7 @@ public class ArrayFile
       this._elementSize = elementSize;
       
       this.saveHeader();
-    }
-    else
-    {
+    } else {
       this.loadHeader();
     }
     
@@ -114,29 +108,24 @@ public class ArrayFile
     _log.info(_file.getName() + " header: " + getHeader());
   }
   
-  protected DataWriter createWriter(File file, long fileLength)
-  {
+  protected DataWriter createWriter(File file, long fileLength) {
       return  (fileLength < Integer.MAX_VALUE) ? new MappedWriter(file) : new ChannelWriter(file);
   }
   
-  protected void initCheck() throws IOException
-  {
+  protected void initCheck() throws IOException {
     // Check storage version
-    if (_version != STORAGE_VERSION)
-    {
+    if (_version != STORAGE_VERSION) {
       throw new IOException("Invalid version in " + _file.getName() + ": "
               + _version + ", " + STORAGE_VERSION + " expected");
     }
     
     // Check array file header
-    if(!checkHeader())
-    {
+    if(!checkHeader()) {
       throw new IOException("Invalid header in " + _file.getName() + ": " + getHeader());
     }
   }
   
-  private void saveHeader() throws IOException
-  {
+  private void saveHeader() throws IOException {
     _writer.writeLong(VERSION_POSITION, _version);
     _writer.writeLong(LWM_SCN_POSITION, _arrayLwmScn);
     _writer.writeLong(HWM_SCN_POSITION, _arrayHwmScn);
@@ -145,8 +134,7 @@ public class ArrayFile
     _writer.flush();
   }
   
-  private void loadHeader() throws IOException
-  {
+  private void loadHeader() throws IOException {
     ByteBuffer headerBuffer = ByteBuffer.allocate(ARRAY_HEADER_LENGTH);
     RandomAccessFile raf = new RandomAccessFile(_file, "rw");
     raf.getChannel().read(headerBuffer, 0);
@@ -160,16 +148,14 @@ public class ArrayFile
     raf.close();
   }
   
-  private boolean checkHeader()
-  {
+  private boolean checkHeader() {
     // Array file is inconsistent if lwmScn is greater than hwmScn.
     if (_arrayHwmScn < _arrayLwmScn) return false;
     
     return true;
   }
   
-  private String getHeader()
-  {
+  private String getHeader() {
     StringBuilder buf = new StringBuilder();
     
     buf.append("version=");
@@ -186,58 +172,47 @@ public class ArrayFile
     return buf.toString();
   }
   
-  public final String getName()
-  {
+  public final String getName() {
     return _file.getName();
   }
   
-  public final String getPath()
-  {
+  public final String getPath() {
     return _file.getPath();
   }
   
-  public final String getAbsolutePath()
-  {
+  public final String getAbsolutePath() {
     return _file.getAbsolutePath();
   }
   
-  public final String getCanonicalPath() throws IOException
-  {
+  public final String getCanonicalPath() throws IOException {
     return _file.getCanonicalPath();
   }
   
-  public final long getVersion()
-  {
+  public final long getVersion() {
     return _version;
   }
   
-  public final long getLwmScn()
-  {
+  public final long getLwmScn() {
     return _arrayLwmScn;
   }
   
-  public final long getHwmScn()
-  {
+  public final long getHwmScn() {
     return _arrayHwmScn;
   }
   
-  public final int getArrayLength()
-  {
+  public final int getArrayLength() {
     return _arrayLength;
   }
   
-  public final int getElementSize()
-  {
+  public final int getElementSize() {
     return _elementSize;
   }
   
-  public void flush() throws IOException
-  {
+  public void flush() throws IOException {
     _writer.flush();
   }
   
-  public void close() throws IOException
-  {
+  public void close() throws IOException {
     _writer.close();
   }
   
@@ -246,97 +221,78 @@ public class ArrayFile
    * 
    * @throws IOException
    */
-  public void load(MemoryIntArray intArray) throws IOException
-  {
-    if (!_file.exists() || _file.length() == 0)
-    {
+  public void load(MemoryIntArray intArray) throws IOException {
+    if (!_file.exists() || _file.length() == 0) {
       return;
     }
     
     Chronos c = new Chronos();
     ChannelReader in = new ChannelReader(_file);
     
-    try
-    {
+    try {
       in.open();
       in.position(DATA_START_POSITION);
       
-      for (int i = 0; i < _arrayLength; i++)
-      {
+      for (int i = 0; i < _arrayLength; i++) {
         intArray.set(i, in.readInt());
       }
       
       _log.info(_file.getName() + " loaded in " + c.getElapsedTime());
-    }
-    finally
-    {
+    } finally {
       in.close();
     }
   }
-
+  
   /**
    * Load data into a memory-based long array.
    * 
    * @throws IOException
    */
-  public void load(MemoryLongArray longArray) throws IOException
-  {
-    if (!_file.exists() || _file.length() == 0)
-    {
+  public void load(MemoryLongArray longArray) throws IOException {
+    if (!_file.exists() || _file.length() == 0) {
       return;
     }
     
     Chronos c = new Chronos();
     ChannelReader in = new ChannelReader(_file);
     
-    try
-    {
+    try {
       in.open();
       in.position(DATA_START_POSITION);
       
-      for (int i = 0; i < _arrayLength; i++)
-      {
+      for (int i = 0; i < _arrayLength; i++) {
         longArray.set(i, in.readLong());
       }
       
       _log.info(_file.getName() + " loaded in " + c.getElapsedTime());
-    }
-    finally
-    {
+    } finally {
       in.close();
     }
   }
   
-
   /**
    * Load data into a memory-based short array.
    * 
    * @throws IOException
    */
-  public void load(MemoryShortArray shortArray) throws IOException
-  {
-    if (!_file.exists() || _file.length() == 0)
-    {
+  public void load(MemoryShortArray shortArray) throws IOException {
+    if (!_file.exists() || _file.length() == 0) {
       return;
     }
     
     Chronos c = new Chronos();
     ChannelReader in = new ChannelReader(_file);
     
-    try
-    {
+    try {
       in.open();
       in.position(DATA_START_POSITION);
       
-      for (int i = 0; i < _arrayLength; i++)
-      {
+      for (int i = 0; i < _arrayLength; i++) {
         shortArray.set(i, in.readShort());
       }
       
       _log.info(_file.getName() + " loaded in " + c.getElapsedTime());
-    }
-    finally
-    {
+    } finally {
       in.close();
     }
   }
@@ -347,32 +303,26 @@ public class ArrayFile
    * @return an int array
    * @throws IOException
    */
-  public int[] loadIntArray() throws IOException
-  {
-    if (!_file.exists() || _file.length() == 0)
-    {
+  public int[] loadIntArray() throws IOException {
+    if (!_file.exists() || _file.length() == 0) {
       return null;
     }
     
     Chronos c = new Chronos();
     ChannelReader in = new ChannelReader(_file);
     
-    try
-    {
+    try {
       in.open();
       in.position(DATA_START_POSITION);
       
       int[] array = new int[_arrayLength];
-      for (int i = 0; i < _arrayLength; i++)
-      {
+      for (int i = 0; i < _arrayLength; i++) {
         array[i] = in.readInt();
       }
       
       _log.info(_file.getName() + " loaded in " + c.getElapsedTime());
       return array;
-    }
-    finally
-    {
+    } finally {
       in.close();
     }
   }
@@ -383,32 +333,26 @@ public class ArrayFile
    * @return a long array
    * @throws IOException
    */
-  public long[] loadLongArray() throws IOException
-  {
-    if (!_file.exists() || _file.length() == 0)
-    {
+  public long[] loadLongArray() throws IOException {
+    if (!_file.exists() || _file.length() == 0) {
       return null;
     }
     
     Chronos c = new Chronos();
     ChannelReader in = new ChannelReader(_file);
     
-    try
-    {
+    try {
       in.open();
       in.position(DATA_START_POSITION);
       
       long[] array = new long[_arrayLength];
-      for (int i = 0; i < _arrayLength; i++)
-      {
+      for (int i = 0; i < _arrayLength; i++) {
         array[i] = in.readLong();
       }
       
       _log.info(_file.getName() + " loaded in " + c.getElapsedTime());
       return array;
-    }
-    finally
-    {
+    } finally {
       in.close();
     }
   }
@@ -419,38 +363,31 @@ public class ArrayFile
    * @return a short array
    * @throws IOException
    */
-  public short[] loadShortArray() throws IOException
-  {
-    if (!_file.exists() || _file.length() == 0)
-    {
+  public short[] loadShortArray() throws IOException {
+    if (!_file.exists() || _file.length() == 0) {
       return null;
     }
     
     Chronos c = new Chronos();
     ChannelReader in = new ChannelReader(_file);
     
-    try
-    {
+    try {
       in.open();
       in.position(DATA_START_POSITION);
         
       short[] array = new short[_arrayLength];
-      for (int i = 0; i < _arrayLength; i++)
-      {
+      for (int i = 0; i < _arrayLength; i++) {
         array[i] = in.readShort();
       }
       
       _log.info(_file.getName() + " loaded in " + c.getElapsedTime());
       return array;
-    }
-    finally
-    {
+    } finally {
       in.close();
     }
   }
   
-  protected long getPosition(int index)
-  {
+  protected long getPosition(int index) {
     return DATA_START_POSITION + (index * _elementSize);
   }
   
@@ -463,8 +400,7 @@ public class ArrayFile
    * @param value   int value
    * @throws IOException
    */
-  public void writeInt(int index, int value) throws IOException
-  {
+  public void writeInt(int index, int value) throws IOException {
     _writer.writeInt(getPosition(index), value);
   }
   
@@ -477,8 +413,7 @@ public class ArrayFile
    * @param value   long value
    * @throws IOException
    */
-  public void writeLong(int index, long value) throws IOException
-  {
+  public void writeLong(int index, long value) throws IOException {
     _writer.writeLong(getPosition(index), value);
   }
   
@@ -491,8 +426,7 @@ public class ArrayFile
    * @param value   short value
    * @throws IOException
    */
-  public void writeShort(int index, short value) throws IOException
-  {
+  public void writeShort(int index, short value) throws IOException {
     _writer.writeShort(getPosition(index), value);
   }
   
@@ -508,8 +442,7 @@ public class ArrayFile
    * @throws IOException
    */
   public synchronized <T extends EntryValue> void update(List<Entry<T>> entryList)
-  throws IOException
-  {
+  throws IOException {
     Chronos c = new Chronos();
     
     // Sort values by position in the array file
@@ -518,8 +451,7 @@ public class ArrayFile
     
     // Obtain maxScn
     long maxScn = 0;
-    for (Entry<?> e : entryList)
-    {
+    for (Entry<?> e : entryList) {
       maxScn = Math.max(e.getMaxScn(), maxScn);
     }
     
@@ -529,8 +461,7 @@ public class ArrayFile
     _writer.flush();
     
     // Write values
-    for (T v : values)
-    {
+    for (T v : values) {
       v.updateArrayFile(_writer, getPosition(v.pos));
     }
     _writer.flush();
@@ -547,49 +478,41 @@ public class ArrayFile
              _file.getAbsolutePath() + " in " + c.getElapsedTime());
   }
 
-  protected void writeVersion(long value) throws IOException
-  {
+  protected void writeVersion(long value) throws IOException {
     _writer.writeLong(VERSION_POSITION, value);
     _version = value;
   }
   
-  protected void writeLwmScn(long value) throws IOException
-  {
+  protected void writeLwmScn(long value) throws IOException {
     _writer.writeLong(LWM_SCN_POSITION, value);
     _arrayLwmScn = value;
   }
   
-  protected void writeHwmScn(long value) throws IOException
-  {
+  protected void writeHwmScn(long value) throws IOException {
     _writer.writeLong(HWM_SCN_POSITION, value);
     _arrayHwmScn = value;
   }
   
-  protected void writeArrayLength(int value) throws IOException
-  {
+  protected void writeArrayLength(int value) throws IOException {
     _writer.writeInt(ARRAY_LENGTH_POSITION, value);
     _arrayLength = value;
   }
   
-  protected void writeElementSize(int value) throws IOException
-  {
+  protected void writeElementSize(int value) throws IOException {
     _writer.writeInt(ELEMENT_SIZE_POSITION, value);
     _elementSize = value;
   }
   
-  public synchronized void reset(MemoryIntArray intArray) throws IOException
-  {
+  public synchronized void reset(MemoryIntArray intArray) throws IOException {
       _writer.flush();
       _writer.position(DATA_START_POSITION);
-      for(int i = 0, cnt = intArray.length(); i < cnt; i++)
-      {
+      for(int i = 0, cnt = intArray.length(); i < cnt; i++) {
           _writer.writeInt(intArray.get(i));
       }
       _writer.flush();
   }
   
-  public synchronized void reset(MemoryIntArray intArray, long maxScn) throws IOException
-  {   
+  public synchronized void reset(MemoryIntArray intArray, long maxScn) throws IOException {
       reset(intArray);
       
       _log.info("update hwmScn and lwmScn:" + maxScn);
@@ -598,19 +521,16 @@ public class ArrayFile
       flush();
   }
   
-  public synchronized void reset(MemoryLongArray longArray) throws IOException
-  {
+  public synchronized void reset(MemoryLongArray longArray) throws IOException {
       _writer.flush();
       _writer.position(DATA_START_POSITION);
-      for(int i = 0, cnt = longArray.length(); i < cnt; i++)
-      {
+      for(int i = 0, cnt = longArray.length(); i < cnt; i++) {
           _writer.writeLong(longArray.get(i));
       }
       _writer.flush();
   }
   
-  public synchronized void reset(MemoryLongArray longArray, long maxScn) throws IOException
-  {   
+  public synchronized void reset(MemoryLongArray longArray, long maxScn) throws IOException {
       reset(longArray);
       
       _log.info("update hwmScn and lwmScn:" + maxScn);
@@ -619,19 +539,16 @@ public class ArrayFile
       flush();
   }
   
-  public synchronized void reset(MemoryShortArray shortArray) throws IOException
-  {
+  public synchronized void reset(MemoryShortArray shortArray) throws IOException {
       _writer.flush();
       _writer.position(DATA_START_POSITION);
-      for(int i = 0, cnt = shortArray.length(); i < cnt; i++)
-      {
+      for(int i = 0, cnt = shortArray.length(); i < cnt; i++) {
           _writer.writeShort(shortArray.get(i));
       }
       _writer.flush();
   }
   
-  public synchronized void reset(MemoryShortArray shortArray, long maxScn) throws IOException
-  {   
+  public synchronized void reset(MemoryShortArray shortArray, long maxScn) throws IOException {
       reset(shortArray);
       
       _log.info("update hwmScn and lwmScn:" + maxScn);
@@ -640,19 +557,16 @@ public class ArrayFile
       flush();
   }
   
-  public synchronized void reset(int[] intArray) throws IOException
-  {
+  public synchronized void reset(int[] intArray) throws IOException {
       _writer.flush();
       _writer.position(DATA_START_POSITION);
-      for(int i = 0; i < intArray.length; i++)
-      {
+      for(int i = 0; i < intArray.length; i++) {
           _writer.writeInt(intArray[i]);
       }
       _writer.flush();
   }
   
-  public synchronized void reset(int[] intArray, long maxScn) throws IOException
-  {   
+  public synchronized void reset(int[] intArray, long maxScn) throws IOException {
       reset(intArray);
       
       _log.info("update hwmScn and lwmScn:" + maxScn);
@@ -661,19 +575,16 @@ public class ArrayFile
       flush();
   }
   
-  public synchronized void reset(long[] longArray) throws IOException
-  {
+  public synchronized void reset(long[] longArray) throws IOException {
       _writer.flush();
       _writer.position(DATA_START_POSITION);
-      for(int i = 0; i < longArray.length; i++)
-      {
+      for(int i = 0; i < longArray.length; i++) {
           _writer.writeLong(longArray[i]);
       }
       _writer.flush();
   }
   
-  public synchronized void reset(long[] longArray, long maxScn) throws IOException
-  {   
+  public synchronized void reset(long[] longArray, long maxScn) throws IOException {
       reset(longArray);
       
       _log.info("update hwmScn and lwmScn:" + maxScn);
@@ -682,19 +593,16 @@ public class ArrayFile
       flush();
   }
   
-  public synchronized void reset(short[] shortArray) throws IOException
-  {
+  public synchronized void reset(short[] shortArray) throws IOException {
       _writer.flush();
       _writer.position(DATA_START_POSITION);
-      for(int i = 0; i < shortArray.length; i++)
-      {
+      for(int i = 0; i < shortArray.length; i++) {
           _writer.writeShort(shortArray[i]);
       }
       _writer.flush();
   }
   
-  public synchronized void reset(short[] shortArray, long maxScn) throws IOException
-  {   
+  public synchronized void reset(short[] shortArray, long maxScn) throws IOException {
       reset(shortArray);
       
       _log.info("update hwmScn and lwmScn:" + maxScn);
@@ -703,10 +611,8 @@ public class ArrayFile
       flush();
   }
   
-  public synchronized void setArrayLength(int arrayLength, File renameToFile) throws IOException
-  {
-      if(arrayLength < 0)
-      {
+  public synchronized void setArrayLength(int arrayLength, File renameToFile) throws IOException {
+      if(arrayLength < 0) {
           throw new IllegalArgumentException("Illegal array length: " + arrayLength);
       }
       
@@ -725,18 +631,14 @@ public class ArrayFile
       writeArrayLength(arrayLength);
       this.flush();
       
-      if(renameToFile != null)
-      {
-          if(_file.renameTo(renameToFile))
-          {
+      if(renameToFile != null) {
+          if(_file.renameTo(renameToFile)) {
               _writer.close();
               _file = renameToFile;
               _writer = createWriter(_file, fileLength);
               _writer.open();
               return;
-          }
-          else
-          {
+          } else {
               _log.warn("Failed to rename " + _file.getAbsolutePath() + " to " + renameToFile.getAbsolutePath());
           }
       }

@@ -7,34 +7,28 @@ import krati.util.HashFunction;
 import test.AbstractSeedTest;
 import test.StatsLog;
 
-public abstract class EvalHash extends AbstractSeedTest
-{
-    protected EvalHash(String name)
-    {
+public abstract class EvalHash extends AbstractSeedTest {
+    
+    protected EvalHash(String name) {
         super(name);
     }
     
     protected abstract HashFunction<byte[]> createHashFunction();
     
-    private void populate(HashFunction<byte[]> hashFunc, HashMap<Long, Integer> hashCodes) throws IOException
-    {
+    private void populate(HashFunction<byte[]> hashFunc, HashMap<Long, Integer> hashCodes) throws IOException {
         int lineCnt = _lineSeedData.size();
         long startTime = System.currentTimeMillis();
         
-        try
-        {
-            for(int i = 0; i < _keyCount; i++)
-            {
-                String s = _lineSeedData.get(i%lineCnt);
+        try {
+            for (int i = 0; i < _keyCount; i++) {
+                String s = _lineSeedData.get(i % lineCnt);
                 String k = s.substring(0, 30) + i;
                 long hash = hashFunc.hash(k.getBytes());
                 Integer cnt = hashCodes.get(hash);
                 cnt = (cnt == null) ? 0 : cnt;
                 hashCodes.put(hash, cnt + 1);
             }
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         
@@ -43,15 +37,12 @@ public abstract class EvalHash extends AbstractSeedTest
         StatsLog.logger.info("elapsedTime="+ elapsedTime +" ms");
     }
     
-    private void collect(HashCollisionStats collisionStats, HashMap<Long, Integer> hashCodes)
-    {
+    private void collect(HashCollisionStats collisionStats, HashMap<Long, Integer> hashCodes) {
         long startTime = System.currentTimeMillis();
         
-        for(Long hash : hashCodes.keySet())
-        {
+        for (Long hash : hashCodes.keySet()) {
             int cnt = hashCodes.get(hash);
-            for(int i = 0; i< cnt; i++)
-            {
+            for (int i = 0; i < cnt; i++) {
                 collisionStats.addCollisionCount(cnt);
             }
         }
@@ -63,14 +54,10 @@ public abstract class EvalHash extends AbstractSeedTest
         StatsLog.logger.info("elapsedTime="+ elapsedTime +" ms");
     }
     
-    public void test() throws Exception
-    {
-        try
-        {
+    public void test() throws Exception {
+        try {
             AbstractSeedTest.loadSeedData();
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
             return;
         }

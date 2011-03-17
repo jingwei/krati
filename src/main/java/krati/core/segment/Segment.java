@@ -42,8 +42,7 @@ import java.nio.channels.WritableByteChannel;
  * @author jwu
  *
  */
-public interface Segment
-{
+public interface Segment {
     public final static long STORAGE_VERSION = 1;
     
     public final static double defaultSegmentCompactFactor = 0.5;
@@ -149,8 +148,7 @@ public interface Segment
      */
     public String getStatus();
     
-    public static enum Mode
-    {
+    public static enum Mode {
         READ_ONLY,
         READ_WRITE;
     }

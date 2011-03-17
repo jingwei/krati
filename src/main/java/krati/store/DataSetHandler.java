@@ -1,5 +1,11 @@
 package krati.store;
 
+/**
+ * DataSetHandler
+ * 
+ * @author jwu
+ * 
+ */
 public interface DataSetHandler {
     
     public int count(byte[] data);

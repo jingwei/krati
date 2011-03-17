@@ -6,8 +6,13 @@ import java.util.Random;
 import krati.array.DataArray;
 import test.LatencyStats;
 
-public class DataArrayReader implements Runnable
-{
+/**
+ * DataArrayReader
+ * 
+ * @author jwu
+ * 
+ */
+public class DataArrayReader implements Runnable {
     DataArray _dataArray;
     Random _rand = new Random();
     byte[] _data = new byte[1 << 13];
@@ -17,41 +22,34 @@ public class DataArrayReader implements Runnable
     LatencyStats _latStats = new LatencyStats();
     final List<String> _lineSeedData;
     
-    public DataArrayReader(DataArray dataArray, List<String> seedData)
-    {
+    public DataArrayReader(DataArray dataArray, List<String> seedData) {
         this._dataArray = dataArray;
         this._lineSeedData = seedData;
     }
     
-    public long getReadCount()
-    {
+    public long getReadCount() {
         return this._cnt;
     }
     
-    public LatencyStats getLatencyStats()
-    {
+    public LatencyStats getLatencyStats() {
         return this._latStats;
     }
     
-    public void stop()
-    {
+    public void stop() {
         _running = false;
     }
     
-    int read(int index)
-    {
+    int read(int index) {
         return _dataArray.get(index, _data);
     }
     
     @Override
-    public void run()
-    {
+    public void run() {
         int length = _dataArray.length();
         long prevTime = System.nanoTime();
         long currTime = prevTime;
         
-        while(_running)
-        {
+        while (_running) {
             read(_rand.nextInt(length));
             _cnt++;
             

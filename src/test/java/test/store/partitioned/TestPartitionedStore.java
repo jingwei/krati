@@ -13,24 +13,21 @@ import krati.store.DataStore;
  * @author jwu
  *
  */
-public class TestPartitionedStore extends EvalDataStore
-{
-    public TestPartitionedStore()
-    {
+public class TestPartitionedStore extends EvalDataStore {
+    
+    public TestPartitionedStore() {
         super(TestPartitionedStore.class.getSimpleName());
     }
     
     @Override
-    protected DataStore<byte[], byte[]> getDataStore(File storeDir) throws Exception
-    {
+    protected DataStore<byte[], byte[]> getDataStore(File storeDir) throws Exception {
         int partitionCapacity = _idCount/5;
         return new PartitionedDataStore(storeDir, 5, partitionCapacity,
                                         new krati.core.segment.MappedSegmentFactory(),
                                         _segFileSizeMB);
     }
     
-    public void testPartitionedStore() throws Exception
-    {
+    public void testPartitionedStore() throws Exception {
         String unitTestName = getClass().getSimpleName(); 
         StatsLog.beginUnit(unitTestName);
         

@@ -3,6 +3,12 @@ package krati.store;
 import java.util.List;
 import java.util.Map.Entry;
 
+/**
+ * DataStoreHandler
+ * 
+ * @author jwu
+ * 
+ */
 public interface DataStoreHandler {
     
     public byte[] assemble(byte[] key, byte[] value);

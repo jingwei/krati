@@ -9,38 +9,30 @@ import krati.util.HashFunction;
 import test.AbstractSeedTest;
 import test.StatsLog;
 
-public abstract class EvalHashFunction extends AbstractSeedTest
-{
+public abstract class EvalHashFunction extends AbstractSeedTest {
     protected HashCollisionStats _collisionStats = new HashCollisionStats();
     
-    protected EvalHashFunction(String name)
-    {
+    protected EvalHashFunction(String name) {
         super(name);
     }
     
     protected abstract HashFunction<byte[]> createHashFunction();
     
-    protected StaticDataSet createDataSet(File storeDir, int capacity, HashFunction<byte[]> hashFunction) throws Exception
-    {
+    protected StaticDataSet createDataSet(File storeDir, int capacity, HashFunction<byte[]> hashFunction) throws Exception {
         return new StaticDataSet(storeDir, capacity, 10000, 5, 32, new MemorySegmentFactory(), hashFunction);
     }
     
-    private void populate(StaticDataSet store) throws IOException
-    {
+    private void populate(StaticDataSet store) throws IOException {
         int lineCnt = _lineSeedData.size();
         long startTime = System.currentTimeMillis();
         
-        try
-        {
-            for(int i = 0; i < _keyCount; i++)
-            {
-                String s = _lineSeedData.get(i%lineCnt);
+        try {
+            for (int i = 0; i < _keyCount; i++) {
+                String s = _lineSeedData.get(i % lineCnt);
                 String k = s.substring(0, 30) + i;
                 store.add(k.getBytes());
             }
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         
@@ -53,22 +45,17 @@ public abstract class EvalHashFunction extends AbstractSeedTest
         StatsLog.logger.info("elapsedTime="+ elapsedTime +" ms");
     }
     
-    private void collect(StaticDataSet store)
-    {
+    private void collect(StaticDataSet store) {
         int lineCnt = _lineSeedData.size();
         long startTime = System.currentTimeMillis();
         
-        try
-        {
-            for(int i = 0; i < _keyCount; i++)
-            {
-                String s = _lineSeedData.get(i%lineCnt);
+        try {
+            for (int i = 0; i < _keyCount; i++) {
+                String s = _lineSeedData.get(i % lineCnt);
                 String k = s.substring(0, 30) + i;
                 _collisionStats.addCollisionCount(Math.abs(store.countCollisions(k.getBytes())));
             }
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -79,14 +66,10 @@ public abstract class EvalHashFunction extends AbstractSeedTest
         StatsLog.logger.info("elapsedTime="+ elapsedTime +" ms");
     }
     
-    public void test() throws Exception
-    {
-        try
-        {
+    public void test() throws Exception {
+        try {
             AbstractSeedTest.loadSeedData();
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
             return;
         }

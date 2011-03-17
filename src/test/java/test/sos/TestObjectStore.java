@@ -22,20 +22,17 @@ import test.protos.MemberSerializer;
  * @author jwu
  *
  */
-public class TestObjectStore extends AbstractTest
-{
-    public TestObjectStore()
-    {
+public class TestObjectStore extends AbstractTest {
+    
+    public TestObjectStore() {
         super(TestObjectStore.class.getName());
     }
     
-    protected SegmentFactory getSegmentFactory()
-    {
+    protected SegmentFactory getSegmentFactory() {
         return new krati.core.segment.MemorySegmentFactory();
     }
     
-    protected DataStore<byte[], byte[]> getDataStore(File storeDir, int capacity) throws Exception
-    {
+    protected DataStore<byte[], byte[]> getDataStore(File storeDir, int capacity) throws Exception {
         return new StaticDataStore(storeDir,
                                    capacity,
                                    1000,      /* entrySize */
@@ -44,8 +41,7 @@ public class TestObjectStore extends AbstractTest
                                    getSegmentFactory());
     }
     
-    public void testObjectStore() throws Exception
-    {
+    public void testObjectStore() throws Exception {
         cleanTestOutput();
         
         int memberCnt = 10000;
@@ -58,31 +54,26 @@ public class TestObjectStore extends AbstractTest
         
         MemberProtos.MemberBook book = MemberDataGen.generateMemberBook(memberCnt);
         
-        for(MemberProtos.Member m : book.getMemberList()) 
-        {
+        for (MemberProtos.Member m : book.getMemberList()) {
             memberStore.put(m.getEmail(0), m);
         }
         
-        for(MemberProtos.Member m : book.getMemberList()) 
-        {
+        for (MemberProtos.Member m : book.getMemberList()) {
             memberStore.put(m.getEmail(0), m);
         }
         
-        for(MemberProtos.Member m : book.getMemberList()) 
-        {
+        for (MemberProtos.Member m : book.getMemberList()) {
             memberStore.put(m.getEmail(0), m);
         }
         
         memberStore.persist();
         
-        for(MemberProtos.Member m : book.getMemberList()) 
-        {
+        for (MemberProtos.Member m : book.getMemberList()) {
             assertTrue("Member " + m.getMemberId(), memberStore.get(m.getEmail(0)).equals(m));
         }
         
         Iterator<String> keyIter = memberStore.keyIterator();
-        while(keyIter.hasNext())
-        {
+        while (keyIter.hasNext()) {
             String key = keyIter.next();
             MemberProtos.Member m = memberStore.get(key);
             assertTrue("Member " + m.getMemberId() + ": key=" + key + " email=" + m.getEmail(0), m.getEmail(0).equals(key));

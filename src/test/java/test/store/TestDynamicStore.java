@@ -14,26 +14,22 @@ import krati.store.DynamicDataStore;
  * @author jwu
  *
  */
-public class TestDynamicStore extends EvalDataStore
-{
-    public TestDynamicStore()
-    {
+public class TestDynamicStore extends EvalDataStore {
+    
+    public TestDynamicStore() {
         super(TestDynamicStore.class.getName());
     }
     
-    protected SegmentFactory getSegmentFactory()
-    {
+    protected SegmentFactory getSegmentFactory() {
         return new krati.core.segment.MemorySegmentFactory();
     }
     
     @Override
-    protected DataStore<byte[], byte[]> getDataStore(File storeDir) throws Exception
-    {
+    protected DataStore<byte[], byte[]> getDataStore(File storeDir) throws Exception {
         return new DynamicDataStore(storeDir, _initLevel /* initial level */, _segFileSizeMB, getSegmentFactory());
     }
     
-    public void testDynamicStore() throws Exception
-    {
+    public void testDynamicStore() throws Exception {
         String unitTestName = getClass().getSimpleName(); 
         StatsLog.beginUnit(unitTestName);
         

@@ -8,11 +8,9 @@ import krati.core.segment.SegmentFactory;
  * @author jwu
  *
  */
-public class TestDynamicStoreMapped extends TestDynamicStore
-{
+public class TestDynamicStoreMapped extends TestDynamicStore {
     @Override
-    protected SegmentFactory getSegmentFactory()
-    {
+    protected SegmentFactory getSegmentFactory() {
         return new krati.core.segment.MappedSegmentFactory();
     }
 }

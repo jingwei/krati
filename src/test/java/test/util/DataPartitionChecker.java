@@ -4,40 +4,37 @@ import java.util.List;
 
 import krati.store.ArrayStorePartition;
 
-public class DataCacheChecker extends DataCacheReader
-{
-    public DataCacheChecker(ArrayStorePartition cache, List<String> seedData)
-    {
+/**
+ * DataPartitionChecker
+ * 
+ * @author jwu
+ * 
+ */
+public class DataPartitionChecker extends DataPartitionReader {
+    
+    public DataPartitionChecker(ArrayStorePartition cache, List<String> seedData) {
         super(cache, seedData);
     }
     
-    void check(int index)
-    {
+    void check(int index) {
         String line = _lineSeedData.get(index % _lineSeedData.size());
         
-        byte[] b = _cache.get(index);
-        if (b != null)
-        {
+        byte[] b = _partition.get(index);
+        if (b != null) {
             String s = new String(b);
-            if(!s.equals(line))
-            {
+            if (!s.equals(line)) {
                 throw new RuntimeException("[" + index + "]=" + s + " expected=" + line);
             }
-        }
-        else
-        {
-            if(line != null)
-            {
+        } else {
+            if (line != null) {
                 throw new RuntimeException("[" + index + "]=null expected=" + line);
             }
         }
     }
     
     @Override
-    public void run()
-    {
-        while(_running)
-        {
+    public void run() {
+        while (_running) {
             int index = _indexStart + _rand.nextInt(_length);
             check(index);
             _cnt++;

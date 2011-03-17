@@ -7,6 +7,12 @@ import java.util.NoSuchElementException;
 
 import krati.array.DataArray;
 
+/**
+ * DataStoreKeyIterator
+ * 
+ * @author jwu
+ * 
+ */
 final class DataStoreKeyIterator implements Iterator<byte[]> {
     private final ArrayList<byte[]> _keyBucket;
     private final DataStoreHandler _dataHandler;

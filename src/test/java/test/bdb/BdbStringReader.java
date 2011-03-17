@@ -4,11 +4,15 @@ import test.driver.StoreReader;
 
 import com.sleepycat.collections.StoredMap;
 
-public class BdbStringReader implements StoreReader<StoredMap<String, String>, String, String>
-{
+/**
+ * BdbStringReader
+ * 
+ * @author jwu
+ * 
+ */
+public class BdbStringReader implements StoreReader<StoredMap<String, String>, String, String> {
     @Override
-    public final String get(StoredMap<String, String> store, String key)
-    {
+    public final String get(StoredMap<String, String> store, String key) {
         return store.get(key);
     }
 }

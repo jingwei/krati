@@ -12,6 +12,12 @@ import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
 
+/**
+ * SimpleDBEnv
+ * 
+ * @author jwu
+ * 
+ */
 public class SimpleDBEnv {
     private Environment env;
     private Database simpleDB;

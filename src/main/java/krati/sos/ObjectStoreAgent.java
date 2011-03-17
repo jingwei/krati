@@ -29,115 +29,93 @@ import java.util.Map.Entry;
  * @param <K> Key 
  * @param <V> Value
  */
-public class ObjectStoreAgent<K, V> implements ObjectStore<K, V>
-{
+public class ObjectStoreAgent<K, V> implements ObjectStore<K, V> {
     protected ObjectStore<K, V> _store;
     protected ObjectHandler<V> _inboundHandler;
     protected ObjectHandler<V> _outboundHandler;
-    
-    public ObjectStoreAgent(ObjectStore<K,V> store,
-                            ObjectHandler<V> inboundHandler,
-                            ObjectHandler<V> outboundHandler)
-    {
+
+    public ObjectStoreAgent(ObjectStore<K, V> store, ObjectHandler<V> inboundHandler, ObjectHandler<V> outboundHandler) {
         this._store = store;
         this._inboundHandler = inboundHandler;
         this._outboundHandler = outboundHandler;
     }
-    
-    public ObjectStore<K, V> getObjectStore()
-    {
+
+    public ObjectStore<K, V> getObjectStore() {
         return _store;
     }
-    
-    public ObjectHandler<V> getInboundHandler()
-    {
+
+    public ObjectHandler<V> getInboundHandler() {
         return _inboundHandler;
     }
-    
-    public ObjectHandler<V> getOutboundHandler()
-    {
+
+    public ObjectHandler<V> getOutboundHandler() {
         return _outboundHandler;
     }
-    
+
     @Override
-    public boolean delete(K key) throws Exception
-    {
-        synchronized(_store)
-        {
+    public boolean delete(K key) throws Exception {
+        synchronized (_store) {
             return _store.delete(key);
         }
     }
-    
+
     @Override
-    public V get(K key)
-    {
+    public V get(K key) {
         V value = _store.get(key);
-        if(value != null && _outboundHandler != null && _outboundHandler.getEnabled())
-        {
+        if (value != null && _outboundHandler != null && _outboundHandler.getEnabled()) {
             _outboundHandler.process(value);
         }
         return value;
     }
-    
+
     @Override
-    public boolean put(K key, V value) throws Exception
-    {
-        if(value != null && _inboundHandler != null && _inboundHandler.getEnabled())
-        {
+    public boolean put(K key, V value) throws Exception {
+        if (value != null && _inboundHandler != null && _inboundHandler.getEnabled()) {
             _inboundHandler.process(value);
         }
-        
-        synchronized(_store)
-        {
+
+        synchronized (_store) {
             return _store.put(key, value);
         }
     }
-    
+
     @Override
-    public void sync() throws IOException
-    {
-        synchronized(_store)
-        {
+    public void sync() throws IOException {
+        synchronized (_store) {
             _store.sync();
         }
     }
-    
+
     /**
      * Persists this object store.
      * 
      * @throws IOException
      */
     @Override
-    public void persist() throws IOException
-    {
-        synchronized(_store)
-        {
+    public void persist() throws IOException {
+        synchronized (_store) {
             _store.persist();
         }
     }
-    
+
     /**
      * Clears this object store by removing all the persisted data permanently.
      * 
      * @throws IOException
      */
-    public void clear() throws IOException
-    {
-        synchronized(_store)
-        {
+    public void clear() throws IOException {
+        synchronized (_store) {
             _store.clear();
         }
     }
-    
+
     @Override
-    public byte[] getBytes(K key)
-    {
+    public byte[] getBytes(K key) {
         return _store.getBytes(key);
     }
 
     @Override
-    public byte[] getBytes(byte[] keyBytes)
-    {
+    public byte[] getBytes(byte[] keyBytes) {
         return _store.getBytes(keyBytes);
     }
 

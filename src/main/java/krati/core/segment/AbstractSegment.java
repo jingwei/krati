@@ -10,10 +10,9 @@ import java.util.Date;
  * AbstractSegment
  * 
  * @author jwu
- *
+ * 
  */
-public abstract class AbstractSegment implements Segment
-{
+public abstract class AbstractSegment implements Segment {
     protected final int _segId;
     protected final File _segFile;
     protected final int _initSizeMB;
@@ -25,14 +24,13 @@ public abstract class AbstractSegment implements Segment
     protected long _storageVersion;
     
     /**
-     * Methods {@link #decrLoadSize(int)} and {@link #incrLoadSize(int)} are not synchronized
-     * as they modify two different fields.
+     * Methods {@link #decrLoadSize(int)} and {@link #incrLoadSize(int)} are not
+     * synchronized as they modify two different fields.
      */
     private volatile int _incrLoadSize = 0;
     private volatile int _decrLoadSize = 0;
     
-    protected AbstractSegment(int segmentId, File segmentFile, int initialSizeMB, Segment.Mode mode) throws IOException
-    {
+    protected AbstractSegment(int segmentId, File segmentFile, int initialSizeMB, Segment.Mode mode) throws IOException {
         this._segId = segmentId;
         this._segFile = segmentFile;
         this._initSizeMB = initialSizeMB;
@@ -43,8 +41,7 @@ public abstract class AbstractSegment implements Segment
     
     protected abstract void init() throws IOException;
     
-    protected void initHeader() throws IOException
-    {
+    protected void initHeader() throws IOException {
         _incrLoadSize = 0;
         _decrLoadSize = 0;
         
@@ -63,14 +60,12 @@ public abstract class AbstractSegment implements Segment
         setAppendPosition(Segment.dataStartPosition);
     }
     
-    protected void loadHeader() throws IOException
-    {
+    protected void loadHeader() throws IOException {
         _lastForcedTime = readLong(posLastForcedTime);
         _storageVersion = readLong(posStorageVersion);
     }
     
-    protected String getHeader()
-    {
+    protected String getHeader() {
         StringBuilder b = new StringBuilder();
         
         b.append("lastForcedTime");
@@ -85,15 +80,13 @@ public abstract class AbstractSegment implements Segment
         
         return b.toString();
     }
-
-    protected long getChannelPosition() throws IOException
-    {
+    
+    protected long getChannelPosition() throws IOException {
         return _channel.position();
     }
     
     @Override
-    public String getStatus()
-    {
+    public String getStatus() {
         StringBuilder b = new StringBuilder();
         
         b.append("loadSize");
@@ -104,12 +97,9 @@ public abstract class AbstractSegment implements Segment
         
         b.append("appendPosition");
         b.append('=');
-        try
-        {
+        try {
             b.append(getAppendPosition());
-        }
-        catch(IOException ioe)
-        {
+        } catch (IOException ioe) {
             b.append('?');
         }
         
@@ -117,12 +107,9 @@ public abstract class AbstractSegment implements Segment
         
         b.append("channelPosition");
         b.append('=');
-        try
-        {
+        try {
             b.append(getChannelPosition());
-        }
-        catch(IOException ioe)
-        {
+        } catch (IOException ioe) {
             b.append('?');
         }
         
@@ -136,26 +123,22 @@ public abstract class AbstractSegment implements Segment
     }
     
     @Override
-    public final Mode getMode()
-    {
+    public final Mode getMode() {
         return _segMode;
     }
     
     @Override
-    public final int getSegmentId()
-    {
+    public final int getSegmentId() {
         return _segId;
     }
     
     @Override
-    public final File getSegmentFile()
-    {
+    public final File getSegmentFile() {
         return _segFile;
     }
     
     @Override
-    public final int getInitialSizeMB()
-    {
+    public final int getInitialSizeMB() {
         return _initSizeMB;
     }
     
@@ -165,39 +148,35 @@ public abstract class AbstractSegment implements Segment
     }
     
     @Override
-    public final long getLastForcedTime()
-    {
+    public final long getLastForcedTime() {
         return _lastForcedTime;
     }
     
     @Override
-    public final long getStorageVersion()
-    {
+    public final long getStorageVersion() {
         return _storageVersion;
     }
     
     @Override
-    public final double getLoadFactor()
-    {
-       return ((double)getLoadSize()) / _initSizeBytes;
+    public final double getLoadFactor() {
+        return ((double) getLoadSize()) / _initSizeBytes;
     }
-
+    
     @Override
-    public final int getLoadSize()
-    {
+    public final int getLoadSize() {
         return (_incrLoadSize - _decrLoadSize);
     }
     
     /**
      * Increases the load size.
      * 
-     * This method is not synchronized. This is because that the writer and compactor 
-     * never write (i.e. append) data to the same segment. Consequently this method is
-     * never concurrently called by the writer and compactor on the same segment. 
+     * This method is not synchronized. This is because that the writer and
+     * compactor never write (i.e. append) data to the same segment.
+     * Consequently this method is never concurrently called by the writer and
+     * compactor on the same segment.
      */
     @Override
-    public final void incrLoadSize(int byteCnt)
-    {
+    public final void incrLoadSize(int byteCnt) {
         _incrLoadSize += byteCnt;
     }
     
@@ -205,18 +184,16 @@ public abstract class AbstractSegment implements Segment
      * Decreases the load size.
      * 
      * This method is not synchronized. This because that the writer is the only
-     * thread calling this method on Segment(s) and the compact should never call
-     * this method.
+     * thread calling this method on Segment(s) and the compact should never
+     * call this method.
      */
     @Override
-    public final void decrLoadSize(int byteCnt)
-    {
+    public final void decrLoadSize(int byteCnt) {
         _decrLoadSize += byteCnt;
     }
     
     @Override
-    public final boolean isReadOnly()
-    {
+    public final boolean isReadOnly() {
         return (_segMode == Segment.Mode.READ_ONLY);
     }
 }

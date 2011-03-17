@@ -9,9 +9,9 @@ import krati.store.StaticArrayStorePartition;
 
 import test.AbstractSeedTest;
 import test.StatsLog;
-import test.util.DataCacheChecker;
-import test.util.DataCacheReader;
-import test.util.DataCacheWriter;
+import test.util.DataPartitionChecker;
+import test.util.DataPartitionReader;
+import test.util.DataPartitionWriter;
 
 /**
  * TestDataCache using MemorySegment 
@@ -19,15 +19,13 @@ import test.util.DataCacheWriter;
  * @author jwu
  *
  */
-public class TestDataCache extends AbstractSeedTest
-{
-    public TestDataCache()
-    {
+public class TestDataCache extends AbstractSeedTest {
+    
+    public TestDataCache() {
         super(TestDataCache.class.getName());
     }
     
-    public void populate(ArrayStorePartition cache) throws IOException
-    {
+    public void populate(ArrayStorePartition cache) throws IOException {
         String line;
         int lineCnt = _lineSeedData.size();
         int index = cache.getIdStart();
@@ -36,15 +34,11 @@ public class TestDataCache extends AbstractSeedTest
         long scn = cache.getHWMark();
         long startTime = System.currentTimeMillis();
         
-        while(index < stopIndex)
-        {
-            try
-            {
+        while (index < stopIndex) {
+            try {
                 line = _lineSeedData.get(index % lineCnt);
                 cache.set(index, line.getBytes(), scn++);
-            }
-            catch(Exception e)
-            {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             index++;
@@ -61,39 +55,31 @@ public class TestDataCache extends AbstractSeedTest
         StatsLog.logger.info("writeCount="+ cache.getIdCount() +" rate="+ rate +" per ms");
     }
     
-    public static void checkData(ArrayStorePartition cache, int index)
-    {
+    public static void checkData(ArrayStorePartition cache, int index) {
         String line = _lineSeedData.get(index % _lineSeedData.size());
         
         byte[] b = cache.get(index);
-        if (b != null)
-        {
+        if (b != null) {
             String s = new String(b);
             assertTrue("[" + index + "]=" + s + " expected=" + line, s.equals(line));
-        }
-        else
-        {
+        } else {
             assertTrue("[" + index + "]=null", line == null);
         }
     }
     
-    public static void validate(ArrayStorePartition cache)
-    {
+    public static void validate(ArrayStorePartition cache) {
         int cacheSize = cache.getIdCount();
-        for(int i = 0; i < cacheSize; i++)
-        {
+        for (int i = 0; i < cacheSize; i++) {
             int index = cache.getIdStart() + i;
             checkData(cache, index);
         }
         StatsLog.logger.info("OK");
     }
     
-    public static double evalWrite(ArrayStorePartition cache, int runDuration) throws Exception
-    {
-        try
-        {
+    public static double evalWrite(ArrayStorePartition cache, int runDuration) throws Exception {
+        try {
             // Start writer
-            DataCacheWriter writer = new DataCacheWriter(cache, _lineSeedData);
+            DataPartitionWriter writer = new DataPartitionWriter(cache, _lineSeedData);
             Thread writerThread = new Thread(writer);
             writerThread.start();
             StatsLog.logger.info("Writer started");
@@ -102,8 +88,7 @@ public class TestDataCache extends AbstractSeedTest
             long writeCount = 0;
             int heartBeats = runDuration/10;
             long sleepTime = Math.min(runDuration * 1000, 10000);
-            for(int i = 0; i < heartBeats; i++)
-            {
+            for (int i = 0; i < heartBeats; i++) {
                 Thread.sleep(sleepTime);
                 long newWriteCount = writer.getWriteCount();
                 StatsLog.logger.info("writeCount=" + (newWriteCount - writeCount));
@@ -123,28 +108,22 @@ public class TestDataCache extends AbstractSeedTest
             StatsLog.logger.info("writeCount="+ writer.getWriteCount() +" rate="+ rate +" per ms");
             
             return rate;
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
             throw e;
         }
     }
     
-    public static void evalRead(ArrayStorePartition cache, int readerCnt, int runDuration) throws Exception
-    {
-        try
-        {
+    public static void evalRead(ArrayStorePartition cache, int readerCnt, int runDuration) throws Exception {
+        try {
             // Start readers
-            DataCacheReader[] readers = new DataCacheReader[readerCnt];
-            for(int i = 0; i < readers.length; i++)
-            {
-                readers[i] = new DataCacheReader(cache, _lineSeedData);
+            DataPartitionReader[] readers = new DataPartitionReader[readerCnt];
+            for (int i = 0; i < readers.length; i++) {
+                readers[i] = new DataPartitionReader(cache, _lineSeedData);
             }
             
             Thread[] threads = new Thread[readers.length];
-            for(int i = 0; i < threads.length; i++)
-            {
+            for (int i = 0; i < threads.length; i++) {
                 threads[i] = new Thread(readers[i]);
                 threads[i].start();
                 StatsLog.logger.info("Reader " + i + " started");
@@ -155,12 +134,10 @@ public class TestDataCache extends AbstractSeedTest
             // Sleep until run time is exhausted
             Thread.sleep(runDuration * 1000);
             
-            for(int i = 0; i < readers.length; i++)
-            {
+            for (int i = 0; i < readers.length; i++) {
                 readers[i].stop();
             }
-            for(int i = 0; i < threads.length; i++)
-            {
+            for (int i = 0; i < threads.length; i++) {
                 threads[i].join();
             }
             
@@ -169,8 +146,7 @@ public class TestDataCache extends AbstractSeedTest
             double sumReadRate = 0;
             long elapsedTime = endTime - startTime;
             StatsLog.logger.info("elapsedTime="+ elapsedTime +" ms");
-            for(int i = 0; i < readers.length; i++)
-            {
+            for (int i = 0; i < readers.length; i++) {
                 double rate = readers[i].getReadCount()/(double)elapsedTime;
                 rate = Math.round(rate * 100) / 100.0;
                 StatsLog.logger.info("readCount["+ i +"]="+ readers[i].getReadCount() +" rate="+ rate +" per ms");
@@ -179,36 +155,30 @@ public class TestDataCache extends AbstractSeedTest
             
             sumReadRate = Math.round(sumReadRate * 100) / 100.0;
             StatsLog.logger.info("Total Read Rate="+ sumReadRate +" per ms");
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
             throw e;
         }
     }
     
     
-    public static void evalReadWrite(ArrayStorePartition cache, int readerCnt, int runDuration, boolean doValidation) throws Exception
-    {
-        try
-        {
+    public static void evalReadWrite(ArrayStorePartition cache, int readerCnt, int runDuration, boolean doValidation) throws Exception {
+        try {
             // Start readers
-            DataCacheReader[] readers = new DataCacheReader[readerCnt];
-            for(int i = 0; i < readers.length; i++)
-            {
-                readers[i] = doValidation ? new DataCacheChecker(cache, _lineSeedData) : new DataCacheReader(cache, _lineSeedData);
+            DataPartitionReader[] readers = new DataPartitionReader[readerCnt];
+            for (int i = 0; i < readers.length; i++) {
+                readers[i] = doValidation ? new DataPartitionChecker(cache, _lineSeedData) : new DataPartitionReader(cache, _lineSeedData);
             }
 
             Thread[] threads = new Thread[readers.length];
-            for(int i = 0; i < threads.length; i++)
-            {
+            for (int i = 0; i < threads.length; i++) {
                 threads[i] = new Thread(readers[i]);
                 threads[i].start();
                 StatsLog.logger.info("Reader " + i + " started");
             }
             
             // Start writer
-            DataCacheWriter writer = new DataCacheWriter(cache, _lineSeedData);
+            DataPartitionWriter writer = new DataPartitionWriter(cache, _lineSeedData);
             Thread writerThread = new Thread(writer);
             writerThread.start();
             StatsLog.logger.info("Writer started");
@@ -219,13 +189,11 @@ public class TestDataCache extends AbstractSeedTest
             long writeCount = 0;
             int heartBeats = runDuration/10;
             long sleepTime = Math.min(runDuration * 1000, 10000);
-            for(int i = 0; i < heartBeats; i++)
-            {
+            for (int i = 0; i < heartBeats; i++) {
                 Thread.sleep(sleepTime);
 
                 long newReadCount = 0;
-                for(int r = 0; r < readers.length; r++)
-                {
+                for (int r = 0; r < readers.length; r++) {
                     newReadCount += readers[r].getReadCount();
                 }
                 
@@ -238,12 +206,10 @@ public class TestDataCache extends AbstractSeedTest
             }
             
             // Stop reader
-            for(int i = 0; i < readers.length; i++)
-            {
+            for (int i = 0; i < readers.length; i++) {
                 readers[i].stop();
             }
-            for(int i = 0; i < threads.length; i++)
-            {
+            for (int i = 0; i < threads.length; i++) {
                 threads[i].join();
             }
             
@@ -261,8 +227,7 @@ public class TestDataCache extends AbstractSeedTest
             StatsLog.logger.info("writeCount="+ writer.getWriteCount() +" rate="+ rate +" per ms");
             
             double sumReadRate = 0;
-            for(int i = 0; i < readers.length; i++)
-            {
+            for (int i = 0; i < readers.length; i++) {
                 rate = readers[i].getReadCount()/(double)elapsedTime;
                 rate = Math.round(rate * 100) / 100.0;
                 StatsLog.logger.info("readCount["+ i +"]="+ readers[i].getReadCount() +" rate="+ rate +" per ms");
@@ -275,26 +240,21 @@ public class TestDataCache extends AbstractSeedTest
             StatsLog.logger.info("writer latency stats:");
             writer.getLatencyStats().print(StatsLog.logger);
             
-            if(!doValidation)
-            {
+            if (!doValidation) {
                 StatsLog.logger.info("reader latency stats:");
                 readers[0].getLatencyStats().print(StatsLog.logger);
             }
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
             throw e;
         }
     }
     
-    protected SegmentFactory getSegmentFactory()
-    {
+    protected SegmentFactory getSegmentFactory() {
         return new krati.core.segment.MemorySegmentFactory();
     }
     
-    protected ArrayStorePartition getDataCache(File cacheDir) throws Exception
-    {
+    protected ArrayStorePartition getDataCache(File cacheDir) throws Exception {
         ArrayStorePartition cache =
             new StaticArrayStorePartition(_idStart,
                                           _idCount,
@@ -304,39 +264,33 @@ public class TestDataCache extends AbstractSeedTest
         return cache;
     }
     
-    public void testDataCache() throws Exception
-    {
+    public void testDataCache() throws Exception {
         String unitTestName = getClass().getSimpleName(); 
         StatsLog.beginUnit(unitTestName);
         
         TestDataCache eval = new TestDataCache();
         
-        try
-        {
+        try {
             AbstractSeedTest.loadSeedData();
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
             return;
         }
         
-        try
-        {
+        try {
             File cacheDir = getHomeDirectory();
             ArrayStorePartition cache = getDataCache(cacheDir);
             
-            if (cache.getLWMark() == 0)
-            {
+            if (cache.getLWMark() == 0) {
                 StatsLog.logger.info(">>> populate");
                 eval.populate(cache);
-                
+
                 StatsLog.logger.info(">>> validate");
                 validate(cache);
             }
             
             int timeAllocated = Math.round((float)_runTimeSeconds/3);
-
+            
             StatsLog.logger.info(">>> read only");
             evalRead(cache, _numReaders, Math.min(timeAllocated, 10));
             
@@ -362,9 +316,7 @@ public class TestDataCache extends AbstractSeedTest
             validate(cache);
             
             cache.sync();
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         

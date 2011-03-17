@@ -8,11 +8,9 @@ import krati.core.segment.SegmentFactory;
  * @author jwu
  *
  */
-public class TestDataCacheMapped extends TestDataCache
-{
+public class TestDataCacheMapped extends TestDataCache {
     @Override
-    protected SegmentFactory getSegmentFactory()
-    {
-        return new krati.core.segment.MappedSegmentFactory();
+    protected SegmentFactory getSegmentFactory() {
+       return new krati.core.segment.MappedSegmentFactory();
     }
 }

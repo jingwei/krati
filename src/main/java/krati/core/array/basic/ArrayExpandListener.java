@@ -8,7 +8,7 @@ import krati.array.DynamicArray;
  * @author jwu
  *
  */
-public interface ArrayExpandListener
-{
+public interface ArrayExpandListener {
+    
     public void arrayExpanded(DynamicArray dynArray);
 }

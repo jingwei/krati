@@ -26,130 +26,106 @@ import java.io.IOException;
  *
  * @param <T> Object to be cached.
  */
-public class ObjectCacheAgent<T> implements ObjectCache<T>
-{
+public class ObjectCacheAgent<T> implements ObjectCache<T> {
     protected ObjectCache<T> _cache;
     protected ObjectHandler<T> _inboundHandler;
     protected ObjectHandler<T> _outboundHandler;
     
     public ObjectCacheAgent(ObjectCache<T> cache,
                             ObjectHandler<T> inboundHandler,
-                            ObjectHandler<T> outboundHandler)
-    {
+                            ObjectHandler<T> outboundHandler) {
         this._cache = cache;
         this._inboundHandler = inboundHandler;
         this._outboundHandler = outboundHandler;
     }
     
-    public ObjectCache<T> getObjectCache()
-    {
+    public ObjectCache<T> getObjectCache() {
         return _cache;
     }
     
-    public ObjectHandler<T> getInboundHandler()
-    {
+    public ObjectHandler<T> getInboundHandler() {
         return _inboundHandler;
     }
     
-    public ObjectHandler<T> getOutboundHandler()
-    {
+    public ObjectHandler<T> getOutboundHandler() {
         return _outboundHandler;
     }
     
     @Override
-    public int getObjectIdCount()
-    {
+    public int getObjectIdCount() {
         return _cache.getObjectIdCount();
     }
     
     @Override
-    public int getObjectIdStart()
-    {
+    public int getObjectIdStart() {
         return _cache.getObjectIdStart();
     }
     
     @Override
-    public boolean delete(int objectId, long scn) throws Exception
-    {
-        synchronized(_cache)
-        {
+    public boolean delete(int objectId, long scn) throws Exception {
+        synchronized (_cache) {
             return _cache.delete(objectId, scn);
         }
     }
     
     @Override
-    public boolean set(int objectId, T object, long scn) throws Exception
-    {
-        if(object != null && _inboundHandler != null && _inboundHandler.getEnabled())
-        {
+    public boolean set(int objectId, T object, long scn) throws Exception {
+        if (object != null && _inboundHandler != null && _inboundHandler.getEnabled()) {
             _inboundHandler.process(object);
         }
-        
-        synchronized(_cache)
-        {
+
+        synchronized (_cache) {
             return _cache.set(objectId, object, scn);
         }
     }
     
     @Override
-    public T get(int objectId)
-    {
+    public T get(int objectId) {
         T object = _cache.get(objectId);
-        if(object != null && _outboundHandler != null && _outboundHandler.getEnabled())
-        {
+        if (object != null && _outboundHandler != null && _outboundHandler.getEnabled()) {
             _outboundHandler.process(object);
         }
         return object;
     }
     
     @Override
-    public void sync() throws IOException
-    {
-        synchronized(_cache)
-        {
+    public void sync() throws IOException {
+        synchronized (_cache) {
             _cache.sync();
         }
     }
     
     @Override
-    public void persist() throws IOException
-    {
-        synchronized(_cache)
-        {
+    public void persist() throws IOException {
+        synchronized (_cache) {
             _cache.persist();
         }
     }
     
     @Override
-    public void clear()
-    {
-        synchronized(_cache)
-        {
+    public void clear() {
+        synchronized (_cache) {
             _cache.clear();
         }
     }
     
     @Override
-    public long getHWMark()
-    {
+    public long getHWMark() {
         return _cache.getHWMark();
     }
     
     @Override
-    public long getLWMark()
-    {
+    public long getLWMark() {
         return _cache.getLWMark();
     }
     
     @Override
-    public void saveHWMark(long endOfPeriod) throws Exception
-    {
+    public void saveHWMark(long endOfPeriod) throws Exception {
         _cache.saveHWMark(endOfPeriod);
     }
     
     @Override
-    public byte[] getBytes(int objectId)
-    {
+    public byte[] getBytes(int objectId) {
         throw new UnsupportedOperationException();
     }
     

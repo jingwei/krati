@@ -58,26 +58,26 @@ public final class BytesDB implements Persistable {
                    SegmentFactory segmentFactory,
                    double segmentCompactFactor) throws Exception {
         _logger.info("init " + homeDir.getAbsolutePath());
-        {
-            // Create address array
-            _addrArray = createAddressArray(batchSize, numSyncBatches, homeDir);
-            if(initLevel > 0) {
-                _addrArray.expandCapacity(_addrArray.subArrayLength() * (1 << initLevel) - 1); 
-            }
-            
-            // Create segment manager
-            String segmentHomePath = new File(homeDir, "segs").getAbsolutePath();
-            SegmentManager segManager = SegmentManager.getInstance(segmentHomePath, segmentFactory, segmentFileSizeMB);
-            
-            // Create simple data array
-            this._dataArray = new SimpleDataArray(_addrArray, segManager, segmentCompactFactor);
-            
-            // Scan to count nextIndex
-            this.initNextIndexCount();
-            
-            // Start to lookup nextIndex
-            this._nextIndexExecutor.execute(new NextIndexLookup());
+        
+        // Create address array
+        _addrArray = createAddressArray(batchSize, numSyncBatches, homeDir);
+        if(initLevel > 0) {
+            _addrArray.expandCapacity(_addrArray.subArrayLength() * (1 << initLevel) - 1); 
         }
+        
+        // Create segment manager
+        String segmentHomePath = new File(homeDir, "segs").getAbsolutePath();
+        SegmentManager segManager = SegmentManager.getInstance(segmentHomePath, segmentFactory, segmentFileSizeMB);
+        
+        // Create simple data array
+        this._dataArray = new SimpleDataArray(_addrArray, segManager, segmentCompactFactor);
+        
+        // Scan to count nextIndex
+        this.initNextIndexCount();
+        
+        // Start to lookup nextIndex
+        this._nextIndexExecutor.execute(new NextIndexLookup());
+        
         _logger.info("init done");
     }
     

@@ -16,13 +16,11 @@ import krati.store.DataStoreHandler;
  * @author jwu
  *
  */
-public final class DefaultDataStoreHandler implements DataStoreHandler
-{
+public final class DefaultDataStoreHandler implements DataStoreHandler {
     private final static Logger _log = Logger.getLogger(DefaultDataStoreHandler.class);
     
     @Override
-    public final byte[] assemble(byte[] key, byte[] value)
-    {
+    public final byte[] assemble(byte[] key, byte[] value) {
         byte[] result = new byte[4 + 4 + key.length + 4 + value.length];
         ByteBuffer bb = ByteBuffer.wrap(result);
         
@@ -41,8 +39,7 @@ public final class DefaultDataStoreHandler implements DataStoreHandler
     }
     
     @Override
-    public final byte[] assemble(byte[] key, byte[] value, byte[] data)
-    {
+    public final byte[] assemble(byte[] key, byte[] value, byte[] data) {
         // Remove old data
         int newLength = removeByKey(key, data);
         if(newLength == 0) return assemble(key, value);
@@ -71,19 +68,15 @@ public final class DefaultDataStoreHandler implements DataStoreHandler
     }
     
     @Override
-    public final int countCollisions(byte[] key, byte[] data)
-    {
-        try
-        {
+    public final int countCollisions(byte[] key, byte[] data) {
+        try {
             ByteBuffer bb = ByteBuffer.wrap(data);
             int originalCnt = bb.getInt();
             int cnt = originalCnt;
-            while(cnt > 0)
-            {
+            while(cnt > 0) {
                 // Process key
                 int len = bb.getInt();
-                if(keysEqual(key, data, bb.position(), len))
-                {
+                if(keysEqual(key, data, bb.position(), len)) {
                     return originalCnt;
                 }
                 bb.position(bb.position() + len);
@@ -96,27 +89,22 @@ public final class DefaultDataStoreHandler implements DataStoreHandler
             }
             
             return -originalCnt;
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             _log.error("Failed to countCollisions", e);
             return 0;
         }
     }
     
     @Override
-    public final byte[] extractByKey(byte[] key, byte[] data)
-    {
+    public final byte[] extractByKey(byte[] key, byte[] data) {
         if(data.length == 0) return null;
         ByteBuffer bb = ByteBuffer.wrap(data);
         
         int cnt = bb.getInt();
-        while(cnt > 0)
-        {
+        while(cnt > 0) {
             // Process key
             int len = bb.getInt();
-            if(keysEqual(key, data, bb.position(), len))
-            {
+            if(keysEqual(key, data, bb.position(), len)) {
                 // pass key data
                 bb.position(bb.position() + len);
                 
@@ -141,22 +129,19 @@ public final class DefaultDataStoreHandler implements DataStoreHandler
     }
     
     @Override
-    public final int removeByKey(byte[] key, byte[] data)
-    {
+    public final int removeByKey(byte[] key, byte[] data) {
         int offset1 = 0;
         int offset2 = 0;
         ByteBuffer bb = ByteBuffer.wrap(data);
         
         int originalCnt = bb.getInt();
         int cnt = originalCnt;
-        while(cnt > 0)
-        {
+        while(cnt > 0) {
             offset1 = bb.position();
             
             // Process key
             int len = bb.getInt();
-            if(keysEqual(key, data, bb.position(), len))
-            {
+            if(keysEqual(key, data, bb.position(), len)) {
                 bb.position(bb.position() + len);
                 
                 // Process value
@@ -176,8 +161,7 @@ public final class DefaultDataStoreHandler implements DataStoreHandler
         }
         
         // key is found and remove key-value from data
-        if(offset1 < offset2)
-        {
+        if(offset1 < offset2) {
             int newLength = data.length - (offset2 - offset1);
             
             /*
@@ -194,8 +178,7 @@ public final class DefaultDataStoreHandler implements DataStoreHandler
             bb.putInt(originalCnt - 1);
             
             // Shift data to the left
-            for(int i = 0, len = data.length - offset2; i < len; i++)
-            {
+            for(int i = 0, len = data.length - offset2; i < len; i++) {
                 data[offset1 + i] = data[offset2 + i];
             }
             
@@ -206,13 +189,11 @@ public final class DefaultDataStoreHandler implements DataStoreHandler
         return data.length;
     }
     
-    static boolean keysEqual(byte[] key, byte[] keySource, int offset, int length)
-    {
-        if(key.length == length)
-        {
-            for(int i = 0; i < length; i++)
-            {
-                if(key[i] != keySource[offset + i]) return false;
+    static boolean keysEqual(byte[] key, byte[] keySource, int offset, int length) {
+        if (key.length == length) {
+            for (int i = 0; i < length; i++) {
+                if (key[i] != keySource[offset + i])
+                    return false;
             }
             return true;
         }
@@ -222,14 +203,12 @@ public final class DefaultDataStoreHandler implements DataStoreHandler
 
     @Override
     public final List<byte[]> extractKeys(byte[] data) {
-        try
-        {
+        try {
             ByteBuffer bb = ByteBuffer.wrap(data);
             int cnt = bb.getInt();
             final List<byte[]> result = new ArrayList<byte[]>(cnt);
             
-            while(cnt > 0)
-            {
+            while(cnt > 0) {
                 // Process key
                 int len = bb.getInt();
                 byte[] key = new byte[len];
@@ -246,23 +225,19 @@ public final class DefaultDataStoreHandler implements DataStoreHandler
             }
             
             return result;
-        }
-        catch(Exception e)
-        {
+        } catch(Exception e) {
             _log.error("Failed to extractKeys", e);
             return null;
         }
     }
     
     public final List<byte[]> extractValues(byte[] data) {
-        try
-        {
+        try {
             ByteBuffer bb = ByteBuffer.wrap(data);
             int cnt = bb.getInt();
             final List<byte[]> result = new ArrayList<byte[]>(cnt);
             
-            while(cnt > 0)
-            {
+            while(cnt > 0) {
                 // Process key
                 int len = bb.getInt();
                 bb.position(bb.position() + len);
@@ -279,9 +254,7 @@ public final class DefaultDataStoreHandler implements DataStoreHandler
             }
             
             return result;
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             _log.error("Failed to extractValues", e);
             return null;
         }
@@ -289,14 +262,12 @@ public final class DefaultDataStoreHandler implements DataStoreHandler
     
     @Override
     public final List<Entry<byte[], byte[]>> extractEntries(byte[] data) {
-        try
-        {
+        try {
             ByteBuffer bb = ByteBuffer.wrap(data);
             int cnt = bb.getInt();
             final List<Entry<byte[], byte[]>> result = new ArrayList<Entry<byte[], byte[]>>(cnt);
             
-            while(cnt > 0)
-            {
+            while(cnt > 0) {
                 // Process key
                 int len = bb.getInt();
                 byte[] key = new byte[len];
@@ -314,9 +285,7 @@ public final class DefaultDataStoreHandler implements DataStoreHandler
             }
             
             return result;
-        }
-        catch(Exception e)
-        {
+        } catch(Exception e) {
             _log.error("Failed to extractEntries", e);
             return null;
         }
