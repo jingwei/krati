@@ -11,11 +11,9 @@ import org.apache.log4j.Logger;
 import krati.core.array.entry.Entry;
 import krati.core.array.entry.EntryUtility;
 import krati.core.array.entry.EntryValue;
-import krati.io.ChannelWriter;
 import krati.io.DataReader;
 import krati.io.IOFactory;
 import krati.io.IOType;
-import krati.io.MappedWriter;
 import krati.io.DataWriter;
 import krati.util.Chronos;
 
