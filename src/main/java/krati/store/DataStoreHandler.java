@@ -19,9 +19,11 @@ public interface DataStoreHandler {
     
     public byte[] extractByKey(byte[] key, byte[] data);
     
-    public int removeByKey(byte[] key, byte[] data);  
+    public int removeByKey(byte[] key, byte[] data);
     
     public List<byte[]> extractKeys(byte[] data);
     
     public List<Entry<byte[], byte[]>> extractEntries(byte[] data);
+    
+    public byte[] assembleEntries(List<Entry<byte[], byte[]>> entries);
 }

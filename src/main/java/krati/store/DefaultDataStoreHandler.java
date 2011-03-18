@@ -2,6 +2,7 @@ package krati.store;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.AbstractMap.SimpleEntry;
@@ -18,9 +19,12 @@ import krati.store.DataStoreHandler;
  */
 public final class DefaultDataStoreHandler implements DataStoreHandler {
     private final static Logger _log = Logger.getLogger(DefaultDataStoreHandler.class);
+    private final static int NUM_BYTES_IN_INT = 4;
     
     @Override
     public final byte[] assemble(byte[] key, byte[] value) {
+        if(value == null) return null;
+        
         byte[] result = new byte[4 + 4 + key.length + 4 + value.length];
         ByteBuffer bb = ByteBuffer.wrap(result);
         
@@ -40,9 +44,14 @@ public final class DefaultDataStoreHandler implements DataStoreHandler {
     
     @Override
     public final byte[] assemble(byte[] key, byte[] value, byte[] data) {
+        if(data == null || data.length == 0) {
+            return assemble(key, value); 
+        }
+        
         // Remove old data
         int newLength = removeByKey(key, data);
         if(newLength == 0) return assemble(key, value);
+        if(value == null) return Arrays.copyOf(data, newLength);
         
         byte[] result = new byte[newLength + 4 + key.length + 4 + value.length];
         System.arraycopy(data, 0, result, 0, newLength);
@@ -289,5 +298,48 @@ public final class DefaultDataStoreHandler implements DataStoreHandler {
             _log.error("Failed to extractEntries", e);
             return null;
         }
+    }
+    
+    @Override
+    public final byte[] assembleEntries(List<Entry<byte[], byte[]>> entries) {
+        byte[] b;
+        int cnt = 0;
+        int len = NUM_BYTES_IN_INT;
+        
+        for(Entry<byte[], byte[]> e : entries) {
+            b = e.getKey();
+            if(b != null) {
+                len += NUM_BYTES_IN_INT;
+                len += b.length;
+                
+                b = e.getValue();
+                len += NUM_BYTES_IN_INT;
+                len += b == null ? 0 : e.getValue().length;
+                
+                cnt++;
+            }
+        }
+        
+        byte[] data = new byte[len];
+        ByteBuffer bb = ByteBuffer.wrap(data);
+        
+        bb.putInt(cnt);
+        for(Entry<byte[], byte[]> e : entries) {
+            b = e.getKey();
+            if(b != null) {
+                bb.putInt(b.length);
+                bb.put(b);
+                
+                b = e.getValue();
+                if(b == null) {
+                    bb.putInt(0);
+                } else {
+                    bb.putInt(b.length);
+                    bb.put(b);
+                }
+            }
+        }
+        
+        return data;
     }
 }
