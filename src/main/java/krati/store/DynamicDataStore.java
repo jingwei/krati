@@ -2,8 +2,9 @@ package krati.store;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
@@ -41,9 +42,9 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
     private volatile int _split;
     private volatile int _level;
     private volatile int _levelCapacity;
-    private int _levelThreshold;
-    private int _unitCapacity;
-    private int _loadCount;
+    private volatile int _levelThreshold;
+    private volatile int _unitCapacity;
+    private volatile int _loadCount;
     
     /**
      * Creates a dynamic DataStore with the settings below:
@@ -541,42 +542,41 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
         
         // Process read data
         if (data != null && data.length > 0) {
-            ByteBuffer bb = ByteBuffer.wrap(data);
-            int newCapacity = _levelCapacity << 1;
+            List<Entry<byte[], byte[]>> entries = _dataHandler.extractEntries(data);
+            List<Entry<byte[], byte[]>> oldList = new ArrayList<Entry<byte[], byte[]>>();
+            List<Entry<byte[], byte[]>> newList = new ArrayList<Entry<byte[], byte[]>>();
             
-            int cnt = bb.getInt();
-            while(cnt > 0) {
-                // Read key
-                int len = bb.getInt();
-                byte[] key = new byte[len];
-                bb.get(key);
+            int newCapacity = _levelCapacity << 1;
+            int toIndex = -1;
+            
+            for(Entry<byte[], byte[]> e : entries) {
+                byte[] key = e.getKey();
                 
                 int newIndex = (int)(hash(key) % newCapacity);
                 if (newIndex < 0) newIndex = -newIndex;
                 
-                if(newIndex == _split) { /* No need to split */
-                    // Pass value
-                    len = bb.getInt();
-                    bb.position(bb.position() + len);
+                if (newIndex == _split) {
+                    oldList.add(e);
                 } else {
-                    // Read value
-                    len = bb.getInt();
-                    byte[] value = new byte[len];
-                    bb.get(value);
-                    
-                    // Remove at the old index
-                    deleteInternal(_split, key);
-                    
-                    // Update at the new index
-                    putInternal(newIndex, key, value);
+                    newList.add(e);
+                    toIndex = newIndex;
                 }
+            }
+            
+            if(entries.size() != oldList.size()) {
+                byte[] newData = _dataHandler.assembleEntries(newList);
+                _dataArray.set(toIndex, newData, nextScn());
                 
-                cnt--;
+                byte[] oldData = null;
+                if(oldList.size() > 0) {
+                    oldData = _dataHandler.assembleEntries(oldList);
+                }
+                _dataArray.set(_split, oldData, nextScn());
             }
         }
         
         _split++;
-
+        
         if(_split % _unitCapacity == 0) {
             _log.info("split " + getStatus());
         }
