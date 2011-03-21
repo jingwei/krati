@@ -78,6 +78,10 @@ public final class DefaultDataStoreHandler implements DataStoreHandler {
     
     @Override
     public final int countCollisions(byte[] key, byte[] data) {
+        if(data == null || data.length == 0) {
+            return 0;
+        }
+        
         try {
             ByteBuffer bb = ByteBuffer.wrap(data);
             int originalCnt = bb.getInt();
