@@ -3,11 +3,11 @@ package krati.sos;
 import java.io.IOException;
 
 /**
- * ObjectCacheAgent:
+ * ObjectPartitionAgent:
  * 
- * An agent that wraps an ObjectCache can have inbound and outbound ObjectHandler(s).
- * The inbound handler is associated with the set method. It is called on an inbound object before the object is passed down to the underlying ObjectCache.
- * The outbound handler is associated with the get method. It is called on an outbound object before the object is returned back to the ObjectCache visitor.
+ * An agent that wraps an ObjectPartition can have inbound and outbound ObjectHandler(s).
+ * The inbound handler is associated with the set method. It is called on an inbound object before the object is passed down to the underlying ObjectPartition.
+ * The outbound handler is associated with the get method. It is called on an outbound object before the object is returned back to the ObjectPartition visitor.
  * Either inbound or outbound handlers does not affect the delete method.
  * 
  * <pre>
@@ -24,23 +24,23 @@ import java.io.IOException;
  * 
  * @author jwu
  *
- * @param <T> Object to be cached.
+ * @param <T> Object to be stored.
  */
-public class ObjectCacheAgent<T> implements ObjectCache<T> {
-    protected ObjectCache<T> _cache;
+public class ObjectPartitionAgent<T> implements ObjectPartition<T> {
+    protected ObjectPartition<T> _partition;
     protected ObjectHandler<T> _inboundHandler;
     protected ObjectHandler<T> _outboundHandler;
     
-    public ObjectCacheAgent(ObjectCache<T> cache,
-                            ObjectHandler<T> inboundHandler,
-                            ObjectHandler<T> outboundHandler) {
-        this._cache = cache;
+    public ObjectPartitionAgent(ObjectPartition<T> partition,
+                                ObjectHandler<T> inboundHandler,
+                                ObjectHandler<T> outboundHandler) {
+        this._partition = partition;
         this._inboundHandler = inboundHandler;
         this._outboundHandler = outboundHandler;
     }
     
-    public ObjectCache<T> getObjectCache() {
-        return _cache;
+    public ObjectPartition<T> getObjectPartition() {
+        return _partition;
     }
     
     public ObjectHandler<T> getInboundHandler() {
@@ -53,18 +53,18 @@ public class ObjectCacheAgent<T> implements ObjectCache<T> {
     
     @Override
     public int getObjectIdCount() {
-        return _cache.getObjectIdCount();
+        return _partition.getObjectIdCount();
     }
     
     @Override
     public int getObjectIdStart() {
-        return _cache.getObjectIdStart();
+        return _partition.getObjectIdStart();
     }
     
     @Override
     public boolean delete(int objectId, long scn) throws Exception {
-        synchronized (_cache) {
-            return _cache.delete(objectId, scn);
+        synchronized (_partition) {
+            return _partition.delete(objectId, scn);
         }
     }
     
@@ -74,14 +74,14 @@ public class ObjectCacheAgent<T> implements ObjectCache<T> {
             _inboundHandler.process(object);
         }
 
-        synchronized (_cache) {
-            return _cache.set(objectId, object, scn);
+        synchronized (_partition) {
+            return _partition.set(objectId, object, scn);
         }
     }
     
     @Override
     public T get(int objectId) {
-        T object = _cache.get(objectId);
+        T object = _partition.get(objectId);
         if (object != null && _outboundHandler != null && _outboundHandler.getEnabled()) {
             _outboundHandler.process(object);
         }
@@ -90,38 +90,38 @@ public class ObjectCacheAgent<T> implements ObjectCache<T> {
     
     @Override
     public void sync() throws IOException {
-        synchronized (_cache) {
-            _cache.sync();
+        synchronized (_partition) {
+            _partition.sync();
         }
     }
     
     @Override
     public void persist() throws IOException {
-        synchronized (_cache) {
-            _cache.persist();
+        synchronized (_partition) {
+            _partition.persist();
         }
     }
     
     @Override
     public void clear() {
-        synchronized (_cache) {
-            _cache.clear();
+        synchronized (_partition) {
+            _partition.clear();
         }
     }
     
     @Override
     public long getHWMark() {
-        return _cache.getHWMark();
+        return _partition.getHWMark();
     }
     
     @Override
     public long getLWMark() {
-        return _cache.getLWMark();
+        return _partition.getLWMark();
     }
     
     @Override
     public void saveHWMark(long endOfPeriod) throws Exception {
-        _cache.saveHWMark(endOfPeriod);
+        _partition.saveHWMark(endOfPeriod);
     }
     
     @Override
@@ -136,11 +136,11 @@ public class ObjectCacheAgent<T> implements ObjectCache<T> {
     
     @Override
     public boolean hasIndex(int index) {
-        return _cache.hasIndex(index);
+        return _partition.hasIndex(index);
     }
     
     @Override
     public int length() {
-        return _cache.getObjectIdCount();
+        return _partition.getObjectIdCount();
     }
 }

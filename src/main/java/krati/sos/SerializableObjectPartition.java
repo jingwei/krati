@@ -6,11 +6,11 @@ import krati.array.DynamicArray;
 import krati.store.ArrayStorePartition;
 
 /**
- * A simple data cache for serializable objects.
+ * A simple data partition for serializable objects.
  * 
  * This class is not thread-safe by design. It is expected that the conditions below hold within one JVM.
  * <pre>
- *    1. There is one and only one instance of SerializableObjectCache for a given data cache.
+ *    1. There is one and only one instance of SerializableObjectPartition for a given data parition.
  *    2. There is one and only one thread is calling set and delete methods at any given time. 
  * </pre>
  * 
@@ -20,28 +20,28 @@ import krati.store.ArrayStorePartition;
  * 
  * @param <T> Serializable object.
  */
-public class SerializableObjectCache<T> implements ObjectCache<T> {
-    protected final ArrayStorePartition _cache;
+public class SerializableObjectPartition<T> implements ObjectPartition<T> {
+    protected final ArrayStorePartition _partition;
     protected final ObjectSerializer<T> _serializer;
 
     /**
-     * Constructs an array-like object cache for serializable objects.
+     * Constructs an array-like object partition for serializable objects.
      * 
-     * @param cache
-     *            the underlying data cache to store serializable objects.
+     * @param partition
+     *            the underlying data partition to store serializable objects.
      * @param serializer
      *            the object serializer to serialize/de-serialize objects.
      */
-    public SerializableObjectCache(ArrayStorePartition cache, ObjectSerializer<T> serializer) {
-        this._cache = cache;
+    public SerializableObjectPartition(ArrayStorePartition partition, ObjectSerializer<T> serializer) {
+        this._partition = partition;
         this._serializer = serializer;
     }
 
     /**
-     * @return the underlying data cache.
+     * @return the underlying data partition.
      */
-    protected ArrayStorePartition getContentCache() {
-        return _cache;
+    protected ArrayStorePartition getContentPartition() {
+        return _partition;
     }
 
     /**
@@ -52,31 +52,31 @@ public class SerializableObjectCache<T> implements ObjectCache<T> {
     }
 
     /**
-     * @return the total number of objects in the cache.
+     * @return the total number of objects in the partition.
      */
     @Override
     public int getObjectIdCount() {
-        return _cache.getIdCount();
+        return _partition.getIdCount();
     }
 
     /**
-     * @return the start of ObjectId(s) allowed by the cache.
+     * @return the start of ObjectId(s) allowed by the partition.
      */
     @Override
     public int getObjectIdStart() {
-        return _cache.getIdStart();
+        return _partition.getIdStart();
     }
 
     /**
      * Gets an object based on a user-specified object Id.
      * 
      * @param objectId
-     *            the Id of an object to be retrieved from the cache.
+     *            the Id of an object to be retrieved from the partition.
      * @return an object associated with the given objectId.
      */
     @Override
     public T get(int objectId) {
-        return getSerializer().construct(_cache.get(objectId));
+        return getSerializer().construct(_partition.get(objectId));
     }
 
     /**
@@ -85,7 +85,7 @@ public class SerializableObjectCache<T> implements ObjectCache<T> {
      * @param objectId
      *            the object Id.
      * @param object
-     *            the object to put into the cache.
+     *            the object to put into the partition.
      * @param scn
      *            the global scn (equivalent to a time stamp).
      * @throws Exception
@@ -96,7 +96,7 @@ public class SerializableObjectCache<T> implements ObjectCache<T> {
             return delete(objectId, scn);
         }
 
-        _cache.set(objectId, getSerializer().serialize(object), scn);
+        _partition.set(objectId, getSerializer().serialize(object), scn);
         return true;
     }
 
@@ -111,43 +111,43 @@ public class SerializableObjectCache<T> implements ObjectCache<T> {
      */
     @Override
     public boolean delete(int objectId, long scn) throws Exception {
-        _cache.delete(objectId, scn);
+        _partition.delete(objectId, scn);
         return true;
     }
 
     /**
-     * Sync this object cache.
+     * Sync this object partition.
      * 
      * @throws IOException
      */
     @Override
     public void sync() throws IOException {
-        synchronized (_cache) {
-            _cache.sync();
+        synchronized (_partition) {
+            _partition.sync();
         }
     }
 
     /**
-     * Persists this object cache.
+     * Persists this object partition.
      * 
      * @throws IOException
      */
     @Override
     public void persist() throws IOException {
-        synchronized (_cache) {
-            _cache.persist();
+        synchronized (_partition) {
+            _partition.persist();
         }
     }
 
     /**
-     * Clears this object cache by removing all the persisted data permanently.
+     * Clears this object partition by removing all the persisted data permanently.
      * 
      * @throws IOException
      */
     @Override
     public void clear() {
-        synchronized (_cache) {
-            _cache.clear();
+        synchronized (_partition) {
+            _partition.clear();
         }
     }
 
@@ -156,7 +156,7 @@ public class SerializableObjectCache<T> implements ObjectCache<T> {
      */
     @Override
     public long getHWMark() {
-        return _cache.getHWMark();
+        return _partition.getHWMark();
     }
 
     /**
@@ -164,7 +164,7 @@ public class SerializableObjectCache<T> implements ObjectCache<T> {
      */
     @Override
     public long getLWMark() {
-        return _cache.getLWMark();
+        return _partition.getLWMark();
     }
 
     /**
@@ -172,19 +172,19 @@ public class SerializableObjectCache<T> implements ObjectCache<T> {
      */
     @Override
     public void saveHWMark(long endOfPeriod) throws Exception {
-        _cache.saveHWMark(endOfPeriod);
+        _partition.saveHWMark(endOfPeriod);
     }
 
     /**
      * Gets an object in raw bytes based on a user-specified object Id.
      * 
      * @param objectId
-     *            the Id of an object to be retrieved from the cache.
+     *            the Id of an object to be retrieved from the partition.
      * @return an object in raw bytes according to the given object Id.
      */
     @Override
     public byte[] getBytes(int objectId) {
-        return _cache.get(objectId);
+        return _partition.get(objectId);
     }
 
     @Override
@@ -198,11 +198,11 @@ public class SerializableObjectCache<T> implements ObjectCache<T> {
 
     @Override
     public boolean hasIndex(int index) {
-        return _cache.hasIndex(index);
+        return _partition.hasIndex(index);
     }
 
     @Override
     public int length() {
-        return _cache.length();
+        return _partition.length();
     }
 }

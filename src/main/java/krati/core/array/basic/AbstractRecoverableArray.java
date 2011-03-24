@@ -20,7 +20,7 @@ abstract class AbstractRecoverableArray<V extends EntryValue> implements Recover
   static final Logger _log = Logger.getLogger(RecoverableArray.class);
   
   protected int                  _length;         // Length of this array
-  protected File                 _directory;      // array cache directory
+  protected File                 _directory;      // array home directory
   protected ArrayFile            _arrayFile;      // underlying array file
   protected EntryFactory<V>      _entryFactory;   // factory for creating Entry
   protected ArrayEntryManager<V> _entryManager;   // manager for entry redo logs

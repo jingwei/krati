@@ -4,8 +4,8 @@ import java.io.File;
 import java.util.List;
 import java.util.Random;
 
-import krati.sos.ObjectArrayPartition;
-import krati.sos.SerializableObjectCache;
+import krati.sos.ObjectPartition;
+import krati.sos.SerializableObjectPartition;
 import krati.store.ArrayStorePartition;
 import krati.store.StaticArrayStorePartition;
 import krati.util.Chronos;
@@ -44,16 +44,16 @@ public class TestObjectPartition extends AbstractTest {
         
         File partitionDir = getHomeDirectory();
         ArrayStorePartition partition = getPartition(partitionDir);
-        ObjectArrayPartition<MemberProtos.Member> memberPartition =
-            new SerializableObjectCache<MemberProtos.Member>(partition, new MemberSerializer());
+        ObjectPartition<MemberProtos.Member> memberPartition =
+            new SerializableObjectPartition<MemberProtos.Member>(partition, new MemberSerializer());
         
         int numSeedMembers = 10000; 
         MemberProtos.MemberBook book = MemberDataGen.generateMemberBook(numSeedMembers);
         
         long scn = 0;
-        int cacheSize = memberPartition.getObjectIdCount();
+        int size = memberPartition.getObjectIdCount();
         int objectIdStart = memberPartition.getObjectIdStart();
-        int objectIdEnd = objectIdStart + cacheSize;
+        int objectIdEnd = objectIdStart + size;
 
         Chronos timer = new Chronos();
         List<MemberProtos.Member> mList = book.getMemberList();
@@ -63,7 +63,7 @@ public class TestObjectPartition extends AbstractTest {
             MemberProtos.Member m = mList.get(i%numSeedMembers);
             memberPartition.set(i, m, scn++);
         }
-        StatsLog.logger.info("Populate " + cacheSize + " objects in " + timer.getElapsedTime());
+        StatsLog.logger.info("Populate " + size + " objects in " + timer.getElapsedTime());
         
         // Persist
         memberPartition.persist();
@@ -74,27 +74,27 @@ public class TestObjectPartition extends AbstractTest {
             MemberProtos.Member m = mList.get(i%numSeedMembers);
             assertTrue("Member " + m.getMemberId(), memberPartition.get(i).equals(m));
         }
-        StatsLog.logger.info("Validate " + cacheSize + " objects in " + timer.getElapsedTime());
+        StatsLog.logger.info("Validate " + size + " objects in " + timer.getElapsedTime());
         
         // Random update
         Random rand = new Random();
         for (int i = objectIdStart; i < objectIdEnd; i++) {
-            int objectId = objectIdStart + rand.nextInt(cacheSize);
+            int objectId = objectIdStart + rand.nextInt(size);
             MemberProtos.Member m = mList.get(objectId%numSeedMembers);
             memberPartition.set(objectId, m, scn++);
         }
-        StatsLog.logger.info("Populate " + cacheSize + " objects in " + timer.getElapsedTime());
+        StatsLog.logger.info("Populate " + size + " objects in " + timer.getElapsedTime());
         
         // Persist
         memberPartition.persist();
         timer.tick();
         
         // Result validation
-        for (int i = memberPartition.getObjectIdStart(); i < cacheSize; i++) {
+        for (int i = memberPartition.getObjectIdStart(); i < size; i++) {
             MemberProtos.Member m = mList.get(i%mList.size());
             assertTrue("Member " + m.getMemberId(), memberPartition.get(i).equals(m));
         }
-        StatsLog.logger.info("Validate " + cacheSize + " objects in " + timer.getElapsedTime());
+        StatsLog.logger.info("Validate " + size + " objects in " + timer.getElapsedTime());
         
         cleanTestOutput();
         StatsLog.endUnit(unitTestName);

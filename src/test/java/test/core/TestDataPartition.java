@@ -14,51 +14,51 @@ import test.util.DataPartitionReader;
 import test.util.DataPartitionWriter;
 
 /**
- * TestDataCache using MemorySegment 
+ * TestDataPartition using MemorySegment 
  * 
  * @author jwu
  *
  */
-public class TestDataCache extends AbstractSeedTest {
+public class TestDataPartition extends AbstractSeedTest {
     
-    public TestDataCache() {
-        super(TestDataCache.class.getName());
+    public TestDataPartition() {
+        super(TestDataPartition.class.getName());
     }
     
-    public void populate(ArrayStorePartition cache) throws IOException {
+    public void populate(ArrayStorePartition partition) throws IOException {
         String line;
         int lineCnt = _lineSeedData.size();
-        int index = cache.getIdStart();
-        int stopIndex = index + cache.getIdCount();
+        int index = partition.getIdStart();
+        int stopIndex = index + partition.getIdCount();
         
-        long scn = cache.getHWMark();
+        long scn = partition.getHWMark();
         long startTime = System.currentTimeMillis();
         
         while (index < stopIndex) {
             try {
                 line = _lineSeedData.get(index % lineCnt);
-                cache.set(index, line.getBytes(), scn++);
+                partition.set(index, line.getBytes(), scn++);
             } catch (Exception e) {
                 e.printStackTrace();
             }
             index++;
         }
         
-        cache.persist();
+        partition.persist();
 
         long endTime = System.currentTimeMillis();
         long elapsedTime = endTime - startTime;
         StatsLog.logger.info("elapsedTime="+ elapsedTime +" ms");
         
-        double rate = cache.getIdCount()/(double)elapsedTime;
+        double rate = partition.getIdCount()/(double)elapsedTime;
         rate = Math.round(rate * 100) / 100.0;
-        StatsLog.logger.info("writeCount="+ cache.getIdCount() +" rate="+ rate +" per ms");
+        StatsLog.logger.info("writeCount="+ partition.getIdCount() +" rate="+ rate +" per ms");
     }
     
-    public static void checkData(ArrayStorePartition cache, int index) {
+    public static void checkData(ArrayStorePartition partition, int index) {
         String line = _lineSeedData.get(index % _lineSeedData.size());
         
-        byte[] b = cache.get(index);
+        byte[] b = partition.get(index);
         if (b != null) {
             String s = new String(b);
             assertTrue("[" + index + "]=" + s + " expected=" + line, s.equals(line));
@@ -67,19 +67,19 @@ public class TestDataCache extends AbstractSeedTest {
         }
     }
     
-    public static void validate(ArrayStorePartition cache) {
-        int cacheSize = cache.getIdCount();
-        for (int i = 0; i < cacheSize; i++) {
-            int index = cache.getIdStart() + i;
-            checkData(cache, index);
+    public static void validate(ArrayStorePartition partition) {
+        int size = partition.getIdCount();
+        for (int i = 0; i < size; i++) {
+            int index = partition.getIdStart() + i;
+            checkData(partition, index);
         }
         StatsLog.logger.info("OK");
     }
     
-    public static double evalWrite(ArrayStorePartition cache, int runDuration) throws Exception {
+    public static double evalWrite(ArrayStorePartition partition, int runDuration) throws Exception {
         try {
             // Start writer
-            DataPartitionWriter writer = new DataPartitionWriter(cache, _lineSeedData);
+            DataPartitionWriter writer = new DataPartitionWriter(partition, _lineSeedData);
             Thread writerThread = new Thread(writer);
             writerThread.start();
             StatsLog.logger.info("Writer started");
@@ -114,12 +114,12 @@ public class TestDataCache extends AbstractSeedTest {
         }
     }
     
-    public static void evalRead(ArrayStorePartition cache, int readerCnt, int runDuration) throws Exception {
+    public static void evalRead(ArrayStorePartition partition, int readerCnt, int runDuration) throws Exception {
         try {
             // Start readers
             DataPartitionReader[] readers = new DataPartitionReader[readerCnt];
             for (int i = 0; i < readers.length; i++) {
-                readers[i] = new DataPartitionReader(cache, _lineSeedData);
+                readers[i] = new DataPartitionReader(partition, _lineSeedData);
             }
             
             Thread[] threads = new Thread[readers.length];
@@ -162,12 +162,12 @@ public class TestDataCache extends AbstractSeedTest {
     }
     
     
-    public static void evalReadWrite(ArrayStorePartition cache, int readerCnt, int runDuration, boolean doValidation) throws Exception {
+    public static void evalReadWrite(ArrayStorePartition partition, int readerCnt, int runDuration, boolean doValidation) throws Exception {
         try {
             // Start readers
             DataPartitionReader[] readers = new DataPartitionReader[readerCnt];
             for (int i = 0; i < readers.length; i++) {
-                readers[i] = doValidation ? new DataPartitionChecker(cache, _lineSeedData) : new DataPartitionReader(cache, _lineSeedData);
+                readers[i] = doValidation ? new DataPartitionChecker(partition, _lineSeedData) : new DataPartitionReader(partition, _lineSeedData);
             }
 
             Thread[] threads = new Thread[readers.length];
@@ -178,7 +178,7 @@ public class TestDataCache extends AbstractSeedTest {
             }
             
             // Start writer
-            DataPartitionWriter writer = new DataPartitionWriter(cache, _lineSeedData);
+            DataPartitionWriter writer = new DataPartitionWriter(partition, _lineSeedData);
             Thread writerThread = new Thread(writer);
             writerThread.start();
             StatsLog.logger.info("Writer started");
@@ -254,21 +254,21 @@ public class TestDataCache extends AbstractSeedTest {
         return new krati.core.segment.MemorySegmentFactory();
     }
     
-    protected ArrayStorePartition getDataCache(File cacheDir) throws Exception {
-        ArrayStorePartition cache =
+    protected ArrayStorePartition getDataPartition(File homeDir) throws Exception {
+        ArrayStorePartition partition =
             new StaticArrayStorePartition(_idStart,
                                           _idCount,
-                                          cacheDir,
+                                          homeDir,
                                           getSegmentFactory(),
                                           _segFileSizeMB);
-        return cache;
+        return partition;
     }
     
-    public void testDataCache() throws Exception {
+    public void testDataParition() throws Exception {
         String unitTestName = getClass().getSimpleName(); 
         StatsLog.beginUnit(unitTestName);
         
-        TestDataCache eval = new TestDataCache();
+        TestDataPartition eval = new TestDataPartition();
         
         try {
             AbstractSeedTest.loadSeedData();
@@ -278,44 +278,44 @@ public class TestDataCache extends AbstractSeedTest {
         }
         
         try {
-            File cacheDir = getHomeDirectory();
-            ArrayStorePartition cache = getDataCache(cacheDir);
+            File homeDir = getHomeDirectory();
+            ArrayStorePartition partition = getDataPartition(homeDir);
             
-            if (cache.getLWMark() == 0) {
+            if (partition.getLWMark() == 0) {
                 StatsLog.logger.info(">>> populate");
-                eval.populate(cache);
+                eval.populate(partition);
 
                 StatsLog.logger.info(">>> validate");
-                validate(cache);
+                validate(partition);
             }
             
             int timeAllocated = Math.round((float)_runTimeSeconds/3);
             
             StatsLog.logger.info(">>> read only");
-            evalRead(cache, _numReaders, Math.min(timeAllocated, 10));
+            evalRead(partition, _numReaders, Math.min(timeAllocated, 10));
             
             StatsLog.logger.info(">>> write only");
-            evalWrite(cache, timeAllocated);
-            cache.persist();
+            evalWrite(partition, timeAllocated);
+            partition.persist();
             
             StatsLog.logger.info(">>> validate");
-            validate(cache);
+            validate(partition);
             
             StatsLog.logger.info(">>> read & write");
-            evalReadWrite(cache, _numReaders, timeAllocated, false);
-            cache.persist();
+            evalReadWrite(partition, _numReaders, timeAllocated, false);
+            partition.persist();
             
             StatsLog.logger.info(">>> validate");
-            validate(cache);
+            validate(partition);
             
             StatsLog.logger.info(">>> check & write");
-            evalReadWrite(cache, _numReaders, timeAllocated, true);
-            cache.persist();
+            evalReadWrite(partition, _numReaders, timeAllocated, true);
+            partition.persist();
             
             StatsLog.logger.info(">>> validate");
-            validate(cache);
+            validate(partition);
             
-            cache.sync();
+            partition.sync();
         } catch (Exception e) {
             e.printStackTrace();
         }

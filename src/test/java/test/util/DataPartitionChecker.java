@@ -12,8 +12,8 @@ import krati.store.ArrayStorePartition;
  */
 public class DataPartitionChecker extends DataPartitionReader {
     
-    public DataPartitionChecker(ArrayStorePartition cache, List<String> seedData) {
-        super(cache, seedData);
+    public DataPartitionChecker(ArrayStorePartition partition, List<String> seedData) {
+        super(partition, seedData);
     }
     
     void check(int index) {

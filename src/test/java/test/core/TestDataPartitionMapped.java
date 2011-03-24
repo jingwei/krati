@@ -3,12 +3,12 @@ package test.core;
 import krati.core.segment.SegmentFactory;
 
 /**
- * TestDataCache using MappedSegment 
+ * TestDataPartition using MappedSegment 
  * 
  * @author jwu
  *
  */
-public class TestDataCacheMapped extends TestDataCache {
+public class TestDataPartitionMapped extends TestDataPartition {
     @Override
     protected SegmentFactory getSegmentFactory() {
        return new krati.core.segment.MappedSegmentFactory();

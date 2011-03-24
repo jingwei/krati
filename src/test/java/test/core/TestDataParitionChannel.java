@@ -3,12 +3,12 @@ package test.core;
 import krati.core.segment.SegmentFactory;
 
 /**
- * TestDataCache using ChannelSegment 
+ * TestDataPartition using ChannelSegment 
  * 
  * @author jwu
  *
  */
-public class TestDataCacheChannel extends TestDataCache {
+public class TestDataParitionChannel extends TestDataPartition {
     @Override
     protected SegmentFactory getSegmentFactory() {
         return new krati.core.segment.ChannelSegmentFactory();

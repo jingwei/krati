@@ -21,17 +21,17 @@ public class SimplePartitionLoader implements PartitionLoader {
     private final static Logger _log = Logger.getLogger(SimplePartitionLoader.class);
     
     @Override
-    public void load(ArrayStorePartition cache, File dataFile) throws IOException {
+    public void load(ArrayStorePartition partition, File dataFile) throws IOException {
         String line;
         FileReader reader = new FileReader(dataFile);
         BufferedReader in = new BufferedReader(reader);
 
-        int index = cache.getIdStart();
-        int stopIndex = index + cache.getIdCount();
+        int index = partition.getIdStart();
+        int stopIndex = index + partition.getIdCount();
         
         while((line = in.readLine()) != null && index < stopIndex) {
             try {
-                cache.set(index, line.getBytes(), index);
+                partition.set(index, line.getBytes(), index);
             } catch (Exception e) {
                 _log.error("index=" + index + ": " + e.getMessage());
                 e.printStackTrace();
@@ -41,18 +41,18 @@ public class SimplePartitionLoader implements PartitionLoader {
         
         in.close();
         reader.close();
-        cache.persist();
+        partition.persist();
     }
     
     @Override
-    public void dump(ArrayStorePartition cache, File dumpFile) throws IOException {
+    public void dump(ArrayStorePartition partition, File dumpFile) throws IOException {
         byte[] data;
         String line;
         FileOutputStream fos = new FileOutputStream(dumpFile);
         PrintWriter out = new PrintWriter(fos);
         
-        for(int index = cache.getIdStart(), cnt = cache.getIdCount(); index < cnt; index++) {
-            data = cache.get(index);
+        for(int index = partition.getIdStart(), cnt = partition.getIdCount(); index < cnt; index++) {
+            data = partition.get(index);
             if(data != null) {
                 line = new String(data);
                 out.println(line);
