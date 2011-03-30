@@ -21,7 +21,7 @@ groupId: com.sna-projects.krati
 
 artifactId: krati
 
-version: 0.3.7
+version: 0.3.8
 
 ### Code Examples:
 
