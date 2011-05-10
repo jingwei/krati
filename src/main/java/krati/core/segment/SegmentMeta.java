@@ -1,11 +1,11 @@
 package krati.core.segment;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
 
 import org.apache.log4j.Logger;
 
@@ -26,9 +26,10 @@ import org.apache.log4j.Logger;
  * <pre>
  * 
  * @author jwu
+ * 02/05, 2010
  * 
  */
-public class SegmentMeta {
+public final class SegmentMeta implements Closeable {
     private final static Logger _log = Logger.getLogger(SegmentMeta.class);
 
     private final static int FREE_SEGMENT = 0;
@@ -42,8 +43,6 @@ public class SegmentMeta {
 
     private final File _metaFile;
     private RandomAccessFile _raf;
-    private FileLock _lock = null;
-    private FileChannel _channel = null;
     private MappedByteBuffer _mmapBuffer;
 
     private int _workingGeneration = 0;
@@ -127,29 +126,6 @@ public class SegmentMeta {
 
     public File getMetaFile() {
         return _metaFile;
-    }
-
-    public boolean lock() throws IOException {
-        try {
-            _channel = _raf.getChannel();
-            _lock = _channel.lock(0, Long.MAX_VALUE, false /* exclusive lock */);
-            return true;
-        } catch (Exception e) {
-            if (_lock != null)
-                _lock.release();
-            if (_channel != null)
-                _channel.close();
-        }
-
-        return false;
-    }
-
-    public boolean unlock() throws IOException {
-        if (_lock != null)
-            _lock.release();
-        if (_channel != null)
-            _channel.close();
-        return true;
     }
 
     public synchronized int countSegmentsInService() {
@@ -242,5 +218,11 @@ public class SegmentMeta {
 
         _log.info(_metaFile.getCanonicalPath() + " updated");
         _log.info("workingGeneration=" + _workingGeneration + " liveSegmentCount=" + _liveSegmentCount);
+    }
+
+    @Override
+    public synchronized void close() throws IOException {
+        _raf.close();
+        _raf = null;
     }
 }

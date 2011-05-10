@@ -47,6 +47,11 @@ public class StaticShortArray extends AbstractRecoverableArray<EntryValueShort> 
     }
     
     @Override
+    protected Logger getLogger() {
+        return _log;
+    }
+    
+    @Override
     protected void loadArrayFileData() {
         long maxScn = 0;
         

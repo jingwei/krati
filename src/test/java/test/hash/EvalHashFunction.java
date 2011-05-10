@@ -6,10 +6,10 @@ import java.io.IOException;
 import krati.core.segment.MemorySegmentFactory;
 import krati.store.StaticDataSet;
 import krati.util.HashFunction;
-import test.AbstractSeedTest;
+import test.AbstractTest;
 import test.StatsLog;
 
-public abstract class EvalHashFunction extends AbstractSeedTest {
+public abstract class EvalHashFunction extends AbstractTest {
     protected HashCollisionStats _collisionStats = new HashCollisionStats();
     
     protected EvalHashFunction(String name) {
@@ -67,13 +67,6 @@ public abstract class EvalHashFunction extends AbstractSeedTest {
     }
     
     public void test() throws Exception {
-        try {
-            AbstractSeedTest.loadSeedData();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return;
-        }
-        
         String unitTestName = getClass().getSimpleName(); 
         StatsLog.beginUnit(unitTestName);
         

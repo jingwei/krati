@@ -18,15 +18,15 @@ public class MemoryLongArray implements LongArray, DynamicArray {
     protected final int _subArrayMask;
     protected final boolean _autoExpand;
     
-    public MemoryLongArray() throws Exception {
+    public MemoryLongArray() {
         this(16, true);
     }
     
-    public MemoryLongArray(int subArrayBits) throws Exception {
+    public MemoryLongArray(int subArrayBits) {
         this(subArrayBits, true);
     }
     
-    public MemoryLongArray(int subArrayBits, boolean autoExpand) throws Exception {
+    public MemoryLongArray(int subArrayBits, boolean autoExpand) {
         this._subArrayBits = subArrayBits;           // e.g. 16
         this._subArraySize = 1 << subArrayBits;      // e.g. 65536
         this._subArrayMask = this._subArraySize - 1; // e.g. 65535

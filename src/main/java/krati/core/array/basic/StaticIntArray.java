@@ -45,7 +45,12 @@ public class StaticIntArray extends AbstractRecoverableArray<EntryValueInt> impl
     public StaticIntArray(int length, int entrySize, int maxEntries, File homeDirectory) throws Exception {
         super(length, 4 /* elementSize */, entrySize, maxEntries, homeDirectory, new EntryIntFactory());
     }
-
+    
+    @Override
+    protected Logger getLogger() {
+        return _log;
+    }
+    
     @Override
     protected void loadArrayFileData() {
         long maxScn = 0;

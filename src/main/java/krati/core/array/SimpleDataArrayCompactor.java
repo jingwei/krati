@@ -14,6 +14,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 
@@ -41,7 +42,25 @@ class SimpleDataArrayCompactor implements Runnable {
     private final static Logger _log = Logger.getLogger(SimpleDataArrayCompactor.class);
     private final ExecutorService _executor = Executors.newSingleThreadExecutor(new CompactorThreadFactory());
     private final SimpleDataArray _dataArray;
+    
+    /**
+     * Whether this compactor is enabled.
+     */
+    private volatile boolean _enabled = true;
+    
+    /**
+     * Compactor shutdown timeout in milliseconds (default 5000).
+     */
+    private long _shutdownTimeout = 5000;
+    
+    /**
+     * The load factor of segment to determine the legibility of compaction.
+     */
     private volatile double _compactLoadFactor;
+    
+    /**
+     * The internal state of compactor during the current running cycle.  
+     */
     private volatile State _state = State.DONE;
     
     /**
@@ -292,7 +311,7 @@ class SimpleDataArrayCompactor implements Runnable {
     
     @Override
     public void run() {
-        while(true) {
+        while(_enabled) {
             if(_newCycle.compareAndSet(true, false)) {
                 // One and only one compactor is at work.
                 _lock.lock();
@@ -326,14 +345,28 @@ class SimpleDataArrayCompactor implements Runnable {
     }
     
     final void start() {
+        _enabled = true;
         _executor.execute(this);
     }
     
-    public boolean isStarted() {
+    final void shutdown() {
+        _enabled = false;
+        try {
+            _executor.awaitTermination(_shutdownTimeout, TimeUnit.MILLISECONDS);
+            _log.info("compactor shutdown");
+        } catch (InterruptedException e) {
+            _log.warn("compactor shutdown forced");
+        }
+        reset();
+        _state = State.DONE;
+        _executor.shutdown();
+    }
+    
+    final boolean isStarted() {
         return _state != State.DONE;
     }
     
-    protected void reset() {
+    final void reset() {
         _segTarget = null;
         _segPermits.set(0);
         _segSourceList.clear();

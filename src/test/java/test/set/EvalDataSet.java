@@ -5,7 +5,7 @@ import java.io.IOException;
 
 import krati.core.segment.SegmentFactory;
 import krati.store.DataSet;
-import test.AbstractSeedTest;
+import test.AbstractTest;
 import test.StatsLog;
 import test.util.DataSetChecker;
 import test.util.DataSetReader;
@@ -18,7 +18,7 @@ import test.util.DataSetWriter;
  * @author jwu
  * 
  */
-public abstract class EvalDataSet extends AbstractSeedTest {
+public abstract class EvalDataSet extends AbstractTest {
     
     protected EvalDataSet(String name) {
         super(name);
@@ -255,13 +255,6 @@ public abstract class EvalDataSet extends AbstractSeedTest {
     protected abstract DataSet<byte[]> getDataSet(File storeDir) throws Exception;
     
     public void evalPerformance(int numOfReaders, int numOfWriters, int runDuration) throws Exception {
-        try {
-            AbstractSeedTest.loadSeedData();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return;
-        }
-        
         File storeDir = getHomeDirectory();
         if(!storeDir.exists()) storeDir.mkdirs();
         cleanDirectory(storeDir);

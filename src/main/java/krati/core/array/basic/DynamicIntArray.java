@@ -27,6 +27,11 @@ public class DynamicIntArray extends AbstractRecoverableArray<EntryValueInt> imp
     }
     
     @Override
+    protected Logger getLogger() {
+        return _log;
+    }
+    
+    @Override
     protected void loadArrayFileData() {
         long maxScn = _arrayFile.getLwmScn();
         

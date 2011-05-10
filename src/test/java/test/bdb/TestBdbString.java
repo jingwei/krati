@@ -5,7 +5,7 @@ import java.io.IOException;
 
 import com.sleepycat.collections.StoredMap;
 
-import test.AbstractSeedTest;
+import test.AbstractTest;
 import test.StatsLog;
 import test.driver.StoreReader;
 import test.driver.StoreTestDriver;
@@ -18,7 +18,7 @@ import test.driver.string.StoreTestStringDriver;
  * @author jwu
  * 
  */
-public class TestBdbString extends AbstractSeedTest {
+public class TestBdbString extends AbstractTest {
     public TestBdbString() {
         super(TestBdbString.class.getSimpleName());
     }
@@ -27,13 +27,6 @@ public class TestBdbString extends AbstractSeedTest {
     public void testPerformace() throws IOException {
         String unitTestName = getClass().getSimpleName() + ".testPerformance";
         StatsLog.beginUnit(unitTestName);
-
-        try {
-            AbstractSeedTest.loadSeedData();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return;
-        }
 
         File storeDir = getHomeDirectory();
         if (!storeDir.exists())

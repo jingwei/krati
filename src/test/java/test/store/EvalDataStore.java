@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.Iterator;
 
 import krati.store.DataStore;
-import test.AbstractSeedTest;
+import test.AbstractTest;
 import test.StatsLog;
 import test.driver.StoreReader;
 import test.driver.StoreTestDriver;
@@ -16,7 +16,7 @@ import test.driver.raw.StoreTestBytesDriver;
  * 
  * @author jwu
  */
-public abstract class EvalDataStore extends AbstractSeedTest {
+public abstract class EvalDataStore extends AbstractTest {
     
     public EvalDataStore(String name) {
         super(name);
@@ -39,13 +39,6 @@ public abstract class EvalDataStore extends AbstractSeedTest {
     }
     
     public void evalPerformance(int numOfReaders, int numOfWriters, int runDuration) throws Exception {
-        try {
-            AbstractSeedTest.loadSeedData();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return;
-        }
-        
         File storeDir = getHomeDirectory();
         if(!storeDir.exists()) storeDir.mkdirs();
         cleanDirectory(storeDir);

@@ -7,7 +7,7 @@ import java.util.Map.Entry;
 
 import krati.core.segment.SegmentFactory;
 import krati.store.DataStore;
-import test.AbstractSeedTest;
+import test.AbstractTest;
 import test.StatsLog;
 
 /**
@@ -16,7 +16,7 @@ import test.StatsLog;
  * @author jwu
  * Sep 30, 2010
  */
-public abstract class EvalDataStoreIterator extends AbstractSeedTest {
+public abstract class EvalDataStoreIterator extends AbstractTest {
     private final DataStore<byte[], byte[]> _store;
     
     protected EvalDataStoreIterator(String name) throws Exception {
@@ -32,7 +32,6 @@ public abstract class EvalDataStoreIterator extends AbstractSeedTest {
     
     protected void populate() throws Exception {
         StatsLog.logger.info(">>> populate");
-        AbstractSeedTest.loadSeedData();
         
         int count = 0;
         long startTime = System.currentTimeMillis();

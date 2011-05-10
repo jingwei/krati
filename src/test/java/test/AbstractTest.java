@@ -2,8 +2,11 @@ package test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.log4j.Logger;
+
+import test.util.SeedData;
 
 import junit.framework.TestCase;
 
@@ -205,5 +208,18 @@ public class AbstractTest extends TestCase {
     
     public static int gethitPercent() {
         return _hitPercent;
+    }
+    
+    public static List<String> _lineSeedData = null;
+    
+    static {
+        SeedData seedData = new SeedData();
+        try {
+            seedData.load();
+            _lineSeedData = seedData.getLines();
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
 }

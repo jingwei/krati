@@ -3,7 +3,7 @@ package test.hash;
 import java.io.File;
 import java.io.IOException;
 
-import test.AbstractSeedTest;
+import test.AbstractTest;
 import test.StatsLog;
 import krati.core.segment.MemorySegmentFactory;
 import krati.core.segment.SegmentFactory;
@@ -11,7 +11,7 @@ import krati.store.DataSet;
 import krati.store.StaticDataSet;
 import krati.util.HashFunction;
 
-public abstract class EvalTieredHashFunction extends AbstractSeedTest {
+public abstract class EvalTieredHashFunction extends AbstractTest {
     protected HashCollisionStats _collisionStats = new HashCollisionStats();
     
     protected EvalTieredHashFunction(String name) {
@@ -113,13 +113,6 @@ public abstract class EvalTieredHashFunction extends AbstractSeedTest {
     }
     
     protected void evaluate(int... tierCapacities) throws Exception {
-        try {
-            AbstractSeedTest.loadSeedData();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return;
-        }
-        
         SegmentFactory segmentFactory = createSegmentFactory();
         HashFunction<byte[]> hashFunction = createHashFunction();
         

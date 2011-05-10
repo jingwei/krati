@@ -3,6 +3,7 @@ package krati.core.array;
 import krati.Persistable;
 import krati.array.LongArray;
 import krati.core.array.entry.EntryPersistListener;
+import krati.io.Closeable;
 
 /**
  * AddressArray is for maintaining address pointers (long values) to data stored in segments. 
@@ -10,7 +11,7 @@ import krati.core.array.entry.EntryPersistListener;
  * @author jwu
  *
  */
-public interface AddressArray extends LongArray, Persistable {
+public interface AddressArray extends LongArray, Persistable, Closeable {
     
     /**
      * Gets the listener that is called whenever an entry is persisted. 

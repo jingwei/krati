@@ -6,7 +6,7 @@ import java.io.IOException;
 import krati.array.DataArray;
 import krati.core.segment.SegmentFactory;
 import krati.store.AbstractDataArray;
-import test.AbstractSeedTest;
+import test.AbstractTest;
 import test.StatsLog;
 import test.util.DataArrayChecker;
 import test.util.DataArrayReader;
@@ -18,7 +18,7 @@ import test.util.DataArrayWriter;
  * @author jwu
  * 2010
  */
-public abstract class EvalDataArray extends AbstractSeedTest {
+public abstract class EvalDataArray extends AbstractTest {
     
     public EvalDataArray() {
         super(EvalDataArray.class.getName());
@@ -262,13 +262,6 @@ public abstract class EvalDataArray extends AbstractSeedTest {
     public void testDataArray() throws Exception {
         String unitTestName = getClass().getSimpleName(); 
         StatsLog.beginUnit(unitTestName);
-        
-        try {
-            AbstractSeedTest.loadSeedData();
-        } catch(Exception e) {
-            e.printStackTrace();
-            return;
-        }
         
         try {
             File homeDir = getHomeDirectory();

@@ -8,7 +8,7 @@ import krati.core.array.SimpleDataArray;
 import krati.core.array.basic.StaticLongArray;
 import krati.core.segment.SegmentFactory;
 import krati.core.segment.SegmentManager;
-import test.AbstractSeedTest;
+import test.AbstractTest;
 import test.StatsLog;
 
 /**
@@ -17,7 +17,7 @@ import test.StatsLog;
  * @author jwu
  *
  */
-public class TestSimpleArray extends AbstractSeedTest {
+public class TestSimpleArray extends AbstractTest {
     
     public TestSimpleArray() {
         super(TestSimpleArray.class.getSimpleName());
@@ -75,13 +75,6 @@ public class TestSimpleArray extends AbstractSeedTest {
     public void testPopulate() {
         String unitTestName = getClass().getSimpleName() + " with " + getSegmentFactory().getClass().getSimpleName(); 
         StatsLog.beginUnit(unitTestName);
-        
-        try {
-            AbstractSeedTest.loadSeedData();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return;
-        }
         
         try {
             SimpleDataArray array;

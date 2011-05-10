@@ -7,7 +7,7 @@ import krati.core.segment.SegmentFactory;
 import krati.store.ArrayStorePartition;
 import krati.store.StaticArrayStorePartition;
 
-import test.AbstractSeedTest;
+import test.AbstractTest;
 import test.StatsLog;
 import test.util.DataPartitionChecker;
 import test.util.DataPartitionReader;
@@ -19,7 +19,7 @@ import test.util.DataPartitionWriter;
  * @author jwu
  *
  */
-public class TestDataPartition extends AbstractSeedTest {
+public class TestDataPartition extends AbstractTest {
     
     public TestDataPartition() {
         super(TestDataPartition.class.getName());
@@ -269,13 +269,6 @@ public class TestDataPartition extends AbstractSeedTest {
         StatsLog.beginUnit(unitTestName);
         
         TestDataPartition eval = new TestDataPartition();
-        
-        try {
-            AbstractSeedTest.loadSeedData();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return;
-        }
         
         try {
             File homeDir = getHomeDirectory();

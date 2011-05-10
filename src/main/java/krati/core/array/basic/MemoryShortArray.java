@@ -18,15 +18,15 @@ public class MemoryShortArray implements ShortArray, DynamicArray {
     protected final int _subArrayMask;
     protected final boolean _autoExpand;
     
-    public MemoryShortArray() throws Exception {
+    public MemoryShortArray() {
         this(16, true);
     }
     
-    public MemoryShortArray(int subArrayBits) throws Exception {
+    public MemoryShortArray(int subArrayBits) {
         this(subArrayBits, true);
     }
     
-    public MemoryShortArray(int subArrayBits, boolean autoExpand) throws Exception {
+    public MemoryShortArray(int subArrayBits, boolean autoExpand) {
         this._subArrayBits = subArrayBits;           // e.g. 16
         this._subArraySize = 1 << subArrayBits;      // e.g. 65536
         this._subArrayMask = this._subArraySize - 1; // e.g. 65535

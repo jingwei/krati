@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import org.apache.log4j.Logger;
 
+import krati.Mode;
 import krati.array.DynamicArray;
 import krati.core.array.AddressArray;
 import krati.core.array.entry.EntryLongFactory;
@@ -15,7 +16,8 @@ import krati.core.array.entry.EntryValueLong;
  * DynamicLongArray
  * 
  * @author jwu
- *
+ * 
+ * 05/09, 2011 - added support for Closeable
  */
 public class DynamicLongArray extends AbstractRecoverableArray<EntryValueLong> implements AddressArray, DynamicArray, ArrayExpandListener {
     private final static int _subArrayBits = 16;
@@ -23,9 +25,20 @@ public class DynamicLongArray extends AbstractRecoverableArray<EntryValueLong> i
     private final static Logger _log = Logger.getLogger(DynamicLongArray.class);
     private MemoryLongArray _internalArray;
     
+    /**
+     * The mode can only be <code>Mode.INIT</code>, <code>Mode.OPEN</code> and <code>Mode.CLOSED</code>.
+     */
+    private volatile Mode _mode = Mode.INIT;
+    
     public DynamicLongArray(int entrySize, int maxEntries, File directory) throws Exception {
         super(_subArraySize /* initial array length and subArray length */,
               8, entrySize, maxEntries, directory, new EntryLongFactory());
+        this._mode = Mode.OPEN;
+    }
+    
+    @Override
+    protected Logger getLogger() {
+        return _log;
     }
     
     @Override
@@ -145,5 +158,47 @@ public class DynamicLongArray extends AbstractRecoverableArray<EntryValueLong> i
     
     public final int subArrayLength() {
         return _subArraySize;
+    }
+    
+    @Override
+    public synchronized void close() throws IOException {
+        if(_mode == Mode.CLOSED) {
+            return;
+        }
+        
+        try {
+            sync();
+            _entryManager.clear();
+        } catch(Exception e) {
+            throw (e instanceof IOException) ? (IOException)e : new IOException(e);
+        } finally {
+            _internalArray = null;
+            _mode = Mode.CLOSED;
+        }
+    }
+    
+    @Override
+    public synchronized void open() throws IOException {
+        if(_mode == Mode.OPEN) {
+            return;
+        }
+        
+        File file = new File(_directory, "indexes.dat");
+        _arrayFile = openArrayFile(file, _length /* initial length */, 8);
+        _length = _arrayFile.getArrayLength();
+        
+        this.init();
+        this._mode = Mode.OPEN;
+        
+        getLogger().info("length:" + _length +
+                        " entrySize:" + _entryManager.getMaxEntrySize() +
+                        " maxEntries:" + _entryManager.getMaxEntries() + 
+                        " directory:" + _directory.getAbsolutePath() +
+                        " arrayFile:" + _arrayFile.getName());
+    }
+    
+    @Override
+    public boolean isOpen() {
+        return _mode == Mode.OPEN;
     }
 }

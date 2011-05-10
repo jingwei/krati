@@ -4,10 +4,10 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import krati.util.HashFunction;
-import test.AbstractSeedTest;
+import test.AbstractTest;
 import test.StatsLog;
 
-public abstract class EvalHash extends AbstractSeedTest {
+public abstract class EvalHash extends AbstractTest {
     
     protected EvalHash(String name) {
         super(name);
@@ -55,13 +55,6 @@ public abstract class EvalHash extends AbstractSeedTest {
     }
     
     public void test() throws Exception {
-        try {
-            AbstractSeedTest.loadSeedData();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return;
-        }
-        
         String unitTestName = getClass().getSimpleName(); 
         StatsLog.beginUnit(unitTestName);
         

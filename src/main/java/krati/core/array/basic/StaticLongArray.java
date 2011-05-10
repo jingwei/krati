@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import org.apache.log4j.Logger;
 
+import krati.Mode;
 import krati.array.LongArray;
 import krati.core.array.AddressArray;
 import krati.core.array.entry.EntryLongFactory;
@@ -23,12 +24,19 @@ import krati.core.array.entry.EntryValueLong;
  * It is expected that this class is used in the case of multiple readers and single writer.
  * 
  * @author jwu
- *
+ * 
+ * 05/09, 2011 - added support for Closeable
+ * 
  */
 public class StaticLongArray extends AbstractRecoverableArray<EntryValueLong> implements AddressArray {
     private static final Logger _log = Logger.getLogger(StaticLongArray.class);
     private long[] _internalArray;
-
+    
+    /**
+     * The mode can only be <code>Mode.INIT</code>, <code>Mode.OPEN</code> and <code>Mode.CLOSED</code>.
+     */
+    private volatile Mode _mode = Mode.INIT;
+    
     /**
      * Create a fixed-length persistent long array.
      * 
@@ -46,6 +54,12 @@ public class StaticLongArray extends AbstractRecoverableArray<EntryValueLong> im
      */
     public StaticLongArray(int length, int entrySize, int maxEntries, File homeDirectory) throws Exception {
         super(length, 8 /* elementSize */, entrySize, maxEntries, homeDirectory, new EntryLongFactory());
+        this._mode = Mode.OPEN;
+    }
+    
+    @Override
+    protected Logger getLogger() {
+        return _log;
     }
     
     @Override
@@ -151,5 +165,47 @@ public class StaticLongArray extends AbstractRecoverableArray<EntryValueLong> im
     @Override
     public void setPersistListener(EntryPersistListener persistListener) {
         getEntryManager().setEntryPersistListener(persistListener);
+    }
+
+    @Override
+    public synchronized void close() throws IOException {
+        if(_mode == Mode.CLOSED) {
+            return;
+        }
+        
+        try {
+            sync();
+            _entryManager.clear();
+        } catch(Exception e) {
+            throw (e instanceof IOException) ? (IOException)e : new IOException(e);
+        } finally {
+            _internalArray = null;
+            _mode = Mode.CLOSED;
+        }
+    }
+    
+    @Override
+    public synchronized void open() throws IOException {
+        if(_mode == Mode.OPEN) {
+            return;
+        }
+        
+        File file = new File(_directory, "indexes.dat");
+        _arrayFile = openArrayFile(file, _length /* initial length */, 8);
+        _length = _arrayFile.getArrayLength();
+        
+        this.init();
+        this._mode = Mode.OPEN;
+        
+        getLogger().info("length:" + _length +
+                        " entrySize:" + _entryManager.getMaxEntrySize() +
+                        " maxEntries:" + _entryManager.getMaxEntries() + 
+                        " directory:" + _directory.getAbsolutePath() +
+                        " arrayFile:" + _arrayFile.getName());
+    }
+    
+    @Override
+    public boolean isOpen() {
+        return _mode == Mode.OPEN;
     }
 }
