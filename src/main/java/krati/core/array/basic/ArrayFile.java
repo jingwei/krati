@@ -103,6 +103,7 @@ public class ArrayFile implements Closeable {
     if (raf.length() < DATA_START_POSITION) {
       throw new IOException("Failed to open " + file.getAbsolutePath());
     }
+    raf.close();
     
     this._file = file;
     this._type = type;
