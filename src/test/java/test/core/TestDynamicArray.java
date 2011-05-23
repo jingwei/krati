@@ -14,7 +14,7 @@ import krati.core.array.basic.DynamicShortArray;
  * TestDynamicArray
  * 
  * @author jwu
- *
+ * 
  */
 public class TestDynamicArray extends AbstractTest {
     static long scn = 0;

@@ -31,6 +31,9 @@ public class AbstractTest extends TestCase {
         if(!TEST_RESOURCES_DIR.exists()) {
             TEST_RESOURCES_DIR.mkdirs();
         }
+        
+        _log.info("krati.test.output.dir: " + TEST_OUTPUT_DIR.getAbsolutePath());
+        _log.info("krati.test.resources.dir: " + TEST_RESOURCES_DIR.getAbsolutePath());
     }
     
     // Default Test Params.

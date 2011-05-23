@@ -36,12 +36,13 @@ import krati.util.Chronos;
  * It batches compaction update records and sends them to the writer for post-processing. 
  * 
  * @author jwu
- *
+ * 
+ * 05/22, 2011 - Fixed start/shutdown
  */
 class SimpleDataArrayCompactor implements Runnable {
     private final static Logger _log = Logger.getLogger(SimpleDataArrayCompactor.class);
-    private final ExecutorService _executor = Executors.newSingleThreadExecutor(new CompactorThreadFactory());
-    private final SimpleDataArray _dataArray;
+    private ExecutorService _executor = Executors.newSingleThreadExecutor(new CompactorThreadFactory());
+    private SimpleDataArray _dataArray;
     
     /**
      * Whether this compactor is enabled.
@@ -346,6 +347,7 @@ class SimpleDataArrayCompactor implements Runnable {
     
     final void start() {
         _enabled = true;
+        _executor = Executors.newSingleThreadExecutor(new CompactorThreadFactory());
         _executor.execute(this);
     }
     
@@ -357,9 +359,14 @@ class SimpleDataArrayCompactor implements Runnable {
         } catch (InterruptedException e) {
             _log.warn("compactor shutdown forced");
         }
-        reset();
-        _state = State.DONE;
-        _executor.shutdown();
+        
+        try {
+            reset();
+            _state = State.DONE;
+            _executor.shutdown();
+        } finally {
+            _executor = null;
+        }
     }
     
     final boolean isStarted() {

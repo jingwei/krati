@@ -176,10 +176,14 @@ public class StaticLongArray extends AbstractRecoverableArray<EntryValueLong> im
         try {
             sync();
             _entryManager.clear();
+            _arrayFile.close();
         } catch(Exception e) {
             throw (e instanceof IOException) ? (IOException)e : new IOException(e);
         } finally {
             _internalArray = null;
+            _arrayFile = null;
+            _length = 0;
+            
             _mode = Mode.CLOSED;
         }
     }

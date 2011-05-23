@@ -6,6 +6,12 @@ import krati.core.segment.SegmentFactory;
 import krati.store.AbstractDataArray;
 import krati.store.DynamicDataArray;
 
+/**
+ * TestDynamicDataArray
+ * 
+ * @author jwu
+ * 
+ */
 public class TestDynamicDataArray extends EvalDataArray {
 
     @Override

@@ -35,6 +35,7 @@ import krati.io.Closeable;
  * @author jwu
  * 
  * 05/09, 2011 - added support for Closeable
+ * 05/22, 2011 - fixed method close()
  * 
  */
 public class SimpleDataArray implements DataArray, Persistable, Closeable {
@@ -714,7 +715,7 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
             sync();
             _compactor.shutdown();
             _segmentManager.close();
-            _addressArray.clear();
+            _addressArray.close();
         } catch(Exception e) {
             _log.error("Failed to close", e);
             throw (e instanceof IOException) ? (IOException)e : new IOException(e);

@@ -173,6 +173,9 @@ public class DynamicLongArray extends AbstractRecoverableArray<EntryValueLong> i
             throw (e instanceof IOException) ? (IOException)e : new IOException(e);
         } finally {
             _internalArray = null;
+            _arrayFile = null;
+            _length = 0;
+            
             _mode = Mode.CLOSED;
         }
     }

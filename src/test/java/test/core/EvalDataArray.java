@@ -16,7 +16,7 @@ import test.util.DataArrayWriter;
  * EvalDataArray
  * 
  * @author jwu
- * 2010
+ * 
  */
 public abstract class EvalDataArray extends AbstractTest {
     
