@@ -36,6 +36,7 @@ import krati.io.Closeable;
  * 
  * 05/09, 2011 - added support for Closeable
  * 05/22, 2011 - fixed method close()
+ * 05/23, 2011 - sync compaction batches in method close()
  * 
  */
 public class SimpleDataArray implements DataArray, Persistable, Closeable {
@@ -96,6 +97,7 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
         
         this.init();
         this._mode = Mode.OPEN;
+        _log.info("mode=" + _mode);
     }
     
     private void consumeCompaction(CompactionUpdateBatch updateBatch) throws Exception {
@@ -694,7 +696,7 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
     
     @Override
     public synchronized void clear() {
-        _compactor.reset();
+        _compactor.clear();
         _addressArray.clear();
         _segmentManager.clear();
         this.init();
@@ -712,15 +714,18 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
         }
         
         try {
-            sync();
-            _compactor.shutdown();
-            _segmentManager.close();
-            _addressArray.close();
+            // THE CALLS ORDERED. 
+            _compactor.shutdown();   // shutdown compactor
+            sync();                  // consume compaction batches are generated during shutdown
+            _compactor.clear();      // cleanup compactor internal state
+            _addressArray.close();   // close address array
+            _segmentManager.close(); // close segment manager
         } catch(Exception e) {
             _log.error("Failed to close", e);
             throw (e instanceof IOException) ? (IOException)e : new IOException(e);
         } finally {
             _mode = Mode.CLOSED;
+            _log.info("mode=" + _mode);
         }
     }
     
@@ -742,15 +747,23 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
             
             init();
             _mode = Mode.OPEN;
+            _log.info("mode=" + _mode);
         } catch(Exception e) {
+            _mode = Mode.CLOSED;
+            _log.info("mode=" + _mode, e);
+            _log.error("Failed to open", e);
+            
+            _compactor.shutdown();
+            _compactor.clear();
+            
             if (_addressArray.isOpen()) {
                 _addressArray.close();
             }
             if (_segmentManager.isOpen()) {
                 _segmentManager.close();
             }
-            _compactor.shutdown();
-            _mode = Mode.CLOSED;
+            
+            throw (e instanceof IOException) ? (IOException)e : new IOException(e);
         }
     }
     

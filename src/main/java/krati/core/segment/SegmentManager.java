@@ -129,7 +129,9 @@ public final class SegmentManager implements Closeable {
         // Close all known segments
         for(Segment seg : _segList) {
             try {
-                seg.close(false);
+                if(seg != null) {
+                    seg.close(false);
+                }
             } catch (IOException e) {
                 _log.warn("failed to close segment " + seg.getSegmentId());
             }
