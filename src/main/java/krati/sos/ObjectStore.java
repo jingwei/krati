@@ -23,7 +23,7 @@ public interface ObjectStore<K, V> extends DataStore<K, V>
     /**
      * Gets an object in the form of byte array from the store.
      * 
-     * @param key  the retrieving key in raw bytes. 
+     * @param keyBytes  the retrieving key in raw bytes. 
      * @return the retrieved object in raw bytes.
      */
     public byte[] getBytes(byte[] keyBytes);

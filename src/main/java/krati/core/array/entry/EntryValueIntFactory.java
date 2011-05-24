@@ -47,7 +47,6 @@ public class EntryValueIntFactory implements EntryValueFactory<EntryValueInt> {
      *            data reader for EntryValueInt.
      * @param value
      *            an EntryValueInt to populate.
-     * @return <code>true</code> if value is populated.
      * @throws IOException
      */
     @Override

@@ -45,7 +45,6 @@ public class EntryValueLongFactory implements EntryValueFactory<EntryValueLong> 
      *            data reader for EntryValueLong.
      * @param value
      *            an EntryValue to populate.
-     * @return <code>true</code> if value is populated.
      * @throws IOException
      */
     @Override

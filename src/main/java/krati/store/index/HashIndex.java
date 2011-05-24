@@ -14,7 +14,7 @@ import krati.util.HashFunction;
 
 /**
  * HashIndex is for serving index lookup from main memory and has the
- * best performance when {@link MemorySegmentFactory} is used to store
+ * best performance when {@link krati.core.segment.MemorySegmentFactory} is used to store
  * indexes in memory.
  * 
  * @author jwu

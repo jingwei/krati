@@ -32,7 +32,6 @@ import krati.io.ChannelWriter;
  * 
  * @author jwu
  *
- * @param <T> Generic entry value representing an update to array file.
  */
 public class EntryFileWriter {
     private final static Logger _log = Logger.getLogger(EntryFileWriter.class);

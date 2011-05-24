@@ -57,7 +57,6 @@ public class DynamicDataSet implements DataSet<byte[]> {
      * </pre>
      * 
      * @param homeDir                the home directory of DataSet
-     * @param segmentFileSizeMB      the size of segment file in MB
      * @param segmentFactory         the segment factory
      * @throws Exception             if this dynamic data set cannot be created.
      */

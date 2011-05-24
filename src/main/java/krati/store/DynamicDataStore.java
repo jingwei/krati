@@ -60,7 +60,6 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
      * </pre>
      * 
      * @param homeDir                the home directory of DataStore
-     * @param segmentFileSizeMB      the size of segment file in MB
      * @param segmentFactory         the segment factory
      * @throws Exception             if this dynamic data store cannot be created.
      */

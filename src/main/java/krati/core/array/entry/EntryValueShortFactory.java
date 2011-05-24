@@ -46,7 +46,6 @@ public class EntryValueShortFactory implements EntryValueFactory<EntryValueShort
      *            data reader for EntryValueShort.
      * @param value
      *            an EntryValue to populate.
-     * @return <code>true</code> if value is populated.
      * @throws IOException
      */
     @Override
