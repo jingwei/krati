@@ -19,6 +19,7 @@ import test.util.FileUtils;
  * 
  * 05/15, 2011 - Created
  * 05/22, 2011 - Added test for open/close
+ * 05/24, 2011 - Added test for clear
  */
 public class TestSimpleDataArray extends AbstractTest {
     protected SimpleDataArray _dataArray;
@@ -32,7 +33,7 @@ public class TestSimpleDataArray extends AbstractTest {
     }
     
     protected AddressArray createAddressArray(File homeDir) throws Exception {
-        return new StaticLongArray(_idCount, 10000, 5, homeDir);
+        return new StaticLongArray(_idCount, 1000, 5, homeDir);
     }
     
     protected SegmentManager createSegmentManager(File homeDir) throws IOException {
@@ -122,7 +123,7 @@ public class TestSimpleDataArray extends AbstractTest {
     }
     
     public void testOpenClose() {
-        String unitTestName = getClass().getSimpleName() + " with " + createSegmentFactory().getClass().getSimpleName(); 
+        String unitTestName = getClass().getSimpleName(); 
         StatsLog.beginUnit(unitTestName);
         
         try {
@@ -153,4 +154,41 @@ public class TestSimpleDataArray extends AbstractTest {
         StatsLog.endUnit(unitTestName);
     }
     
+    public void testClear() {
+        String unitTestName = getClass().getSimpleName(); 
+        StatsLog.beginUnit(unitTestName);
+        
+        try {
+            StatsLog.logger.info(">>> populate");
+            populate(_dataArray);
+            _dataArray.sync();
+            
+            StatsLog.logger.info(">>> check");
+            check(_dataArray);
+            
+            // Clear data array
+            _dataArray.clear();
+            
+            // Check that array is cleared
+            for(int i = 0, cnt = _dataArray.length(); i < cnt; i++) {
+                assertEquals(null, _dataArray.get(i));
+            }
+            
+            // Reopen data array
+            _dataArray.close();
+            _dataArray.open();
+            
+            // Check that array is cleared
+            for(int i = 0, cnt = _dataArray.length(); i < cnt; i++) {
+                assertEquals(null, _dataArray.get(i));
+            }
+            
+            _dataArray.close();
+        } catch (Exception e) {
+            StatsLog.logger.info(e.getMessage(), e);
+            e.printStackTrace();
+        }
+        
+        StatsLog.endUnit(unitTestName);
+    }
 }

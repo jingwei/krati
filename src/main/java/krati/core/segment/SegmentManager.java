@@ -40,7 +40,8 @@ import org.apache.log4j.Logger;
  * 
  * @author jwu
  * 02/05, 2010
- * 
+ * 05/24, 2010 - Always try to open the manager upon call to SegmentManager.getInstance(...)
+ *  
  */
 public final class SegmentManager implements Closeable {
     private final static Logger _log = Logger.getLogger(SegmentManager.class);
@@ -126,20 +127,7 @@ public final class SegmentManager implements Closeable {
     }
 
     public synchronized void clear() {
-        // Close all known segments
-        for(Segment seg : _segList) {
-            try {
-                if(seg != null) {
-                    seg.close(false);
-                }
-            } catch (IOException e) {
-                _log.warn("failed to close segment " + seg.getSegmentId());
-            }
-        }
-        
-        _segList.clear();
-        _segCurrent = null;
-        _recycleList.clear();
+        clearInternal(true /* CLEAR META */);
     }
 
     /**
@@ -248,14 +236,42 @@ public final class SegmentManager implements Closeable {
             }
         } catch (IOException e) {
             _log.error(e.getMessage());
-
-            clear();
+            
+            clearInternal(false /* DO NOT CLEAR META */);
             throw e;
         }
 
         _log.info("init done");
     }
 
+    private void clearInternal(boolean clearMeta) {
+        // Close all known segments
+        for(int segId = 0, cnt = _segList.size(); segId < cnt; segId++) {
+            Segment seg = _segList.get(segId);
+            if(seg != null) {
+                try {
+                    seg.close(false);
+                } catch (IOException e) {
+                    _log.warn("failed to close segment " + seg.getSegmentId());
+                } finally {
+                    _segList.set(segId, null);
+                }
+            }
+        }
+        
+        if(clearMeta) {
+            try {
+                updateMeta();
+            } catch (IOException e) {
+                _log.warn("failed to clear segment meta");
+            }
+        }
+        
+        _segList.clear();
+        _segCurrent = null;
+        _recycleList.clear();
+    }
+    
     protected File[] listSegmentFiles() {
         File segDir = new File(_segHomePath);
         File[] segFiles = segDir.listFiles(new FileFilter() {
@@ -332,6 +348,7 @@ public final class SegmentManager implements Closeable {
             _segManagerMap.put(key, mgr);
         }
 
+        mgr.open();
         return mgr;
     }
 
@@ -342,7 +359,7 @@ public final class SegmentManager implements Closeable {
         }
         
         try {
-            clear();
+            clearInternal(false /* DO NOT CLEAR META */);
             if(_segMeta != null) {
                 _segMeta.close();
             }
