@@ -37,7 +37,7 @@ import krati.io.Closeable;
  * 05/09, 2011 - added support for Closeable
  * 05/22, 2011 - fixed method close()
  * 05/23, 2011 - sync compaction batches in method close()
- * 
+ * 05/26, 2011 - added methods for partially reading data bytes
  */
 public class SimpleDataArray implements DataArray, Persistable, Closeable {
     private final static Logger _log = Logger.getLogger(SimpleDataArray.class);
@@ -345,7 +345,7 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
             int size = _addressFormat.getDataSize(address);
             return (size == 0) ? seg.readInt(segPos) : size;
         } catch(Exception e) {
-            _log.warn(e.getMessage(), e);
+            _log.warn(e.getMessage());
             return -1;
         }
     }
@@ -385,7 +385,7 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
             
             return data;
         } catch(Exception e) {
-            _log.warn(e.getMessage(), e);
+            _log.warn(e.getMessage());
             return null;
         }
     }
@@ -441,7 +441,96 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
             
             return len;
         } catch(Exception e) {
-            _log.warn(e.getMessage(), e);
+            _log.warn(e.getMessage());
+            return -1;
+        }
+    }
+    
+    /**
+     * Reads data byte at an index into a byte array.
+     * 
+     * This method does a full read of data bytes only if the destination byte
+     * array has enough capacity to store all the bytes from the specified index.
+     * Otherwise, a partial read is done to fill in the destination byte array.
+     *   
+     * @param index  the array index
+     * @param dst    the byte array to fill in
+     * @return the total number of bytes read if data is available at the given index.
+     *         Otherwise, <code>-1</code>.
+     */
+    public int read(int index, byte[] dst) {
+        rangeCheck(index);
+        
+        try {
+            long address = getAddress(index);
+            int segPos = _addressFormat.getOffset(address);
+            int segInd = _addressFormat.getSegment(address);
+            
+            // no data found
+            if(segPos < Segment.dataStartPosition) return -1;
+            
+            // get data segment
+            Segment seg = _segmentManager.getSegment(segInd);
+            if(seg == null) return -1;
+            
+            // read data length
+            int size = _addressFormat.getDataSize(address);
+            int len = (size == 0) ? seg.readInt(segPos) : size;
+            
+            // read data into byte array
+            if (len > 0) {
+                len = Math.min(len, dst.length);
+                seg.read(segPos + 4, dst, 0, len);
+            }
+            
+            return len;
+        } catch(Exception e) {
+            _log.warn(e.getMessage());
+            return -1;
+        }
+    }
+    
+    /**
+     * Reads data bytes from an offset of data at an index to fill in a byte array.
+     *   
+     * @param index  the array index
+     * @param offset the offset of data bytes
+     * @param dst    the byte array to fill in
+     * @return the total number of bytes read if data is available at the given index.
+     *         Otherwise, <code>-1</code>.
+     */
+    public int read(int index, int offset, byte[] dst) {
+        rangeCheck(index);
+        
+        try {
+            long address = getAddress(index);
+            int segPos = _addressFormat.getOffset(address);
+            int segInd = _addressFormat.getSegment(address);
+            
+            // no data found
+            if(segPos < Segment.dataStartPosition) return -1;
+            
+            // get data segment
+            Segment seg = _segmentManager.getSegment(segInd);
+            if(seg == null) return -1;
+            
+            // read data length
+            int size = _addressFormat.getDataSize(address);
+            int len = (size == 0) ? seg.readInt(segPos) : size;
+            
+            // read data into byte array
+            if (len > 0) {
+                if (len > offset) {
+                    len = Math.min(len - offset, dst.length);
+                    seg.read(segPos + 4 + offset, dst, 0, len);
+                } else {
+                    return -1;
+                }
+            }
+            
+            return len;
+        } catch(Exception e) {
+            _log.warn(e.getMessage());
             return -1;
         }
     }
@@ -747,10 +836,8 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
             
             init();
             _mode = Mode.OPEN;
-            _log.info("mode=" + _mode);
         } catch(Exception e) {
             _mode = Mode.CLOSED;
-            _log.info("mode=" + _mode, e);
             _log.error("Failed to open", e);
             
             _compactor.shutdown();
@@ -764,6 +851,8 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
             }
             
             throw (e instanceof IOException) ? (IOException)e : new IOException(e);
+        } finally {
+            _log.info("mode=" + _mode);
         }
     }
     

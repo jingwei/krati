@@ -2,6 +2,8 @@ package test.core;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Random;
 
 import krati.core.array.AddressArray;
 import krati.core.array.SimpleDataArray;
@@ -20,8 +22,10 @@ import test.util.FileUtils;
  * 05/15, 2011 - Created
  * 05/22, 2011 - Added test for open/close
  * 05/24, 2011 - Added test for clear
+ * 05/24, 2011 - Added test for partial reads
  */
 public class TestSimpleDataArray extends AbstractTest {
+    protected final Random _rand = new Random(); 
     protected SimpleDataArray _dataArray;
     
     public TestSimpleDataArray() {
@@ -190,5 +194,26 @@ public class TestSimpleDataArray extends AbstractTest {
         }
         
         StatsLog.endUnit(unitTestName);
+    }
+    
+    public void testPartialRead() throws Exception {
+        for(int i = 0, cnt = _rand.nextInt(100); i < cnt; i++) {
+            int index = _rand.nextInt(_dataArray.length());
+            String line = _lineSeedData.get(index%_lineSeedData.size());
+            byte[] data = line.getBytes();
+            
+            _dataArray.set(index, data, System.currentTimeMillis());
+            
+            byte[] src = new byte[data.length/2];
+            byte[] dst = new byte[data.length/2];
+            
+            System.arraycopy(data, 0, src, 0, dst.length);
+            assertEquals(dst.length, _dataArray.read(index, dst));
+            assertTrue(Arrays.equals(src, dst));
+            
+            System.arraycopy(data, dst.length, src, 0, dst.length);
+            assertEquals(dst.length, _dataArray.read(index, dst.length, dst));
+            assertTrue(Arrays.equals(src, dst));
+        }
     }
 }
