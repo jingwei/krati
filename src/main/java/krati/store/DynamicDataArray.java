@@ -1,6 +1,7 @@
 package krati.store;
 
 import java.io.File;
+import java.io.IOException;
 
 import krati.array.DynamicArray;
 import krati.core.array.AddressArray;
@@ -144,12 +145,27 @@ public final class DynamicDataArray extends AbstractDataArray implements Dynamic
     }
     
     @Override
-    public int getIndexStart() {
+    public final int getIndexStart() {
         return 0;
     }
     
     @Override
-    public int capacity() {
+    public final int capacity() {
         return length();
+    }
+    
+    @Override
+    public final boolean isOpen() {
+        return _dataArray.isOpen();
+    }
+    
+    @Override
+    public synchronized void open() throws IOException {
+        _dataArray.open();
+    }
+    
+    @Override
+    public synchronized void close() throws IOException {
+        _dataArray.close();
     }
 }

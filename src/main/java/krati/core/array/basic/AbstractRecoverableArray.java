@@ -156,6 +156,8 @@ abstract class AbstractRecoverableArray<V extends EntryValue> implements Recover
 
     @Override
     public void updateArrayFile(List<Entry<V>> entryList) throws IOException {
-        _arrayFile.update(entryList);
+        if(_arrayFile != null) {
+            _arrayFile.update(entryList);
+        }
     }
 }

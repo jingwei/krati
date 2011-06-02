@@ -5,35 +5,46 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 
+import krati.Mode;
 import krati.Persistable;
 import krati.core.array.SimpleDataArray;
 import krati.core.array.basic.DynamicLongArray;
 import krati.core.segment.Segment;
 import krati.core.segment.SegmentFactory;
 import krati.core.segment.SegmentManager;
+import krati.io.Closeable;
+import krati.util.DaemonThreadFactory;
 
 /**
  * BytesDB.
  * 
  * @author jwu
- *
+ * 
+ * 05/31, 2011 - Added support for Closeable
  */
-public final class BytesDB implements Persistable {
+public final class BytesDB implements Persistable, Closeable {
     final static Logger _logger = Logger.getLogger(BytesDB.class);
     
     // Main internal objects
+    private final File _homeDir;
     private final SimpleDataArray _dataArray;
     private final DynamicLongArray _addrArray;
+    
+    /**
+     * The mode can only be <code>Mode.INIT</code>, <code>Mode.OPEN</code> and <code>Mode.CLOSED</code>.
+     */
+    private volatile Mode _mode = Mode.INIT;
     
     // Lookup next index for add methods
     private volatile int _nextIndexCount = 0;
     private final int _nextIndexQueueCapacity = 10000;
+    private final NextIndexLookup _nextIndexLookup = new NextIndexLookup();
     private final LinkedBlockingQueue<Integer> _nextIndexQueue = new LinkedBlockingQueue<Integer>(_nextIndexQueueCapacity);
-    private final ExecutorService _nextIndexExecutor = Executors.newSingleThreadExecutor(new LookupThreadFactory());
+    private ExecutorService _nextIndexExecutor = null;
     
     public BytesDB(File homeDir,
                    int initLevel,
@@ -47,7 +58,7 @@ public final class BytesDB implements Persistable {
              numSyncBatches,
              segmentFileSizeMB,
              segmentFactory,
-             0.5);
+             Segment.defaultSegmentCompactFactor);
     }
     
     public BytesDB(File homeDir,
@@ -58,6 +69,9 @@ public final class BytesDB implements Persistable {
                    SegmentFactory segmentFactory,
                    double segmentCompactFactor) throws Exception {
         _logger.info("init " + homeDir.getAbsolutePath());
+        
+        // Set home directory
+        this._homeDir = homeDir;
         
         // Create address array
         _addrArray = createAddressArray(batchSize, numSyncBatches, homeDir);
@@ -76,15 +90,27 @@ public final class BytesDB implements Persistable {
         this.initNextIndexCount();
         
         // Start to lookup nextIndex
-        this._nextIndexExecutor.execute(new NextIndexLookup());
+        this._nextIndexLookup.setEnabled(true);
+        this._nextIndexExecutor = Executors.newSingleThreadExecutor(new DaemonThreadFactory());
+        this._nextIndexExecutor.execute(_nextIndexLookup);
         
-        _logger.info("init done");
+        // Initialize mode
+        this._mode = Mode.OPEN;
+        _logger.info("mode=" + _mode);
     }
     
     protected DynamicLongArray createAddressArray(int batchSize,
                                                   int numSyncBatches,
                                                   File homeDirectory) throws Exception {
         return new DynamicLongArray(batchSize, numSyncBatches, homeDirectory);
+    }
+    
+    public final File getHomeDir() {
+        return _homeDir;
+    }
+    
+    public final int capacity() {
+        return _addrArray.length();
     }
     
     public boolean hasData(int index) {
@@ -135,15 +161,6 @@ public final class BytesDB implements Persistable {
         return index;
     }
     
-    public synchronized void clear() {
-        _dataArray.clear();
-    }
-    
-    public synchronized void close() throws IOException {
-        _dataArray.sync();
-        _nextIndexExecutor.shutdown();
-    }
-    
     @Override
     public synchronized void sync() throws IOException {
         _dataArray.sync();
@@ -152,6 +169,11 @@ public final class BytesDB implements Persistable {
     @Override
     public synchronized void persist() throws IOException {
         _dataArray.persist();
+    }
+    
+    @Override
+    public synchronized final void saveHWMark(long endOfPeriod) throws Exception {
+        _dataArray.saveHWMark(endOfPeriod);
     }
     
     @Override
@@ -164,18 +186,15 @@ public final class BytesDB implements Persistable {
         return _dataArray.getLWMark();
     }
     
-    @Override
-    public final void saveHWMark(long endOfPeriod) throws Exception {
-        _dataArray.saveHWMark(endOfPeriod);
-    }
-    
     private class NextIndexLookup implements Runnable {
+        volatile boolean _enabled = true;
+        
         @Override
         public void run() {
             int index = 0;
             int lastPut = -1;
             
-            while(true) {
+            while(_enabled) {
                 if(index < _addrArray.length()) {
                     long addr = _addrArray.get(index);
                     if(addr < Segment.dataStartPosition) {
@@ -233,7 +252,7 @@ public final class BytesDB implements Persistable {
                         }
                     }
                     
-                    /* If nextPossible is equal to lastPut, this means lastPust was just dequeued
+                    /* If nextPossible is equal to lastPut, this means lastPut was just dequeued
                      * by the add methods and it cannot be enqueued into the _nextIndexQueue again.
                      * Need to look for a new nextIndex by incrementing nextPossible.
                      */
@@ -243,6 +262,14 @@ public final class BytesDB implements Persistable {
                     index = nextPossible;
                 }
             } /* End of while {} */
+        }
+        
+        void setEnabled(boolean b) {
+            this._enabled = b;
+        }
+        
+        boolean isEnabled() {
+            return _enabled;
         }
     }
     
@@ -260,12 +287,90 @@ public final class BytesDB implements Persistable {
         _logger.info("load " + (length - _nextIndexCount) + "/" + length);
     }
     
-    private static class LookupThreadFactory implements ThreadFactory {
-        @Override
-        public Thread newThread(Runnable r) {
-            Thread t = new Thread(r);
-            t.setDaemon(true);
-            return t;
+    /**
+     * Clears all data stored in this BytesDB.
+     * This method is not effective if this BytesDB is not open.
+     */
+    public synchronized void clear() {
+        if(isOpen()) {
+            _dataArray.clear();
         }
+    }
+    
+    @Override
+    public synchronized void close() throws IOException {
+        if(_mode == Mode.CLOSED) {
+            return;
+        }
+        
+        try {
+            // Close dataArray
+            _dataArray.sync();
+            _dataArray.close();
+            
+            // Shutdown nextIndex lookup executor
+            if(_nextIndexExecutor != null && !_nextIndexExecutor.isShutdown()) {
+                _nextIndexLookup.setEnabled(false);
+                _nextIndexExecutor.awaitTermination(5000, TimeUnit.MILLISECONDS);
+                _nextIndexExecutor.shutdown();
+            }
+        } catch(Exception e) {
+            throw (e instanceof IOException) ?
+                  (IOException)e : new IOException("Failed to close", e);
+        } finally {
+            _mode = Mode.CLOSED;
+            _nextIndexCount = 0;
+            _nextIndexQueue.clear();
+            _nextIndexLookup.setEnabled(false);
+            
+            _logger.info("mode=" + _mode);
+        }
+    }
+    
+    @Override
+    public synchronized void open() throws IOException {
+        if(_mode == Mode.OPEN) {
+            return;
+        }
+        
+        try {
+            _dataArray.open();
+            
+            // Scan to count nextIndex
+            initNextIndexCount();
+            
+            // Start nextIndex lookup executor
+            _nextIndexLookup.setEnabled(true);
+            _nextIndexExecutor = Executors.newSingleThreadExecutor(new DaemonThreadFactory());
+            _nextIndexExecutor.execute(_nextIndexLookup);
+            
+            _mode = Mode.OPEN;
+        } catch(Exception e) {
+            _mode = Mode.CLOSED;
+            
+            _nextIndexCount = 0;
+            _nextIndexQueue.clear();
+            _nextIndexLookup.setEnabled(false);
+            
+            // Close dataArray if open
+            if (_dataArray.isOpen()) {
+                _dataArray.close();
+            }
+            
+            // Shutdown nextIndex lookup executor
+            if(_nextIndexExecutor != null && !_nextIndexExecutor.isShutdown()) {
+                _nextIndexExecutor.shutdown();
+            }
+            
+            throw (e instanceof IOException) ?
+                  (IOException)e : new IOException("Failed to close", e);
+        } finally {
+            _logger.info("mode=" + _mode);
+        }
+    }
+    
+    @Override
+    public final boolean isOpen() {
+        return _mode == Mode.OPEN;
     }
 }

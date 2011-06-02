@@ -17,6 +17,7 @@ import krati.core.segment.SegmentManager;
  * 
  * @author jwu
  * 
+ * 05/30, 2011 - Added support for Closeable.
  */
 public class StaticArrayStorePartition implements ArrayStorePartition {
     private final static Logger _log = Logger.getLogger(StaticArrayStorePartition.class);
@@ -351,5 +352,20 @@ public class StaticArrayStorePartition implements ArrayStorePartition {
     public int transferTo(int index, WritableByteChannel channel) {
         rangeCheck(index);
         return _dataArray.transferTo(index - _idStart, channel);
+    }
+    
+    @Override
+    public boolean isOpen() {
+        return _dataArray.isOpen();
+    }
+    
+    @Override
+    public synchronized void open() throws IOException {
+        _dataArray.open();
+    }
+    
+    @Override
+    public synchronized void close() throws IOException {
+        _dataArray.close();
     }
 }

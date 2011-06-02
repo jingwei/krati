@@ -2,6 +2,7 @@ package krati.store;
 
 import krati.Persistable;
 import krati.array.DataArray;
+import krati.io.Closeable;
 
 /**
  * ArrayStore
@@ -10,7 +11,7 @@ import krati.array.DataArray;
  * 01/10, 2011
  *
  */
-public interface ArrayStore extends Persistable, DataArray {
+public interface ArrayStore extends Persistable, Closeable, DataArray {
     
     /**
      * @return the capacity of this ArrayStore.
