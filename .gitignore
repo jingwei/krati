@@ -5,3 +5,6 @@ eclipse-build
 target
 docs
 logs
+
+.idea
+*.iml
