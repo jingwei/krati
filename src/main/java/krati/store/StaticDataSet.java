@@ -39,16 +39,16 @@ public class StaticDataSet implements DataSet<byte[]> {
      * Creates a DataSet instance with the settings below:
      * 
      * <pre>
-     *    Entry Size             : 10000
-     *    Max Entries            : 5
-     *    Segment File Size      : 256MB
-     *    Segment Compact Factor : 0.5
-     *    Hash Function          : krati.util.FnvHashFunction
+     *    batchSize            : 10000
+     *    numSyncBatche        : 5
+     *    segmentFileSizeMB    : 256
+     *    segmentCompactFactor : 0.5
+     *    hashFunction         : krati.util.FnvHashFunction
      * </pre>
      * 
-     * @param homeDir              the home directory
-     * @param capacity             the capacity of data set
-     * @param segmentFactory       the segment factory
+     * @param homeDir            the home directory
+     * @param capacity           the capacity of data set
+     * @param segmentFactory     the segment factory
      * @throws Exception
      */
     public StaticDataSet(File homeDir, int capacity, SegmentFactory segmentFactory) throws Exception {
@@ -66,16 +66,16 @@ public class StaticDataSet implements DataSet<byte[]> {
      * Creates a DataSet instance with the settings below:
      * 
      * <pre>
-     *    Entry Size             : 10000
-     *    Max Entries            : 5
-     *    Segment Compact Factor : 0.5
-     *    Hash Function          : krati.util.FnvHashFunction
+     *    batchSize            : 10000
+     *    numSyncBatches       : 5
+     *    segmentCompactFactor : 0.5
+     *    hashFunction         : krati.util.FnvHashFunction
      * </pre>
      * 
-     * @param homeDir              the home directory
-     * @param capacity             the capacity of data set
-     * @param segmentFileSizeMB    the size of segment file in MB
-     * @param segmentFactory       the segment factory
+     * @param homeDir            the home directory
+     * @param capacity           the capacity of data set
+     * @param segmentFileSizeMB  the size of segment file in MB
+     * @param segmentFactory     the segment factory
      * @throws Exception
      */
     public StaticDataSet(File homeDir,
@@ -96,28 +96,28 @@ public class StaticDataSet implements DataSet<byte[]> {
      * Creates a DataSet instance with the settings below:
      * 
      * <pre>
-     *    Segment Compact Factor : 0.5
-     *    Hash Function          : krati.util.FnvHashFunction
+     *    segmentCompactFactor : 0.5
+     *    hashFunction         : krati.util.FnvHashFunction
      * </pre>
      * 
-     * @param homeDir              the home directory
-     * @param capacity             the capacity of data set
-     * @param entrySize            the redo entry size (i.e., batch size)
-     * @param maxEntries           the number of redo entries required for updating the underlying address array
-     * @param segmentFileSizeMB    the size of segment file in MB
-     * @param segmentFactory       the segment factory
+     * @param homeDir            the home directory
+     * @param capacity           the capacity of data set
+     * @param batchSize          the number of updates per update batch
+     * @param numSyncBatches     the number of update batches required for updating the underlying address array
+     * @param segmentFileSizeMB  the size of segment file in MB
+     * @param segmentFactory     the segment factory
      * @throws Exception
      */
     public StaticDataSet(File homeDir,
                          int capacity,
-                         int entrySize,
-                         int maxEntries,
+                         int batchSize,
+                         int numSyncBatches,
                          int segmentFileSizeMB,
                          SegmentFactory segmentFactory) throws Exception {
         this(homeDir,
              capacity,
-             entrySize,
-             maxEntries,
+             batchSize,
+             numSyncBatches,
              segmentFileSizeMB,
              segmentFactory,
              0.5, /* segment compact factor  */
@@ -128,29 +128,29 @@ public class StaticDataSet implements DataSet<byte[]> {
      * Creates a DataSet instance with the settings below:
      * 
      * <pre>
-     *    Segment Compact Factor : 0.5
+     *    segmentCompactFactor : 0.5
      * </pre>
      * 
-     * @param homeDir              the home directory
-     * @param capacity             the capacity of data set
-     * @param entrySize            the redo entry size (i.e., batch size)
-     * @param maxEntries           the number of redo entries required for updating the underlying address array
-     * @param segmentFileSizeMB    the size of segment file in MB
-     * @param segmentFactory       the segment factory
-     * @param hashFunction         the hash function for mapping values to indexes
+     * @param homeDir            the home directory
+     * @param capacity           the capacity of data set
+     * @param batchSize          the number of updates per update batch
+     * @param numSyncBatches     the number of update batches required for updating the underlying address array
+     * @param segmentFileSizeMB  the size of segment file in MB
+     * @param segmentFactory     the segment factory
+     * @param hashFunction       the hash function for mapping values to indexes
      * @throws Exception
      */
     public StaticDataSet(File homeDir,
                          int capacity,
-                         int entrySize,
-                         int maxEntries,
+                         int batchSize,
+                         int numSyncBatches,
                          int segmentFileSizeMB,
                          SegmentFactory segmentFactory,
                          HashFunction<byte[]> hashFunction) throws Exception {
         this(homeDir,
              capacity,
-             entrySize,
-             maxEntries,
+             batchSize,
+             numSyncBatches,
              segmentFileSizeMB,
              segmentFactory,
              0.5, /* segment compact factor  */
@@ -160,20 +160,20 @@ public class StaticDataSet implements DataSet<byte[]> {
     /**
      * Creates a DataSet instance.
      * 
-     * @param homeDir                the home directory
-     * @param capacity               the capacity of data set
-     * @param entrySize              the redo entry size (i.e., batch size)
-     * @param maxEntries             the number of redo entries required for updating the underlying address array
-     * @param segmentFileSizeMB      the size of segment file in MB
-     * @param segmentFactory         the segment factory
-     * @param segmentCompactFactor   the load factor of segment, below which a segment is eligible for compaction
-     * @param hashFunction           the hash function for mapping values to indexes
+     * @param homeDir              the home directory
+     * @param capacity             the capacity of data set
+     * @param batchSize            the number of updates per update batch
+     * @param numSyncBatches       the number of update batches required for updating the underlying address array
+     * @param segmentFileSizeMB    the size of segment file in MB
+     * @param segmentFactory       the segment factory
+     * @param segmentCompactFactor the load factor of segment, below which a segment is eligible for compaction
+     * @param hashFunction         the hash function for mapping values to indexes
      * @throws Exception
      */
     public StaticDataSet(File homeDir,
                          int capacity,
-                         int entrySize,
-                         int maxEntries,
+                         int batchSize,
+                         int numSyncBatches,
                          int segmentFileSizeMB,
                          SegmentFactory segmentFactory,
                          double segmentCompactFactor,
@@ -181,7 +181,7 @@ public class StaticDataSet implements DataSet<byte[]> {
         _dataHandler = new DefaultDataSetHandler();
         
         // Create address array
-        AddressArray addressArray = createAddressArray(capacity, entrySize, maxEntries, homeDir);
+        AddressArray addressArray = createAddressArray(capacity, batchSize, numSyncBatches, homeDir);
         
         if (addressArray.length() != capacity) {
             throw new IOException("Capacity expected: " + addressArray.length() + " not " + capacity);
@@ -196,10 +196,10 @@ public class StaticDataSet implements DataSet<byte[]> {
     }
     
     protected AddressArray createAddressArray(int length,
-                                              int entrySize,
-                                              int maxEntries,
+                                              int batchSize,
+                                              int numSyncBatches,
                                               File homeDirectory) throws Exception {
-        return new StaticLongArray(length, entrySize, maxEntries, homeDirectory);
+        return new StaticLongArray(length, batchSize, numSyncBatches, homeDirectory);
     }
     
     protected long hash(byte[] value) {

@@ -78,7 +78,7 @@ public final class StaticDataArray extends AbstractDataArray implements ArraySto
      * Constructs a static data array.
      * 
      * @param length               - the array length
-     * @param batchSize            - the number of updates per update batch, i.e. the redo entry size
+     * @param batchSize            - the number of updates per update batch
      * @param numSyncBatches       - the number of update batches required for updating the underlying address array
      * @param homeDirectory        - the home directory of data array
      * @param segmentFactory       - the segment factory

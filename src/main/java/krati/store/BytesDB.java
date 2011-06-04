@@ -186,7 +186,7 @@ public final class BytesDB implements Persistable, Closeable {
         return _dataArray.getLWMark();
     }
     
-    private class NextIndexLookup implements Runnable {
+    class NextIndexLookup implements Runnable {
         volatile boolean _enabled = true;
         
         @Override
@@ -264,11 +264,11 @@ public final class BytesDB implements Persistable, Closeable {
             } /* End of while {} */
         }
         
-        void setEnabled(boolean b) {
+        public void setEnabled(boolean b) {
             this._enabled = b;
         }
         
-        boolean isEnabled() {
+        public boolean isEnabled() {
             return _enabled;
         }
     }

@@ -70,7 +70,7 @@ public class HashIndex implements Index {
                      int segmentFileSizeMB,
                      SegmentFactory segmentFactory,
                      HashFunction<byte[]> hashFunction) throws Exception {
-        _logger.info("init from " + homeDir.getPath());
+        _logger.info("init " + homeDir.getPath());
         _store = new DynamicDataStore(
                 homeDir,
                 initLevel,
@@ -78,8 +78,8 @@ public class HashIndex implements Index {
                 numSyncBatches,
                 segmentFileSizeMB,
                 segmentFactory,
-                0.5,   /* segmentCompactFactor  */
-                0.75,  /* store hash loadFactor */
+                0.5,   /* segmentCompactFactor */
+                0.75,  /* store hashHoadFactor */
                 hashFunction);
         _logger.info("init done");
     }

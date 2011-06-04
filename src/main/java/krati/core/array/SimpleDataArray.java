@@ -741,17 +741,17 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
     }
     
     @Override
+    public long getLWMark() {
+        return _addressArray.getLWMark();
+    }
+    
+    @Override
     public long getHWMark() {
         return _addressArray.getHWMark();
     }
     
     @Override
-    public long getLWMark() {
-        return _addressArray.getLWMark();
-    }
-
-    @Override
-    public void saveHWMark(long endOfPeriod) throws Exception {
+    public synchronized void saveHWMark(long endOfPeriod) throws Exception {
         _addressArray.saveHWMark(endOfPeriod);
     }
     
@@ -783,12 +783,18 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
         _segmentManager.updateMeta();
     }
     
+    /**
+     * Clears all data stored in this SimpleDataArray.
+     * This method is not effective if this SimpleDataArray is not open. 
+     */
     @Override
     public synchronized void clear() {
-        _compactor.clear();
-        _addressArray.clear();
-        _segmentManager.clear();
-        this.init();
+        if(isOpen()) {
+            _compactor.clear();
+            _addressArray.clear();
+            _segmentManager.clear();
+            this.init();
+        }
     }
     
     /**

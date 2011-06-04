@@ -27,7 +27,7 @@ public abstract class AbstractDataArray implements DataArray, Persistable {
      * Constructs a data array.
      * 
      * @param length               - the array length
-     * @param batchSize            - the number of updates per update batch, i.e. the redo entry size
+     * @param batchSize            - the number of updates per update batch
      * @param numSyncBatches       - the number of update batches required for updating the underlying address array
      * @param homeDirectory        - the home directory of data array
      * @param segmentFactory       - the segment factory
@@ -152,15 +152,15 @@ public abstract class AbstractDataArray implements DataArray, Persistable {
     }
     
     @Override
+    public long getLWMark() {
+        return _dataArray.getLWMark();
+    }
+    
+    @Override
     public long getHWMark() {
         return _dataArray.getHWMark();
     }
     
-    @Override
-    public long getLWMark() {
-        return _dataArray.getLWMark();
-    }
-
     @Override
     public synchronized void saveHWMark(long endOfPeriod) throws Exception {
         _dataArray.saveHWMark(endOfPeriod);

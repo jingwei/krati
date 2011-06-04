@@ -8,7 +8,7 @@ import org.apache.log4j.Logger;
 
 import krati.core.array.SimpleDataArray;
 import krati.core.array.basic.StaticLongArray;
-import krati.core.segment.MemorySegmentFactory;
+import krati.core.segment.MappedSegmentFactory;
 import krati.core.segment.SegmentFactory;
 import krati.core.segment.SegmentManager;
 
@@ -17,7 +17,8 @@ import krati.core.segment.SegmentManager;
  * 
  * @author jwu
  * 
- * 05/30, 2011 - Added support for Closeable.
+ * 05/30, 2011 - Added support for Closeable
+ * 06/03, 2011 - Constructor cleanup
  */
 public class StaticArrayStorePartition implements ArrayStorePartition {
     private final static Logger _log = Logger.getLogger(StaticArrayStorePartition.class);
@@ -29,31 +30,11 @@ public class StaticArrayStorePartition implements ArrayStorePartition {
     /**
      * Constructs a StaticArrayStorePartition with default values below.
      * <pre>
-     *    segmentFileSize      : 256MB
      *    segmentCompactFactor : 0.5
      *    updateBatchSize      : 10000
      *    numSyncBatches       : 5
      *    checked              : No
-     *    segmentFactory       : MemorySegmentFactory
-     * </pre>
-     * 
-     * @param idStart            Start of memberId
-     * @param idCount            Total of memberId(s)
-     * @param homeDir            Directory where persistent data will be stored
-     * @throws Exception
-     */
-    public StaticArrayStorePartition(int idStart, int idCount, File homeDir) throws Exception {
-        this(idStart, idCount, homeDir, new MemorySegmentFactory(), 256);
-    }
-    
-    /**
-     * Constructs a StaticArrayStorePartition with default values below.
-     * <pre>
-     *    segmentCompactFactor : 0.5
-     *    updateBatchSize      : 10000
-     *    numSyncBatches       : 5
-     *    checked              : No
-     *    segmentFactory       : MemorySegmentFactory
+     *    segmentFactory       : MappedSegmentFactory
      * </pre>
      * 
      * @param idStart            Start of memberId
@@ -63,30 +44,7 @@ public class StaticArrayStorePartition implements ArrayStorePartition {
      * @throws Exception
      */
     public StaticArrayStorePartition(int idStart, int idCount, File homeDir, int segmentFileSizeMB) throws Exception {
-        this(idStart, idCount, homeDir, new MemorySegmentFactory(), segmentFileSizeMB);
-    }
-    
-    /**
-     * Constructs a StaticArrayStorePartition with default values below.
-     * <pre>
-     *    segmentFileSize      : 256MB
-     *    segmentCompactFactor : 0.5
-     *    updateBatchSize      : 10000
-     *    numSyncBatches       : 5
-     *    checked              : No
-     * </pre>
-     * 
-     * @param idStart            Start of memberId
-     * @param idCount            Total of memberId(s)
-     * @param homeDir            Directory where persistent data will be stored
-     * @param segmentFactory     Factory for creating Segment(s)
-     * @throws Exception
-     */
-    public StaticArrayStorePartition(int idStart,
-                                     int idCount,
-                                     File homeDir,
-                                     SegmentFactory segmentFactory) throws Exception {
-        this(idStart, idCount, homeDir, segmentFactory, 256);
+        this(idStart, idCount, homeDir, new MappedSegmentFactory(), segmentFileSizeMB);
     }
     
     /**
@@ -115,8 +73,8 @@ public class StaticArrayStorePartition implements ArrayStorePartition {
      * 
      * @param idStart              Start of memberId
      * @param idCount              Total of memberId(s)
-     * @param updateBatchSize      Redo entry size (i.e., batch size)
-     * @param numSyncBatches       Number of redo entries required for updating the underlying address array
+     * @param batchSize            The number of updates per update batch
+     * @param numSyncBatches       The number of update batches required for updating the underlying address array
      * @param homeDir              Directory where persistent data will be stored
      * @param segmentFactory       Factory for creating Segment(s)
      * @param segmentFileSizeMB    Segment size in MB
@@ -125,7 +83,7 @@ public class StaticArrayStorePartition implements ArrayStorePartition {
      */
     public StaticArrayStorePartition(int idStart,
                                      int idCount,
-                                     int updateBatchSize,
+                                     int batchSize,
                                      int numSyncBatches,
                                      File homeDir,
                                      SegmentFactory segmentFactory,
@@ -137,7 +95,7 @@ public class StaticArrayStorePartition implements ArrayStorePartition {
         
         StaticLongArray addressArray =
             new StaticLongArray(idCount,
-                                updateBatchSize,
+                                batchSize,
                                 numSyncBatches,
                                 homeDir);
         
@@ -163,8 +121,8 @@ public class StaticArrayStorePartition implements ArrayStorePartition {
      * 
      * @param idStart                Start of memberId
      * @param idCount                Total of memberId(s)
-     * @param updateBatchSize        Redo entry size (i.e., batch size)
-     * @param numSyncBatches         Number of redo entries required for updating the underlying address array
+     * @param batchSize              The number of updates per update batch
+     * @param numSyncBatches         The number of update batches required for updating the underlying address array
      * @param homeDir                Directory where persistent data will be stored
      * @param segmentFactory         Factory for creating Segment(s)
      * @param segmentFileSizeMB      Segment size in MB
@@ -174,7 +132,7 @@ public class StaticArrayStorePartition implements ArrayStorePartition {
      */
     public StaticArrayStorePartition(int idStart,
                                      int idCount,
-                                     int updateBatchSize,
+                                     int batchSize,
                                      int numSyncBatches,
                                      File homeDir,
                                      SegmentFactory segmentFactory,
@@ -187,7 +145,7 @@ public class StaticArrayStorePartition implements ArrayStorePartition {
         
         StaticLongArray addressArray =
             new StaticLongArray(idCount,
-                                updateBatchSize,
+                                batchSize,
                                 numSyncBatches,
                                 homeDir);
         
