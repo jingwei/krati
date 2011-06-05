@@ -122,9 +122,7 @@ public class SerializableObjectPartition<T> implements ObjectPartition<T> {
      */
     @Override
     public void sync() throws IOException {
-        synchronized (_partition) {
-            _partition.sync();
-        }
+        _partition.sync();
     }
 
     /**
@@ -134,9 +132,7 @@ public class SerializableObjectPartition<T> implements ObjectPartition<T> {
      */
     @Override
     public void persist() throws IOException {
-        synchronized (_partition) {
-            _partition.persist();
-        }
+        _partition.persist();
     }
 
     /**
@@ -146,9 +142,7 @@ public class SerializableObjectPartition<T> implements ObjectPartition<T> {
      */
     @Override
     public void clear() {
-        synchronized (_partition) {
-            _partition.clear();
-        }
+        _partition.clear();
     }
 
     /**
@@ -204,5 +198,20 @@ public class SerializableObjectPartition<T> implements ObjectPartition<T> {
     @Override
     public int length() {
         return _partition.length();
+    }
+
+    @Override
+    public boolean isOpen() {
+        return _partition.isOpen();
+    }
+
+    @Override
+    public void open() throws IOException {
+        _partition.open();
+    }
+
+    @Override
+    public void close() throws IOException {
+        _partition.close();
     }
 }

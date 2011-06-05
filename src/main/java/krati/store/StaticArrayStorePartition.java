@@ -236,7 +236,7 @@ public class StaticArrayStorePartition implements ArrayStorePartition {
     }
     
     @Override
-    public void set(int index, byte[] data, long scn) throws Exception {
+    public synchronized void set(int index, byte[] data, long scn) throws Exception {
         rangeCheck(index);
         _dataArray.set(index - _idStart, data, scn);
     }

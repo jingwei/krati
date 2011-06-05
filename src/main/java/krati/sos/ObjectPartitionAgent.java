@@ -25,6 +25,8 @@ import java.io.IOException;
  * @author jwu
  *
  * @param <T> Object to be stored.
+ * 
+ * 06/04, 2011 - Added support for Closeable
  */
 public class ObjectPartitionAgent<T> implements ObjectPartition<T> {
     protected ObjectPartition<T> _partition;
@@ -63,9 +65,7 @@ public class ObjectPartitionAgent<T> implements ObjectPartition<T> {
     
     @Override
     public boolean delete(int objectId, long scn) throws Exception {
-        synchronized (_partition) {
-            return _partition.delete(objectId, scn);
-        }
+        return _partition.delete(objectId, scn);
     }
     
     @Override
@@ -73,10 +73,8 @@ public class ObjectPartitionAgent<T> implements ObjectPartition<T> {
         if (object != null && _inboundHandler != null && _inboundHandler.getEnabled()) {
             _inboundHandler.process(object);
         }
-
-        synchronized (_partition) {
-            return _partition.set(objectId, object, scn);
-        }
+        
+        return _partition.set(objectId, object, scn);
     }
     
     @Override
@@ -90,23 +88,17 @@ public class ObjectPartitionAgent<T> implements ObjectPartition<T> {
     
     @Override
     public void sync() throws IOException {
-        synchronized (_partition) {
-            _partition.sync();
-        }
+        _partition.sync();
     }
     
     @Override
     public void persist() throws IOException {
-        synchronized (_partition) {
-            _partition.persist();
-        }
+        _partition.persist();
     }
     
     @Override
     public void clear() {
-        synchronized (_partition) {
-            _partition.clear();
-        }
+        _partition.clear();
     }
     
     @Override
@@ -142,5 +134,20 @@ public class ObjectPartitionAgent<T> implements ObjectPartition<T> {
     @Override
     public int length() {
         return _partition.getObjectIdCount();
+    }
+    
+    @Override
+    public boolean isOpen() {
+        return _partition.isOpen();
+    }
+    
+    @Override
+    public void open() throws IOException {
+        _partition.open();
+    }
+    
+    @Override
+    public void close() throws IOException {
+        _partition.close();
     }
 }

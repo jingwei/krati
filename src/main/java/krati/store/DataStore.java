@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
+import krati.io.Closeable;
+
 /**
  * Key Value Store.
  * 
@@ -11,8 +13,10 @@ import java.util.Map.Entry;
  *
  * @param <K> key
  * @param <V> value
+ * 
+ * 06/04, 2011 - Added support for Closeable
  */
-public interface DataStore<K, V> extends Iterable<Entry<K, V>> {
+public interface DataStore<K, V> extends Iterable<Entry<K, V>>, Closeable {
     
     public V get(K key);
     

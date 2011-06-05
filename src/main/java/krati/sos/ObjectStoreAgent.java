@@ -28,6 +28,8 @@ import java.util.Map.Entry;
  *
  * @param <K> Key 
  * @param <V> Value
+ * 
+ * 06/04, 2011 - Added support for Closeable
  */
 public class ObjectStoreAgent<K, V> implements ObjectStore<K, V> {
     protected ObjectStore<K, V> _store;
@@ -54,9 +56,7 @@ public class ObjectStoreAgent<K, V> implements ObjectStore<K, V> {
 
     @Override
     public boolean delete(K key) throws Exception {
-        synchronized (_store) {
-            return _store.delete(key);
-        }
+        return _store.delete(key);
     }
 
     @Override
@@ -73,17 +73,13 @@ public class ObjectStoreAgent<K, V> implements ObjectStore<K, V> {
         if (value != null && _inboundHandler != null && _inboundHandler.getEnabled()) {
             _inboundHandler.process(value);
         }
-
-        synchronized (_store) {
-            return _store.put(key, value);
-        }
+        
+        return _store.put(key, value);
     }
 
     @Override
     public void sync() throws IOException {
-        synchronized (_store) {
-            _store.sync();
-        }
+        _store.sync();
     }
 
     /**
@@ -93,9 +89,7 @@ public class ObjectStoreAgent<K, V> implements ObjectStore<K, V> {
      */
     @Override
     public void persist() throws IOException {
-        synchronized (_store) {
-            _store.persist();
-        }
+        _store.persist();
     }
 
     /**
@@ -104,9 +98,7 @@ public class ObjectStoreAgent<K, V> implements ObjectStore<K, V> {
      * @throws IOException
      */
     public void clear() throws IOException {
-        synchronized (_store) {
-            _store.clear();
-        }
+        _store.clear();
     }
 
     @Override
@@ -127,5 +119,20 @@ public class ObjectStoreAgent<K, V> implements ObjectStore<K, V> {
     @Override
     public Iterator<Entry<K, V>> iterator() {
         return _store.iterator();
+    }
+    
+    @Override
+    public boolean isOpen() {
+        return _store.isOpen();
+    }
+    
+    @Override
+    public void open() throws IOException {
+        _store.open();
+    }
+    
+    @Override
+    public void close() throws IOException {
+        _store.clear();
     }
 }

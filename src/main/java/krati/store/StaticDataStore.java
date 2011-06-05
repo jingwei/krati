@@ -28,11 +28,14 @@ import krati.util.HashFunction;
  * </pre>
  * 
  * @author jwu
- *
+ * 
+ * 06/04, 2011 - Added support for Closeable
+ * 06/04, 2011 - Added getHomeDir
  */
 public class StaticDataStore implements DataStore<byte[], byte[]> {
     private final static Logger _log = Logger.getLogger(StaticDataStore.class);
     
+    private final File _homeDir;
     private final SimpleDataArray _dataArray;
     private final DataStoreHandler _dataHandler;
     private final HashFunction<byte[]> _hashFunction;
@@ -180,6 +183,8 @@ public class StaticDataStore implements DataStore<byte[], byte[]> {
                            SegmentFactory segmentFactory,
                            double segmentCompactFactor,
                            HashFunction<byte[]> hashFunction) throws Exception {
+        this._homeDir = homeDir;
+        
         // Create data store handler
         _dataHandler = new DefaultDataStoreHandler();
         
@@ -211,16 +216,6 @@ public class StaticDataStore implements DataStore<byte[], byte[]> {
     
     protected long nextScn() {
         return System.currentTimeMillis();
-    }
-    
-    @Override
-    public void sync() throws IOException {
-        _dataArray.sync();
-    }
-    
-    @Override
-    public void persist() throws IOException {
-        _dataArray.persist();
     }
     
     @Override
@@ -286,8 +281,25 @@ public class StaticDataStore implements DataStore<byte[], byte[]> {
     }
     
     @Override
+    public synchronized void sync() throws IOException {
+        _dataArray.sync();
+    }
+    
+    @Override
+    public synchronized void persist() throws IOException {
+        _dataArray.persist();
+    }
+    
+    @Override
     public synchronized void clear() throws IOException {
         _dataArray.clear();
+    }
+    
+    /**
+     * @return the home directory of this data store.
+     */
+    public File getHomeDir() {
+        return _homeDir;
     }
     
     /**
@@ -299,11 +311,38 @@ public class StaticDataStore implements DataStore<byte[], byte[]> {
     
     @Override
     public Iterator<byte[]> keyIterator() {
-        return new DataStoreKeyIterator(_dataArray, _dataHandler);
+        if(isOpen()) {
+            return new DataStoreKeyIterator(_dataArray, _dataHandler);
+        }
+        
+        throw new StoreClosedException();
     }
     
     @Override
     public Iterator<Entry<byte[], byte[]>> iterator() {
-        return new DataStoreIterator(_dataArray, _dataHandler);
+        if(isOpen()) {
+            return new DataStoreIterator(_dataArray, _dataHandler);
+        }
+        
+        throw new StoreClosedException();
+    }
+    
+    @Override
+    public boolean isOpen() {
+        return _dataArray.isOpen();
+    }
+    
+    @Override
+    public synchronized void open() throws IOException {
+        if(!_dataArray.isOpen()) {
+            _dataArray.open();
+        }
+    }
+    
+    @Override
+    public synchronized void close() throws IOException {
+        if(_dataArray.isOpen()) {
+            _dataArray.close();
+        }
     }
 }

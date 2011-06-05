@@ -18,7 +18,8 @@ import krati.util.HashFunction;
  * indexes in memory.
  * 
  * @author jwu
- *
+ * 
+ * 06/04, 2011 - Added support for Closeable
  */
 public class HashIndex implements Index {
     private final static Logger _logger = Logger.getLogger(HashIndex.class);
@@ -117,5 +118,20 @@ public class HashIndex implements Index {
     @Override
     public Iterator<Entry<byte[], byte[]>> iterator() {
         return _store.iterator();
+    }
+    
+    @Override
+    public boolean isOpen() {
+        return _store.isOpen();
+    }
+    
+    @Override
+    public void open() throws IOException {
+        _store.open();
+    }
+    
+    @Override
+    public void close() throws IOException {
+        _store.close();
     }
 }

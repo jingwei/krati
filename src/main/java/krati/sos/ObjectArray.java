@@ -2,6 +2,7 @@ package krati.sos;
 
 import krati.Persistable;
 import krati.array.DynamicArray;
+import krati.io.Closeable;
 
 /**
  * ObjectArray
@@ -10,8 +11,10 @@ import krati.array.DynamicArray;
  * 01/15, 2011
  * 
  * @param <T>
+ * 
+ * 06/04, 2011 - Added interface Closeable
  */
-public interface ObjectArray<T> extends Persistable, DynamicArray {
+public interface ObjectArray<T> extends Persistable, Closeable, DynamicArray {
 
     /**
      * Gets an object based on a user-specified object Id.

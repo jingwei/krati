@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 
 import krati.store.DataStore;
+import krati.store.StoreClosedException;
 
 /**
  * A key-value store for serializable objects. The store requires that both key and value be serializable objects.
@@ -21,6 +22,8 @@ import krati.store.DataStore;
  *
  * @param <K> Key (serializable object)
  * @param <V> Value (serializable object)
+ * 
+ * 06/04, 2011 - Added support for Closeable
  */
 public class SerializableObjectStore<K, V> implements ObjectStore<K, V> {
     protected final DataStore<byte[], byte[]> _store;
@@ -44,9 +47,9 @@ public class SerializableObjectStore<K, V> implements ObjectStore<K, V> {
     }
 
     /**
-     * @return the underlying content data store.
+     * @return the underlying data store.
      */
-    protected DataStore<byte[], byte[]> getContentStore() {
+    protected DataStore<byte[], byte[]> getStore() {
         return _store;
     }
 
@@ -130,9 +133,7 @@ public class SerializableObjectStore<K, V> implements ObjectStore<K, V> {
 
     @Override
     public void sync() throws IOException {
-        synchronized (_store) {
-            _store.sync();
-        }
+        _store.sync();
     }
 
     /**
@@ -142,9 +143,7 @@ public class SerializableObjectStore<K, V> implements ObjectStore<K, V> {
      */
     @Override
     public void persist() throws IOException {
-        synchronized (_store) {
-            _store.persist();
-        }
+        _store.persist();
     }
 
     /**
@@ -153,18 +152,39 @@ public class SerializableObjectStore<K, V> implements ObjectStore<K, V> {
      * @throws IOException
      */
     public void clear() throws IOException {
-        synchronized (_store) {
-            _store.clear();
-        }
+        _store.clear();
     }
 
     @Override
     public Iterator<K> keyIterator() {
-        return new ObjectStoreKeyIterator<K>(_store.keyIterator(), _keySerializer);
+        if(_store.isOpen()) {
+            return new ObjectStoreKeyIterator<K>(_store.keyIterator(), _keySerializer);
+        }
+        
+        throw new StoreClosedException();
     }
 
     @Override
     public Iterator<Entry<K, V>> iterator() {
-        return new ObjectStoreIterator<K, V>(_store.iterator(), _keySerializer, _valSerializer);
+        if(_store.isOpen()) {
+            return new ObjectStoreIterator<K, V>(_store.iterator(), _keySerializer, _valSerializer);
+        }
+        
+        throw new StoreClosedException();
+    }
+
+    @Override
+    public boolean isOpen() {
+        return _store.isOpen();
+    }
+
+    @Override
+    public void open() throws IOException {
+        _store.open();
+    }
+
+    @Override
+    public void close() throws IOException {
+        _store.close();
     }
 }

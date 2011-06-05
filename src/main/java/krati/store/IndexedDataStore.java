@@ -18,16 +18,20 @@ import krati.store.index.Index;
  * IndexedDataStore.
  * 
  * @author jwu
- *
+ * 
+ * 06/04, 2011 - Added support for Closeable
+ * 06/04, 2011 - Added getHomeDir
  */
 public class IndexedDataStore implements DataStore<byte[], byte[]> {
     private final static Logger _logger = Logger.getLogger(IndexedDataStore.class);
     private final BytesDB _bytesDB;
     private final Index _index;
+    private final File _homeDir;
     private final File _indexHome;
     private final File _storeHome;
-    private int _batchSize;
-    private int _updateCnt;
+    private final int _batchSize;
+    
+    private volatile int _updateCnt;
     
     public IndexedDataStore(File homeDir,
                             int batchSize,
@@ -54,6 +58,10 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
                             int storeInitLevel,
                             int storeSegmentFileSizeMB,
                             SegmentFactory storeSegmentFactory) throws Exception {
+        this._homeDir = homeDir;
+        this._batchSize = batchSize;
+        
+        // Create bytesDB
         _storeHome = new File(homeDir, "store");
         _bytesDB = new BytesDB(_storeHome,
                                storeInitLevel,
@@ -62,6 +70,7 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
                                storeSegmentFileSizeMB,
                                storeSegmentFactory);
         
+        // Create index
         _indexHome = new File(homeDir, "index");
         _index = new HashIndex(_indexHome,
                                indexInitLevel,
@@ -69,14 +78,27 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
                                numSyncBatches,
                                indexSegmentFileSizeMB,
                                indexSegmentFactory);
-        _batchSize = batchSize;
+        
         _logger.info("opened indexHome=" + _indexHome.getAbsolutePath() + " storeHome=" + _storeHome.getAbsolutePath());
     }
     
+    /**
+     * @return the home directory of this data store.
+     */
+    public final File getHomeDir() {
+        return _homeDir;
+    }
+    
+    /**
+     * @return the index home directory of this data store.
+     */
     public final File getIndexHome() {
         return _indexHome;
     }
     
+    /**
+     * @return the store home directory of this data store.
+     */
     public final File getStoreHome() {
         return _storeHome;
     }
@@ -95,7 +117,7 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
     }
     
     @Override
-    public boolean put(byte[] key, byte[] value) throws Exception {
+    public synchronized boolean put(byte[] key, byte[] value) throws Exception {
         if(value == null) return delete(key);
         if(key == null) return false;
         
@@ -132,7 +154,7 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
     }
     
     @Override
-    public boolean delete(byte[] key) throws Exception {
+    public synchronized boolean delete(byte[] key) throws Exception {
         if(key == null) return false;
         
         // Lookup index meta
@@ -158,19 +180,19 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
     }
     
     @Override
-    public void clear() throws IOException {
+    public synchronized void clear() throws IOException {
         _bytesDB.clear();
         _index.clear();
     }
     
     @Override
-    public void persist() throws IOException {
+    public synchronized void persist() throws IOException {
         _bytesDB.persist();
         _index.persist();
     }
     
     @Override
-    public void sync() throws IOException {
+    public synchronized void sync() throws IOException {
         _bytesDB.sync();
         _index.sync();
     }
@@ -203,12 +225,20 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
 
     @Override
     public Iterator<byte[]> keyIterator() {
-        return _index.keyIterator();
+        if(isOpen()) {
+            return _index.keyIterator();
+        }
+        
+        throw new StoreClosedException();
     }
 
     @Override
     public Iterator<Entry<byte[], byte[]>> iterator() {
-        return new IndexedDataStoreIterator(_index.iterator());
+        if(isOpen()) {
+            return new IndexedDataStoreIterator(_index.iterator());
+        }
+        
+        throw new StoreClosedException();
     }
     
     private class IndexedDataStoreIterator implements Iterator<Entry<byte[], byte[]>> {
@@ -241,6 +271,34 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
         @Override
         public void remove() {
             throw new UnsupportedOperationException();
+        }
+    }
+    
+    @Override
+    public boolean isOpen() {
+        return _index.isOpen();
+    }
+    
+    @Override
+    public synchronized void open() throws IOException {
+        try {
+            _bytesDB.open();
+            _index.open();
+        } catch(IOException ioe) {
+            _index.close();
+            _bytesDB.close();
+            throw ioe;
+        }
+    }
+    
+    @Override
+    public synchronized void close() throws IOException {
+        try {
+            _bytesDB.close();
+            _index.close();
+        } catch(IOException ioe) {
+            _index.close();
+            throw ioe;
         }
     }
 }

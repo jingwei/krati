@@ -752,35 +752,41 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
     
     @Override
     public synchronized void saveHWMark(long endOfPeriod) throws Exception {
-        _addressArray.saveHWMark(endOfPeriod);
+        if(isOpen()) {
+            _addressArray.saveHWMark(endOfPeriod);
+        }
     }
     
     @Override
     public synchronized void sync() throws IOException {
-        syncCompactor();
-        
-        /* CALLS ORDERED:
-         * Need force _segment first and then persist _addressArray.
-         * During recovery, the _addressArray can always point to addresses
-         * which are valid though may not reflect the most recent address update.
-         */
-        _segment.force();
-        _addressArray.sync();
-        _segmentManager.updateMeta();
+        if(isOpen()) {
+            syncCompactor();
+            
+            /* CALLS ORDERED: Need force _segment first and then persist
+             * _addressArray. During recovery, the _addressArray can always
+             * point to addresses which are valid though may not reflect the
+             * most recent address update.
+             */
+            _segment.force();
+            _addressArray.sync();
+            _segmentManager.updateMeta();
+        }
     }
     
     @Override
     public synchronized void persist() throws IOException {
-        syncCompactor();
-        
-        /* CALLS ORDERED:
-         * Need force _segment first and then persist _addressArray.
-         * During recovery, the _addressArray can always point to addresses
-         * which are valid though may not reflect the most recent address update.
-         */
-        _segment.force();
-        _addressArray.persist();
-        _segmentManager.updateMeta();
+        if(isOpen()) {
+            syncCompactor();
+            
+            /* CALLS ORDERED: Need force _segment first and then persist
+             * _addressArray. During recovery, the _addressArray can always
+             * point to addresses which are valid though may not reflect the
+             * most recent address update.
+             */
+            _segment.force();
+            _addressArray.persist();
+            _segmentManager.updateMeta();
+        }
     }
     
     /**
@@ -808,6 +814,8 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
             return;
         }
         
+        _mode = Mode.CLOSED;
+        
         try {
             // THE CALLS ORDERED. 
             _compactor.shutdown();   // shutdown compactor
@@ -819,7 +827,6 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
             _log.error("Failed to close", e);
             throw (e instanceof IOException) ? (IOException)e : new IOException(e);
         } finally {
-            _mode = Mode.CLOSED;
             _log.info("mode=" + _mode);
         }
     }
