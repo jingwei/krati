@@ -17,7 +17,7 @@ import krati.store.IndexedDataStore;
 public class TestIndexedDataStoreApi extends AbstractTestDataStoreApi {
 
     @Override
-    protected DataStore<byte[], byte[]> createDataStore(File homeDir) throws Exception {
+    protected DataStore<byte[], byte[]> createStore(File homeDir) throws Exception {
         return new IndexedDataStore(
                 homeDir,
                 100,   /* batchSize */

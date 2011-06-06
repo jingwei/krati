@@ -17,7 +17,7 @@ import krati.store.DynamicDataStore;
 public class TestDynamicDataStoreApi extends AbstractTestDataStoreApi {
 
     @Override
-    protected DataStore<byte[], byte[]> createDataStore(File homeDir) throws Exception {
+    protected DataStore<byte[], byte[]> createStore(File homeDir) throws Exception {
         return new DynamicDataStore(
                 homeDir,
                 1,     /* initLevel */

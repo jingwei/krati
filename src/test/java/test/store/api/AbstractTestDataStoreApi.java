@@ -28,7 +28,7 @@ public abstract class AbstractTestDataStoreApi extends TestCase {
     protected void setUp() {
         try {
             _homeDir = FileUtils.getTestDir(getClass().getSimpleName());
-            _store = createDataStore(_homeDir);
+            _store = createStore(_homeDir);
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -44,7 +44,7 @@ public abstract class AbstractTestDataStoreApi extends TestCase {
         }
     }
     
-    protected abstract DataStore<byte[], byte[]> createDataStore(File homeDir) throws Exception;
+    protected abstract DataStore<byte[], byte[]> createStore(File homeDir) throws Exception;
     
     public void testApiBasics() throws Exception {
         byte[] key = RandomBytes.getBytes(16);
