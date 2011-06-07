@@ -14,7 +14,7 @@ if [ $# -lt 4 ]; then
   echo "  $PROG testName numReaders hitPercent runTimeSeconds"
   echo "EXAMPLES"
 
-  for t in TestBdbBytes TestIndexedStore TestIndexedStoreMapped TestIndexedStoreWriteBuffer TestStaticStore TestStaticStoreMapped TestDynamicStore TestDynamicStoreMapped
+  for t in TestDataPartition TestDataPartitionMapped TestDataPartitionChannel TestIndexedStore TestIndexedStoreMapped TestIndexedStoreWriteBuffer TestStaticStore TestStaticStoreMapped TestDynamicStore TestDynamicStoreMapped TestBdbBytes
   do
     echo "  $PROG $t 4 10 600"
   done
