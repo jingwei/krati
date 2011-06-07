@@ -2,14 +2,18 @@ package krati.store;
 
 import java.io.IOException;
 
+import krati.io.Closeable;
+
 /**
  * DataSet.
  * 
  * @author jwu
  * 
  * @param <V> value
+ * 
+ * 06/06, 2011 - Extended interface Closeable
  */
-public interface DataSet<V> {
+public interface DataSet<V> extends Closeable {
     
     public boolean has(V value);
     

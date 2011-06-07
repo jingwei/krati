@@ -26,11 +26,13 @@ import krati.util.HashFunction;
  * </pre>
  * 
  * @author jwu
- *
+ * 
+ * 06/06, 2011 - Added support for Closeable
  */
 public class StaticDataSet implements DataSet<byte[]> {
     private final static Logger _log = Logger.getLogger(StaticDataSet.class);
     
+    private final File _homeDir;
     private final SimpleDataArray _dataArray;
     private final DataSetHandler _dataHandler;
     private final HashFunction<byte[]> _hashFunction;
@@ -178,7 +180,8 @@ public class StaticDataSet implements DataSet<byte[]> {
                          SegmentFactory segmentFactory,
                          double segmentCompactFactor,
                          HashFunction<byte[]> hashFunction) throws Exception {
-        _dataHandler = new DefaultDataSetHandler();
+        this._homeDir = homeDir;
+        this._dataHandler = new DefaultDataSetHandler();
         
         // Create address array
         AddressArray addressArray = createAddressArray(capacity, batchSize, numSyncBatches, homeDir);
@@ -275,6 +278,8 @@ public class StaticDataSet implements DataSet<byte[]> {
     
     @Override
     public synchronized boolean delete(byte[] value) throws Exception {
+        if(value == null) return false;
+        
         long hashCode = hash(value);
         int index = (int)(hashCode % _dataArray.length());
         if (index < 0) index = -index;
@@ -308,9 +313,35 @@ public class StaticDataSet implements DataSet<byte[]> {
     }
     
     /**
+     * @return the home directory of this data set.
+     */
+    public final File getHomeDir() {
+        return _homeDir;
+    }
+    
+    /**
      * @return the underlying data array.
      */
     public final DataArray getDataArray() {
         return _dataArray;
+    }
+    
+    @Override
+    public boolean isOpen() {
+        return _dataArray.isOpen();
+    }
+    
+    @Override
+    public synchronized void open() throws IOException {
+        if(!_dataArray.isOpen()) {
+            _dataArray.open();
+        }
+    }
+    
+    @Override
+    public synchronized void close() throws IOException {
+        if(_dataArray.isOpen()) {
+            _dataArray.close();
+        }
     }
 }

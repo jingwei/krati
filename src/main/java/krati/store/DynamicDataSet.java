@@ -6,6 +6,7 @@ import java.nio.ByteBuffer;
 
 import org.apache.log4j.Logger;
 
+import krati.Mode;
 import krati.array.DataArray;
 import krati.core.array.SimpleDataArray;
 import krati.core.array.basic.DynamicLongArray;
@@ -26,12 +27,14 @@ import krati.util.HashFunction;
  * </pre>
  * 
  * @author jwu
- *
+ * 
+ * 06/06, 2011 - Added support for Closeable
  */
 public class DynamicDataSet implements DataSet<byte[]> {
     private final static Logger _log = Logger.getLogger(DynamicDataSet.class);
     
     private final double _loadThreshold;
+    private final File _homeDir;
     private final SimpleDataArray _dataArray;
     private final DynamicLongArray _addrArray;
     private final DataSetHandler _dataHandler;
@@ -265,7 +268,8 @@ public class DynamicDataSet implements DataSet<byte[]> {
                           double segmentCompactFactor,
                           double hashLoadThreshold,
                           HashFunction<byte[]> hashFunction) throws Exception {
-        _dataHandler = new DefaultDataSetHandler();
+        this._homeDir = homeDir;
+        this._dataHandler = new DefaultDataSetHandler();
         
         // Create dynamic address array
         _addrArray = createAddressArray(batchSize, numSyncBatches, homeDir);
@@ -304,17 +308,19 @@ public class DynamicDataSet implements DataSet<byte[]> {
     }
     
     @Override
-    public void sync() throws IOException {
+    public synchronized void sync() throws IOException {
         _dataArray.sync();
     }
     
     @Override
-    public void persist() throws IOException {
+    public synchronized void persist() throws IOException {
         _dataArray.persist();
     }
     
     @Override
     public boolean has(byte[] value) {
+        if(value == null) return false;
+        
         byte[] existingData;
         long hashCode = hash(value);
         
@@ -382,6 +388,8 @@ public class DynamicDataSet implements DataSet<byte[]> {
     
     @Override
     public synchronized boolean delete(byte[] value) throws Exception {
+        if(value == null) return false;
+        
         if(0 < _split || _levelThreshold < _loadCount) {
             split();
         }
@@ -392,8 +400,10 @@ public class DynamicDataSet implements DataSet<byte[]> {
     
     @Override
     public synchronized void clear() throws IOException {
-        _dataArray.clear();
-        _loadCount = 0;
+        if(_dataArray.isOpen()) {
+            _dataArray.clear();
+            _loadCount = 0;
+        }
     }
     
     protected final int getIndex(byte[] value) {
@@ -590,16 +600,18 @@ public class DynamicDataSet implements DataSet<byte[]> {
     }
     
     public synchronized void rehash() throws Exception {
-        if(_split > 0) {
-            do {
-                split();
-            } while(_split > 0);
-            sync();
-        } else if(getLoadFactor() > _loadThreshold) {
-            do {
-                split();
-            } while(_split > 0);
-            sync();
+        if(isOpen()) {
+            if(_split > 0) {
+                do {
+                    split();
+                } while(_split > 0);
+                sync();
+            } else if(getLoadFactor() > _loadThreshold) {
+                do {
+                    split();
+                } while(_split > 0);
+                sync();
+            }
         }
     }
     
@@ -609,24 +621,60 @@ public class DynamicDataSet implements DataSet<byte[]> {
     public String getStatus() {
         StringBuilder buf = new StringBuilder();
         
-        buf.append("level=");
-        buf.append(_level);
-        buf.append(" split=");
-        buf.append(_split);
-        buf.append(" capacity=");
-        buf.append(getCapacity());
-        buf.append(" loadCount=");
-        buf.append(_loadCount);
-        buf.append(" loadFactor=");
-        buf.append(getLoadFactor());
+        buf.append("mode=").append(isOpen() ? Mode.OPEN : Mode.CLOSED);
+        buf.append(" level=").append(_level);
+        buf.append(" split=").append(_split);
+        buf.append(" capacity=").append(getCapacity());
+        buf.append(" loadCount=").append(_loadCount);
+        buf.append(" loadFactor=").append(getLoadFactor());
         
         return buf.toString();
     }
     
     /**
+     * @return the home directory of this data set.
+     */
+    public final File getHomeDir() {
+        return _homeDir;
+    }
+    
+    /**
      * @return the underlying data array.
      */
-    public DataArray getDataArray() {
+    public final DataArray getDataArray() {
         return _dataArray;
+    }
+    
+    @Override
+    public boolean isOpen() {
+        return _dataArray.isOpen();
+    }
+    
+    @Override
+    public synchronized void open() throws IOException {
+        if(!_dataArray.isOpen()) {
+            try {
+                _dataArray.open();
+                _loadCount = scan();
+                initLinearHashing();
+            } catch (Exception e) {
+                try {
+                    _dataArray.close();
+                } catch(Exception e2) {
+                    _log.error("Failed to close", e2);
+                }
+                
+                throw (e instanceof IOException) ? (IOException)e : new IOException(e);
+            }
+            
+            _log.info(getStatus());
+        }
+    }
+    
+    @Override
+    public synchronized void close() throws IOException {
+        if(_dataArray.isOpen()) {
+            _dataArray.close();
+        }
     }
 }
