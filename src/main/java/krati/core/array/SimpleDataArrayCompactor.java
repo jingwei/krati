@@ -6,6 +6,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
@@ -218,11 +219,17 @@ class SimpleDataArrayCompactor implements Runnable {
             // Delay compaction if only one segment is eligible for compaction but it is not VERY fragmented.
             if (_segSourceList.size() == 1 && _segSourceList.get(0).getLoadFactor() > (_compactLoadFactor/2)) return false;
             
-            for(Segment seg : _segSourceList) {
-                _log.info("Segment " + seg.getSegmentId() + " load factor=" + ((long)(seg.getLoadFactor() * 10000) / 10000.0));
+            try {
+                for(Segment seg : _segSourceList) {
+                    _log.info("Segment " + seg.getSegmentId() + " load factor=" + ((long)(seg.getLoadFactor() * 10000) / 10000.0));
+                }
+            } catch(ConcurrentModificationException e) {
+                _segPermits.set(0);
+                _segSourceList.clear();
+                return false;
             }
             
-            _segPermits.set(_segSourceList.size() - 1);
+            _segPermits.set(Math.max(_segSourceList.size() - 1, 0));
             _log.info("inspect done");
             return true;
         }
@@ -245,8 +252,11 @@ class SimpleDataArrayCompactor implements Runnable {
             
             _targetQueue.add(_segTarget);
             _log.info("bytes transferred to   " + _segTarget.getSegmentId() + ": " + (_segTarget.getAppendPosition() - Segment.dataStartPosition));
-        } catch(Exception e) {
-            _log.warn(e.getMessage(), e);
+        } catch(ConcurrentModificationException e1) {
+            _segSourceList.clear();
+            return false;
+        } catch(Exception e2) {
+            _log.warn(e2.getMessage(), e2);
             return false;
         }
         
