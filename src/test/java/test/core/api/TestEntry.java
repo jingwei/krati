@@ -1,4 +1,4 @@
-package test.core;
+package test.core.api;
 
 import java.io.File;
 import java.util.Random;

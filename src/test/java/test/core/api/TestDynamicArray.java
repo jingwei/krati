@@ -1,8 +1,9 @@
-package test.core;
+package test.core.api;
 
 import org.junit.Test;
 
 import test.AbstractTest;
+import test.core.MemberDataUpdate;
 
 import java.util.Random;
 
