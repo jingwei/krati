@@ -614,14 +614,14 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
     /**
      * @return the home directory of this data store.
      */
-    public File getHomeDir() {
+    public final File getHomeDir() {
         return _homeDir;
     }
     
     /**
      * @return the underlying data array.
      */
-    public DataArray getDataArray() {
+    public final DataArray getDataArray() {
         return _dataArray;
     }
     
