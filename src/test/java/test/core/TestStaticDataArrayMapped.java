@@ -7,16 +7,16 @@ import krati.store.AbstractDataArray;
 import krati.store.StaticDataArray;
 
 /**
- * TestStaticDataArray
+ * TestStaticDataArrayMapped
  * 
  * @author jwu
  * 
  */
-public class TestStaticDataArray extends EvalDataArray {
+public class TestStaticDataArrayMapped extends EvalDataArray {
     
     @Override
     protected SegmentFactory createSegmentFactory() {
-        return new krati.core.segment.MemorySegmentFactory();
+        return new krati.core.segment.MappedSegmentFactory();
     }
     
     @Override

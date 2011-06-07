@@ -83,7 +83,7 @@
             <exclude>**/TestBdb*.java</exclude>
           </excludes>
           <forkMode>always</forkMode>
-          <argLine>-server -Xms256m -Xmx16g ${krati.test.jvm.args}</argLine>
+          <argLine>-server -Xms512m -Xmx16g ${krati.test.jvm.args}</argLine>
           <systemProperties>
             <property>
               <name>krati.test.idStart</name>

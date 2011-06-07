@@ -7,16 +7,16 @@ import krati.store.AbstractDataArray;
 import krati.store.DynamicDataArray;
 
 /**
- * TestDynamicDataArray
+ * TestDynamicDataArrayMapped
  * 
  * @author jwu
  * 
  */
-public class TestDynamicDataArray extends EvalDataArray {
+public class TestDynamicDataArrayMapped extends EvalDataArray {
 
     @Override
     protected SegmentFactory createSegmentFactory() {
-        return new krati.core.segment.MemorySegmentFactory();
+        return new krati.core.segment.MappedSegmentFactory();
     }
 
     @Override
