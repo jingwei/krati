@@ -58,7 +58,7 @@ public class AbstractTest extends TestCase {
         try {
             _idCount = Integer.parseInt(System.getProperty("krati.test.idCount"));
         } catch(Exception e) {
-            _idCount = 500000;
+            _idCount = 100000;
         } finally {
             _log.info("krati.test.idCount: " + _idCount);
         }
@@ -74,7 +74,7 @@ public class AbstractTest extends TestCase {
         try {
             _runTimeSeconds = Integer.parseInt(System.getProperty("krati.test.runTimeSeconds"));
         } catch(Exception e) {
-            _runTimeSeconds = 120;
+            _runTimeSeconds = 60;
         } finally {
             _log.info("krati.test.runTimeSeconds: " + _runTimeSeconds);
         }
@@ -82,7 +82,7 @@ public class AbstractTest extends TestCase {
         try {
             _segFileSizeMB = Integer.parseInt(System.getProperty("krati.test.segFileSizeMB"));
         } catch(Exception e) {
-            _segFileSizeMB = 256;
+            _segFileSizeMB = 128;
         } finally {
             _log.info("krati.test.segFileSizeMB: " + _segFileSizeMB);
         }
