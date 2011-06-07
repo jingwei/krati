@@ -32,9 +32,9 @@ public class TestDynamicDataArrayMapped extends EvalDataArray {
         
         dynArray.set(initialLength, null, System.currentTimeMillis());
         
-        dynArray.set(initialLength * 2, null, System.currentTimeMillis());
-        
-        dynArray.set(initialLength * 3, null, System.currentTimeMillis());
+        if(initialLength < (1 << 20)) {
+            dynArray.set(initialLength * 2, null, System.currentTimeMillis());
+        }
         
         return dynArray;
     }

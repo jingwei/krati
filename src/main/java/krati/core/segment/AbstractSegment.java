@@ -109,7 +109,7 @@ public abstract class AbstractSegment implements Segment {
         b.append('=');
         try {
             b.append(getChannelPosition());
-        } catch (IOException ioe) {
+        } catch (Exception e) {
             b.append('?');
         }
         

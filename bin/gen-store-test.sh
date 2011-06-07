@@ -42,7 +42,7 @@ do
     fi
   fi
   
-  echo mvn test -Dtest=$TEST_NAME -Dkrati.test.keyCount=$KEY_COUNT -Dkrati.test.numReaders=$NUM_READERS -Dkrati.test.hitPercent=$HIT_PERCENT -Dkrati.test.initLevel=$INIT_LEVEL -Dkrati.test.runTimeSeconds=$RUN_TIME_SECONDS
+  echo mvn test -Dtest=$TEST_NAME -Dkrati.test.jvm.args=\"-Xloggc:target/logs/krati.gc -XX:+PrintGCDetails\" -Dkrati.test.keyCount=$KEY_COUNT -Dkrati.test.numReaders=$NUM_READERS -Dkrati.test.hitPercent=$HIT_PERCENT -Dkrati.test.initLevel=$INIT_LEVEL -Dkrati.test.runTimeSeconds=$RUN_TIME_SECONDS
   echo mv target/logs $LOGS_DIR/logs."$i"M
   echo ""
 done
