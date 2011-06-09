@@ -18,10 +18,10 @@ mvn test -Dtest=TestDynamicStoreChannel -Dkrati.test.jvm.args="-Xloggc:target/lo
 
 mvn test -Dtest=TestIndexedStoreChannel -Dkrati.test.jvm.args="-Xloggc:target/logs/krati.gc -XX:+PrintGCDetails" -Dkrati.test.keyCount=10000000 -Dkrati.test.numReaders=4 -Dkrati.test.hitPercent=10 -Dkrati.test.initLevel=10 -Dkrati.test.runTimeSeconds=900
 
-mvn test -Dtest=TestIndexedStoreWriteBuffer -Dkrati.test.jvm.args="-Xloggc:target/logs/krati.gc -XX:+PrintGCDetails" -Dkrati.test.keyCount=10000000 -Dkrati.test.numReaders=4 -Dkrati.test.hitPercent=10 -Dkrati.test.initLevel=10 -Dkrati.test.runTimeSeconds=6000
+mvn test -Dtest=TestIndexedStoreWriteBuffer -Dkrati.test.jvm.args="-Xloggc:target/logs/krati.gc -XX:+PrintGCDetails" -Dkrati.test.keyCount=10000000 -Dkrati.test.numReaders=4 -Dkrati.test.hitPercent=10 -Dkrati.test.initLevel=10 -Dkrati.test.runTimeSeconds=3600
 
-mvn test -Dtest=TestIndexedStoreWriteBuffer -Dkrati.test.jvm.args="-Xloggc:target/logs/krati.gc -XX:+PrintGCDetails" -Dkrati.test.keyCount=50000000 -Dkrati.test.numReaders=4 -Dkrati.test.hitPercent=10 -Dkrati.test.initLevel=11 -Dkrati.test.runTimeSeconds=6000
+mvn test -Dtest=TestIndexedStoreWriteBuffer -Dkrati.test.jvm.args="-Xloggc:target/logs/krati.gc -XX:+PrintGCDetails" -Dkrati.test.keyCount=50000000 -Dkrati.test.numReaders=4 -Dkrati.test.hitPercent=10 -Dkrati.test.initLevel=11 -Dkrati.test.runTimeSeconds=3600
 
-mvn test -Dtest=TestIndexedStoreWriteBuffer -Dkrati.test.jvm.args="-Xloggc:target/logs/krati.gc -XX:+PrintGCDetails" -Dkrati.test.keyCount=100000000 -Dkrati.test.numReaders=4 -Dkrati.test.hitPercent=10 -Dkrati.test.initLevel=11 -Dkrati.test.runTimeSeconds=6000
+mvn test -Dtest=TestIndexedStoreWriteBuffer -Dkrati.test.jvm.args="-Xloggc:target/logs/krati.gc -XX:+PrintGCDetails" -Dkrati.test.keyCount=100000000 -Dkrati.test.numReaders=4 -Dkrati.test.hitPercent=10 -Dkrati.test.initLevel=11 -Dkrati.test.runTimeSeconds=3600
 
 mv target/logs run-perf-logs
