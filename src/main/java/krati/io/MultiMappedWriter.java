@@ -13,10 +13,14 @@ import java.nio.channels.FileChannel;
  * 
  * @author jwu
  * 02/27, 2011
+ * 
+ * <p>
+ * 06/09, 2011 - flush via FileChannel.force to boost performance.
  */
 public class MultiMappedWriter implements DataWriter {
     private final File _file;
     private long _currentPosition;
+    private FileChannel _channel;
     private RandomAccessFile _raf;
     private MappedByteBuffer[] _mmapArray;
     
@@ -54,7 +58,7 @@ public class MultiMappedWriter implements DataWriter {
         
         // Create random access file
         _raf = new RandomAccessFile(_file, "rw");
-        FileChannel channel = _raf.getChannel();
+        _channel = _raf.getChannel();
 
         // Allocate mapped buffer array
         int cnt = 0;
@@ -67,7 +71,7 @@ public class MultiMappedWriter implements DataWriter {
         // Create individual mapped buffer
         for(int i = 0; i < cnt; i++) {
             long size = Math.min(_raf.length() - position, BUFFER_SIZE);
-            _mmapArray[i] = channel.map(FileChannel.MapMode.READ_WRITE, position, size);
+            _mmapArray[i] = _channel.map(FileChannel.MapMode.READ_WRITE, position, size);
             position += BUFFER_SIZE;
         }
         
@@ -78,20 +82,31 @@ public class MultiMappedWriter implements DataWriter {
     @Override
     public void close() throws IOException {
         try {
-            this.flush();
+            for(MappedByteBuffer b : _mmapArray) {
+                b.force();
+            }
+            _channel.force(true);
+            _channel.close();
             _raf.close();
         } finally {
-            _raf = null;
-            _mmapArray = null;
             _currentPosition = 0;
+            _mmapArray = null;
+            _channel = null;
+            _raf = null;
         }
     }
     
     @Override
     public void flush() throws IOException {
+        _channel.force(true);
+    }
+    
+    @Override
+    public void sync() throws IOException {
         for(MappedByteBuffer b : _mmapArray) {
             b.force();
         }
+        _channel.force(true);
     }
     
     @Override

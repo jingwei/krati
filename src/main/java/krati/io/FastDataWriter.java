@@ -188,6 +188,11 @@ public class FastDataWriter implements DataWriter {
         writeFullBuffer();
     }
     
+    @Override
+    public void sync() throws IOException {
+        writeFullBuffer();
+    }
+    
     /**
      * Writes the full content of the buffer to the channel. If this method exits normally
      * (with no exception), then the buffer is entirely empty, ready to have more stuff written into it.

@@ -7,7 +7,9 @@ import java.io.IOException;
  * DataWriter
  * 
  * @author jwu
- *
+ * 
+ * <p>
+ * 06/09, 2011 - Added a conservative version of flush sync()
  */
 public interface DataWriter {
     
@@ -18,6 +20,8 @@ public interface DataWriter {
     public void close() throws IOException;
     
     public void flush() throws IOException;
+    
+    public void sync() throws IOException;
     
     public void writeInt(int value) throws IOException;
     

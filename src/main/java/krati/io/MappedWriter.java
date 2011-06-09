@@ -50,6 +50,7 @@ public class MappedWriter implements DataWriter {
     @Override
     public void close() throws IOException {
         try {
+            _mmapBuffer.force();
             _channel.force(true);
             _channel.close();
             _raf.close();
@@ -63,6 +64,11 @@ public class MappedWriter implements DataWriter {
     @Override
     public void flush() throws IOException {
         _channel.force(true);
+    }
+    
+    @Override
+    public void sync() throws IOException {
+        _mmapBuffer.force();
     }
     
     @Override
