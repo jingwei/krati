@@ -4,6 +4,8 @@ mvn test -Dtest=TestDataPartition -Dkrati.test.jvm.args="-Xloggc:target/logs/kra
 
 mvn test -Dtest=TestDataPartitionMapped -Dkrati.test.jvm.args="-Xloggc:target/logs/krati.gc -XX:+PrintGCDetails" -Dkrati.test.keyCount=5000000 -Dkrati.test.numReaders=4 -Dkrati.test.hitPercent=10 -Dkrati.test.initLevel=8 -Dkrati.test.runTimeSeconds=600 -Dkrati.test.idCount=5000000
 
+mvn test -Dtest=TestDataPartitionChannel -Dkrati.test.jvm.args="-Xloggc:target/logs/krati.gc -XX:+PrintGCDetails" -Dkrati.test.keyCount=5000000 -Dkrati.test.numReaders=4 -Dkrati.test.hitPercent=10 -Dkrati.test.initLevel=8 -Dkrati.test.runTimeSeconds=600 -Dkrati.test.idCount=5000000
+
 mvn test -Dtest=TestStaticStore -Dkrati.test.jvm.args="-Xloggc:target/logs/krati.gc -XX:+PrintGCDetails" -Dkrati.test.keyCount=5000000 -Dkrati.test.numReaders=4 -Dkrati.test.hitPercent=10 -Dkrati.test.initLevel=8 -Dkrati.test.runTimeSeconds=600
 
 mvn test -Dtest=TestDynamicStore -Dkrati.test.jvm.args="-Xloggc:target/logs/krati.gc -XX:+PrintGCDetails" -Dkrati.test.keyCount=5000000 -Dkrati.test.numReaders=4 -Dkrati.test.hitPercent=10 -Dkrati.test.initLevel=8 -Dkrati.test.runTimeSeconds=600
