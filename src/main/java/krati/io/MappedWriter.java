@@ -11,9 +11,12 @@ import java.nio.channels.FileChannel;
  * 
  * @author jwu
  * 
+ * <p>
+ * 06/08, 2011 - Revert to FileChannel.force to fix performance degradation introduced in 0.3.8
  */
 public class MappedWriter implements DataWriter {
     private final File _file;
+    private FileChannel _channel;
     private RandomAccessFile _raf;
     private MappedByteBuffer _mmapBuffer;
     
@@ -40,23 +43,26 @@ public class MappedWriter implements DataWriter {
         }
         
         _raf = new RandomAccessFile(_file, "rw");
-        _mmapBuffer = _raf.getChannel().map(FileChannel.MapMode.READ_WRITE, 0, _raf.length());
+        _channel = _raf.getChannel();
+        _mmapBuffer = _channel.map(FileChannel.MapMode.READ_WRITE, 0, _raf.length());
     }
     
     @Override
     public void close() throws IOException {
         try {
-            _mmapBuffer.force();
+            _channel.force(true);
+            _channel.close();
             _raf.close();
         } finally {
             _mmapBuffer = null;
+            _channel = null;
             _raf = null;
         }
     }
     
     @Override
     public void flush() throws IOException {
-        _mmapBuffer.force();
+        _channel.force(true);
     }
     
     @Override
