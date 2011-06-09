@@ -129,7 +129,8 @@ public class DynamicLongArray extends AbstractRecoverableArray<EntryValueLong> i
     public void expandCapacity(int index) throws Exception {
         if(index < _length) return;
         
-        int newLength = ((index >> _subArrayBits) + 1) * _subArraySize;
+        long capacity = ((index >> _subArrayBits) + 1L) * _subArraySize;
+        int newLength = (capacity < Integer.MAX_VALUE) ? (int)capacity : Integer.MAX_VALUE;
         
         // Reset _length
         _length = newLength;

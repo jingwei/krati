@@ -102,8 +102,9 @@ public class DynamicIntArray extends AbstractRecoverableArray<EntryValueInt> imp
     public void expandCapacity(int index) throws Exception {
         if(index < _length) return;
         
-        int newLength = ((index >> _subArrayBits) + 1) * _subArraySize;
-
+        long capacity = ((index >> _subArrayBits) + 1L) * _subArraySize;
+        int newLength = (capacity < Integer.MAX_VALUE) ? (int)capacity : Integer.MAX_VALUE;
+        
         // Expand internal array in memory
         if(_internalArray.length() < newLength) {
             _internalArray.expandCapacity(index);

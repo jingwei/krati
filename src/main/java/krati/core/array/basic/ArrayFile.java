@@ -405,7 +405,7 @@ public class ArrayFile implements Closeable {
   }
   
   protected long getPosition(int index) {
-    return DATA_START_POSITION + (index * _elementSize);
+    return DATA_START_POSITION + ((long)index * _elementSize);
   }
   
   /**
@@ -630,7 +630,7 @@ public class ArrayFile implements Closeable {
   
   public synchronized void setArrayLength(int arrayLength, File renameToFile) throws IOException {
       if(arrayLength < 0) {
-          throw new IllegalArgumentException("Illegal array length: " + arrayLength);
+          throw new IOException("Invalid array length: " + arrayLength);
       }
       
       if(this._arrayLength == arrayLength) return;
@@ -639,10 +639,16 @@ public class ArrayFile implements Closeable {
       this.flush();
       
       // Change the file length.
-      long fileLength = DATA_START_POSITION + (arrayLength * _elementSize);
+      long fileLength = DATA_START_POSITION + ((long)arrayLength * _elementSize);
       RandomAccessFile raf = new RandomAccessFile(_file, "rw");
-      raf.setLength(fileLength);
-      raf.close();
+      try {
+          raf.setLength(fileLength);
+      } catch(IOException e) {
+          _log.error("failed to setArrayLength " + arrayLength);
+          throw e;
+      } finally {
+          raf.close();
+      }
       
       // Write the new array length.
       writeArrayLength(arrayLength);

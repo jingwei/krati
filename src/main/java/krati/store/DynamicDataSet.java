@@ -16,6 +16,7 @@ import krati.store.DataSet;
 import krati.store.DataSetHandler;
 import krati.util.FnvHashFunction;
 import krati.util.HashFunction;
+import krati.util.LinearHashing;
 
 /**
  * DynamicDataSet is implemented using Linear Hashing. Its capacity grows as needed.
@@ -29,6 +30,7 @@ import krati.util.HashFunction;
  * @author jwu
  * 
  * 06/06, 2011 - Added support for Closeable
+ * 06/08, 2011 - Scale to the Integer.MAX_VALUE capacity
  */
 public class DynamicDataSet implements DataSet<byte[]> {
     private final static Logger _log = Logger.getLogger(DynamicDataSet.class);
@@ -39,12 +41,13 @@ public class DynamicDataSet implements DataSet<byte[]> {
     private final DynamicLongArray _addrArray;
     private final DataSetHandler _dataHandler;
     private final HashFunction<byte[]> _hashFunction;
+    private final int _unitCapacity;
+    private final int _maxLevel;
     private volatile int _split;
     private volatile int _level;
     private volatile int _levelCapacity;
-    private int _levelThreshold;
-    private int _unitCapacity;
-    private int _loadCount;
+    private volatile int _loadCount;
+    private volatile int _loadCountThreshold;
     
     /**
      * Creates a dynamic DataSet with the settings below:
@@ -275,8 +278,20 @@ public class DynamicDataSet implements DataSet<byte[]> {
         _addrArray = createAddressArray(batchSize, numSyncBatches, homeDir);
         _unitCapacity = _addrArray.subArrayLength();
         
-        if(initLevel > 0) {
-            _addrArray.expandCapacity(_unitCapacity * (1 << initLevel) - 1); 
+        // Compute maxLevel
+        LinearHashing h = new LinearHashing(_unitCapacity);
+        h.reinit(Integer.MAX_VALUE);
+        _maxLevel = h.getLevel();
+        
+        if(initLevel >= 0) {
+            if(initLevel > _maxLevel) {
+                _log.warn("initLevel reset from " + initLevel + " to " + _maxLevel);
+                initLevel = _maxLevel;
+            }
+            
+            _addrArray.expandCapacity(_unitCapacity * (1 << initLevel) - 1);
+        } else {
+            _log.warn("initLevel ignored: " + initLevel);
         }
         
         // Create underlying segment manager
@@ -378,7 +393,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
     public synchronized boolean add(byte[] value) throws Exception {
         if(value == null) return false;
         
-        if(0 < _split || _levelThreshold < _loadCount) {
+        if(canSplit()) {
             split();
         }
         
@@ -390,7 +405,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
     public synchronized boolean delete(byte[] value) throws Exception {
         if(value == null) return false;
         
-        if(0 < _split || _levelThreshold < _loadCount) {
+        if(canSplit()) {
             split();
         }
         
@@ -408,7 +423,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
     
     protected final int getIndex(byte[] value) {
         long hashCode = hash(value);
-        int capacity = _levelCapacity;
+        long capacity = _levelCapacity;
         int index = (int)(hashCode % capacity);
         if (index < 0) index = -index;
         
@@ -422,7 +437,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
     }
     
     protected final int getIndex(long hashCode) {
-        int capacity = _levelCapacity;
+        long capacity = _levelCapacity;
         int index = (int)(hashCode % capacity);
         if (index < 0) index = -index;
         
@@ -513,14 +528,14 @@ public class DynamicDataSet implements DataSet<byte[]> {
         return _loadThreshold;
     }
     
-    private void initLinearHashing() throws Exception {
-        int unitCount = _dataArray.length() / getUnitCapacity();
+    protected void initLinearHashing() throws Exception {
+        int unitCount = getCapacity() / getUnitCapacity();
         
-        if (unitCount == 1) {
+        if (unitCount <= 1) {
             _level = 0;
             _split = 0;
             _levelCapacity = getUnitCapacity();
-            _levelThreshold = (int)(_levelCapacity * _loadThreshold);
+            _loadCountThreshold = (int)(getCapacity() * _loadThreshold);
         } else {
             // Determine level and split
             _level = 0;
@@ -532,16 +547,28 @@ public class DynamicDataSet implements DataSet<byte[]> {
             
             _split = (unitCount - (1 << _level) - 1) * getUnitCapacity();
             _levelCapacity = getUnitCapacity() * (1 << _level);
-            _levelThreshold = (int)(_levelCapacity * _loadThreshold);
+            _loadCountThreshold = (int)(getCapacity() * _loadThreshold);
             
             // Need to re-populate the last unit
-            for(int i = 0, cnt = getUnitCapacity(); i < cnt; i++) {
+            while(canSplit()) {
                 split();
             }
         }
     }
     
-    private void split() throws Exception {
+    protected boolean canSplit() {
+        if(0 < _split || _loadCountThreshold < _loadCount) {
+            // The splitTo must NOT overflow Integer.MAX_VALUE
+            int splitTo = _levelCapacity + _split;
+            if (Integer.MAX_VALUE > splitTo && splitTo >= _levelCapacity) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    protected void split() throws Exception {
         // Ensure address capacity
         _addrArray.expandCapacity(_split + _levelCapacity);
         
@@ -551,7 +578,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
         // Process read data
         if (data != null && data.length > 0) {
             ByteBuffer bb = ByteBuffer.wrap(data);
-            int newCapacity = _levelCapacity << 1;
+            long newCapacity = ((long)_levelCapacity) << 1;
             
             int cnt = bb.getInt();
             while(cnt > 0) {
@@ -582,12 +609,19 @@ public class DynamicDataSet implements DataSet<byte[]> {
         }
         
         if(_split == _levelCapacity) {
-            _split = 0;
-            _level++;
-            _levelCapacity = getUnitCapacity() * (1 << _level);
-            _levelThreshold = (int)(_levelCapacity * _loadThreshold);
-            
-            _log.info(getStatus());
+            int nextLevel = _level + 1;
+            int nextLevelCapacity = getUnitCapacity() * (1 << nextLevel);
+            if (nextLevelCapacity > _levelCapacity) {
+                _split = 0;
+                _level = nextLevel;
+                _levelCapacity = nextLevelCapacity;
+                _loadCountThreshold = (int)(getCapacity() * _loadThreshold);
+                _log.info(getStatus());
+            } else {
+                /* NOT FEASIBLE!
+                 * This because canSplit() and split() are paired together
+                 */
+            }
         }
     }
     
@@ -601,17 +635,12 @@ public class DynamicDataSet implements DataSet<byte[]> {
     
     public synchronized void rehash() throws Exception {
         if(isOpen()) {
-            if(_split > 0) {
-                do {
-                    split();
-                } while(_split > 0);
-                sync();
-            } else if(getLoadFactor() > _loadThreshold) {
-                do {
-                    split();
-                } while(_split > 0);
-                sync();
+            while(canSplit()) {
+                split();
             }
+            sync();
+        } else {
+            throw new StoreClosedException();
         }
     }
     

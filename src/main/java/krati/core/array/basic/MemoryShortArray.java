@@ -46,7 +46,8 @@ public class MemoryShortArray implements ShortArray, DynamicArray {
      */
     @Override
     public int length() {
-        return _subArrays.length * _subArraySize;
+        long len = _subArrays.length * (long)_subArraySize;
+        return (len < Integer.MAX_VALUE) ? (int)len : Integer.MAX_VALUE;
     }
     
     /**
@@ -119,9 +120,12 @@ public class MemoryShortArray implements ShortArray, DynamicArray {
     
     @Override
     public synchronized short[] getInternalArray() {
-        short[] result = new short[length()];
+        int size = length();
+        short[] result = new short[size];
         for (int i = 0; i < _subArrays.length; i++) {
-            System.arraycopy(_subArrays[i], 0, result, i * _subArraySize, _subArraySize);
+            int len = Math.min(_subArraySize, size);
+            System.arraycopy(_subArrays[i], 0, result, i * _subArraySize, len);
+            size -= _subArraySize;
         }
         
         return result;

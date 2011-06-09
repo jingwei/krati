@@ -102,20 +102,21 @@ public class DynamicShortArray extends AbstractRecoverableArray<EntryValueShort>
     @Override
     public void expandCapacity(int index) throws Exception {
         if (index < _length) return;
-
-        int newLength = ((index >> _subArrayBits) + 1) * _subArraySize;
-
+        
+        long capacity = ((index >> _subArrayBits) + 1L) * _subArraySize;
+        int newLength = (capacity < Integer.MAX_VALUE) ? (int)capacity : Integer.MAX_VALUE;
+        
         // Expand internal array in memory
         if (_internalArray.length() < newLength) {
             _internalArray.expandCapacity(index);
         }
-
+        
         // Expand array file on disk
         _arrayFile.setArrayLength(newLength, null /* do not rename */);
-
+        
         // Reset _length
         _length = newLength;
-
+        
         // Add to logging
         _log.info("Expanded: _length=" + _length);
     }
