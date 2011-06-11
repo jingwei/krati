@@ -189,7 +189,7 @@ public class FastDataWriter implements DataWriter {
     }
     
     @Override
-    public void sync() throws IOException {
+    public void force() throws IOException {
         writeFullBuffer();
     }
     

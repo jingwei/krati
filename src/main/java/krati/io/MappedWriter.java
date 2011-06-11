@@ -67,7 +67,7 @@ public class MappedWriter implements DataWriter {
     }
     
     @Override
-    public void sync() throws IOException {
+    public void force() throws IOException {
         _mmapBuffer.force();
     }
     

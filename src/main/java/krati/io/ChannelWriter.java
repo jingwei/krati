@@ -65,7 +65,7 @@ public class ChannelWriter implements DataWriter {
     }
     
     @Override
-    public void sync() throws IOException {
+    public void force() throws IOException {
         _channel.force(true);
     }
     

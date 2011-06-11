@@ -83,7 +83,7 @@ public class MultiMappedWriter implements DataWriter {
     public void close() throws IOException {
         try {
             for(MappedByteBuffer b : _mmapArray) {
-                b.force();
+                if(b != null) b.force();
             }
             _channel.force(true);
             _channel.close();
@@ -102,9 +102,9 @@ public class MultiMappedWriter implements DataWriter {
     }
     
     @Override
-    public void sync() throws IOException {
+    public void force() throws IOException {
         for(MappedByteBuffer b : _mmapArray) {
-            b.force();
+            if(b != null) b.force();
         }
         _channel.force(true);
     }

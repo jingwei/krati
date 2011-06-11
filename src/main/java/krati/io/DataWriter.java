@@ -9,7 +9,7 @@ import java.io.IOException;
  * @author jwu
  * 
  * <p>
- * 06/09, 2011 - Added a conservative version of flush sync()
+ * 06/09, 2011 - Added a conservative version of flush force()
  */
 public interface DataWriter {
     
@@ -21,7 +21,7 @@ public interface DataWriter {
     
     public void flush() throws IOException;
     
-    public void sync() throws IOException;
+    public void force() throws IOException;
     
     public void writeInt(int value) throws IOException;
     
