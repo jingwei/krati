@@ -11,11 +11,11 @@ import test.StatsLog;
 import test.util.FileUtils;
 
 import junit.framework.TestCase;
+import krati.core.StoreParams;
 import krati.core.segment.MappedSegmentFactory;
 import krati.core.segment.SegmentFactory;
 import krati.store.DataStore;
 import krati.store.DynamicDataStore;
-import krati.util.LinearHashing;
 
 /**
  * TestRandomKeyNumStore
@@ -53,7 +53,7 @@ public class TestRandomKeyNumStore extends TestCase {
     }
     
     protected int getKeySize() {
-        return 12;
+        return 10;
     }
     
     protected int getValueSize() {
@@ -73,11 +73,7 @@ public class TestRandomKeyNumStore extends TestCase {
     }
     
     protected DataStore<byte[], byte[]> createStore(File homeDir) throws Exception {
-        LinearHashing h;
-        h = new LinearHashing(1 << 16);
-        h.reinit(getKeyCount());
-        int initLevel = h.getLevel();
-        
+        int initLevel = StoreParams.getDynamicStoreInitialLevel(getKeyCount());
         return new DynamicDataStore(homeDir, initLevel, getSegmentFileSizeMB(), createSegmentFactory());
     }
     
