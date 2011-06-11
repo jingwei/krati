@@ -11,6 +11,7 @@ import krati.io.Closeable;
  * 
  * @author jwu
  * 
+ * <p>
  * 06/04, 2011 - Added interface Closeable 
  */
 public interface Index extends Iterable<Entry<byte[], byte[]>>, Closeable {

@@ -39,6 +39,7 @@ import krati.util.Chronos;
  * 
  * @author jwu
  * 
+ * <p>
  * 05/09, 2011 - added support for java.io.Closeable
  * 
  */

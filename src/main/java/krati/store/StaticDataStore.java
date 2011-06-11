@@ -29,6 +29,7 @@ import krati.util.HashFunction;
  * 
  * @author jwu
  * 
+ * <p>
  * 06/04, 2011 - Added support for Closeable
  * 06/04, 2011 - Added getHomeDir
  */

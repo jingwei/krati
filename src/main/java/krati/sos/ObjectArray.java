@@ -12,6 +12,7 @@ import krati.io.Closeable;
  * 
  * @param <T>
  * 
+ * <p>
  * 06/04, 2011 - Added interface Closeable
  */
 public interface ObjectArray<T> extends Persistable, Closeable, DynamicArray {

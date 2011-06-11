@@ -24,7 +24,7 @@ public abstract class AbstractSegment implements Segment {
     protected long _storageVersion;
     
     /**
-     * Methods {@link #decrLoadSize(int)} and {@link #incrLoadSize(int)} are not
+     * Methods {@link #decrLoadSize} and {@link #incrLoadSize} are not
      * synchronized as they modify two different fields.
      */
     private volatile int _incrLoadSize = 0;

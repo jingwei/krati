@@ -27,6 +27,7 @@ import krati.util.HashFunction;
  * 
  * @author jwu
  * 
+ * <p>
  * 06/06, 2011 - Added support for Closeable
  */
 public class StaticDataSet implements DataSet<byte[]> {

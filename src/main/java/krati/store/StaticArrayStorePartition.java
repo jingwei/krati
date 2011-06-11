@@ -17,6 +17,7 @@ import krati.core.segment.SegmentManager;
  * 
  * @author jwu
  * 
+ * <p>
  * 05/30, 2011 - Added support for Closeable
  * 06/03, 2011 - Constructor cleanup
  */

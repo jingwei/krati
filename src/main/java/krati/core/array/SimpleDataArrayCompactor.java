@@ -37,6 +37,7 @@ import krati.util.Chronos;
  * 
  * @author jwu
  * 
+ * <p>
  * 05/22, 2011 - Fixed start/shutdown
  * 05/23, 2011 - Added method clear() to clean up compactor internal state
  * 

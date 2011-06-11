@@ -14,6 +14,7 @@ import krati.io.Closeable;
  * @param <K> key
  * @param <V> value
  * 
+ * <p>
  * 06/04, 2011 - Added support for Closeable
  */
 public interface DataStore<K, V> extends Iterable<Entry<K, V>>, Closeable {

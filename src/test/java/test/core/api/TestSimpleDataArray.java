@@ -19,6 +19,7 @@ import test.util.FileUtils;
  * 
  * @author jwu
  * 
+ * <p>
  * 05/15, 2011 - Created
  * 05/22, 2011 - Added test for open/close
  * 05/24, 2011 - Added test for clear

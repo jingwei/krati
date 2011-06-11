@@ -24,6 +24,7 @@ import krati.util.DaemonThreadFactory;
  * 
  * @author jwu
  * 
+ * <p>
  * 05/31, 2011 - Added support for Closeable
  */
 public final class BytesDB implements Persistable, Closeable {

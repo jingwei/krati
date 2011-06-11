@@ -29,6 +29,7 @@ import krati.util.LinearHashing;
  * 
  * @author jwu
  * 
+ * <p>
  * 06/06, 2011 - Added support for Closeable
  * 06/08, 2011 - Scale to the Integer.MAX_VALUE capacity
  */

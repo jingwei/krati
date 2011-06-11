@@ -34,6 +34,7 @@ import krati.io.Closeable;
  * 
  * @author jwu
  * 
+ * <p>
  * 05/09, 2011 - added support for Closeable
  * 05/22, 2011 - fixed method close()
  * 05/23, 2011 - sync compaction batches in method close()

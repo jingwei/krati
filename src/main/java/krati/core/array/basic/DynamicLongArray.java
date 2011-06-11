@@ -17,6 +17,7 @@ import krati.core.array.entry.EntryValueLong;
  * 
  * @author jwu
  * 
+ * <p>
  * 05/09, 2011 - added support for Closeable
  * 06/03, 2011 - cleanup _arrayFile file handle
  */

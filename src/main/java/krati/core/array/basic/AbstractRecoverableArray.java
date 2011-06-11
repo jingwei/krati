@@ -15,6 +15,7 @@ import krati.core.array.entry.EntryValue;
  * 
  * @author jwu
  * 
+ * <p>
  * 05/09, 2011 - added abstract method getLogger
  * 
  */

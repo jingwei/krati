@@ -23,6 +23,7 @@ import krati.store.StoreClosedException;
  * @param <K> Key (serializable object)
  * @param <V> Value (serializable object)
  * 
+ * <p>
  * 06/04, 2011 - Added support for Closeable
  */
 public class SerializableObjectStore<K, V> implements ObjectStore<K, V> {

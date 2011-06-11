@@ -26,6 +26,7 @@ import java.io.IOException;
  *
  * @param <T> Object to be stored.
  * 
+ * <p>
  * 06/04, 2011 - Added support for Closeable
  */
 public class ObjectPartitionAgent<T> implements ObjectPartition<T> {
