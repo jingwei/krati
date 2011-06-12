@@ -94,10 +94,6 @@
               <value>${krati.test.idCount}</value>
             </property>
             <property>
-              <name>krati.test.initLevel</name>
-              <value>${krati.test.initLevel}</value>
-            </property>
-            <property>
               <name>krati.test.keyCount</name>
               <value>${krati.test.keyCount}</value>
             </property>
@@ -211,7 +207,6 @@
 
     <krati.test.idStart>0</krati.test.idStart>
     <krati.test.idCount>10000</krati.test.idCount>
-    <krati.test.initLevel>1</krati.test.initLevel>
     <krati.test.keyCount>10000</krati.test.keyCount>
     <krati.test.numReaders>4</krati.test.numReaders>
     <krati.test.segFileSizeMB>128</krati.test.segFileSizeMB>

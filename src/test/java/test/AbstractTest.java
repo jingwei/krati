@@ -38,11 +38,10 @@ public class AbstractTest extends TestCase {
     
     // Default Test Params.
     public static int _idStart = 0;
-    public static int _idCount = 100000;
-    public static int _keyCount = 75000;
+    public static int _idCount = 10000;
+    public static int _keyCount = 7500;
     public static int _runTimeSeconds = 60;
     public static int _segFileSizeMB = 128;
-    public static int _initLevel = 5;
     public static int _numReaders = 4;
     public static int _hitPercent = 100;
     
@@ -85,14 +84,6 @@ public class AbstractTest extends TestCase {
             _segFileSizeMB = 128;
         } finally {
             _log.info("krati.test.segFileSizeMB: " + _segFileSizeMB);
-        }
-        
-        try {
-            _initLevel = Integer.parseInt(System.getProperty("krati.test.initLevel"));
-        } catch(Exception e) {
-            _initLevel = 5;
-        } finally {
-            _log.info("krati.test.initLevel: " + _initLevel);
         }
         
         try {
@@ -199,10 +190,6 @@ public class AbstractTest extends TestCase {
     
     public static int getSegFileSizeMB() {
         return _segFileSizeMB;
-    }
-    
-    public static int getInitLevel() {
-        return _initLevel;
     }
     
     public static int getNumReaders() {

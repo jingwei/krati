@@ -2,9 +2,9 @@ package test.store;
 
 import java.io.File;
 
+import krati.core.StoreFactory;
 import krati.core.segment.SegmentFactory;
 import krati.store.DataStore;
-import krati.store.IndexedDataStore;
 import test.StatsLog;
 
 /**
@@ -29,16 +29,16 @@ public class TestIndexedStore extends EvalDataStore {
     
     @Override
     protected DataStore<byte[], byte[]> getDataStore(File storeDir) throws Exception {
-        return new IndexedDataStore(
+        int initialCapacity = (int)(_keyCount * 1.5);
+        return StoreFactory.createIndexedDataStore(
                 storeDir,
-                10000,
-                5,
-                _initLevel,
-                32,
-                createIndexSegmentFactory(),
-                _initLevel,
-                _segFileSizeMB,
-                createStoreSegmentFactory());
+                initialCapacity,
+                10000,                       /* batchSize */
+                5,                           /* numSyncBatches */
+                32,                          /* index segmentFileSizeMB */
+                createIndexSegmentFactory(), /* index segmentFactory */
+                _segFileSizeMB,              /* store segmentFileSizeMB */
+                createStoreSegmentFactory()  /* store segmentFactory */);
     }
     
     public void testIndexedStore() throws Exception {

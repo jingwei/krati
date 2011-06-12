@@ -2,8 +2,8 @@ package test.store;
 
 import java.io.File;
 
+import krati.core.StoreFactory;
 import krati.store.DataStore;
-import krati.store.DynamicDataStore;
 
 /**
  * TestIteratorDynamicDataStore
@@ -18,6 +18,7 @@ public class TestIteratorDynamicDataStore extends EvalDataStoreIterator {
     }
     
     protected DataStore<byte[], byte[]> createDataStore(File storeDir) throws Exception {
-        return new DynamicDataStore(storeDir, _initLevel, 10000, 5, _segFileSizeMB, createSegmentFactory());
+        int initialCapacity = (int)(_keyCount * 1.5);
+        return StoreFactory.createDynamicDataStore(storeDir, initialCapacity, 10000, 5, _segFileSizeMB, createSegmentFactory());
     }
 }
