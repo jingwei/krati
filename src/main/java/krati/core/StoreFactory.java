@@ -5,9 +5,11 @@ import java.io.File;
 import krati.core.segment.SegmentFactory;
 import krati.store.ArrayStore;
 import krati.store.DynamicDataArray;
+import krati.store.DynamicDataSet;
 import krati.store.DynamicDataStore;
 import krati.store.IndexedDataStore;
 import krati.store.StaticDataArray;
+import krati.store.StaticDataSet;
 import krati.store.StaticDataStore;
 import krati.util.FnvHashFunction;
 
@@ -18,6 +20,8 @@ import krati.util.FnvHashFunction;
  * @author jwu
  * 06/09, 2011
  * 
+ * <p>
+ * 06/11, 2011 - Added methods for creating static and dynamic DataSet
  */
 public class StoreFactory {
     
@@ -202,7 +206,7 @@ public class StoreFactory {
         
         return createDynamicDataStore(
                 homeDir,
-                StoreParams.getDynamicStoreInitialLevel(initialCapacity),
+                initialCapacity,
                 batchSize,
                 numSyncBatches,
                 segmentFileSizeMB,
@@ -223,7 +227,7 @@ public class StoreFactory {
         
         return createDynamicDataStore(
                 homeDir,
-                StoreParams.getDynamicStoreInitialLevel(initialCapacity),
+                initialCapacity,
                 batchSize,
                 numSyncBatches,
                 segmentFileSizeMB,
@@ -244,7 +248,7 @@ public class StoreFactory {
         
         return createDynamicDataStore(
                 homeDir,
-                StoreParams.getDynamicStoreInitialLevel(initialCapacity),
+                initialCapacity,
                 batchSize,
                 numSyncBatches,
                 segmentFileSizeMB,
@@ -317,4 +321,146 @@ public class StoreFactory {
                 storeSegmentFileSizeMB,
                 storeSegmentFactory);
     }
+    
+    public static StaticDataSet createStaticDataSet(
+            File homeDir,
+            int capacity,
+            int segmentFileSizeMB,
+            SegmentFactory segmentFactory) throws Exception {
+        int batchSize = StoreParams.BATCH_SIZE_DEFAULT;
+        int numSyncBatches = StoreParams.NUM_SYNC_BATCHES_DEFAULT;
+        double segmentCompactFactor = StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT;
+        
+        return createStaticDataSet(
+                homeDir,
+                capacity,
+                batchSize,
+                numSyncBatches,
+                segmentFileSizeMB,
+                segmentFactory,
+                segmentCompactFactor);
+    }
+    
+    public static StaticDataSet createStaticDataSet(
+            File homeDir,
+            int capacity,
+            int batchSize,
+            int numSyncBatches,
+            int segmentFileSizeMB,
+            SegmentFactory segmentFactory) throws Exception {
+        double segmentCompactFactor = StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT;
+        
+        return createStaticDataSet(
+                homeDir,
+                capacity,
+                batchSize,
+                numSyncBatches,
+                segmentFileSizeMB,
+                segmentFactory,
+                segmentCompactFactor);
+    }
+    
+    public static StaticDataSet createStaticDataSet(
+            File homeDir,
+            int capacity,
+            int batchSize,
+            int numSyncBatches,
+            int segmentFileSizeMB,
+            SegmentFactory segmentFactory,
+            double segmentCompactFactor) throws Exception {
+        return new StaticDataSet(
+                homeDir,
+                capacity,
+                batchSize,
+                numSyncBatches,
+                segmentFileSizeMB,
+                segmentFactory,
+                segmentCompactFactor,
+                new FnvHashFunction());
+    }
+    
+    public static DynamicDataSet createDynamicDataSet(
+            File homeDir,
+            int initialCapacity,
+            int segmentFileSizeMB,
+            SegmentFactory segmentFactory) throws Exception {
+        int batchSize = StoreParams.BATCH_SIZE_DEFAULT;
+        int numSyncBatches = StoreParams.NUM_SYNC_BATCHES_DEFAULT;
+        double hashLoadFactor = StoreParams.HASH_LOAD_FACTOR_DEFAULT;
+        double segmentCompactFactor = StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT;
+        
+        return createDynamicDataSet(
+                homeDir,
+                initialCapacity,
+                batchSize,
+                numSyncBatches,
+                segmentFileSizeMB,
+                segmentFactory,
+                segmentCompactFactor,
+                hashLoadFactor);
+    }
+    
+    public static DynamicDataSet createDynamicDataSet(
+            File homeDir,
+            int initialCapacity,
+            int batchSize,
+            int numSyncBatches,
+            int segmentFileSizeMB,
+            SegmentFactory segmentFactory) throws Exception {
+        double hashLoadFactor = StoreParams.HASH_LOAD_FACTOR_DEFAULT;
+        double segmentCompactFactor = StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT;
+        
+        return createDynamicDataSet(
+                homeDir,
+                initialCapacity,
+                batchSize,
+                numSyncBatches,
+                segmentFileSizeMB,
+                segmentFactory,
+                segmentCompactFactor,
+                hashLoadFactor);
+    }
+    
+    public static DynamicDataSet createDynamicDataSet(
+            File homeDir,
+            int initialCapacity,
+            int batchSize,
+            int numSyncBatches,
+            int segmentFileSizeMB,
+            SegmentFactory segmentFactory,
+            double segmentCompactFactor) throws Exception {
+        double hashLoadFactor = StoreParams.HASH_LOAD_FACTOR_DEFAULT;
+        
+        return createDynamicDataSet(
+                homeDir,
+                initialCapacity,
+                batchSize,
+                numSyncBatches,
+                segmentFileSizeMB,
+                segmentFactory,
+                segmentCompactFactor,
+                hashLoadFactor);
+    }
+    
+    public static DynamicDataSet createDynamicDataSet(
+            File homeDir,
+            int initialCapacity,
+            int batchSize,
+            int numSyncBatches,
+            int segmentFileSizeMB,
+            SegmentFactory segmentFactory,
+            double segmentCompactFactor,
+            double hashLoadFactor) throws Exception {
+        return new DynamicDataSet(
+                homeDir,
+                StoreParams.getDynamicStoreInitialLevel(initialCapacity),
+                batchSize,
+                numSyncBatches,
+                segmentFileSizeMB,
+                segmentFactory,
+                segmentCompactFactor,
+                hashLoadFactor,
+                new FnvHashFunction());
+    }
+    
 }

@@ -76,8 +76,12 @@ public class StoreParams {
     }
     
     public static int getDynamicStoreInitialLevel(int initialCapacity) {
-        double d = (double)initialCapacity / (double)DynamicConstants.SUB_ARRAY_SIZE;
-        int level = (int)Math.ceil(Math.log(d)/Math.log(2));
-        return level;
+        if (initialCapacity <= DynamicConstants.SUB_ARRAY_SIZE) {
+            return 0;
+        } else {
+            double d = (double)initialCapacity / (double)DynamicConstants.SUB_ARRAY_SIZE;
+            int level = (int)Math.ceil(Math.log(d)/Math.log(2));
+            return level;
+        }
     }
 }

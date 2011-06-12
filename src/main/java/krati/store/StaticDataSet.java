@@ -188,6 +188,7 @@ public class StaticDataSet implements DataSet<byte[]> {
         AddressArray addressArray = createAddressArray(capacity, batchSize, numSyncBatches, homeDir);
         
         if (addressArray.length() != capacity) {
+            addressArray.close();
             throw new IOException("Capacity expected: " + addressArray.length() + " not " + capacity);
         }
         
