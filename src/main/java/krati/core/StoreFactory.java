@@ -22,9 +22,26 @@ import krati.util.FnvHashFunction;
  * 
  * <p>
  * 06/11, 2011 - Added methods for creating static and dynamic DataSet
+ * 06/12, 2011 - Added JavaDoc comment
  */
 public class StoreFactory {
     
+    /**
+     * Creates a fixed-length {@link krati.store.ArrayStore ArrayStore} with the default parameters below.
+     * 
+     * <pre>
+     *   batchSize            : 10000
+     *   numSyncBatches       : 5
+     *   segmentCompactFactor : 0.5
+     * </pre>
+     * 
+     * @param homeDir              - the store home directory
+     * @param length               - the store length (i.e. capacity) which cannot be changed after the store is created
+     * @param segmentFileSizeMB    - the segment size in MB
+     * @param segmentFactory       - the segment factory
+     * @return A fixed-length ArrayStore.
+     * @throws Exception if the store can not be created or loaded from the given directory.
+     */
     public static ArrayStore createStaticArrayStore(
             File homeDir,
             int length,
@@ -44,6 +61,22 @@ public class StoreFactory {
                 segmentCompactFactor);
     }
     
+    /**
+     * Creates a fixed-length {@link krati.store.ArrayStore ArrayStore} with the default parameters below.
+     * 
+     * <pre>
+     *   segmentCompactFactor : 0.5
+     * </pre>
+     * 
+     * @param homeDir              - the store home directory
+     * @param length               - the store length (i.e. capacity) which cannot be changed after the store is created
+     * @param batchSize            - the number of updates per update batch
+     * @param numSyncBatches       - the number of update batches required for updating the underlying address array
+     * @param segmentFileSizeMB    - the segment size in MB
+     * @param segmentFactory       - the segment factory
+     * @return A fixed-length ArrayStore.
+     * @throws Exception if the store can not be created or loaded from the given directory.
+     */
     public static ArrayStore createStaticArrayStore(
             File homeDir,
             int length,
@@ -63,6 +96,19 @@ public class StoreFactory {
                 segmentCompactFactor);
     }
     
+    /**
+     * Creates a fixed-length {@link krati.store.ArrayStore ArrayStore}.
+     * 
+     * @param homeDir              - the store home directory
+     * @param length               - the store length (i.e. capacity) which cannot be changed after the store is created
+     * @param batchSize            - the number of updates per update batch
+     * @param numSyncBatches       - the number of update batches required for updating the underlying address array
+     * @param segmentFileSizeMB    - the segment size in MB
+     * @param segmentFactory       - the segment factory
+     * @param segmentCompactFactor - the segment load threshold, below which a segment is eligible for compaction
+     * @return A fixed-length ArrayStore.
+     * @throws Exception if the store can not be created or loaded from the given directory.
+     */
     public static ArrayStore createStaticArrayStore(
             File homeDir,
             int length,
@@ -81,6 +127,30 @@ public class StoreFactory {
                 segmentCompactFactor);
     }
     
+    /**
+     * Creates a dynamic {@link krati.store.ArrayStore ArrayStore} which grows its capacity as needed.
+     * The store created has the default parameters below.
+     * 
+     * <pre>
+     *   batchSize            : 10000
+     *   numSyncBatches       : 5
+     *   segmentCompactFactor : 0.5
+     * </pre>
+     * 
+     * <p>
+     * It is recommended to have an <code>initialCapacity</code> which is large enough to hold the total number of keys
+     * eventually added to this store. This can reduce hash conflicts and yield better performance.
+     * 
+     * @param homeDir              - the store home directory
+     * @param initialLength        - the initial length (i.e. capacity) which should not be changed after the store is created
+     * @param batchSize            - the number of updates per update batch
+     * @param numSyncBatches       - the number of update batches required for updating the underlying address array
+     * @param segmentFileSizeMB    - the segment size in MB 
+     * @param segmentFactory       - the segment factory
+     * @param segmentCompactFactor - the segment load threshold, below which a segment is eligible for compaction
+     * @return a dynamic ArrayStore with growing capacity as needed.
+     * @throws Exception if the store can not be created or loaded from the given directory.
+     */
     public static ArrayStore createDynamicArrayStore(
             File homeDir,
             int length,
@@ -100,6 +170,28 @@ public class StoreFactory {
                 segmentCompactFactor);
     }
     
+    /**
+     * Creates a dynamic {@link krati.store.ArrayStore ArrayStore} which grows its capacity as needed.
+     * The store created has the default parameters below.
+     * 
+     * <pre>
+     *   segmentCompactFactor : 0.5
+     * </pre>
+     * 
+     * <p>
+     * It is recommended to have an <code>initialCapacity</code> which is large enough to hold the total number of keys
+     * eventually added to this store. This can reduce hash conflicts and yield better performance.
+     * 
+     * @param homeDir              - the store home directory
+     * @param initialLength        - the initial length (i.e. capacity) which should not be changed after the store is created
+     * @param batchSize            - the number of updates per update batch
+     * @param numSyncBatches       - the number of update batches required for updating the underlying address array
+     * @param segmentFileSizeMB    - the segment size in MB
+     * @param segmentFactory       - the segment factory
+     * @param segmentCompactFactor - the segment load threshold, below which a segment is eligible for compaction
+     * @return a dynamic ArrayStore with growing capacity as needed.
+     * @throws Exception if the store can not be created or loaded from the given directory.
+     */
     public static ArrayStore createDynamicArrayStore(
             File homeDir,
             int initialLength,
@@ -119,6 +211,23 @@ public class StoreFactory {
                 segmentCompactFactor);
     }
     
+    /**
+     * Creates a dynamic {@link krati.store.ArrayStore ArrayStore} which grows its capacity as needed.
+     * 
+     * <p>
+     * It is recommended to have an <code>initialCapacity</code> which is large enough to hold the total number of keys
+     * eventually added to this store. This can reduce hash conflicts and yield better performance.
+     * 
+     * @param homeDir              - the store home directory
+     * @param initialLength        - the initial length (i.e. capacity) which should not be changed after the store is created
+     * @param batchSize            - the number of updates per update batch
+     * @param numSyncBatches       - the number of update batches required for updating the underlying address array
+     * @param segmentFileSizeMB    - the segment size in MB
+     * @param segmentFactory       - the segment factory
+     * @param segmentCompactFactor - the segment load threshold, below which a segment is eligible for compaction
+     * @return a dynamic ArrayStore with growing capacity as needed.
+     * @throws Exception if the store can not be created or loaded from the given directory.
+     */
     public static ArrayStore createDynamicArrayStore(
             File homeDir,
             int initialLength,
@@ -137,6 +246,22 @@ public class StoreFactory {
                 segmentCompactFactor);
     }
     
+    /**
+     * Creates a fixed-capacity {@link krati.store.DataStore DataStore} with the default parameters below.
+     * 
+     * <pre>
+     *   batchSize            : 10000
+     *   numSyncBatches       : 5
+     *   segmentCompactFactor : 0.5
+     * </pre>
+     * 
+     * @param homeDir              - the store home directory
+     * @param capacity             - the store capacity which cannot be changed after the store is created
+     * @param segmentFileSizeMB    - the segment size in MB
+     * @param segmentFactory       - the segment factory
+     * @return A fixed-capacity DataStore.
+     * @throws Exception if the store can not be created or loaded from the given directory.
+     */
     public static StaticDataStore createStaticDataStore(
             File homeDir,
             int capacity,
@@ -156,6 +281,22 @@ public class StoreFactory {
                 segmentCompactFactor);
     }
     
+    /**
+     * Creates a fixed-capacity {@link krati.store.DataStore DataStore} with the default parameters below.
+     * 
+     * <pre>
+     *   segmentCompactFactor : 0.5
+     * </pre>
+     * 
+     * @param homeDir              - the store home directory
+     * @param capacity             - the store capacity which cannot be changed after the store is created
+     * @param batchSize            - the number of updates per update batch
+     * @param numSyncBatches       - the number of update batches required for updating the underlying address array
+     * @param segmentFileSizeMB    - the segment size in MB
+     * @param segmentFactory       - the segment factory
+     * @return A fixed-capacity DataStore.
+     * @throws Exception if the store can not be created or loaded from the given directory.
+     */
     public static StaticDataStore createStaticDataStore(
             File homeDir,
             int capacity,
@@ -175,6 +316,19 @@ public class StoreFactory {
                 segmentCompactFactor);
     }
     
+    /**
+     * Creates a fixed-capacity {@link krati.store.DataStore DataStore}.
+     * 
+     * @param homeDir              - the store home directory
+     * @param capacity             - the store capacity which cannot be changed after the store is created
+     * @param batchSize            - the number of updates per update batch
+     * @param numSyncBatches       - the number of update batches required for updating the underlying address array
+     * @param segmentFileSizeMB    - the segment size in MB
+     * @param segmentFactory       - the segment factory
+     * @param segmentCompactFactor - the segment load threshold, below which a segment is eligible for compaction
+     * @return A fixed-capacity DataStore.
+     * @throws Exception if the store can not be created or loaded from the given directory.
+     */
     public static StaticDataStore createStaticDataStore(
             File homeDir,
             int capacity,
@@ -194,6 +348,28 @@ public class StoreFactory {
                 new FnvHashFunction());
     }
     
+    /**
+     * Creates a dynamic {@link krati.store.DataStore DataStore} which grows its capacity as needed.
+     * The store created has the default parameters below:
+     * 
+     * <pre>
+     *   batchSize            : 10000
+     *   numSyncBatches       : 5
+     *   segmentCompactFactor : 0.5
+     *   hashLoadFactor       : 0.75
+     * </pre>
+     * 
+     * <p>
+     * It is recommended to have an <code>initialCapacity</code> which is large enough to hold the total number of keys
+     * eventually added to this store. This can reduce hash conflicts and yield better performance.
+     * 
+     * @param homeDir              - the store home directory
+     * @param initialCapacity      - the initial length capacity which should not be changed after the store is created
+     * @param segmentFileSizeMB    - the segment size in MB
+     * @param segmentFactory       - the segment factory
+     * @return A dynamic DataStore with growing capacity as needed.
+     * @throws Exception if the store can not be created or loaded from the given directory.
+     */
     public static DynamicDataStore createDynamicDataStore(
             File homeDir,
             int initialCapacity,
@@ -215,6 +391,28 @@ public class StoreFactory {
                 hashLoadFactor);
     }
     
+    /**
+     * Creates a dynamic {@link krati.store.DataStore DataStore} which grows its capacity as needed.
+     * The store created has the default parameters below:
+     * 
+     * <pre>
+     *   segmentCompactFactor : 0.5
+     *   hashLoadFactor       : 0.75
+     * </pre>
+     * 
+     * <p>
+     * It is recommended to have an <code>initialCapacity</code> which is large enough to hold the total number of keys
+     * eventually added to this store. This can reduce hash conflicts and yield better performance.
+     * 
+     * @param homeDir              - the store home directory
+     * @param initialCapacity      - the initial length capacity which should not be changed after the store is created
+     * @param batchSize            - the number of updates per update batch
+     * @param numSyncBatches       - the number of update batches required for updating the underlying address array
+     * @param segmentFileSizeMB    - the segment size in MB
+     * @param segmentFactory       - the segment factory
+     * @return A dynamic DataStore with growing capacity as needed.
+     * @throws Exception if the store can not be created or loaded from the given directory.
+     */
     public static DynamicDataStore createDynamicDataStore(
             File homeDir,
             int initialCapacity,
@@ -236,6 +434,28 @@ public class StoreFactory {
                 hashLoadFactor);
     }
     
+    /**
+     * Creates a dynamic {@link krati.store.DataStore DataStore} which grows its capacity as needed.
+     * The store created has the default parameters below:
+     * 
+     * <pre>
+     *   hashLoadFactor : 0.75
+     * </pre>
+     * 
+     * <p>
+     * It is recommended to have an <code>initialCapacity</code> which is large enough to hold the total number of keys
+     * eventually added to this store. This can reduce hash conflicts and yield better performance.
+     * 
+     * @param homeDir              - the store home directory
+     * @param initialCapacity      - the initial capacity which should not be changed after the store is created
+     * @param batchSize            - the number of updates per update batch
+     * @param numSyncBatches       - the number of update batches required for updating the underlying address array
+     * @param segmentFileSizeMB    - the segment size in MB
+     * @param segmentFactory       - the segment factory
+     * @param segmentCompactFactor - the segment load threshold, below which a segment is eligible for compaction
+     * @return A dynamic DataStore with growing capacity as needed.
+     * @throws Exception if the store can not be created or loaded from the given directory.
+     */
     public static DynamicDataStore createDynamicDataStore(
             File homeDir,
             int initialCapacity,
@@ -257,6 +477,24 @@ public class StoreFactory {
                 hashLoadFactor);
     }
     
+    /**
+     * Creates a dynamic {@link krati.store.DataStore DataStore} which grows its capacity as needed.
+     * 
+     * <p>
+     * It is recommended to have an <code>initialCapacity</code> which is large enough to hold the total number of keys
+     * eventually added to this store. This can reduce hash conflicts and yield better performance.
+     * 
+     * @param homeDir              - the store home directory
+     * @param initialCapacity      - the initial capacity which should not be changed after the store is created
+     * @param batchSize            - the number of updates per update batch
+     * @param numSyncBatches       - the number of update batches required for updating the underlying address array
+     * @param segmentFileSizeMB    - the segment size in MB
+     * @param segmentFactory       - the segment factory
+     * @param segmentCompactFactor - the segment load threshold, below which a segment is eligible for compaction
+     * @param hashLoadFactor       - the load factor of the underlying hash table
+     * @return A dynamic DataStore with growing capacity as needed.
+     * @throws Exception if the store can not be created or loaded from the given directory.
+     */
     public static DynamicDataStore createDynamicDataStore(
             File homeDir,
             int initialCapacity,
@@ -278,6 +516,35 @@ public class StoreFactory {
                 new FnvHashFunction());
     }
     
+    /**
+     * Creates a dynamic {@link krati.store.DataStore DataStore} which grows its capacity as needed.
+     * The store created has the default parameters below.
+     * 
+     * <pre>
+     *   batchSize            : 10000
+     *   numSyncBatches       : 5
+     *   segmentCompactFactor : 0.5
+     *   hashLoadFactor       : 0.75
+     * </pre>
+     * 
+     * <p>
+     * It is recommended to have an <code>initialCapacity</code> which is large enough to hold the total number of keys
+     * eventually added to this store. This can reduce hash conflicts and yield better performance.
+     * 
+     * <p>
+     * {@link krati.store.IndexedDataStore IndexedDataStore} is suitable for very large data sets
+     * in which the number of keys can fit into memory and the total bytes of all values is significantly
+     * larger than the available memory.  
+     * 
+     * @param homeDir                - the store home directory
+     * @param initialCapacity        - the initial capacity which should not be changed after the store is created
+     * @param indexSegmentFileSizeMB - the index segment size in MB with a recommended range from 8 to 32
+     * @param indexSegmentFactory    - the index segment factory, {@link krati.core.segment.MemorySegmentFactory MemorySegmentFactory} recommended
+     * @param storeSegmentFileSizeMB - the store segment size in MB with a recommended range from 8 to 256
+     * @param storeSegmentFactory    - the store segment factory, {@link krati.core.segment.WriteBufferSegmentFactory WriteBufferSegmentFactory} recommended
+     * @return A dynamic DataStore with growing capacity as needed.
+     * @throws Exception if the store can not be created or loaded from the given directory.
+     */
     public static IndexedDataStore createIndexedDataStore(
             File homeDir,
             int initialCapacity,
@@ -299,6 +566,35 @@ public class StoreFactory {
                 storeSegmentFactory);
     }
     
+    /**
+     * Creates a dynamic {@link krati.store.DataStore DataStore} which grows its capacity as needed.
+     * The store created has the default parameters below.
+     * 
+     * <pre>
+     *   segmentCompactFactor : 0.5
+     *   hashLoadFactor       : 0.75
+     * </pre>
+     * 
+     * <p>
+     * It is recommended to have an <code>initialCapacity</code> which is large enough to hold the total number of keys
+     * eventually added to this store. This can reduce hash conflicts and yield better performance.
+     * 
+     * <p>
+     * {@link krati.store.IndexedDataStore IndexedDataStore} is suitable for very large data sets
+     * in which the number of keys can fit into memory and the total bytes of all values is significantly
+     * larger than the available memory.  
+     * 
+     * @param homeDir                - the store home directory
+     * @param initialCapacity        - the initial capacity which should not be changed after the store is created
+     * @param batchSize              - the number of updates per update batch
+     * @param numSyncBatches         - the number of update batches required for updating the underlying address array
+     * @param indexSegmentFileSizeMB - the index segment size in MB with a recommended range from 8 to 32
+     * @param indexSegmentFactory    - the index segment factory, {@link krati.core.segment.MemorySegmentFactory MemorySegmentFactory} recommended
+     * @param storeSegmentFileSizeMB - the store segment size in MB with a recommended range from 8 to 256
+     * @param storeSegmentFactory    - the store segment factory, {@link krati.core.segment.WriteBufferSegmentFactory WriteBufferSegmentFactory} recommended
+     * @return A dynamic DataStore with growing capacity as needed.
+     * @throws Exception if the store can not be created or loaded from the given directory.
+     */
     public static IndexedDataStore createIndexedDataStore(
             File homeDir,
             int initialCapacity,
@@ -322,6 +618,22 @@ public class StoreFactory {
                 storeSegmentFactory);
     }
     
+    /**
+     * Creates a fixed-capacity {@link krati.store.DataSet DataSet} with the default parameters below.
+     * 
+     * <pre>
+     *   batchSize            : 10000
+     *   numSyncBatches       : 5
+     *   segmentCompactFactor : 0.5
+     * </pre>
+     * 
+     * @param homeDir              - the set home directory
+     * @param capacity             - the set capacity which cannot be changed after the store is created
+     * @param segmentFileSizeMB    - the segment size in MB
+     * @param segmentFactory       - the segment factory
+     * @return A fixed-capacity DataSet.
+     * @throws Exception if the set can not be created or loaded from the given directory.
+     */
     public static StaticDataSet createStaticDataSet(
             File homeDir,
             int capacity,
@@ -341,6 +653,22 @@ public class StoreFactory {
                 segmentCompactFactor);
     }
     
+    /**
+     * Creates a fixed-capacity {@link krati.store.DataSet DataSet} with the default parameters below.
+     * 
+     * <pre>
+     *   segmentCompactFactor : 0.5
+     * </pre>
+     * 
+     * @param homeDir              - the set home directory
+     * @param capacity             - the set capacity which cannot be changed after the store is created
+     * @param batchSize            - the number of updates per update batch
+     * @param numSyncBatches       - the number of update batches required for updating the underlying address array
+     * @param segmentFileSizeMB    - the segment size in MB
+     * @param segmentFactory       - the segment factory
+     * @return A fixed-capacity DataSet.
+     * @throws Exception if the set can not be created or loaded from the given directory.
+     */
     public static StaticDataSet createStaticDataSet(
             File homeDir,
             int capacity,
@@ -360,6 +688,19 @@ public class StoreFactory {
                 segmentCompactFactor);
     }
     
+    /**
+     * Creates a fixed-capacity {@link krati.store.DataSet DataSet}.
+     * 
+     * @param homeDir              - the set home directory
+     * @param capacity             - the set capacity which cannot be changed after the store is created
+     * @param batchSize            - the number of updates per update batch
+     * @param numSyncBatches       - the number of update batches required for updating the underlying address array
+     * @param segmentFileSizeMB    - the segment size in MB
+     * @param segmentFactory       - the segment factory
+     * @param segmentCompactFactor - the segment load threshold, below which a segment is eligible for compaction
+     * @return A fixed-capacity DataSet.
+     * @throws Exception if the set can not be created or loaded from the given directory.
+     */
     public static StaticDataSet createStaticDataSet(
             File homeDir,
             int capacity,
@@ -379,6 +720,28 @@ public class StoreFactory {
                 new FnvHashFunction());
     }
     
+    /**
+     * Creates a dynamic {@link krati.store.DataSet DataSet} which grows its capacity as needed.
+     * The set created has the default parameters below:
+     * 
+     * <pre>
+     *   batchSize            : 10000
+     *   numSyncBatches       : 5
+     *   segmentCompactFactor : 0.5
+     *   hashLoadFactor       : 0.75
+     * </pre>
+     * 
+     * <p>
+     * It is recommended to have an <code>initialCapacity</code> which is large enough to hold the total number of keys
+     * eventually added to this set. This can reduce hash conflicts and yield better performance.
+     * 
+     * @param homeDir              - the set home directory
+     * @param initialCapacity      - the initial length capacity which should not be changed after the set is created
+     * @param segmentFileSizeMB    - the segment size in MB
+     * @param segmentFactory       - the segment factory
+     * @return A dynamic DataSet with growing capacity as needed.
+     * @throws Exception if the set can not be created or loaded from the given directory.
+     */
     public static DynamicDataSet createDynamicDataSet(
             File homeDir,
             int initialCapacity,
@@ -400,6 +763,28 @@ public class StoreFactory {
                 hashLoadFactor);
     }
     
+    /**
+     * Creates a dynamic {@link krati.store.DataSet DataSet} which grows its capacity as needed.
+     * The set created has the default parameters below:
+     * 
+     * <pre>
+     *   segmentCompactFactor : 0.5
+     *   hashLoadFactor       : 0.75
+     * </pre>
+     * 
+     * <p>
+     * It is recommended to have an <code>initialCapacity</code> which is large enough to hold the total number of keys
+     * eventually added to this set. This can reduce hash conflicts and yield better performance.
+     * 
+     * @param homeDir              - the set home directory
+     * @param initialCapacity      - the initial length capacity which should not be changed after the set is created
+     * @param batchSize            - the number of updates per update batch
+     * @param numSyncBatches       - the number of update batches required for updating the underlying address array
+     * @param segmentFileSizeMB    - the segment size in MB
+     * @param segmentFactory       - the segment factory
+     * @return A dynamic DataSet with growing capacity as needed.
+     * @throws Exception if the set can not be created or loaded from the given directory.
+     */
     public static DynamicDataSet createDynamicDataSet(
             File homeDir,
             int initialCapacity,
@@ -421,6 +806,28 @@ public class StoreFactory {
                 hashLoadFactor);
     }
     
+    /**
+     * Creates a dynamic {@link krati.store.DataSet DataSet} which grows its capacity as needed.
+     * The set created has the default parameters below:
+     * 
+     * <pre>
+     *   hashLoadFactor : 0.75
+     * </pre>
+     * 
+     * <p>
+     * It is recommended to have an <code>initialCapacity</code> which is large enough to hold the total number of keys
+     * eventually added to this set. This can reduce hash conflicts and yield better performance.
+     * 
+     * @param homeDir              - the set home directory
+     * @param initialCapacity      - the initial capacity which should not be changed after the set is created
+     * @param batchSize            - the number of updates per update batch
+     * @param numSyncBatches       - the number of update batches required for updating the underlying address array
+     * @param segmentFileSizeMB    - the segment size in MB
+     * @param segmentFactory       - the segment factory
+     * @param segmentCompactFactor - the segment load threshold, below which a segment is eligible for compaction
+     * @return A dynamic DataSet with growing capacity as needed.
+     * @throws Exception if the set can not be created or loaded from the given directory.
+     */
     public static DynamicDataSet createDynamicDataSet(
             File homeDir,
             int initialCapacity,
@@ -442,6 +849,24 @@ public class StoreFactory {
                 hashLoadFactor);
     }
     
+    /**
+     * Creates a dynamic {@link krati.store.DataSet DataSet} which grows its capacity as needed.
+     *
+     * <p>
+     * It is recommended to have an <code>initialCapacity</code> which is large enough to hold the total number of keys
+     * eventually added to this set. This can reduce hash conflicts and yield better performance.
+     * 
+     * @param homeDir              - the set home directory
+     * @param initialCapacity      - the initial capacity which should not be changed after the set is created
+     * @param batchSize            - the number of updates per update batch
+     * @param numSyncBatches       - the number of update batches required for updating the underlying address array
+     * @param segmentFileSizeMB    - the segment size in MB
+     * @param segmentFactory       - the segment factory
+     * @param segmentCompactFactor - the segment load threshold, below which a segment is eligible for compaction
+     * @param hashLoadFactor       - the load factor of the underlying hash table
+     * @return A dynamic DataSet with growing capacity as needed.
+     * @throws Exception if the set can not be created or loaded from the given directory.
+     */
     public static DynamicDataSet createDynamicDataSet(
             File homeDir,
             int initialCapacity,
