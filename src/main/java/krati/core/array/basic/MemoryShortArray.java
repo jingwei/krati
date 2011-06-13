@@ -19,7 +19,7 @@ public class MemoryShortArray implements ShortArray, DynamicArray {
     protected final boolean _autoExpand;
     
     public MemoryShortArray() {
-        this(16, true);
+        this(DynamicConstants.SUB_ARRAY_BITS, true);
     }
     
     public MemoryShortArray(int subArrayBits) {

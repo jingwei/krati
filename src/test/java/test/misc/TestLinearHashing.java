@@ -3,6 +3,7 @@ package test.misc;
 import java.util.Random;
 
 import junit.framework.TestCase;
+import krati.core.array.basic.DynamicConstants;
 import krati.util.LinearHashing;
 
 /**
@@ -16,7 +17,7 @@ public class TestLinearHashing extends TestCase {
     
     public void testBasic() {
         int capacity;
-        int unitCapacity = 1 << 16;
+        int unitCapacity = 1 << DynamicConstants.SUB_ARRAY_BITS;
         LinearHashing h = new LinearHashing(unitCapacity);
         assertEquals(unitCapacity, h.getUnitCapacity());
         
@@ -73,7 +74,7 @@ public class TestLinearHashing extends TestCase {
     }
     
     public void testRandom() {
-        int unitCapacity = 1 << 16;
+        int unitCapacity = 1 << DynamicConstants.SUB_ARRAY_BITS;
         LinearHashing h = new LinearHashing(unitCapacity);
         assertEquals(unitCapacity, h.getUnitCapacity());
         

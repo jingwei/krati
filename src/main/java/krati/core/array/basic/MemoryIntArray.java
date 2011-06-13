@@ -19,7 +19,7 @@ public class MemoryIntArray implements IntArray, DynamicArray {
     protected final boolean _autoExpand;
     
     public MemoryIntArray() {
-        this(16, true);
+        this(DynamicConstants.SUB_ARRAY_BITS, true);
     }
     
     public MemoryIntArray(int subArrayBits) {

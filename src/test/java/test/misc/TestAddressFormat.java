@@ -1,5 +1,6 @@
 package test.misc;
 
+import krati.core.array.basic.DynamicConstants;
 import krati.core.segment.AddressFormat;
 import test.AbstractTest;
 
@@ -22,13 +23,13 @@ public class TestAddressFormat extends AbstractTest {
         // Test 1
         offset = 12345;
         segment = 24;
-        dataSize = (1 << 16) - 1;
+        dataSize = (1 << DynamicConstants.SUB_ARRAY_BITS) - 1;
         check(af, offset, segment, dataSize);
         
         // Test 2
         offset = 12345;
         segment = 24;
-        dataSize = (1 << 16);
+        dataSize = (1 << DynamicConstants.SUB_ARRAY_BITS);
         check(af, offset, segment, dataSize);
         
         // Test 3

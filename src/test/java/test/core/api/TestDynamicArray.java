@@ -7,6 +7,7 @@ import test.core.MemberDataUpdate;
 
 import java.util.Random;
 
+import krati.core.array.basic.DynamicConstants;
 import krati.core.array.basic.DynamicIntArray;
 import krati.core.array.basic.DynamicLongArray;
 import krati.core.array.basic.DynamicShortArray;
@@ -21,8 +22,8 @@ public class TestDynamicArray extends AbstractTest {
     static long scn = 0;
     static Random random = new Random(System.currentTimeMillis());
     
-    int subArrayBits = 16;
-    int subArraySize = 1 << subArrayBits;
+    int subArrayBits = DynamicConstants.SUB_ARRAY_BITS;
+    int subArraySize = DynamicConstants.SUB_ARRAY_SIZE;
     int maxEntrySize = 1000;
     int maxEntries = 10;
     

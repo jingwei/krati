@@ -17,8 +17,8 @@ import org.apache.log4j.Logger;
  *
  */
 public class DynamicIntArray extends AbstractRecoverableArray<EntryValueInt> implements IntArray, DynamicArray, ArrayExpandListener {
-    private final static int _subArrayBits = 16;
-    private final static int _subArraySize = 1 << _subArrayBits;
+    private final static int _subArrayBits = DynamicConstants.SUB_ARRAY_BITS;
+    private final static int _subArraySize = DynamicConstants.SUB_ARRAY_SIZE;
     private final static Logger _log = Logger.getLogger(DynamicIntArray.class);
     private MemoryIntArray _internalArray;
     

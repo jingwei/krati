@@ -19,7 +19,7 @@ public class MemoryLongArray implements LongArray, DynamicArray {
     protected final boolean _autoExpand;
     
     public MemoryLongArray() {
-        this(16, true);
+        this(DynamicConstants.SUB_ARRAY_BITS, true);
     }
     
     public MemoryLongArray(int subArrayBits) {

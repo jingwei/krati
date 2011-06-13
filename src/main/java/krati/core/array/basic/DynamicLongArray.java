@@ -22,8 +22,8 @@ import krati.core.array.entry.EntryValueLong;
  * 06/03, 2011 - cleanup _arrayFile file handle
  */
 public class DynamicLongArray extends AbstractRecoverableArray<EntryValueLong> implements AddressArray, DynamicArray, ArrayExpandListener {
-    private final static int _subArrayBits = 16;
-    private final static int _subArraySize = 1 << _subArrayBits;
+    private final static int _subArrayBits = DynamicConstants.SUB_ARRAY_BITS;
+    private final static int _subArraySize = DynamicConstants.SUB_ARRAY_SIZE;
     private final static Logger _log = Logger.getLogger(DynamicLongArray.class);
     private MemoryLongArray _internalArray;
     
