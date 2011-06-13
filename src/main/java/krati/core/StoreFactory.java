@@ -71,7 +71,7 @@ public class StoreFactory {
      * @param homeDir              - the store home directory
      * @param length               - the store length (i.e. capacity) which cannot be changed after the store is created
      * @param batchSize            - the number of updates per update batch
-     * @param numSyncBatches       - the number of update batches required for updating the underlying address array
+     * @param numSyncBatches       - the number of update batches required for updating the underlying indexes
      * @param segmentFileSizeMB    - the segment size in MB
      * @param segmentFactory       - the segment factory
      * @return A fixed-length ArrayStore.
@@ -102,7 +102,7 @@ public class StoreFactory {
      * @param homeDir              - the store home directory
      * @param length               - the store length (i.e. capacity) which cannot be changed after the store is created
      * @param batchSize            - the number of updates per update batch
-     * @param numSyncBatches       - the number of update batches required for updating the underlying address array
+     * @param numSyncBatches       - the number of update batches required for updating the underlying indexes
      * @param segmentFileSizeMB    - the segment size in MB
      * @param segmentFactory       - the segment factory
      * @param segmentCompactFactor - the segment load threshold, below which a segment is eligible for compaction
@@ -144,7 +144,7 @@ public class StoreFactory {
      * @param homeDir              - the store home directory
      * @param initialLength        - the initial length (i.e. capacity) which should not be changed after the store is created
      * @param batchSize            - the number of updates per update batch
-     * @param numSyncBatches       - the number of update batches required for updating the underlying address array
+     * @param numSyncBatches       - the number of update batches required for updating the underlying indexes
      * @param segmentFileSizeMB    - the segment size in MB 
      * @param segmentFactory       - the segment factory
      * @param segmentCompactFactor - the segment load threshold, below which a segment is eligible for compaction
@@ -185,7 +185,7 @@ public class StoreFactory {
      * @param homeDir              - the store home directory
      * @param initialLength        - the initial length (i.e. capacity) which should not be changed after the store is created
      * @param batchSize            - the number of updates per update batch
-     * @param numSyncBatches       - the number of update batches required for updating the underlying address array
+     * @param numSyncBatches       - the number of update batches required for updating the underlying indexes
      * @param segmentFileSizeMB    - the segment size in MB
      * @param segmentFactory       - the segment factory
      * @param segmentCompactFactor - the segment load threshold, below which a segment is eligible for compaction
@@ -221,7 +221,7 @@ public class StoreFactory {
      * @param homeDir              - the store home directory
      * @param initialLength        - the initial length (i.e. capacity) which should not be changed after the store is created
      * @param batchSize            - the number of updates per update batch
-     * @param numSyncBatches       - the number of update batches required for updating the underlying address array
+     * @param numSyncBatches       - the number of update batches required for updating the underlying indexes
      * @param segmentFileSizeMB    - the segment size in MB
      * @param segmentFactory       - the segment factory
      * @param segmentCompactFactor - the segment load threshold, below which a segment is eligible for compaction
@@ -291,7 +291,7 @@ public class StoreFactory {
      * @param homeDir              - the store home directory
      * @param capacity             - the store capacity which cannot be changed after the store is created
      * @param batchSize            - the number of updates per update batch
-     * @param numSyncBatches       - the number of update batches required for updating the underlying address array
+     * @param numSyncBatches       - the number of update batches required for updating the underlying indexes
      * @param segmentFileSizeMB    - the segment size in MB
      * @param segmentFactory       - the segment factory
      * @return A fixed-capacity DataStore.
@@ -322,7 +322,7 @@ public class StoreFactory {
      * @param homeDir              - the store home directory
      * @param capacity             - the store capacity which cannot be changed after the store is created
      * @param batchSize            - the number of updates per update batch
-     * @param numSyncBatches       - the number of update batches required for updating the underlying address array
+     * @param numSyncBatches       - the number of update batches required for updating the underlying indexes
      * @param segmentFileSizeMB    - the segment size in MB
      * @param segmentFactory       - the segment factory
      * @param segmentCompactFactor - the segment load threshold, below which a segment is eligible for compaction
@@ -407,7 +407,7 @@ public class StoreFactory {
      * @param homeDir              - the store home directory
      * @param initialCapacity      - the initial length capacity which should not be changed after the store is created
      * @param batchSize            - the number of updates per update batch
-     * @param numSyncBatches       - the number of update batches required for updating the underlying address array
+     * @param numSyncBatches       - the number of update batches required for updating the underlying indexes
      * @param segmentFileSizeMB    - the segment size in MB
      * @param segmentFactory       - the segment factory
      * @return A dynamic DataStore with growing capacity as needed.
@@ -449,7 +449,7 @@ public class StoreFactory {
      * @param homeDir              - the store home directory
      * @param initialCapacity      - the initial capacity which should not be changed after the store is created
      * @param batchSize            - the number of updates per update batch
-     * @param numSyncBatches       - the number of update batches required for updating the underlying address array
+     * @param numSyncBatches       - the number of update batches required for updating the underlying indexes
      * @param segmentFileSizeMB    - the segment size in MB
      * @param segmentFactory       - the segment factory
      * @param segmentCompactFactor - the segment load threshold, below which a segment is eligible for compaction
@@ -487,7 +487,7 @@ public class StoreFactory {
      * @param homeDir              - the store home directory
      * @param initialCapacity      - the initial capacity which should not be changed after the store is created
      * @param batchSize            - the number of updates per update batch
-     * @param numSyncBatches       - the number of update batches required for updating the underlying address array
+     * @param numSyncBatches       - the number of update batches required for updating the underlying indexes
      * @param segmentFileSizeMB    - the segment size in MB
      * @param segmentFactory       - the segment factory
      * @param segmentCompactFactor - the segment load threshold, below which a segment is eligible for compaction
@@ -587,7 +587,7 @@ public class StoreFactory {
      * @param homeDir                - the store home directory
      * @param initialCapacity        - the initial capacity which should not be changed after the store is created
      * @param batchSize              - the number of updates per update batch
-     * @param numSyncBatches         - the number of update batches required for updating the underlying address array
+     * @param numSyncBatches         - the number of update batches required for updating the underlying indexes
      * @param indexSegmentFileSizeMB - the index segment size in MB with a recommended range from 8 to 32
      * @param indexSegmentFactory    - the index segment factory, {@link krati.core.segment.MemorySegmentFactory MemorySegmentFactory} recommended
      * @param storeSegmentFileSizeMB - the store segment size in MB with a recommended range from 8 to 256
@@ -663,7 +663,7 @@ public class StoreFactory {
      * @param homeDir              - the set home directory
      * @param capacity             - the set capacity which cannot be changed after the store is created
      * @param batchSize            - the number of updates per update batch
-     * @param numSyncBatches       - the number of update batches required for updating the underlying address array
+     * @param numSyncBatches       - the number of update batches required for updating the underlying indexes
      * @param segmentFileSizeMB    - the segment size in MB
      * @param segmentFactory       - the segment factory
      * @return A fixed-capacity DataSet.
@@ -694,7 +694,7 @@ public class StoreFactory {
      * @param homeDir              - the set home directory
      * @param capacity             - the set capacity which cannot be changed after the store is created
      * @param batchSize            - the number of updates per update batch
-     * @param numSyncBatches       - the number of update batches required for updating the underlying address array
+     * @param numSyncBatches       - the number of update batches required for updating the underlying indexes
      * @param segmentFileSizeMB    - the segment size in MB
      * @param segmentFactory       - the segment factory
      * @param segmentCompactFactor - the segment load threshold, below which a segment is eligible for compaction
@@ -779,7 +779,7 @@ public class StoreFactory {
      * @param homeDir              - the set home directory
      * @param initialCapacity      - the initial length capacity which should not be changed after the set is created
      * @param batchSize            - the number of updates per update batch
-     * @param numSyncBatches       - the number of update batches required for updating the underlying address array
+     * @param numSyncBatches       - the number of update batches required for updating the underlying indexes
      * @param segmentFileSizeMB    - the segment size in MB
      * @param segmentFactory       - the segment factory
      * @return A dynamic DataSet with growing capacity as needed.
@@ -821,7 +821,7 @@ public class StoreFactory {
      * @param homeDir              - the set home directory
      * @param initialCapacity      - the initial capacity which should not be changed after the set is created
      * @param batchSize            - the number of updates per update batch
-     * @param numSyncBatches       - the number of update batches required for updating the underlying address array
+     * @param numSyncBatches       - the number of update batches required for updating the underlying indexes
      * @param segmentFileSizeMB    - the segment size in MB
      * @param segmentFactory       - the segment factory
      * @param segmentCompactFactor - the segment load threshold, below which a segment is eligible for compaction
@@ -859,7 +859,7 @@ public class StoreFactory {
      * @param homeDir              - the set home directory
      * @param initialCapacity      - the initial capacity which should not be changed after the set is created
      * @param batchSize            - the number of updates per update batch
-     * @param numSyncBatches       - the number of update batches required for updating the underlying address array
+     * @param numSyncBatches       - the number of update batches required for updating the underlying indexes
      * @param segmentFileSizeMB    - the segment size in MB
      * @param segmentFactory       - the segment factory
      * @param segmentCompactFactor - the segment load threshold, below which a segment is eligible for compaction

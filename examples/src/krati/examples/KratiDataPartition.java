@@ -1,6 +1,7 @@
 package krati.examples;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Random;
 
 import krati.core.segment.SegmentFactory;
@@ -68,7 +69,7 @@ public class KratiDataPartition {
     public void populate() throws Exception {
         for (int i = 0, cnt = _partition.getIdCount(); i < cnt; i++) {
             int memberId = _partition.getIdStart() + i;
-            _partition.set(memberId, createDataForMember(i), System.nanoTime());
+            _partition.set(memberId, createDataForMember(memberId), System.nanoTime());
         }
         _partition.sync();
     }
@@ -86,6 +87,15 @@ public class KratiDataPartition {
             int memberId = idStart + rand.nextInt(idCount);
             System.out.printf("MemberId=%-10d MemberData=%s%n", memberId, new String(_partition.get(memberId)));
         }
+    }
+    
+    /**
+     * Closes the underlying partition.
+     * 
+     * @throws IOException
+     */
+    public void close() throws IOException {
+        _partition.close();
     }
     
     /**
@@ -107,6 +117,9 @@ public class KratiDataPartition {
             
             // Perform some random reads from data partition.
             dc.doRandomReads(10);
+            
+            // Close data partition
+            dc.close();
         } catch(Exception e) {
             e.printStackTrace();
         }

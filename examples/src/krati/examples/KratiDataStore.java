@@ -1,17 +1,18 @@
 package krati.examples;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Random;
 
+import krati.core.StoreFactory;
 import krati.core.segment.SegmentFactory;
 import krati.store.DataStore;
-import krati.store.StaticDataStore;
 
 /**
  * Sample code for Krati DataStore.
  * 
  * @author jwu
- *
+ * 
  */
 public class KratiDataStore {
     private final int _keyCount;
@@ -43,12 +44,13 @@ public class KratiDataStore {
      */
     protected DataStore<byte[], byte[]> createDataStore(int keyCount, File storeDir) throws Exception {
         int capacity = (int)(keyCount * 1.5);
-        return new StaticDataStore(storeDir,
-                                   capacity, /* capacity */
-                                   10000,    /* update batch size */
-                                   5,        /* number of update batches required to sync indexes.dat */
-                                   128,      /* segment file size in MB */
-                                   createSegmentFactory());
+        return StoreFactory.createStaticDataStore(
+                storeDir,
+                capacity,
+                10000,    /* update batch size */
+                5,        /* number of update batches required to sync indexes.dat */
+                128,      /* segment file size in MB */
+                createSegmentFactory());
     }
     
     /**
@@ -102,6 +104,15 @@ public class KratiDataStore {
     }
     
     /**
+     * Close the underlying store.
+     * 
+     * @throws IOException
+     */
+    public void close() throws IOException {
+        _store.close();
+    }
+    
+    /**
      * java -Xmx4G krati.examples.KratiDataStore keyCount homeDir
      */
     public static void main(String[] args) {
@@ -119,6 +130,9 @@ public class KratiDataStore {
             
             // Perform some random reads from data store.
             store.doRandomReads(10);
+            
+            // Close data store
+            store.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
