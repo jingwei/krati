@@ -90,7 +90,7 @@ public class ArrayFile implements Closeable {
    */
   public ArrayFile(File file, int initialLength, int elementSize, IOType type) throws IOException {
     boolean newFile = false;
-    long initialFileLength = DATA_START_POSITION + (initialLength * elementSize);
+    long initialFileLength = DATA_START_POSITION + ((long)initialLength * elementSize);
     
     if (!file.exists()) {
       if (!file.createNewFile()) {

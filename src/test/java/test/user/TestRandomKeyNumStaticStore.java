@@ -15,7 +15,7 @@ import krati.store.StaticDataStore;
 public class TestRandomKeyNumStaticStore extends TestRandomKeyNumStore {
     
     protected int getCapacity() {
-        return Math.min((int)(getKeyCount() * 1.5), 200000000);
+        return Math.min((int)(getKeyCount() * 1.5), Integer.MAX_VALUE);
     }
     
     @Override
