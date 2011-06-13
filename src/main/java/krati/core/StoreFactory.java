@@ -137,23 +137,16 @@ public class StoreFactory {
      *   segmentCompactFactor : 0.5
      * </pre>
      * 
-     * <p>
-     * It is recommended to have an <code>initialCapacity</code> which is large enough to hold the total number of keys
-     * eventually added to this store. This can reduce hash conflicts and yield better performance.
-     * 
      * @param homeDir              - the store home directory
      * @param initialLength        - the initial length (i.e. capacity) which should not be changed after the store is created
-     * @param batchSize            - the number of updates per update batch
-     * @param numSyncBatches       - the number of update batches required for updating the underlying indexes
      * @param segmentFileSizeMB    - the segment size in MB 
      * @param segmentFactory       - the segment factory
-     * @param segmentCompactFactor - the segment load threshold, below which a segment is eligible for compaction
      * @return a dynamic ArrayStore with growing capacity as needed.
      * @throws Exception if the store can not be created or loaded from the given directory.
      */
     public static ArrayStore createDynamicArrayStore(
             File homeDir,
-            int length,
+            int initialLength,
             int segmentFileSizeMB,
             SegmentFactory segmentFactory) throws Exception {
         int batchSize = StoreParams.BATCH_SIZE_DEFAULT;
@@ -162,7 +155,7 @@ public class StoreFactory {
         
         return createDynamicArrayStore(
                 homeDir,
-                length,
+                initialLength,
                 batchSize,
                 numSyncBatches,
                 segmentFileSizeMB,
@@ -178,17 +171,12 @@ public class StoreFactory {
      *   segmentCompactFactor : 0.5
      * </pre>
      * 
-     * <p>
-     * It is recommended to have an <code>initialCapacity</code> which is large enough to hold the total number of keys
-     * eventually added to this store. This can reduce hash conflicts and yield better performance.
-     * 
      * @param homeDir              - the store home directory
      * @param initialLength        - the initial length (i.e. capacity) which should not be changed after the store is created
      * @param batchSize            - the number of updates per update batch
      * @param numSyncBatches       - the number of update batches required for updating the underlying indexes
      * @param segmentFileSizeMB    - the segment size in MB
      * @param segmentFactory       - the segment factory
-     * @param segmentCompactFactor - the segment load threshold, below which a segment is eligible for compaction
      * @return a dynamic ArrayStore with growing capacity as needed.
      * @throws Exception if the store can not be created or loaded from the given directory.
      */
@@ -213,10 +201,6 @@ public class StoreFactory {
     
     /**
      * Creates a dynamic {@link krati.store.ArrayStore ArrayStore} which grows its capacity as needed.
-     * 
-     * <p>
-     * It is recommended to have an <code>initialCapacity</code> which is large enough to hold the total number of keys
-     * eventually added to this store. This can reduce hash conflicts and yield better performance.
      * 
      * @param homeDir              - the store home directory
      * @param initialLength        - the initial length (i.e. capacity) which should not be changed after the store is created
