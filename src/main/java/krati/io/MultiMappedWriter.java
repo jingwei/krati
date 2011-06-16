@@ -17,7 +17,7 @@ import java.nio.channels.FileChannel;
  * <p>
  * 06/09, 2011 - flush via FileChannel.force to boost performance.
  */
-public class MultiMappedWriter implements DataWriter {
+public class MultiMappedWriter implements DataWriter, BasicIO {
     private final File _file;
     private long _currentPosition;
     private FileChannel _channel;
@@ -175,5 +175,26 @@ public class MultiMappedWriter implements DataWriter {
         }
         
         _currentPosition = newPosition;
+    }
+    
+    @Override
+    public int readInt(long position) throws IOException {
+        int pos = (int)(position & BUFFER_MASK);
+        int ind = (int)(position >> BUFFER_BITS);
+        return _mmapArray[ind].getInt(pos);
+    }
+    
+    @Override
+    public long readLong(long position) throws IOException {
+        int pos = (int)(position & BUFFER_MASK);
+        int ind = (int)(position >> BUFFER_BITS);
+        return _mmapArray[ind].getLong(pos);
+    }
+    
+    @Override
+    public short readShort(long position) throws IOException {
+        int pos = (int)(position & BUFFER_MASK);
+        int ind = (int)(position >> BUFFER_BITS);
+        return _mmapArray[ind].getShort(pos);
     }
 }

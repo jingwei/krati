@@ -12,7 +12,7 @@ import java.nio.channels.FileChannel;
  * @author jwu
  *
  */
-public class ChannelWriter implements DataWriter {
+public class ChannelWriter implements DataWriter, BasicIO {
     private final File _file;
     private FileChannel _channel;
     private RandomAccessFile _raf;
@@ -133,5 +133,29 @@ public class ChannelWriter implements DataWriter {
     @Override
     public void position(long newPosition) throws IOException {
         _channel.position(newPosition);
+    }
+    
+    @Override
+    public int readInt(long position) throws IOException {
+        ByteBuffer bb = ByteBuffer.allocate(4);
+        _channel.read(bb, position);
+        bb.flip();
+        return bb.getInt();
+    }
+    
+    @Override
+    public long readLong(long position) throws IOException {
+        ByteBuffer bb = ByteBuffer.allocate(8);
+        _channel.read(bb, position);
+        bb.flip();
+        return bb.getLong();
+    }
+    
+    @Override
+    public short readShort(long position) throws IOException {
+        ByteBuffer bb = ByteBuffer.allocate(2);
+        _channel.read(bb, position);
+        bb.flip();
+        return bb.getShort();
     }
 }

@@ -32,7 +32,7 @@ public class DynamicIntArray extends AbstractRecoverableArray<EntryValueInt> imp
     }
     
     @Override
-    protected void loadArrayFileData() {
+    protected void loadArrayFileData() throws IOException {
         long maxScn = _arrayFile.getLwmScn();
         
         try {
@@ -42,8 +42,7 @@ public class DynamicIntArray extends AbstractRecoverableArray<EntryValueInt> imp
             expandCapacity(_internalArray.length() - 1);
             _internalArray.setArrayExpandListener(this);
         } catch(Exception e) {
-            maxScn = 0;
-            clear();
+            throw (e instanceof IOException) ? (IOException)e : new IOException("Failed to load array file", e);
         }
         
         _entryManager.setWaterMarks(maxScn, maxScn);
@@ -60,8 +59,15 @@ public class DynamicIntArray extends AbstractRecoverableArray<EntryValueInt> imp
             try {
                 set(0, get(0), endOfPeriod);
             } catch(Exception e) {
-                _log.error(e);
+                _log.error("Failed to saveHWMark " + endOfPeriod, e);
             }
+        } else if(0 < endOfPeriod && endOfPeriod < getLWMark()) {
+            try {
+                _entryManager.sync();
+            } catch(Exception e) {
+                _log.error("Failed to saveHWMark" + endOfPeriod, e);
+            }
+            _entryManager.setWaterMarks(endOfPeriod, endOfPeriod);
         }
     }
     
@@ -74,7 +80,7 @@ public class DynamicIntArray extends AbstractRecoverableArray<EntryValueInt> imp
         // Clear the entry manager
         _entryManager.clear();
         
-        // Clear the underly array file
+        // Clear the underlying array file
         try {
             _arrayFile.reset(_internalArray, _entryManager.getLWMark());
         } catch(IOException e) {

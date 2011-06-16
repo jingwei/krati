@@ -7,6 +7,7 @@ import java.io.File;
  * 
  * @author jwu
  * 03/17, 2011
+ * 
  */
 public class IOFactory {    
     
@@ -17,7 +18,7 @@ public class IOFactory {
      * @param type - I/O type.
      * @return a new DataReader instance.
      */
-    public static DataReader createDataReader(File file, IOType type) {
+    public final static DataReader createDataReader(File file, IOType type) {
         if(type == IOType.MAPPED) {
             if(file.length() <= Integer.MAX_VALUE) {
                 return new MappedReader(file);
@@ -34,9 +35,9 @@ public class IOFactory {
      * 
      * @param file - file to write.
      * @param type - I/O type.
-     * @return a new DataWriter instance.
+     * @return a new DataWriter instance of type {@link BasicIO}.
      */
-    public static DataWriter createDataWriter(File file, IOType type) {
+    public final static DataWriter createDataWriter(File file, IOType type) {
         if(type == IOType.MAPPED) {
             if(file.length() <= Integer.MAX_VALUE) {
                 return new MappedWriter(file);

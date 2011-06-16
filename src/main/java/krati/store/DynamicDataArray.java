@@ -122,18 +122,18 @@ public final class DynamicDataArray extends AbstractDataArray implements Dynamic
     
     @Override
     public synchronized void expandCapacity(int index) throws Exception {
-        ((DynamicLongArray)_addrArray).expandCapacity(index);
+        _addrArray.expandCapacity(index);
     }
     
     @Override
     public synchronized void set(int index, byte[] data, long scn) throws Exception {
-        ((DynamicLongArray)_addrArray).expandCapacity(index);
+        _addrArray.expandCapacity(index);
         _dataArray.set(index, data, scn);
     }
     
     @Override
     public synchronized void set(int index, byte[] data, int offset, int length, long scn) throws Exception {
-        ((DynamicLongArray)_addrArray).expandCapacity(index);
+        _addrArray.expandCapacity(index);
         _dataArray.set(index, data, offset, length, scn);
     }
     

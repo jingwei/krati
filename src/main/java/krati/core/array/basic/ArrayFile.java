@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 import krati.core.array.entry.Entry;
 import krati.core.array.entry.EntryUtility;
 import krati.core.array.entry.EntryValue;
+import krati.io.BasicIO;
 import krati.io.DataReader;
 import krati.io.IOFactory;
 import krati.io.IOType;
@@ -224,8 +225,16 @@ public class ArrayFile implements Closeable {
     return _elementSize;
   }
   
+  public final BasicIO getBasicIO() {
+    return (BasicIO)_writer;
+  }
+  
   public void flush() throws IOException {
     _writer.flush();
+  }
+  
+  public void force() throws IOException {
+    _writer.force();
   }
   
   @Override
@@ -622,6 +631,28 @@ public class ArrayFile implements Closeable {
   
   public synchronized void reset(short[] shortArray, long maxScn) throws IOException {
       reset(shortArray);
+      
+      _log.info("update hwmScn and lwmScn:" + maxScn);
+      writeHwmScn(maxScn);
+      writeLwmScn(maxScn);
+      flush();
+  }
+  
+  public synchronized void resetAll(long value) throws IOException {
+      if(_elementSize != 8) {
+          throw new IOException("Operation aborted: elementSize=" + _elementSize);
+      }
+      
+      _writer.flush();
+      _writer.position(DATA_START_POSITION);
+      for(int i = 0; i < this._arrayLength; i++) {
+          _writer.writeLong(value);
+      }
+      _writer.flush();
+  }
+  
+  public synchronized void resetAll(long value, long maxScn) throws IOException {
+      resetAll(value);
       
       _log.info("update hwmScn and lwmScn:" + maxScn);
       writeHwmScn(maxScn);

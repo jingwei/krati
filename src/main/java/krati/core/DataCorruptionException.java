@@ -1,4 +1,4 @@
-package krati.core.array;
+package krati.core;
 
 /**
  * DataCorruptionException.

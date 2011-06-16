@@ -32,4 +32,12 @@ public interface AddressArray extends LongArray, Persistable, Closeable {
      * @param scn     - the scn associated with this change
      */
     public void setCompactionAddress(int index, long address, long scn) throws Exception;
+    
+    /**
+     * Expands the capacity of this AddressArray to accommodate a given index.
+     * 
+     * @param index an index in the array
+     * @throws Exception
+     */
+    public void expandCapacity(int index) throws Exception;
 }

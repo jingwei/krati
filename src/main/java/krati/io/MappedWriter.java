@@ -14,7 +14,7 @@ import java.nio.channels.FileChannel;
  * <p>
  * 06/08, 2011 - Revert to FileChannel.force to fix performance degradation introduced in 0.3.8
  */
-public class MappedWriter implements DataWriter {
+public class MappedWriter implements DataWriter, BasicIO {
     private final File _file;
     private FileChannel _channel;
     private RandomAccessFile _raf;
@@ -109,5 +109,20 @@ public class MappedWriter implements DataWriter {
     @Override
     public void position(long newPosition) throws IOException {
         _mmapBuffer.position((int)newPosition);
+    }
+    
+    @Override
+    public int readInt(long position) throws IOException {
+        return _mmapBuffer.getInt((int)position);
+    }
+    
+    @Override
+    public long readLong(long position) throws IOException {
+        return _mmapBuffer.getLong((int)position);
+    }
+    
+    @Override
+    public short readShort(long position) throws IOException {
+        return _mmapBuffer.getShort((int)position);
     }
 }

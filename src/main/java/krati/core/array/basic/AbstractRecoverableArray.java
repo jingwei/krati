@@ -96,11 +96,11 @@ abstract class AbstractRecoverableArray<V extends EntryValue> implements Recover
         return arrayFile;
     }
 
-    protected void initArrayFile() {
+    protected void initArrayFile() throws IOException {
         // Subclasses need to initialize ArrayFile
     }
 
-    protected abstract void loadArrayFileData();
+    protected abstract void loadArrayFileData() throws IOException;
 
     protected abstract Logger getLogger();
 
@@ -122,7 +122,7 @@ abstract class AbstractRecoverableArray<V extends EntryValue> implements Recover
     }
 
     @Override
-    public int length() {
+    public final int length() {
         return _length;
     }
 
@@ -146,12 +146,12 @@ abstract class AbstractRecoverableArray<V extends EntryValue> implements Recover
     }
 
     @Override
-    public long getHWMark() {
+    public final long getHWMark() {
         return _entryManager.getHWMark();
     }
 
     @Override
-    public long getLWMark() {
+    public final long getLWMark() {
         return _entryManager.getLWMark();
     }
 

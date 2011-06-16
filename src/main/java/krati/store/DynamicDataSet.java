@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import krati.Mode;
 import krati.array.DataArray;
 import krati.core.array.SimpleDataArray;
+import krati.core.array.basic.DynamicConstants;
 import krati.core.array.basic.DynamicLongArray;
 import krati.core.segment.SegmentFactory;
 import krati.core.segment.SegmentManager;
@@ -277,7 +278,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
         
         // Create dynamic address array
         _addrArray = createAddressArray(batchSize, numSyncBatches, homeDir);
-        _unitCapacity = _addrArray.subArrayLength();
+        _unitCapacity = DynamicConstants.SUB_ARRAY_SIZE;
         
         // Compute maxLevel
         LinearHashing h = new LinearHashing(_unitCapacity);

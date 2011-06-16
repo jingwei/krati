@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 import krati.Mode;
 import krati.Persistable;
 import krati.core.array.SimpleDataArray;
+import krati.core.array.basic.DynamicConstants;
 import krati.core.array.basic.DynamicLongArray;
 import krati.core.segment.Segment;
 import krati.core.segment.SegmentFactory;
@@ -77,7 +78,9 @@ public final class BytesDB implements Persistable, Closeable {
         // Create address array
         _addrArray = createAddressArray(batchSize, numSyncBatches, homeDir);
         if(initLevel > 0) {
-            _addrArray.expandCapacity(_addrArray.subArrayLength() * (1 << initLevel) - 1); 
+            long capacity = DynamicConstants.SUB_ARRAY_SIZE * (1L << initLevel);
+            if(capacity > Integer.MAX_VALUE) capacity = Integer.MAX_VALUE;
+            _addrArray.expandCapacity((int)capacity - 1); 
         }
         
         // Create segment manager
