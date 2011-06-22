@@ -207,8 +207,12 @@ public class IOTypeLongArray extends AbstractRecoverableArray<EntryValueLong> im
     
     @Override
     public void updateArrayFile(List<Entry<EntryValueLong>> entryList) throws IOException {
-        if(isOpen() && _arrayFile != null) {
-            _arrayFile.flush();
+        if(_arrayFile != null) {
+            if(isOpen()) {
+                _arrayFile.flush();
+            } else {
+                _arrayFile.update(entryList);
+            }
         }
     }
 }
