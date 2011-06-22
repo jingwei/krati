@@ -91,15 +91,14 @@ public abstract class AbstractTestDynamicAddressArray<T extends AddressArray & D
         for(int i = 0; i < numOps; i++) {
             int index = _rand.nextInt(length);
             long value = _rand.nextLong();
-            map.put(index, value);
-            array.set(index, value, System.currentTimeMillis());
+            array.set(index, value, System.nanoTime());
             assertEquals(value, array.get(index));
         }
         
         for(Map.Entry<Integer, Long> e : map.entrySet()) {
             int index = e.getKey();
             long value = e.getValue();
-            assertEquals(value, array.get(index));
+            assertEquals(index + "=" + value + "," + array.get(index), value, array.get(index));
         }
         
         long[] internalArray = array.getInternalArray();
@@ -145,5 +144,53 @@ public abstract class AbstractTestDynamicAddressArray<T extends AddressArray & D
         for(Map.Entry<Integer, Long> e : map.entrySet()) {
             assertEquals(e.getValue().longValue(), array2.get(e.getKey()));
         }
+    }
+    
+    public void testWaterMarks() throws Exception {
+        int length = _array.length();
+        int anyIndex = _rand.nextInt(length << 1);
+        boolean clearAll = false;
+        
+        onArray(_array, anyIndex, _rand.nextInt(_array.length()), clearAll);
+        length = _array.length();
+        
+        onArray(_array, anyIndex, _rand.nextInt(_array.length()), clearAll);
+        assertTrue(_array.getLWMark() <= _array.getHWMark());
+        _array.persist();
+        assertEquals(_array.getLWMark(), _array.getHWMark());
+        
+        onArray(_array, anyIndex, _rand.nextInt(_array.length()), clearAll);
+        assertTrue(_array.getLWMark() <= _array.getHWMark());
+        _array.sync();
+        assertEquals(_array.getLWMark(), _array.getHWMark());
+        
+        _array.set(_rand.nextInt(length), _rand.nextLong(), _array.getHWMark() + 1);
+        assertTrue(_array.getLWMark() < _array.getHWMark());
+        _array.persist();
+        assertEquals(_array.getLWMark(), _array.getHWMark());
+        
+        _array.set(_rand.nextInt(length), _rand.nextLong(), _array.getHWMark() + 1);
+        assertTrue(_array.getLWMark() < _array.getHWMark());
+        _array.sync();
+        assertEquals(_array.getLWMark(), _array.getHWMark());
+        
+        // Save endOfPeriod larger than hwMark
+        long endOfPeriod = _array.getHWMark() + 10;
+        _array.saveHWMark(endOfPeriod);
+        assertEquals(endOfPeriod, _array.getHWMark());
+        
+        // Save endOfPeriod smaller than hwMark
+        _array.saveHWMark(endOfPeriod - 5);
+        assertEquals(endOfPeriod, _array.getHWMark());
+        
+        // Save endOfPeriod equal to hwMark
+        _array.saveHWMark(_array.getHWMark());
+        assertEquals(endOfPeriod, _array.getHWMark());
+        
+        // Reset lwMark and hwMark to smaller value
+        endOfPeriod = _array.getLWMark() - 10;
+        _array.saveHWMark(endOfPeriod);
+        assertEquals(endOfPeriod, _array.getLWMark());
+        assertEquals(endOfPeriod, _array.getHWMark());
     }
 }
