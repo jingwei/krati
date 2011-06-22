@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
@@ -40,7 +42,7 @@ import krati.util.Chronos;
  * <p>
  * 05/22, 2011 - Fixed start/shutdown
  * 05/23, 2011 - Added method clear() to clean up compactor internal state
- * 
+ * 06/21, 2011 - Added support for tolerating compaction failure
  */
 class SimpleDataArrayCompactor implements Runnable {
     private final static Logger _log = Logger.getLogger(SimpleDataArrayCompactor.class);
@@ -104,6 +106,11 @@ class SimpleDataArrayCompactor implements Runnable {
      * Permits for the writer to get next segment without being blocked.
      */
     private final AtomicInteger _segPermits = new AtomicInteger(0);
+    
+    /**
+     * Segments ignored for compaction due to unknown exceptions.
+     */
+    private final Set<Segment> _ignoredSegs = Collections.synchronizedSet(new HashSet<Segment>());
     
     /**
      * A byte buffer from transferring bytes to a target segment. 
@@ -186,7 +193,7 @@ class SimpleDataArrayCompactor implements Runnable {
             for(int i = 0; i < cnt; i++) {
                 Segment seg = segManager.getSegment(i);
                 if(seg != null && seg.getMode() == Segment.Mode.READ_ONLY && seg != segCurrent) {
-                    if (seg.getLoadFactor() < _compactLoadFactor) {
+                    if (seg.getLoadFactor() < _compactLoadFactor && !_ignoredSegs.contains(seg)) {
                         recycleList.add(seg);
                     }
                 }
@@ -208,7 +215,7 @@ class SimpleDataArrayCompactor implements Runnable {
             for(int i = 0, len = Math.min(3, recycleList.size()); i < len; i++) {
                 Segment seg = recycleList.get(i);
                 if(totalFactor < 0.8) {
-                    totalFactor += seg.getLoadFactor();
+                    totalFactor += Math.max(0, seg.getLoadFactor());
                     if(totalFactor < 0.8) {
                         _segSourceList.add(seg);
                     }
@@ -244,10 +251,13 @@ class SimpleDataArrayCompactor implements Runnable {
         try {
             _segTarget = _dataArray.getSegmentManager().nextSegment();
             for(Segment seg : _segSourceList) {
-                if(compact(seg, _segTarget)) {
-                    _compactedQueue.add(seg);
-                } else {
-                    break;
+                try {
+                    if(compact(seg, _segTarget)) {
+                        _compactedQueue.add(seg);
+                    }
+                } catch(Exception e) {
+                    _ignoredSegs.add(seg);
+                    _log.error("failed to compact Segment " + seg.getSegmentId(), e);
                 }
             }
             
@@ -362,6 +372,7 @@ class SimpleDataArrayCompactor implements Runnable {
      */
     final void start() {
         _enabled = true;
+        _ignoredSegs.clear();
         _executor = Executors.newSingleThreadExecutor(new CompactorThreadFactory());
         _executor.execute(this);
     }
@@ -371,6 +382,7 @@ class SimpleDataArrayCompactor implements Runnable {
      */
     final void shutdown() {
         _enabled = false;
+        _ignoredSegs.clear();
         
         if(_executor != null && !_executor.isShutdown()) {
             try {
