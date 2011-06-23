@@ -108,7 +108,7 @@ public final class StaticDataArray extends AbstractDataArray implements ArraySto
                                               int batchSize,
                                               int numSyncBatches,
                                               File homeDirectory) throws Exception {
-        StaticLongArray addrArray = new StaticLongArray(length, batchSize, numSyncBatches, homeDirectory);
+        AddressArray addrArray = new StaticLongArray(length, batchSize, numSyncBatches, homeDirectory);
         
         if(length != addrArray.length()) {
             _log.warn("array file length " + addrArray.length() + " is different from specified " + length);

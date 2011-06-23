@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 
 import krati.Mode;
 import krati.Persistable;
+import krati.core.array.AddressArray;
 import krati.core.array.SimpleDataArray;
 import krati.core.array.basic.DynamicConstants;
 import krati.core.array.basic.DynamicLongArray;
@@ -34,7 +35,7 @@ public final class BytesDB implements Persistable, Closeable {
     // Main internal objects
     private final File _homeDir;
     private final SimpleDataArray _dataArray;
-    private final DynamicLongArray _addrArray;
+    private final AddressArray _addrArray;
     
     /**
      * The mode can only be <code>Mode.INIT</code>, <code>Mode.OPEN</code> and <code>Mode.CLOSED</code>.
@@ -103,9 +104,9 @@ public final class BytesDB implements Persistable, Closeable {
         _logger.info("mode=" + _mode);
     }
     
-    protected DynamicLongArray createAddressArray(int batchSize,
-                                                  int numSyncBatches,
-                                                  File homeDirectory) throws Exception {
+    protected AddressArray createAddressArray(int batchSize,
+                                              int numSyncBatches,
+                                              File homeDirectory) throws Exception {
         return new DynamicLongArray(batchSize, numSyncBatches, homeDirectory);
     }
     

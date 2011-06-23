@@ -2,6 +2,7 @@ package krati.core.array.basic;
 
 import java.util.Arrays;
 
+import krati.array.Array;
 import krati.array.DynamicArray;
 import krati.array.ShortArray;
 
@@ -139,5 +140,10 @@ public class MemoryShortArray implements ShortArray, DynamicArray {
     
     protected ArrayExpandListener getArrayExpandListener() {
         return _expandListener;
+    }
+    
+    @Override
+    public final Array.Type getType() {
+        return Array.Type.DYNAMIC;
     }
 }

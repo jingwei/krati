@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 
 import krati.Mode;
 import krati.array.DataArray;
+import krati.core.array.AddressArray;
 import krati.core.array.SimpleDataArray;
 import krati.core.array.basic.DynamicConstants;
 import krati.core.array.basic.DynamicLongArray;
@@ -43,8 +44,8 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
     
     private final File _homeDir;
     private final double _loadThreshold;
+    private final AddressArray _addrArray;
     private final SimpleDataArray _dataArray;
-    private final DynamicLongArray _addrArray;
     private final DataStoreHandler _dataHandler;
     private final HashFunction<byte[]> _hashFunction;
     private final int _unitCapacity;
@@ -316,9 +317,9 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
         _log.info(getStatus());
     }
     
-    protected DynamicLongArray createAddressArray(int batchSize,
-                                                  int numSyncBatches,
-                                                  File homeDirectory) throws Exception {
+    protected AddressArray createAddressArray(int batchSize,
+                                              int numSyncBatches,
+                                              File homeDirectory) throws Exception {
         return new DynamicLongArray(batchSize, numSyncBatches, homeDirectory);
     }
     

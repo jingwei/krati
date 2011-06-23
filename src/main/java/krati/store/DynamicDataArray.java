@@ -109,7 +109,7 @@ public final class DynamicDataArray extends AbstractDataArray implements Dynamic
                                               int batchSize,
                                               int numSyncBatches,
                                               File homeDirectory) throws Exception {
-        DynamicLongArray addrArray;
+        AddressArray addrArray;
         addrArray = new DynamicLongArray(batchSize, numSyncBatches, homeDirectory);
         addrArray.expandCapacity(length - 1);
         

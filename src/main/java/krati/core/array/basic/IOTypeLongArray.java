@@ -7,6 +7,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import krati.Mode;
+import krati.array.Array;
 import krati.array.DynamicArray;
 import krati.core.OperationAbortedException;
 import krati.core.array.AddressArray;
@@ -23,18 +24,17 @@ import krati.core.array.entry.EntryValueLong;
  * 
  */
 public class IOTypeLongArray extends AbstractRecoverableArray<EntryValueLong> implements AddressArray, DynamicArray {
-    private final static int _subArrayBits = DynamicConstants.SUB_ARRAY_BITS;
-    private final static int _subArraySize = DynamicConstants.SUB_ARRAY_SIZE;
     private final static Logger _logger = Logger.getLogger(IOTypeLongArray.class);
+    private final Array.Type _type;
     
     /**
      * The mode can only be <code>Mode.INIT</code>, <code>Mode.OPEN</code> and <code>Mode.CLOSED</code>.
      */
     private volatile Mode _mode = Mode.INIT;
     
-    public IOTypeLongArray(int batchSize, int numSyncBatches, File directory) throws Exception {
-        super(_subArraySize /* initial array length and subArray length */,
-              8, batchSize, numSyncBatches, directory, new EntryLongFactory());
+    public IOTypeLongArray(Array.Type type, int length, int batchSize, int numSyncBatches, File directory) throws Exception {
+        super(length, 8 /* elementSize */, batchSize, numSyncBatches, directory, new EntryLongFactory());
+        this._type = (type != null) ? type : Array.Type.DYNAMIC;
         this._mode = Mode.OPEN;
     }
     
@@ -108,7 +108,12 @@ public class IOTypeLongArray extends AbstractRecoverableArray<EntryValueLong> im
             throw new ArrayIndexOutOfBoundsException(index);
         }
         
-        expandCapacity(index);
+        if(_type == Array.Type.DYNAMIC) {
+            expandCapacity(index);
+        } else if(_type == Array.Type.STATIC && index >= _length) {
+            throw new ArrayIndexOutOfBoundsException(index);    
+        }
+        
         _arrayFile.getBasicIO().writeLong(getPosition(index), value);
         _entryManager.addToPreFillEntryLong(index, value, scn);
     }
@@ -147,7 +152,11 @@ public class IOTypeLongArray extends AbstractRecoverableArray<EntryValueLong> im
     public void expandCapacity(int index) throws Exception {
         if(index < _length) return;
         
-        long capacity = ((index >> _subArrayBits) + 1L) * _subArraySize;
+        if(_type == Array.Type.STATIC) {
+            throw new UnsupportedOperationException("Array is of type " + _type);
+        }
+        
+        long capacity = (index + 1L);
         int newLength = (capacity < Integer.MAX_VALUE) ? (int)capacity : Integer.MAX_VALUE;
         
         // Reset _length
@@ -214,5 +223,10 @@ public class IOTypeLongArray extends AbstractRecoverableArray<EntryValueLong> im
                 _arrayFile.update(entryList);
             }
         }
+    }
+
+    @Override
+    public final Type getType() {
+        return _type;
     }
 }

@@ -83,6 +83,7 @@ public class StoreParams {
      */
     public static final double HASH_LOAD_FACTOR_DEFAULT = 0.75;
     
+    private boolean _indexesCached = true;
     private int _batchSize = BATCH_SIZE_DEFAULT;
     private int _numSyncBatches = NUM_SYNC_BATCHES_DEFAULT;
     private int _segmentFileSizeMB = SEGMENT_FILE_SIZE_MB_DEFAULT;
@@ -148,4 +149,46 @@ public class StoreParams {
             return level;
         }
     }
+    
+    public void setIndexesCached(boolean b) {
+        this._indexesCached = b;
+    }
+    
+    public boolean getIndexesCached() {
+        return _indexesCached;
+    }
+    
+    public boolean isIndexesCached() {
+        return _indexesCached;
+    }
+    
+    /**
+     * Parameter for specifying the indexes (i.e. indexes.dat) cached in memory.
+     */
+    public static final String PARAM_INDEXES_CACHED           = "krati.indexes.cached";
+    
+    /**
+     * Parameter for specifying the indexes update batch size.
+     */
+    public static final String PARAM_INDEXES_BATCH_SIZE       = "krati.indexes.batchSize";
+    
+    /**
+     * Parameter for specifying the number of batches required for updating the underlying indexes.
+     */
+    public static final String PARAM_INDEXES_NUM_SYNC_BATCHES = "krati.indexes.numSyncBatches";
+    
+    /**
+     * Parameter for specifying the store segment file size in MB.
+     */
+    public static final String PARAM_SEGMENT_FILE_SIZE_MB     = "krati.segment.file.size";
+    
+    /**
+     * Parameter for specifying the store segment compactor factor between 0.25 and 0.75.
+     */
+    public static final String PARAM_SEGMENT_COMPACT_FACTOR   = "krati.segment.compact.factor";
+    
+    /**
+     * Parameter for specifying the hash load factor of a dynamic store.
+     */
+    public static final String PARAM_HASH_LOAD_FACTOR         = "krati.hash.load.factor";
 }

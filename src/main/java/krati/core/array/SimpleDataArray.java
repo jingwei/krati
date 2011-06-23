@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 
 import krati.Mode;
 import krati.Persistable;
+import krati.array.Array;
 import krati.array.DataArray;
 import krati.array.LongArray;
 import krati.core.array.SimpleDataArrayCompactor.CompactionUpdateBatch;
@@ -889,5 +890,10 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
                 _segmentManager.updateMeta();
             }
         }
+    }
+
+    @Override
+    public final Array.Type getType() {
+        return _addressArray.getType();
     }
 }

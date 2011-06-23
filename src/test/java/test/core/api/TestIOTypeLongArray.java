@@ -2,6 +2,8 @@ package test.core.api;
 
 import java.io.File;
 
+import krati.array.Array;
+import krati.core.array.basic.DynamicConstants;
 import krati.core.array.basic.IOTypeLongArray;
 
 /**
@@ -15,7 +17,7 @@ public class TestIOTypeLongArray extends AbstractTestDynamicAddressArray<IOTypeL
     
     @Override
     protected IOTypeLongArray createAddressArray(File homeDir) throws Exception {
-        return new IOTypeLongArray(getBatchSize(), getNumSyncBatches(), homeDir);
+        return new IOTypeLongArray(Array.Type.DYNAMIC, DynamicConstants.SUB_ARRAY_SIZE, getBatchSize(), getNumSyncBatches(), homeDir);
     }
     
     public void testCapacity() throws Exception {

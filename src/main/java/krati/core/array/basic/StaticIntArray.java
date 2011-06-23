@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import org.apache.log4j.Logger;
 
+import krati.array.Array;
 import krati.array.IntArray;
 import krati.core.array.entry.EntryIntFactory;
 import krati.core.array.entry.EntryValueInt;
@@ -117,5 +118,10 @@ public class StaticIntArray extends AbstractRecoverableArray<EntryValueInt> impl
     @Override
     public int[] getInternalArray() {
         return _internalArray;
+    }
+    
+    @Override
+    public final Array.Type getType() {
+        return Array.Type.STATIC;
     }
 }

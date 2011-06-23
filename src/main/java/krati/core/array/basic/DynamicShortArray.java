@@ -3,6 +3,7 @@ package krati.core.array.basic;
 import java.io.File;
 import java.io.IOException;
 
+import krati.array.Array;
 import krati.array.DynamicArray;
 import krati.array.ShortArray;
 import krati.core.array.entry.EntryShortFactory;
@@ -140,5 +141,10 @@ public class DynamicShortArray extends AbstractRecoverableArray<EntryValueShort>
 
     public final int subArrayLength() {
         return _subArraySize;
+    }
+
+    @Override
+    public final Array.Type getType() {
+        return Array.Type.DYNAMIC;
     }
 }

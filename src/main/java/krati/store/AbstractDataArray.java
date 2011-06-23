@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.channels.WritableByteChannel;
 
 import krati.Persistable;
+import krati.array.Array;
 import krati.array.DataArray;
 import krati.core.array.AddressArray;
 import krati.core.array.SimpleDataArray;
@@ -174,5 +175,10 @@ public abstract class AbstractDataArray implements DataArray, Persistable {
     @Override
     public synchronized void sync() throws IOException {
         _dataArray.sync();
+    }
+    
+    @Override
+    public final Array.Type getType() {
+        return _addrArray.getType();
     }
 }

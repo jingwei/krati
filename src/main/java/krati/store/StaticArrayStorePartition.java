@@ -6,6 +6,7 @@ import java.nio.channels.WritableByteChannel;
 
 import org.apache.log4j.Logger;
 
+import krati.array.Array;
 import krati.core.array.SimpleDataArray;
 import krati.core.array.basic.StaticLongArray;
 import krati.core.segment.MappedSegmentFactory;
@@ -326,5 +327,10 @@ public class StaticArrayStorePartition implements ArrayStorePartition {
     @Override
     public synchronized void close() throws IOException {
         _dataArray.close();
+    }
+    
+    @Override
+    public final Array.Type getType() {
+        return Array.Type.STATIC;
     }
 }

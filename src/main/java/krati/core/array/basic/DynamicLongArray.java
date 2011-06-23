@@ -6,6 +6,7 @@ import java.io.IOException;
 import org.apache.log4j.Logger;
 
 import krati.Mode;
+import krati.array.Array;
 import krati.array.DynamicArray;
 import krati.core.array.AddressArray;
 import krati.core.array.entry.EntryLongFactory;
@@ -213,5 +214,10 @@ public class DynamicLongArray extends AbstractRecoverableArray<EntryValueLong> i
     @Override
     public boolean isOpen() {
         return _mode == Mode.OPEN;
+    }
+    
+    @Override
+    public final Array.Type getType() {
+        return Array.Type.DYNAMIC;
     }
 }

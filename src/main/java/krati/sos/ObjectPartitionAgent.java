@@ -151,4 +151,9 @@ public class ObjectPartitionAgent<T> implements ObjectPartition<T> {
     public void close() throws IOException {
         _partition.close();
     }
+    
+    @Override
+    public final Type getType() {
+        return _partition.getType();
+    }
 }

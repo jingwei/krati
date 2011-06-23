@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import org.apache.log4j.Logger;
 
+import krati.array.Array;
 import krati.array.ShortArray;
 import krati.core.array.entry.EntryShortFactory;
 import krati.core.array.entry.EntryValueShort;
@@ -117,5 +118,10 @@ public class StaticShortArray extends AbstractRecoverableArray<EntryValueShort> 
     @Override
     public short[] getInternalArray() {
         return _internalArray;
+    }
+    
+    @Override
+    public final Array.Type getType() {
+        return Array.Type.STATIC;
     }
 }
