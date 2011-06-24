@@ -1,5 +1,7 @@
 package krati.core;
 
+import java.util.Properties;
+
 import krati.core.array.basic.DynamicConstants;
 import krati.core.segment.Segment;
 
@@ -14,6 +16,11 @@ import krati.core.segment.Segment;
  * 06/22, 2011 - Added new parameter names
  */
 public class StoreParams {
+    /**
+     * Store properties
+     */
+    protected final Properties _properties = new Properties();
+    
     /**
      * The indexes (indexes.dat) is cached in memory by default.
      */
@@ -98,6 +105,7 @@ public class StoreParams {
     
     public void setBatchSize(int batchSize) {
         this._batchSize = batchSize;
+        this._properties.setProperty(PARAM_INDEXES_BATCH_SIZE, _batchSize+"");
     }
     
     public int getBatchSize() {
@@ -106,6 +114,7 @@ public class StoreParams {
     
     public void setNumSyncBatches(int numSyncBatches) {
         this._numSyncBatches = numSyncBatches;
+        this._properties.setProperty(PARAM_INDEXES_NUM_SYNC_BATCHES, _numSyncBatches+"");
     }
     
     public int getNumSyncBatches() {
@@ -114,6 +123,7 @@ public class StoreParams {
     
     public void setSegmentFileSizeMB(int segmentFileSizeMB) {
         this._segmentFileSizeMB = segmentFileSizeMB;
+        this._properties.setProperty(PARAM_SEGMENT_FILE_SIZE_MB, _segmentFileSizeMB+"");
     }
 
     public int getSegmentFileSizeMB() {
@@ -122,6 +132,7 @@ public class StoreParams {
     
     public void setSegmentCompactFactor(double segmentCompactFactor) {
         this._segmentCompactFactor = segmentCompactFactor;
+        this._properties.setProperty(PARAM_SEGMENT_COMPACT_FACTOR, _segmentCompactFactor+"");
     }
     
     public double getSegmentCompactFactor() {
@@ -130,34 +141,16 @@ public class StoreParams {
     
     public void setHashLoadFactor(double hashLoadFactor) {
         this._hashLoadFactor = hashLoadFactor;
+        this._properties.setProperty(PARAM_HASH_LOAD_FACTOR, _hashLoadFactor+"");
     }
     
     public double getHashLoadFactor() {
         return _hashLoadFactor;
     }
     
-    /**
-     * Get the initial level of {@link krati.store.DynamicDataStore DynamicDataStore}, {@link krati.store.DynamicDataSet DynamicDataSet}
-     * and {@link krati.store.IndexedDataStore IndexedDataStore} based an initial store capacity.
-     * The initial <code>level</code> is the minimum integer which satisfies the condition
-     * <code>initialCapacity</code> less than or equal to <code>2 ^ (16 + level)</code>.
-     * 
-     * @param initialCapacity - the initial store capacity
-     * @return an initial level which satisfies the condition
-     * <code>initialCapacity</code> less than or equal to <code>2 ^ (16 + level)</code>.
-     */
-    public static int getDynamicStoreInitialLevel(int initialCapacity) {
-        if (initialCapacity <= DynamicConstants.SUB_ARRAY_SIZE) {
-            return 0;
-        } else {
-            double d = (double)initialCapacity / (double)DynamicConstants.SUB_ARRAY_SIZE;
-            int level = (int)Math.ceil(Math.log(d)/Math.log(2));
-            return level;
-        }
-    }
-    
     public void setIndexesCached(boolean b) {
         this._indexesCached = b;
+        this._properties.setProperty(PARAM_INDEXES_CACHED, _indexesCached ? "true" : "false");
     }
     
     public boolean getIndexesCached() {
@@ -186,15 +179,35 @@ public class StoreParams {
     /**
      * Parameter for specifying the store segment file size in MB.
      */
-    public static final String PARAM_SEGMENT_FILE_SIZE_MB     = "krati.segment.file.size";
+    public static final String PARAM_SEGMENT_FILE_SIZE_MB     = "krati.store.segment.file.size";
     
     /**
      * Parameter for specifying the store segment compactor factor between 0.25 and 0.75.
      */
-    public static final String PARAM_SEGMENT_COMPACT_FACTOR   = "krati.segment.compact.factor";
+    public static final String PARAM_SEGMENT_COMPACT_FACTOR   = "krati.store.segment.compact.factor";
     
     /**
      * Parameter for specifying the hash load factor of a dynamic store.
      */
-    public static final String PARAM_HASH_LOAD_FACTOR         = "krati.hash.load.factor";
+    public static final String PARAM_HASH_LOAD_FACTOR         = "krati.store.hash.load.factor";
+    
+    /**
+     * Get the initial level of {@link krati.store.DynamicDataStore DynamicDataStore}, {@link krati.store.DynamicDataSet DynamicDataSet}
+     * and {@link krati.store.IndexedDataStore IndexedDataStore} based an initial store capacity.
+     * The initial <code>level</code> is the minimum integer which satisfies the condition
+     * <code>initialCapacity</code> less than or equal to <code>2 ^ (16 + level)</code>.
+     * 
+     * @param initialCapacity - the initial store capacity
+     * @return an initial level which satisfies the condition
+     * <code>initialCapacity</code> less than or equal to <code>2 ^ (16 + level)</code>.
+     */
+    public static int getDynamicStoreInitialLevel(int initialCapacity) {
+        if (initialCapacity <= DynamicConstants.SUB_ARRAY_SIZE) {
+            return 0;
+        } else {
+            double d = (double)initialCapacity / (double)DynamicConstants.SUB_ARRAY_SIZE;
+            int level = (int)Math.ceil(Math.log(d)/Math.log(2));
+            return level;
+        }
+    }
 }

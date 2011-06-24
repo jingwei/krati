@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.util.Properties;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -21,9 +20,7 @@ import org.apache.log4j.Logger;
  */
 public class StoreConfig extends StoreParams {
     public final static String CONFIG_PROPERTIES_FILE = "config.properties";
-    
     private final static Logger _logger = Logger.getLogger(StoreConfig.class);
-    private final Properties _properties = new Properties(); 
     private final File _homeDir;
     
     public StoreConfig(File homeDir) throws IOException {
@@ -41,6 +38,8 @@ public class StoreConfig extends StoreParams {
         File file = new File(homeDir, CONFIG_PROPERTIES_FILE);
         if(file.exists()) {
             this.load(file);
+        } else {
+            this.store();
         }
     }
     

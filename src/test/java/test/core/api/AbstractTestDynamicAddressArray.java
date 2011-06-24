@@ -20,9 +20,9 @@ import krati.core.array.AddressArrayFactory;
  * <p>
  * 06/23, 2011 - Added testAddressArrayFactory
  */
-public abstract class AbstractTestDynamicAddressArray<T extends AddressArray> extends TestCase {
+public abstract class AbstractTestDynamicAddressArray extends TestCase {
     protected final Random _rand = new Random();
-    protected T _array;
+    protected AddressArray _array;
     
     protected void setUp() {
         try {
@@ -52,7 +52,7 @@ public abstract class AbstractTestDynamicAddressArray<T extends AddressArray> ex
         return 5;
     }
     
-    protected abstract T createAddressArray(File homeDir) throws Exception;
+    protected abstract AddressArray createAddressArray(File homeDir) throws Exception;
     
     public void testApiBasics() throws Exception {
         int length = _array.length();
@@ -86,7 +86,7 @@ public abstract class AbstractTestDynamicAddressArray<T extends AddressArray> ex
      * @return
      * @throws Exception
      */
-    private Map<Integer, Long> onArray(T array, int anyIndex, int numOps, boolean clearAll) throws Exception {
+    private Map<Integer, Long> onArray(AddressArray array, int anyIndex, int numOps, boolean clearAll) throws Exception {
         array.expandCapacity(anyIndex);
         int length = array.length();
         assertTrue(anyIndex < length);
@@ -142,7 +142,7 @@ public abstract class AbstractTestDynamicAddressArray<T extends AddressArray> ex
         }
         
         File homeDir = FileUtils.getTestDir(getClass().getSimpleName());
-        T array2 = createAddressArray(homeDir);
+        AddressArray array2 = createAddressArray(homeDir);
         
         // Check newly opened array
         for(Map.Entry<Integer, Long> e : map.entrySet()) {
@@ -207,7 +207,7 @@ public abstract class AbstractTestDynamicAddressArray<T extends AddressArray> ex
         }
     }
     
-    private void checkAddressArrayFactory(T array) throws Exception {
+    private void checkAddressArrayFactory(AddressArray array) throws Exception {
         int length = array.length();
         
         AddressArrayFactory factory1 = new AddressArrayFactory(true);
