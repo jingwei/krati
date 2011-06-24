@@ -8,8 +8,8 @@ import java.util.Random;
 import test.util.FileUtils;
 
 import junit.framework.TestCase;
-import krati.array.DynamicArray;
 import krati.core.array.AddressArray;
+import krati.core.array.AddressArrayFactory;
 
 /**
  * AbstractTestDynamicAddressArray
@@ -17,15 +17,16 @@ import krati.core.array.AddressArray;
  * @author jwu
  * 06/21, 2011
  * 
+ * <p>
+ * 06/23, 2011 - Added testAddressArrayFactory
  */
-public abstract class AbstractTestDynamicAddressArray<T extends AddressArray & DynamicArray > extends TestCase {
+public abstract class AbstractTestDynamicAddressArray<T extends AddressArray> extends TestCase {
     protected final Random _rand = new Random();
     protected T _array;
     
     protected void setUp() {
         try {
-            File homeDir = FileUtils.getTestDir(getClass().getSimpleName());
-            _array = createAddressArray(homeDir);
+            _array = createAddressArray(getHomeDir());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -33,11 +34,14 @@ public abstract class AbstractTestDynamicAddressArray<T extends AddressArray & D
     
     protected void tearDown() {
         try {
-            File homeDir = FileUtils.getTestDir(getClass().getSimpleName());
-            FileUtils.deleteDirectory(homeDir);
+            FileUtils.deleteDirectory(getHomeDir());
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    
+    protected File getHomeDir() {
+        return FileUtils.getTestDir(getClass().getSimpleName());
     }
     
     protected int getBatchSize() {
@@ -192,5 +196,40 @@ public abstract class AbstractTestDynamicAddressArray<T extends AddressArray & D
         _array.saveHWMark(endOfPeriod);
         assertEquals(endOfPeriod, _array.getLWMark());
         assertEquals(endOfPeriod, _array.getHWMark());
+    }
+    
+    public void testAddressArrayFactory() throws Exception {
+        checkAddressArrayFactory(_array);
+        
+        for(int i = 0; i < 10; i++) {
+            _array.expandCapacity(_array.length() + _rand.nextInt(_array.length()));
+            checkAddressArrayFactory(_array);
+        }
+    }
+    
+    private void checkAddressArrayFactory(T array) throws Exception {
+        int length = array.length();
+        
+        AddressArrayFactory factory1 = new AddressArrayFactory(true);
+        AddressArrayFactory factory2 = new AddressArrayFactory(false);
+        
+        AddressArray addrArray1 = factory1.createDynamicAddressArray(
+                getHomeDir(), getBatchSize(), getNumSyncBatches());
+        
+        AddressArray addrArray2 = factory2.createDynamicAddressArray(
+                getHomeDir(), getBatchSize(), getNumSyncBatches());
+        
+        assertEquals(length, addrArray1.length());
+        assertEquals(length, addrArray2.length());
+        
+        addrArray1.close();
+        addrArray1.open();
+        assertEquals(length, addrArray1.length());
+        addrArray1.close();
+        
+        addrArray2.close();
+        addrArray2.open();
+        assertEquals(length, addrArray2.length());
+        addrArray2.close();
     }
 }

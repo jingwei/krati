@@ -11,8 +11,14 @@ import krati.core.segment.Segment;
  * 
  * <p>
  * 06/12, 2011 - Added JavaDoc comment
+ * 06/22, 2011 - Added new parameter names
  */
 public class StoreParams {
+    /**
+     * The indexes (indexes.dat) is cached in memory by default.
+     */
+    public static final boolean INDEXES_CACHED_DEFAULT = true;
+    
     /**
      * The minimum number of updates per update batch is 1.
      * This value is not recommended due to its inefficiency.
@@ -83,7 +89,7 @@ public class StoreParams {
      */
     public static final double HASH_LOAD_FACTOR_DEFAULT = 0.75;
     
-    private boolean _indexesCached = true;
+    private boolean _indexesCached = INDEXES_CACHED_DEFAULT;
     private int _batchSize = BATCH_SIZE_DEFAULT;
     private int _numSyncBatches = NUM_SYNC_BATCHES_DEFAULT;
     private int _segmentFileSizeMB = SEGMENT_FILE_SIZE_MB_DEFAULT;

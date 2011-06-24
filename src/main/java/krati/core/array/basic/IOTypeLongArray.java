@@ -24,6 +24,8 @@ import krati.core.array.entry.EntryValueLong;
  * 
  */
 public class IOTypeLongArray extends AbstractRecoverableArray<EntryValueLong> implements AddressArray, DynamicArray {
+    private final static int _subArrayBits = DynamicConstants.SUB_ARRAY_BITS;
+    private final static int _subArraySize = DynamicConstants.SUB_ARRAY_SIZE;
     private final static Logger _logger = Logger.getLogger(IOTypeLongArray.class);
     private final Array.Type _type;
     
@@ -156,7 +158,7 @@ public class IOTypeLongArray extends AbstractRecoverableArray<EntryValueLong> im
             throw new UnsupportedOperationException("Array is of type " + _type);
         }
         
-        long capacity = (index + 1L);
+        long capacity = ((index >> _subArrayBits) + 1L) * _subArraySize;
         int newLength = (capacity < Integer.MAX_VALUE) ? (int)capacity : Integer.MAX_VALUE;
         
         // Reset _length
