@@ -11,7 +11,6 @@ import krati.core.segment.SegmentFactory;
 public class TestIndexedStoreWriteBuffer extends TestIndexedStore {
     @Override
     protected SegmentFactory createStoreSegmentFactory() {
-        return new krati.core.segment.WriteBufferSegmentFactory(_segFileSizeMB);
+        return new krati.core.segment.WriteBufferSegmentFactory();
     }
 }
-

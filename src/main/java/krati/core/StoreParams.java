@@ -196,9 +196,19 @@ public class StoreParams {
     public static final String PARAM_SEGMENT_COMPACT_FACTOR   = "krati.store.segment.compact.factor";
     
     /**
+     * Parameter for specifying the store segment factory class.
+     */
+    public static final String PARAM_SEGMENT_FACTORY_CLASS    = "krati.store.segment.factory.class";
+    
+    /**
      * Parameter for specifying the hash load factor of a dynamic store.
      */
     public static final String PARAM_HASH_LOAD_FACTOR         = "krati.store.hash.load.factor";
+    
+    /**
+     * Parameter for specifying the initial capacity of a store.
+     */
+    public static final String PARAM_INITIAL_CAPACITY         = "krati.store.initial.capacity";
     
     /**
      * Get the initial level of {@link krati.store.DynamicDataStore DynamicDataStore}, {@link krati.store.DynamicDataSet DynamicDataSet}

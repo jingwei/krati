@@ -136,9 +136,14 @@ public class TestSimpleDataArray extends AbstractTest {
             populate(_dataArray);
             _dataArray.sync();
             
+            long hwmScn = _dataArray.getHWMark();
+            
             // Test open/close (1st reopen)
             _dataArray.close();
             _dataArray.open();
+            
+            assertEquals(hwmScn, _dataArray.getLWMark());
+            assertEquals(hwmScn, _dataArray.getHWMark());
             
             StatsLog.logger.info(">>> check after 1st reopen");
             check(_dataArray);
@@ -146,6 +151,9 @@ public class TestSimpleDataArray extends AbstractTest {
             // Test open/close (2nd reopen)
             _dataArray.close();
             _dataArray.open();
+            
+            assertEquals(hwmScn, _dataArray.getLWMark());
+            assertEquals(hwmScn, _dataArray.getHWMark());
             
             StatsLog.logger.info(">>> check after 2nd reopen");
             check(_dataArray);

@@ -9,6 +9,9 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.util.Set;
 
+import krati.core.segment.MappedSegmentFactory;
+import krati.core.segment.SegmentFactory;
+
 import org.apache.log4j.Logger;
 
 /**
@@ -17,22 +20,35 @@ import org.apache.log4j.Logger;
  * @author jwu
  * 06/22, 2011
  * 
+ * <p>
+ * 06/25, 2011 - Added method validate()
  */
 public class StoreConfig extends StoreParams {
     public final static String CONFIG_PROPERTIES_FILE = "config.properties";
     private final static Logger _logger = Logger.getLogger(StoreConfig.class);
     private final File _homeDir;
+    private final int _initialCapacity;
+    private SegmentFactory _segmentFactory = null;
     
-    public StoreConfig(File homeDir) throws IOException {
+    public StoreConfig(File homeDir, int initialCapacity) throws IOException {
         if(!homeDir.exists()) {
             homeDir.mkdirs();
         }
         
         if(homeDir.isFile()) {
-            throw new IOException("File not accepted: " + homeDir.getAbsolutePath()); 
+            throw new IOException("Invalid homeDir: " + homeDir.getAbsolutePath()); 
+        }
+        
+        if(initialCapacity < 1) {
+            throw new IllegalArgumentException("Invalid initialCapacity: " + initialCapacity);
         }
         
         this._homeDir = homeDir;
+        this._initialCapacity = initialCapacity;
+        this._properties.setProperty(StoreParams.PARAM_INITIAL_CAPACITY, initialCapacity + "");
+        
+        // Set the default segment factory
+        this.setSegmentFactory(new MappedSegmentFactory());
         
         // Load properties from the default configuration file
         File file = new File(homeDir, CONFIG_PROPERTIES_FILE);
@@ -45,6 +61,10 @@ public class StoreConfig extends StoreParams {
     
     public final File getHomeDir() {
         return _homeDir;
+    }
+    
+    public final int getInitialCapacity() {
+        return _initialCapacity;
     }
     
     public void list(PrintStream out) {
@@ -90,6 +110,21 @@ public class StoreConfig extends StoreParams {
         paramName = StoreParams.PARAM_HASH_LOAD_FACTOR;
         paramValue = _properties.getProperty(paramName);
         setHashLoadFactor(parseDouble(paramName, paramValue, StoreParams.HASH_LOAD_FACTOR_DEFAULT));
+        
+        paramName = StoreParams.PARAM_SEGMENT_FACTORY_CLASS;
+        paramValue = _properties.getProperty(paramName);
+        SegmentFactory segmentFactory = null;
+        if(paramValue != null) {
+            try {
+                segmentFactory = Class.forName(paramValue).asSubclass(SegmentFactory.class).newInstance();
+            } catch(Exception e) {
+                _logger.warn("Invalid SegmentFactory class: " + paramValue);
+            }
+        }
+        if(segmentFactory == null) {
+            segmentFactory = new MappedSegmentFactory();
+        }
+        setSegmentFactory(segmentFactory);
     }
     
     public void store() throws IOException {
@@ -100,6 +135,32 @@ public class StoreConfig extends StoreParams {
         FileWriter writer = new FileWriter(propertiesFile);
         _properties.store(writer, comments);
         writer.close();
+    }
+    
+    public void validate() throws InvalidStoreConfigException {
+        if(getSegmentFactory() == null) {
+            throw new InvalidStoreConfigException("Segment factory not found");
+        }
+        
+        if(getBatchSize() < StoreParams.BATCH_SIZE_MIN) {
+            throw new InvalidStoreConfigException(StoreParams.PARAM_INDEXES_BATCH_SIZE + "=" + getBatchSize());
+        }
+        
+        if(getNumSyncBatches() < StoreParams.NUM_SYNC_BATCHES_MIN) {
+            throw new InvalidStoreConfigException(StoreParams.PARAM_INDEXES_NUM_SYNC_BATCHES + "=" + getNumSyncBatches());
+        }
+        
+        if(getHashLoadFactor() < StoreParams.HASH_LOAD_FACTOR_MIN || getHashLoadFactor() > StoreParams.HASH_LOAD_FACTOR_MAX) {
+            throw new InvalidStoreConfigException(StoreParams.PARAM_HASH_LOAD_FACTOR + "=" + getHashLoadFactor());
+        }
+        
+        if(getSegmentFileSizeMB() < StoreParams.SEGMENT_FILE_SIZE_MB_MIN || getSegmentFileSizeMB() > StoreParams.SEGMENT_FILE_SIZE_MB_MAX) {
+            throw new InvalidStoreConfigException(StoreParams.PARAM_SEGMENT_FILE_SIZE_MB + "=" + getSegmentFileSizeMB());
+        }
+        
+        if(getSegmentCompactFactor() < StoreParams.SEGMENT_COMPACT_FACTOR_MIN || getSegmentCompactFactor() > StoreParams.SEGMENT_COMPACT_FACTOR_MAX) {
+            throw new InvalidStoreConfigException(StoreParams.PARAM_SEGMENT_COMPACT_FACTOR + "=" + getSegmentCompactFactor());
+        }
     }
     
     public Set<String> propertyNames() {
@@ -148,5 +209,18 @@ public class StoreConfig extends StoreParams {
         }
         
         return defaultValue;
+    }
+    
+    public void setSegmentFactory(SegmentFactory segmentFactory) {
+        if(segmentFactory == null) {
+            throw new IllegalArgumentException("Invalid segmentFactory: " + segmentFactory);
+        }
+        
+        this._segmentFactory = segmentFactory;
+        this._properties.setProperty(PARAM_SEGMENT_FACTORY_CLASS, segmentFactory.getClass().getName());
+    }
+    
+    public SegmentFactory getSegmentFactory() {
+        return _segmentFactory;
     }
 }

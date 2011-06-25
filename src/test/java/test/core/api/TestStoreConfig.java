@@ -17,6 +17,10 @@ import krati.core.StoreParams;
  */
 public class TestStoreConfig extends TestCase {
     
+    protected int getInitialCapacity() {
+        return 10000;
+    }
+    
     protected File getHomeDir() {
         return FileUtils.getTestDir(getClass().getSimpleName());
     }
@@ -31,7 +35,7 @@ public class TestStoreConfig extends TestCase {
     }
     
     public void testApiBasics() throws IOException {
-        StoreConfig config = new StoreConfig(getHomeDir());
+        StoreConfig config = new StoreConfig(getHomeDir(), getInitialCapacity());
         
         assertEquals(StoreParams.INDEXES_CACHED_DEFAULT, config.isIndexesCached());
         assertEquals(StoreParams.INDEXES_CACHED_DEFAULT, config.getIndexesCached());
@@ -68,9 +72,10 @@ public class TestStoreConfig extends TestCase {
         config.setHashLoadFactor(hashLoadFactor);
         assertEquals(hashLoadFactor, config.getHashLoadFactor());
         
+        config.validate();
         config.store();
         
-        StoreConfig config2 = new StoreConfig(getHomeDir());
+        StoreConfig config2 = new StoreConfig(getHomeDir(), getInitialCapacity());
         
         assertEquals(config.isIndexesCached(), config2.isIndexesCached());
         assertEquals(config.getIndexesCached(), config2.getIndexesCached());
@@ -93,5 +98,7 @@ public class TestStoreConfig extends TestCase {
         assertEquals(StoreParams.SEGMENT_FILE_SIZE_MB_MIN, config2.getSegmentFileSizeMB());
         assertEquals(StoreParams.NUM_SYNC_BATCHES_MIN, config2.getNumSyncBatches());
         assertEquals(StoreParams.BATCH_SIZE_MIN, config2.getBatchSize());
+        
+        config2.validate();
     }
 }

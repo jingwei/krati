@@ -23,8 +23,31 @@ import krati.util.FnvHashFunction;
  * <p>
  * 06/11, 2011 - Added methods for creating static and dynamic DataSet
  * 06/12, 2011 - Added JavaDoc comment
+ * 06/25, 2011 - Added factory methods using StoreConfig
  */
 public class StoreFactory {
+    
+    /**
+     * Creates a fixed-length {@link krati.store.ArrayStore ArrayStore}.
+     * A configuration file <code>config.properties</code> is created automatically in the store home directory. 
+     * 
+     * @param config - ArrayStore configuration
+     * @return A fixed-length ArrayStore.
+     * @throws Exception if the store can not be created or loaded from the given directory.
+     */
+    public static ArrayStore createStaticArrayStore(StoreConfig config) throws Exception {
+        config.validate();
+        config.store();
+        
+        return createStaticArrayStore(
+                config.getHomeDir(),
+                config.getInitialCapacity(),
+                config.getBatchSize(),
+                config.getNumSyncBatches(),
+                config.getSegmentFileSizeMB(),
+                config.getSegmentFactory(),
+                config.getSegmentCompactFactor());
+    }
     
     /**
      * Creates a fixed-length {@link krati.store.ArrayStore ArrayStore} with the default parameters below.
@@ -125,6 +148,28 @@ public class StoreFactory {
                 segmentFactory,
                 segmentFileSizeMB,
                 segmentCompactFactor);
+    }
+    
+    /**
+     * Creates a dynamic {@link krati.store.ArrayStore ArrayStore} which grows its capacity as needed.
+     * A configuration file <code>config.properties</code> is created automatically in the store home directory. 
+     * 
+     * @param config - ArrayStore configuration
+     * @return a dynamic ArrayStore with growing capacity as needed.
+     * @throws Exception if the store can not be created or loaded from the given directory.
+     */
+    public static ArrayStore createDynamicArrayStore(StoreConfig config) throws Exception {
+        config.validate();
+        config.store();
+        
+        return createDynamicArrayStore(
+                config.getHomeDir(),
+                config.getInitialCapacity(),
+                config.getBatchSize(),
+                config.getNumSyncBatches(),
+                config.getSegmentFileSizeMB(),
+                config.getSegmentFactory(),
+                config.getSegmentCompactFactor());
     }
     
     /**
@@ -231,6 +276,28 @@ public class StoreFactory {
     }
     
     /**
+     * Creates a static {@link krati.store.DataStore DataStore} with a fixed-capacity.
+     * A configuration file <code>config.properties</code> is created automatically in the store home directory. 
+     * 
+     * @param config - DataStore configuration
+     * @return A fixed-capacity DataStore.
+     * @throws Exception if the store can not be created or loaded from the given directory.
+     */
+    public static StaticDataStore createStaticDataStore(StoreConfig config) throws Exception {
+        config.validate();
+        config.store();
+        
+        return createStaticDataStore(
+                config.getHomeDir(),
+                config.getInitialCapacity(),
+                config.getBatchSize(),
+                config.getNumSyncBatches(),
+                config.getSegmentFileSizeMB(),
+                config.getSegmentFactory(),
+                config.getSegmentCompactFactor());
+    }
+    
+    /**
      * Creates a fixed-capacity {@link krati.store.DataStore DataStore} with the default parameters below.
      * 
      * <pre>
@@ -330,6 +397,29 @@ public class StoreFactory {
                 segmentFactory,
                 segmentCompactFactor,
                 new FnvHashFunction());
+    }
+    
+    /**
+     * Creates a dynamic {@link krati.store.DataStore DataStore} which grows its capacity as needed.
+     * A configuration file <code>config.properties</code> is created automatically in the store home directory. 
+     * 
+     * @param config - DataStore configuration
+     * @return A dynamic DataStore with growing capacity as needed.
+     * @throws Exception if the store can not be created or loaded from the given directory.
+     */
+    public static DynamicDataStore createDynamicDataStore(StoreConfig config) throws Exception {
+        config.validate();
+        config.store();
+        
+        return createDynamicDataStore(
+                config.getHomeDir(),
+                config.getInitialCapacity(),
+                config.getBatchSize(),
+                config.getNumSyncBatches(),
+                config.getSegmentFileSizeMB(),
+                config.getSegmentFactory(),
+                config.getSegmentCompactFactor(),
+                config.getHashLoadFactor());
     }
     
     /**
@@ -603,6 +693,28 @@ public class StoreFactory {
     }
     
     /**
+     * Creates a static {@link krati.store.DataSet DataSet} with a fixed-capacity.
+     * A configuration file <code>config.properties</code> is created automatically in the store home directory. 
+     * 
+     * @param config - DataSet configuration
+     * @return A fixed-capacity DataSet.
+     * @throws Exception if the set can not be created or loaded from the given directory.
+     */
+    public static StaticDataSet createStaticDataSet(StoreConfig config) throws Exception {
+        config.validate();
+        config.store();
+        
+        return createStaticDataSet(
+                config.getHomeDir(),
+                config.getInitialCapacity(),
+                config.getBatchSize(),
+                config.getNumSyncBatches(),
+                config.getSegmentFileSizeMB(),
+                config.getSegmentFactory(),
+                config.getSegmentCompactFactor());
+    }
+    
+    /**
      * Creates a fixed-capacity {@link krati.store.DataSet DataSet} with the default parameters below.
      * 
      * <pre>
@@ -702,6 +814,28 @@ public class StoreFactory {
                 segmentFactory,
                 segmentCompactFactor,
                 new FnvHashFunction());
+    }
+    
+    /**
+     * Creates a dynamic {@link krati.store.DataSet DataSet} which grows its capacity as needed.
+     * A configuration file <code>config.properties</code> is created automatically in the store home directory. 
+     * 
+     * @param config - DataSet configuration
+     * @return A dynamic DataSet with growing capacity as needed.
+     * @throws Exception if the set can not be created or loaded from the given directory.
+     */
+    public static DynamicDataSet createDynamicDataSet(StoreConfig config) throws Exception {
+        config.validate();
+        config.store();
+        
+        return createDynamicDataSet(
+                config.getHomeDir(),
+                config.getInitialCapacity(),
+                config.getBatchSize(),
+                config.getNumSyncBatches(),
+                config.getSegmentFileSizeMB(),
+                config.getSegmentFactory(),
+                config.getSegmentCompactFactor());
     }
     
     /**
