@@ -103,7 +103,7 @@ public class StoreParams {
     private double _segmentCompactFactor = SEGMENT_COMPACT_FACTOR_DEFAULT;
     private double _hashLoadFactor = HASH_LOAD_FACTOR_DEFAULT;
     
-    public StoreParams() {
+    protected StoreParams() {
         this.setIndexesCached(INDEXES_CACHED_DEFAULT);
         this.setBatchSize(BATCH_SIZE_DEFAULT);
         this.setNumSyncBatches(NUM_SYNC_BATCHES_DEFAULT);
@@ -114,7 +114,7 @@ public class StoreParams {
     
     public void setBatchSize(int batchSize) {
         this._batchSize = batchSize;
-        this._properties.setProperty(PARAM_INDEXES_BATCH_SIZE, _batchSize+"");
+        this._properties.setProperty(PARAM_BATCH_SIZE, _batchSize+"");
     }
     
     public int getBatchSize() {
@@ -123,7 +123,7 @@ public class StoreParams {
     
     public void setNumSyncBatches(int numSyncBatches) {
         this._numSyncBatches = numSyncBatches;
-        this._properties.setProperty(PARAM_INDEXES_NUM_SYNC_BATCHES, _numSyncBatches+"");
+        this._properties.setProperty(PARAM_NUM_SYNC_BATCHES, _numSyncBatches+"");
     }
     
     public int getNumSyncBatches() {
@@ -173,42 +173,42 @@ public class StoreParams {
     /**
      * Parameter for specifying the indexes (i.e. indexes.dat) cached in memory.
      */
-    public static final String PARAM_INDEXES_CACHED           = "krati.indexes.cached";
+    public static final String PARAM_INDEXES_CACHED         = "krati.indexes.cached";
     
     /**
      * Parameter for specifying the indexes update batch size.
      */
-    public static final String PARAM_INDEXES_BATCH_SIZE       = "krati.indexes.batchSize";
+    public static final String PARAM_BATCH_SIZE             = "krati.indexes.batchSize";
     
     /**
      * Parameter for specifying the number of batches required for updating the underlying indexes.
      */
-    public static final String PARAM_INDEXES_NUM_SYNC_BATCHES = "krati.indexes.numSyncBatches";
+    public static final String PARAM_NUM_SYNC_BATCHES       = "krati.indexes.numSyncBatches";
     
     /**
      * Parameter for specifying the store segment file size in MB.
      */
-    public static final String PARAM_SEGMENT_FILE_SIZE_MB     = "krati.store.segment.file.size";
+    public static final String PARAM_SEGMENT_FILE_SIZE_MB   = "krati.store.segment.file.size";
     
     /**
      * Parameter for specifying the store segment compactor factor between 0.25 and 0.75.
      */
-    public static final String PARAM_SEGMENT_COMPACT_FACTOR   = "krati.store.segment.compact.factor";
+    public static final String PARAM_SEGMENT_COMPACT_FACTOR = "krati.store.segment.compact.factor";
     
     /**
      * Parameter for specifying the store segment factory class.
      */
-    public static final String PARAM_SEGMENT_FACTORY_CLASS    = "krati.store.segment.factory.class";
+    public static final String PARAM_SEGMENT_FACTORY_CLASS  = "krati.store.segment.factory.class";
     
     /**
      * Parameter for specifying the hash load factor of a dynamic store.
      */
-    public static final String PARAM_HASH_LOAD_FACTOR         = "krati.store.hash.load.factor";
+    public static final String PARAM_HASH_LOAD_FACTOR       = "krati.store.hash.load.factor";
     
     /**
      * Parameter for specifying the initial capacity of a store.
      */
-    public static final String PARAM_INITIAL_CAPACITY         = "krati.store.initial.capacity";
+    public static final String PARAM_INITIAL_CAPACITY       = "krati.store.initial.capacity";
     
     /**
      * Get the initial level of {@link krati.store.DynamicDataStore DynamicDataStore}, {@link krati.store.DynamicDataSet DynamicDataSet}

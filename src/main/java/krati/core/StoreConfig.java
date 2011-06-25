@@ -91,11 +91,11 @@ public class StoreConfig extends StoreParams {
         paramValue = _properties.getProperty(paramName);
         setIndexesCached(parseBoolean(paramName, paramValue, StoreParams.INDEXES_CACHED_DEFAULT));
         
-        paramName = StoreParams.PARAM_INDEXES_BATCH_SIZE;
+        paramName = StoreParams.PARAM_BATCH_SIZE;
         paramValue = _properties.getProperty(paramName);
         setBatchSize(parseInt(paramName, paramValue, StoreParams.BATCH_SIZE_DEFAULT));
         
-        paramName = StoreParams.PARAM_INDEXES_NUM_SYNC_BATCHES;
+        paramName = StoreParams.PARAM_NUM_SYNC_BATCHES;
         paramValue = _properties.getProperty(paramName);
         setNumSyncBatches(parseInt(paramName, paramValue, StoreParams.NUM_SYNC_BATCHES_DEFAULT));
         
@@ -143,11 +143,11 @@ public class StoreConfig extends StoreParams {
         }
         
         if(getBatchSize() < StoreParams.BATCH_SIZE_MIN) {
-            throw new InvalidStoreConfigException(StoreParams.PARAM_INDEXES_BATCH_SIZE + "=" + getBatchSize());
+            throw new InvalidStoreConfigException(StoreParams.PARAM_BATCH_SIZE + "=" + getBatchSize());
         }
         
         if(getNumSyncBatches() < StoreParams.NUM_SYNC_BATCHES_MIN) {
-            throw new InvalidStoreConfigException(StoreParams.PARAM_INDEXES_NUM_SYNC_BATCHES + "=" + getNumSyncBatches());
+            throw new InvalidStoreConfigException(StoreParams.PARAM_NUM_SYNC_BATCHES + "=" + getNumSyncBatches());
         }
         
         if(getHashLoadFactor() < StoreParams.HASH_LOAD_FACTOR_MIN || getHashLoadFactor() > StoreParams.HASH_LOAD_FACTOR_MAX) {
