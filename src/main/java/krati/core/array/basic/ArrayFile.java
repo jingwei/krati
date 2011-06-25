@@ -42,7 +42,7 @@ import krati.util.Chronos;
  * 
  * <p>
  * 05/09, 2011 - added support for java.io.Closeable
- * 
+ * 06/24, 2011 - added setWaterMarks(lwmScn, hwmScn)
  */
 public class ArrayFile implements Closeable {
   public static final long STORAGE_VERSION  = 0;
@@ -528,6 +528,17 @@ public class ArrayFile implements Closeable {
   protected void writeElementSize(int value) throws IOException {
     _writer.writeInt(ELEMENT_SIZE_POSITION, value);
     _elementSize = value;
+  }
+  
+  public void setWaterMarks(long lwmScn, long hwmScn) throws IOException {
+      if(lwmScn <= hwmScn) {
+          writeHwmScn(hwmScn);
+          _writer.flush();
+          writeLwmScn(lwmScn);
+          _writer.flush();
+      } else {
+          throw new IOException("Invalid water marks: lwmScn=" + lwmScn + " hwmScn=" + hwmScn);
+      }
   }
   
   public synchronized void reset(MemoryIntArray intArray) throws IOException {

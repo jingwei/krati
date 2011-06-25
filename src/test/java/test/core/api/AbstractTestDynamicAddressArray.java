@@ -133,8 +133,13 @@ public abstract class AbstractTestDynamicAddressArray extends TestCase {
             assertEquals(e.getValue().longValue(), _array.get(e.getKey()));
         }
         
+        long hwmMark = _array.getHWMark();
+        
         _array.close();
         _array.open();
+        
+        assertEquals(hwmMark, _array.getLWMark());
+        assertEquals(hwmMark, _array.getHWMark());
         
         // Check after re-open
         for(Map.Entry<Integer, Long> e : map.entrySet()) {
@@ -143,6 +148,9 @@ public abstract class AbstractTestDynamicAddressArray extends TestCase {
         
         File homeDir = FileUtils.getTestDir(getClass().getSimpleName());
         AddressArray array2 = createAddressArray(homeDir);
+        
+        assertEquals(hwmMark, array2.getLWMark());
+        assertEquals(hwmMark, array2.getHWMark());
         
         // Check newly opened array
         for(Map.Entry<Integer, Long> e : map.entrySet()) {
@@ -196,6 +204,14 @@ public abstract class AbstractTestDynamicAddressArray extends TestCase {
         _array.saveHWMark(endOfPeriod);
         assertEquals(endOfPeriod, _array.getLWMark());
         assertEquals(endOfPeriod, _array.getHWMark());
+        
+        onArray(_array, anyIndex, _rand.nextInt(getBatchSize()), clearAll);
+        _array.sync();
+        assertEquals(_array.getLWMark(), _array.getHWMark());
+        
+        AddressArray array2 = createAddressArray(getHomeDir());
+        assertEquals(_array.getLWMark(), array2.getLWMark());
+        assertEquals(_array.getHWMark(), array2.getHWMark());
     }
     
     public void testAddressArrayFactory() throws Exception {

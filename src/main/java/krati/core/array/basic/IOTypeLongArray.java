@@ -22,6 +22,8 @@ import krati.core.array.entry.EntryValueLong;
  * @author jwu
  * 06/12, 2011
  * 
+ * <p>
+ * 06/24, 2011 - Fixed the water marks of underlying ArrayFile. 
  */
 public class IOTypeLongArray extends AbstractRecoverableArray<EntryValueLong> implements AddressArray, DynamicArray {
     private final static int _subArrayBits = DynamicConstants.SUB_ARRAY_BITS;
@@ -221,6 +223,17 @@ public class IOTypeLongArray extends AbstractRecoverableArray<EntryValueLong> im
         if(_arrayFile != null) {
             if(isOpen()) {
                 _arrayFile.flush();
+                
+                // update arrayFile lwmScn and hwmScn to maxScn
+                if(entryList != null && entryList.size() > 0) {
+                    long maxScn = 0;
+                    for (Entry<?> e : entryList) {
+                        maxScn = Math.max(e.getMaxScn(), maxScn);
+                    }
+                    if(maxScn > 0) {
+                        _arrayFile.setWaterMarks(maxScn, maxScn);
+                    }
+                }
             } else {
                 _arrayFile.update(entryList);
             }

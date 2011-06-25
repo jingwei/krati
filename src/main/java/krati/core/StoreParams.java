@@ -103,6 +103,15 @@ public class StoreParams {
     private double _segmentCompactFactor = SEGMENT_COMPACT_FACTOR_DEFAULT;
     private double _hashLoadFactor = HASH_LOAD_FACTOR_DEFAULT;
     
+    public StoreParams() {
+        this.setIndexesCached(INDEXES_CACHED_DEFAULT);
+        this.setBatchSize(BATCH_SIZE_DEFAULT);
+        this.setNumSyncBatches(NUM_SYNC_BATCHES_DEFAULT);
+        this.setSegmentFileSizeMB(SEGMENT_FILE_SIZE_MB_DEFAULT);
+        this.setSegmentCompactFactor(SEGMENT_COMPACT_FACTOR_DEFAULT);
+        this.setHashLoadFactor(HASH_LOAD_FACTOR_DEFAULT);
+    }
+    
     public void setBatchSize(int batchSize) {
         this._batchSize = batchSize;
         this._properties.setProperty(PARAM_INDEXES_BATCH_SIZE, _batchSize+"");

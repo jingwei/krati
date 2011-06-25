@@ -93,7 +93,7 @@ public class StoreConfig extends StoreParams {
     }
     
     public void store() throws IOException {
-        store(new File(getHomeDir(), CONFIG_PROPERTIES_FILE), "STORE CONFIGURATION");
+        store(new File(getHomeDir(), CONFIG_PROPERTIES_FILE), null);
     }
     
     public void store(File propertiesFile, String comments) throws IOException {
@@ -116,7 +116,7 @@ public class StoreConfig extends StoreParams {
         return true;
     }
     
-    public static int parseInt(String pName, String pValue, int defaultValue) {
+    static int parseInt(String pName, String pValue, int defaultValue) {
         try {
             if(pValue != null) {
                 return Integer.parseInt(pValue);
@@ -127,7 +127,7 @@ public class StoreConfig extends StoreParams {
         return defaultValue;
     }
     
-    public static double parseDouble(String pName, String pValue, double defaultValue) {
+    static double parseDouble(String pName, String pValue, double defaultValue) {
         try {
             if(pValue != null) {
                 return Double.parseDouble(pValue);
@@ -138,7 +138,7 @@ public class StoreConfig extends StoreParams {
         return defaultValue;
     }
     
-    public static boolean parseBoolean(String pName, String pValue, boolean defaultValue) {
+    static boolean parseBoolean(String pName, String pValue, boolean defaultValue) {
         try {
             if(pValue != null) {
                 return Boolean.parseBoolean(pValue);
