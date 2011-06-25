@@ -14,8 +14,18 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class WriteBufferSegmentFactory implements SegmentFactory {
     private final ConcurrentLinkedQueue<ByteBuffer> _bufferQueue = new ConcurrentLinkedQueue<ByteBuffer>();
     
+    public WriteBufferSegmentFactory() {}
+    
     public WriteBufferSegmentFactory(int segmentFileSizeMB) {
-        int bufferLength = (int) (segmentFileSizeMB * 1024L * 1024L);
+        if(segmentFileSizeMB < Segment.minSegmentFileSizeMB ||
+           segmentFileSizeMB > Segment.maxSegmentFileSizeMB) {
+            throw new IllegalArgumentException("Invalid argument: " + segmentFileSizeMB);
+        }
+        
+        int bufferLength =
+            (segmentFileSizeMB < Segment.maxSegmentFileSizeMB) ?
+                (segmentFileSizeMB * 1024 * 1024) : Integer.MAX_VALUE;
+        
         for (int i = 0; i < 3; i++) {
             ByteBuffer buffer = ByteBuffer.wrap(new byte[bufferLength]);
             _bufferQueue.add(buffer);

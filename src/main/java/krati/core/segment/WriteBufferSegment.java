@@ -27,8 +27,9 @@ public class WriteBufferSegment extends AbstractSegment {
         _bufferQueue = bufferQueue;
         if (mode == Mode.READ_WRITE) {
             _buffer = bufferQueue.poll();
-            if (_buffer != null)
+            if (_buffer != null) {
                 _log.info("ByteBuffer obtained");
+            }
         }
         this.init();
     }
