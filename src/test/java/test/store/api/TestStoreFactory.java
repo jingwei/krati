@@ -9,6 +9,7 @@ import test.util.RandomBytes;
 
 import junit.framework.TestCase;
 
+import krati.core.StoreConfig;
 import krati.core.StoreFactory;
 import krati.core.StoreParams;
 import krati.core.array.basic.DynamicConstants;
@@ -119,6 +120,21 @@ public class TestStoreFactory extends TestCase {
         store.clear();
         store.close();
         
+        // Use StoreConfig
+        StoreConfig config = new StoreConfig(homeDir, length);
+        config.setBatchSize(batchSize);
+        config.setNumSyncBatches(numSyncBatches);
+        config.setSegmentFileSizeMB(segmentFileSizeMB);
+        config.setSegmentFactory(segmentFactory);
+        config.setSegmentCompactFactor(segmentCompactFactor);
+        store = StoreFactory.createStaticArrayStore(config);
+        
+        assertEquals(length, store.length());
+        assertEquals(length, store.capacity());
+        assertEquals(0, store.getIndexStart());
+        store.clear();
+        store.close();
+        
         FileUtils.deleteDirectory(homeDir);
     }
     
@@ -180,6 +196,21 @@ public class TestStoreFactory extends TestCase {
         store.clear();
         store.close();
         
+        // Use StoreConfig
+        StoreConfig config = new StoreConfig(homeDir, initialLength);
+        config.setBatchSize(batchSize);
+        config.setNumSyncBatches(numSyncBatches);
+        config.setSegmentFileSizeMB(segmentFileSizeMB);
+        config.setSegmentFactory(segmentFactory);
+        config.setSegmentCompactFactor(segmentCompactFactor);
+        store = StoreFactory.createDynamicArrayStore(config);
+        
+        assertEquals(expectedLength, store.length());
+        assertEquals(expectedLength, store.capacity());
+        assertEquals(0, store.getIndexStart());
+        store.clear();
+        store.close();
+        
         FileUtils.deleteDirectory(homeDir);
     }
     
@@ -225,6 +256,18 @@ public class TestStoreFactory extends TestCase {
                 segmentFileSizeMB,
                 segmentFactory,
                 segmentCompactFactor);
+        
+        assertTrue(Arrays.equals(value, store.get(key)));
+        store.close();
+        
+        // Use StoreConfig
+        StoreConfig config = new StoreConfig(homeDir, capacity);
+        config.setBatchSize(batchSize);
+        config.setNumSyncBatches(numSyncBatches);
+        config.setSegmentFileSizeMB(segmentFileSizeMB);
+        config.setSegmentFactory(segmentFactory);
+        config.setSegmentCompactFactor(segmentCompactFactor);
+        store = StoreFactory.createStaticDataStore(config);
         
         assertTrue(Arrays.equals(value, store.get(key)));
         store.close();
@@ -288,6 +331,19 @@ public class TestStoreFactory extends TestCase {
                 segmentFactory,
                 segmentCompactFactor,
                 hashLoadFactor);
+        
+        assertTrue(Arrays.equals(value, store.get(key)));
+        store.close();
+        
+        // Use StoreConfig
+        StoreConfig config = new StoreConfig(homeDir, capacity);
+        config.setBatchSize(batchSize);
+        config.setNumSyncBatches(numSyncBatches);
+        config.setSegmentFileSizeMB(segmentFileSizeMB);
+        config.setSegmentFactory(segmentFactory);
+        config.setSegmentCompactFactor(segmentCompactFactor);
+        config.setHashLoadFactor(hashLoadFactor);
+        store = StoreFactory.createDynamicDataStore(config);
         
         assertTrue(Arrays.equals(value, store.get(key)));
         store.close();

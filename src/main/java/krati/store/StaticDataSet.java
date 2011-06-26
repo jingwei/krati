@@ -6,9 +6,10 @@ import java.io.IOException;
 import org.apache.log4j.Logger;
 
 import krati.array.DataArray;
+import krati.core.StoreConfig;
 import krati.core.array.AddressArray;
+import krati.core.array.AddressArrayFactory;
 import krati.core.array.SimpleDataArray;
-import krati.core.array.basic.StaticLongArray;
 import krati.core.segment.SegmentFactory;
 import krati.core.segment.SegmentManager;
 import krati.store.DataSet;
@@ -29,14 +30,56 @@ import krati.util.HashFunction;
  * 
  * <p>
  * 06/06, 2011 - Added support for Closeable
+ * 06/25, 2011 - Added constructor using StoreConfig
  */
 public class StaticDataSet implements DataSet<byte[]> {
     private final static Logger _log = Logger.getLogger(StaticDataSet.class);
     
     private final File _homeDir;
+    private final StoreConfig _config;
     private final SimpleDataArray _dataArray;
     private final DataSetHandler _dataHandler;
     private final HashFunction<byte[]> _hashFunction;
+    
+    /**
+     * Constructs a static DataStore instance. 
+     * 
+     * @param config - DataSet configuration
+     * @throws Exception if the set can not be created.
+     */
+    public StaticDataSet(StoreConfig config) throws Exception {
+        config.validate();
+        config.store();
+        
+        this._config = config;
+        this._homeDir = _config.getHomeDir();
+        
+        // Create data set handler
+        _dataHandler = new DefaultDataSetHandler();
+        
+        // Create address array
+        AddressArray addressArray = createAddressArray(
+                _config.getHomeDir(),
+                _config.getInitialCapacity(),
+                _config.getBatchSize(),
+                _config.getNumSyncBatches(),
+                _config.getIndexesCached());
+        
+        if (addressArray.length() != _config.getInitialCapacity()) {
+            addressArray.close();
+            throw new IOException("Capacity expected: " + addressArray.length() + " not " + _config.getInitialCapacity());
+        }
+        
+        // Create segment manager
+        String segmentHome = _homeDir.getCanonicalPath() + File.separator + "segs";
+        SegmentManager segmentManager = SegmentManager.getInstance(
+                segmentHome,
+                _config.getSegmentFactory(),
+                _config.getSegmentFileSizeMB());
+        
+        this._dataArray = new SimpleDataArray(addressArray, segmentManager, _config.getSegmentCompactFactor());
+        this._hashFunction = _config.getHashFunction();
+    }
     
     /**
      * Creates a DataSet instance with the settings below:
@@ -182,10 +225,28 @@ public class StaticDataSet implements DataSet<byte[]> {
                          double segmentCompactFactor,
                          HashFunction<byte[]> hashFunction) throws Exception {
         this._homeDir = homeDir;
-        this._dataHandler = new DefaultDataSetHandler();
+        
+        // Create/validate/store config
+        _config = new StoreConfig(_homeDir, capacity);
+        _config.setBatchSize(batchSize);
+        _config.setNumSyncBatches(numSyncBatches);
+        _config.setSegmentFactory(segmentFactory);
+        _config.setSegmentFileSizeMB(segmentFileSizeMB);
+        _config.setSegmentCompactFactor(segmentCompactFactor);
+        _config.setHashFunction(hashFunction);
+        _config.validate();
+        _config.store();
+        
+        // Create data set handler
+        _dataHandler = new DefaultDataSetHandler();
         
         // Create address array
-        AddressArray addressArray = createAddressArray(capacity, batchSize, numSyncBatches, homeDir);
+        AddressArray addressArray = createAddressArray(
+                _config.getHomeDir(),
+                _config.getInitialCapacity(),
+                _config.getBatchSize(),
+                _config.getNumSyncBatches(),
+                _config.getIndexesCached());
         
         if (addressArray.length() != capacity) {
             addressArray.close();
@@ -193,18 +254,24 @@ public class StaticDataSet implements DataSet<byte[]> {
         }
         
         // Create segment manager
-        String segmentHome = homeDir.getCanonicalPath() + File.separator + "segs";
-        SegmentManager segmentManager = SegmentManager.getInstance(segmentHome, segmentFactory, segmentFileSizeMB);
+        String segmentHome = _homeDir.getCanonicalPath() + File.separator + "segs";
+        SegmentManager segmentManager = SegmentManager.getInstance(
+                segmentHome,
+                _config.getSegmentFactory(),
+                _config.getSegmentFileSizeMB());
         
-        this._dataArray = new SimpleDataArray(addressArray, segmentManager, segmentCompactFactor);
-        this._hashFunction = hashFunction;
+        this._dataArray = new SimpleDataArray(addressArray, segmentManager, _config.getSegmentCompactFactor());
+        this._hashFunction = _config.getHashFunction();
     }
     
-    protected AddressArray createAddressArray(int length,
+    protected AddressArray createAddressArray(File homeDir,
+                                              int length,
                                               int batchSize,
                                               int numSyncBatches,
-                                              File homeDirectory) throws Exception {
-        return new StaticLongArray(length, batchSize, numSyncBatches, homeDirectory);
+                                              boolean indexesCached) throws Exception {
+        AddressArrayFactory factory = new AddressArrayFactory(indexesCached);
+        AddressArray addrArray = factory.createStaticAddressArray(homeDir, length, batchSize, numSyncBatches);
+        return addrArray;
     }
     
     protected long hash(byte[] value) {

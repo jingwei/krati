@@ -7,6 +7,10 @@ import test.util.FileUtils;
 import junit.framework.TestCase;
 import krati.core.StoreConfig;
 import krati.core.StoreParams;
+import krati.core.segment.MappedSegmentFactory;
+import krati.core.segment.MemorySegmentFactory;
+import krati.util.Fnv1aHash64;
+import krati.util.FnvHashFunction;
 
 /**
  * TestStoreConfig
@@ -46,6 +50,12 @@ public class TestStoreConfig extends TestCase {
         assertEquals(StoreParams.SEGMENT_FILE_SIZE_MB_DEFAULT, config.getSegmentFileSizeMB());
         assertEquals(StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT, config.getSegmentCompactFactor());
         assertEquals(StoreParams.HASH_LOAD_FACTOR_DEFAULT, config.getHashLoadFactor());
+        
+        assertEquals(MappedSegmentFactory.class, config.getSegmentFactory().getClass());
+        assertEquals(MappedSegmentFactory.class.getName(), config.getProperty(StoreParams.PARAM_SEGMENT_FACTORY_CLASS));
+        
+        assertEquals(FnvHashFunction.class, config.getHashFunction().getClass());
+        assertEquals(FnvHashFunction.class.getName(), config.getProperty(StoreParams.PARAM_HASH_FUNCTION_CLASS));
         
         boolean indexesCached = false; 
         config.setIndexesCached(indexesCached);
@@ -89,12 +99,18 @@ public class TestStoreConfig extends TestCase {
         
         File propertiesFile = new File(getHomeDir(), StoreConfig.CONFIG_PROPERTIES_FILE+".new");
         
+        config.setHashFunction(new Fnv1aHash64());
+        config.setSegmentFactory(new MemorySegmentFactory());
         config.setSegmentFileSizeMB(StoreParams.SEGMENT_FILE_SIZE_MB_MIN);
         config.setNumSyncBatches(StoreParams.BATCH_SIZE_MIN);
         config.setBatchSize(StoreParams.BATCH_SIZE_MIN);
         config.store(propertiesFile, null);
         
         config2.load(propertiesFile);
+        assertEquals(MemorySegmentFactory.class, config2.getSegmentFactory().getClass());
+        assertEquals(MemorySegmentFactory.class.getName(), config2.getProperty(StoreParams.PARAM_SEGMENT_FACTORY_CLASS));
+        assertEquals(Fnv1aHash64.class, config2.getHashFunction().getClass());
+        assertEquals(Fnv1aHash64.class.getName(), config2.getProperty(StoreParams.PARAM_HASH_FUNCTION_CLASS));
         assertEquals(StoreParams.SEGMENT_FILE_SIZE_MB_MIN, config2.getSegmentFileSizeMB());
         assertEquals(StoreParams.NUM_SYNC_BATCHES_MIN, config2.getNumSyncBatches());
         assertEquals(StoreParams.BATCH_SIZE_MIN, config2.getBatchSize());

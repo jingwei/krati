@@ -67,9 +67,9 @@ public class StoreParams {
     public static final int SEGMENT_FILE_SIZE_MB_DEFAULT = Segment.defaultSegmentFileSizeMB;
     
     /**
-     * The minimum segment load threshold is 0.25, below which a segment is eligible for compaction.
+     * The minimum segment load threshold is 0 and it effectively disables segment compaction.
      */
-    public static final double SEGMENT_COMPACT_FACTOR_MIN = 0.25;
+    public static final double SEGMENT_COMPACT_FACTOR_MIN = 0;
     
     /**
      * The maximum segment load threshold is 0.75, below which a segment is eligible for compaction.
@@ -204,6 +204,11 @@ public class StoreParams {
      * Parameter for specifying the hash load factor of a dynamic store.
      */
     public static final String PARAM_HASH_LOAD_FACTOR       = "krati.store.hash.load.factor";
+    
+    /**
+     * Parameter for specifying the hash function class of a data store.
+     */
+    public static final String PARAM_HASH_FUNCTION_CLASS    = "krati.store.hash.function.class";
     
     /**
      * Parameter for specifying the initial capacity of a store.

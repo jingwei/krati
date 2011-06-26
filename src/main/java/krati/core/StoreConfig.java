@@ -11,6 +11,8 @@ import java.util.Set;
 
 import krati.core.segment.MappedSegmentFactory;
 import krati.core.segment.SegmentFactory;
+import krati.util.FnvHashFunction;
+import krati.util.HashFunction;
 
 import org.apache.log4j.Logger;
 
@@ -29,6 +31,7 @@ public class StoreConfig extends StoreParams {
     private final File _homeDir;
     private final int _initialCapacity;
     private SegmentFactory _segmentFactory = null;
+    private HashFunction<byte[]> _hashFunction = null;
     
     public StoreConfig(File homeDir, int initialCapacity) throws IOException {
         if(!homeDir.exists()) {
@@ -50,10 +53,14 @@ public class StoreConfig extends StoreParams {
         // Set the default segment factory
         this.setSegmentFactory(new MappedSegmentFactory());
         
+        // Set the default hash function
+        this.setHashFunction(new FnvHashFunction());
+        
         // Load properties from the default configuration file
         File file = new File(homeDir, CONFIG_PROPERTIES_FILE);
         if(file.exists()) {
             this.load(file);
+            this.validate();
         } else {
             this.store();
         }
@@ -79,6 +86,7 @@ public class StoreConfig extends StoreParams {
         load(new File(getHomeDir(), CONFIG_PROPERTIES_FILE));
     }
     
+    @SuppressWarnings("unchecked")
     public void load(File propertiesFile) throws IOException {
         String paramName;
         String paramValue;
@@ -111,6 +119,7 @@ public class StoreConfig extends StoreParams {
         paramValue = _properties.getProperty(paramName);
         setHashLoadFactor(parseDouble(paramName, paramValue, StoreParams.HASH_LOAD_FACTOR_DEFAULT));
         
+        // Create _segmentFactory
         paramName = StoreParams.PARAM_SEGMENT_FACTORY_CLASS;
         paramValue = _properties.getProperty(paramName);
         SegmentFactory segmentFactory = null;
@@ -125,6 +134,22 @@ public class StoreConfig extends StoreParams {
             segmentFactory = new MappedSegmentFactory();
         }
         setSegmentFactory(segmentFactory);
+        
+        // Create _hashFunction
+        paramName = StoreParams.PARAM_HASH_FUNCTION_CLASS;
+        paramValue = _properties.getProperty(paramName);
+        HashFunction<byte[]> hashFunction = null;
+        if(paramValue != null) {
+            try {
+                hashFunction = (HashFunction<byte[]>)Class.forName(paramValue).newInstance();
+            } catch(Exception e) {
+                _logger.warn("Invalid HashFunction<byte[]> class: " + paramValue);
+            }
+        }
+        if(hashFunction == null) {
+            hashFunction = new FnvHashFunction();
+        }
+        setHashFunction(hashFunction);
     }
     
     public void store() throws IOException {
@@ -140,6 +165,10 @@ public class StoreConfig extends StoreParams {
     public void validate() throws InvalidStoreConfigException {
         if(getSegmentFactory() == null) {
             throw new InvalidStoreConfigException("Segment factory not found");
+        }
+        
+        if(getHashFunction() == null) {
+            throw new InvalidStoreConfigException("Store hash function not found");
         }
         
         if(getBatchSize() < StoreParams.BATCH_SIZE_MIN) {
@@ -222,5 +251,18 @@ public class StoreConfig extends StoreParams {
     
     public SegmentFactory getSegmentFactory() {
         return _segmentFactory;
+    }
+    
+    public void setHashFunction(HashFunction<byte[]> hashFunction) {
+        if(hashFunction == null) {
+            throw new IllegalArgumentException("Invalid hashFunction: " + hashFunction);
+        }
+        
+        this._hashFunction = hashFunction;
+        this._properties.setProperty(PARAM_HASH_FUNCTION_CLASS, hashFunction.getClass().getName());
+    }
+    
+    public HashFunction<byte[]> getHashFunction() {
+        return _hashFunction;
     }
 }

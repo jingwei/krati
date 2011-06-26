@@ -36,17 +36,7 @@ public class StoreFactory {
      * @throws Exception if the store can not be created or loaded from the given directory.
      */
     public static ArrayStore createStaticArrayStore(StoreConfig config) throws Exception {
-        config.validate();
-        config.store();
-        
-        return createStaticArrayStore(
-                config.getHomeDir(),
-                config.getInitialCapacity(),
-                config.getBatchSize(),
-                config.getNumSyncBatches(),
-                config.getSegmentFileSizeMB(),
-                config.getSegmentFactory(),
-                config.getSegmentCompactFactor());
+        return new StaticDataArray(config);
     }
     
     /**
@@ -159,17 +149,7 @@ public class StoreFactory {
      * @throws Exception if the store can not be created or loaded from the given directory.
      */
     public static ArrayStore createDynamicArrayStore(StoreConfig config) throws Exception {
-        config.validate();
-        config.store();
-        
-        return createDynamicArrayStore(
-                config.getHomeDir(),
-                config.getInitialCapacity(),
-                config.getBatchSize(),
-                config.getNumSyncBatches(),
-                config.getSegmentFileSizeMB(),
-                config.getSegmentFactory(),
-                config.getSegmentCompactFactor());
+        return new DynamicDataArray(config);
     }
     
     /**
@@ -284,17 +264,7 @@ public class StoreFactory {
      * @throws Exception if the store can not be created or loaded from the given directory.
      */
     public static StaticDataStore createStaticDataStore(StoreConfig config) throws Exception {
-        config.validate();
-        config.store();
-        
-        return createStaticDataStore(
-                config.getHomeDir(),
-                config.getInitialCapacity(),
-                config.getBatchSize(),
-                config.getNumSyncBatches(),
-                config.getSegmentFileSizeMB(),
-                config.getSegmentFactory(),
-                config.getSegmentCompactFactor());
+        return new StaticDataStore(config);
     }
     
     /**
@@ -408,18 +378,7 @@ public class StoreFactory {
      * @throws Exception if the store can not be created or loaded from the given directory.
      */
     public static DynamicDataStore createDynamicDataStore(StoreConfig config) throws Exception {
-        config.validate();
-        config.store();
-        
-        return createDynamicDataStore(
-                config.getHomeDir(),
-                config.getInitialCapacity(),
-                config.getBatchSize(),
-                config.getNumSyncBatches(),
-                config.getSegmentFileSizeMB(),
-                config.getSegmentFactory(),
-                config.getSegmentCompactFactor(),
-                config.getHashLoadFactor());
+        return new DynamicDataStore(config);
     }
     
     /**
@@ -701,17 +660,7 @@ public class StoreFactory {
      * @throws Exception if the set can not be created or loaded from the given directory.
      */
     public static StaticDataSet createStaticDataSet(StoreConfig config) throws Exception {
-        config.validate();
-        config.store();
-        
-        return createStaticDataSet(
-                config.getHomeDir(),
-                config.getInitialCapacity(),
-                config.getBatchSize(),
-                config.getNumSyncBatches(),
-                config.getSegmentFileSizeMB(),
-                config.getSegmentFactory(),
-                config.getSegmentCompactFactor());
+        return new StaticDataSet(config);
     }
     
     /**
@@ -825,17 +774,7 @@ public class StoreFactory {
      * @throws Exception if the set can not be created or loaded from the given directory.
      */
     public static DynamicDataSet createDynamicDataSet(StoreConfig config) throws Exception {
-        config.validate();
-        config.store();
-        
-        return createDynamicDataSet(
-                config.getHomeDir(),
-                config.getInitialCapacity(),
-                config.getBatchSize(),
-                config.getNumSyncBatches(),
-                config.getSegmentFileSizeMB(),
-                config.getSegmentFactory(),
-                config.getSegmentCompactFactor());
+        return new DynamicDataSet(config);
     }
     
     /**

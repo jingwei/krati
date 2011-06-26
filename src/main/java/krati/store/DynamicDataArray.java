@@ -4,8 +4,9 @@ import java.io.File;
 import java.io.IOException;
 
 import krati.array.DynamicArray;
+import krati.core.StoreConfig;
 import krati.core.array.AddressArray;
-import krati.core.array.basic.DynamicLongArray;
+import krati.core.array.AddressArrayFactory;
 import krati.core.segment.Segment;
 import krati.core.segment.SegmentFactory;
 
@@ -16,9 +17,22 @@ import org.apache.log4j.Logger;
  * 
  * @author jwu
  * 09/24, 2010
+ * 
+ * <p>
+ * 06/25, 2011 - Added constructor using StoreConfig
  */
 public final class DynamicDataArray extends AbstractDataArray implements DynamicArray, ArrayStore {
     private final static Logger _log = Logger.getLogger(DynamicDataArray.class);
+    
+    /**
+     * Constructs a dynamic data array. 
+     * 
+     * @param config - ArrayStore configuration
+     * @throws Exception if the store can not be created.
+     */
+    public DynamicDataArray(StoreConfig config) throws Exception {
+        super(config);
+    }
     
     /**
      * Constructs a dynamic data array with the following default params.
@@ -105,12 +119,13 @@ public final class DynamicDataArray extends AbstractDataArray implements Dynamic
     }
     
     @Override
-    protected AddressArray createAddressArray(int length,
+    protected AddressArray createAddressArray(File homeDir,
+                                              int length,
                                               int batchSize,
                                               int numSyncBatches,
-                                              File homeDirectory) throws Exception {
-        AddressArray addrArray;
-        addrArray = new DynamicLongArray(batchSize, numSyncBatches, homeDirectory);
+                                              boolean indexesCached) throws Exception {
+        AddressArrayFactory factory = new AddressArrayFactory(indexesCached);
+        AddressArray addrArray = factory.createDynamicAddressArray(homeDir, batchSize, numSyncBatches);
         addrArray.expandCapacity(length - 1);
         
         if(length != addrArray.length()) {
