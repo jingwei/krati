@@ -105,6 +105,11 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
     }
     
     @Override
+    public final int capacity() {
+        return _index.capacity();
+    }
+    
+    @Override
     public byte[] get(byte[] key) {
         if(key == null) return null;
         

@@ -61,6 +61,11 @@ public class SerializableObjectStore<K, V> implements ObjectStore<K, V> {
         return _keySerializer;
     }
 
+    @Override
+    public final int capacity() {
+        return _store.capacity();
+    }
+
     /**
      * @return the value serializer.
      */

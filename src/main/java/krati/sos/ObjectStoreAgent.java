@@ -56,6 +56,11 @@ public class ObjectStoreAgent<K, V> implements ObjectStore<K, V> {
     }
 
     @Override
+    public final int capacity() {
+        return _store.capacity();
+    }
+
+    @Override
     public boolean delete(K key) throws Exception {
         return _store.delete(key);
     }

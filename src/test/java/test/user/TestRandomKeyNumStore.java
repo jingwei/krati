@@ -11,6 +11,7 @@ import test.StatsLog;
 import test.util.FileUtils;
 
 import junit.framework.TestCase;
+import krati.core.StoreConfig;
 import krati.core.StoreFactory;
 import krati.core.segment.MappedSegmentFactory;
 import krati.core.segment.SegmentFactory;
@@ -21,7 +22,6 @@ import krati.store.DataStore;
  * 
  * @author jwu
  * 06/09, 2011
- * 
  */
 public class TestRandomKeyNumStore extends TestCase {
     protected File _homeDir;
@@ -76,11 +76,11 @@ public class TestRandomKeyNumStore extends TestCase {
     }
     
     protected DataStore<byte[], byte[]> createStore(File homeDir) throws Exception {
-        return StoreFactory.createDynamicDataStore(
-                homeDir,
-                getCapacity(),
-                getSegmentFileSizeMB(),
-                createSegmentFactory());
+        StoreConfig config = new StoreConfig(homeDir, getCapacity());
+        config.setSegmentFileSizeMB(getSegmentFileSizeMB());
+        config.setSegmentFactory(createSegmentFactory());
+        
+        return StoreFactory.createDynamicDataStore(config);
     }
     
     public void test() throws Exception {

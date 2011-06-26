@@ -16,6 +16,8 @@ import krati.io.Closeable;
  */
 public interface Index extends Iterable<Entry<byte[], byte[]>>, Closeable {
     
+    public int capacity();
+    
     public byte[] lookup(byte[] keyBytes);
     
     public void update(byte[] keyBytes, byte[] metaBytes) throws Exception;

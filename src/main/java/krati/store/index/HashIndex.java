@@ -87,6 +87,11 @@ public class HashIndex implements Index {
     }
     
     @Override
+    public final int capacity() {
+        return _store.capacity();
+    }
+    
+    @Override
     public void sync() throws IOException {
         _store.sync();
     }

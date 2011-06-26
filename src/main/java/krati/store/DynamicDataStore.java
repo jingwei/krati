@@ -414,6 +414,11 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
     }
     
     @Override
+    public final int capacity() {
+        return _dataArray.length();
+    }
+    
+    @Override
     public byte[] get(byte[] key) {
         byte[] existingData;
         long hashCode = hash(key);
@@ -576,7 +581,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
     }
     
     public final double getLoadFactor() {
-        return _loadCount / (double)getCapacity();
+        return _loadCount / (double)capacity();
     }
     
     public final double getLoadThreshold() {
@@ -584,13 +589,13 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
     }
     
     protected void initLinearHashing() throws Exception {
-        int unitCount = getCapacity() / getUnitCapacity();
+        int unitCount = capacity() / getUnitCapacity();
         
         if(unitCount <= 1) {
             _level = 0;
             _split = 0;
             _levelCapacity = getUnitCapacity();
-            _loadCountThreshold = (int)(getCapacity() * _loadThreshold);
+            _loadCountThreshold = (int)(capacity() * _loadThreshold);
         } else {
             // Determine level and split
             _level = 0;
@@ -602,7 +607,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
             
             _split = (unitCount - (1 << _level) - 1) * getUnitCapacity();
             _levelCapacity = getUnitCapacity() * (1 << _level);
-            _loadCountThreshold = (int)(getCapacity() * _loadThreshold);
+            _loadCountThreshold = (int)(capacity() * _loadThreshold);
             
             // Need to re-populate the last unit 
             while(canSplit()) {
@@ -678,7 +683,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
                 _split = 0;
                 _level = nextLevel;
                 _levelCapacity = nextLevelCapacity;
-                _loadCountThreshold = (int)(getCapacity() * _loadThreshold);
+                _loadCountThreshold = (int)(capacity() * _loadThreshold);
                 _log.info(getStatus());
             } else {
                 /* NOT FEASIBLE!
@@ -716,7 +721,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
         buf.append("mode=").append(isOpen() ? Mode.OPEN : Mode.CLOSED);
         buf.append(" level=").append(_level);
         buf.append(" split=").append(_split);
-        buf.append(" capacity=").append(getCapacity());
+        buf.append(" capacity=").append(capacity());
         buf.append(" loadCount=").append(_loadCount);
         buf.append(" loadFactor=").append(getLoadFactor());
         

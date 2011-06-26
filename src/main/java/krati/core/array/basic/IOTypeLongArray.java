@@ -224,17 +224,22 @@ public class IOTypeLongArray extends AbstractRecoverableArray<EntryValueLong> im
             if(isOpen()) {
                 _arrayFile.flush();
                 
-                // update arrayFile lwmScn and hwmScn to maxScn
+                // Find maxScn
+                long maxScn = 0;
                 if(entryList != null && entryList.size() > 0) {
-                    long maxScn = 0;
                     for (Entry<?> e : entryList) {
                         maxScn = Math.max(e.getMaxScn(), maxScn);
                     }
-                    if(maxScn > 0) {
-                        _arrayFile.setWaterMarks(maxScn, maxScn);
-                    }
+                } else {
+                    maxScn = this.getHWMark();
+                }
+                
+                // update arrayFile lwmScn and hwmScn to maxScn
+                if(maxScn > 0) {
+                    _arrayFile.setWaterMarks(maxScn, maxScn);
                 }
             } else {
+                // IOTypeLongArray instantiation goes here.
                 _arrayFile.update(entryList);
             }
         }

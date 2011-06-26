@@ -363,6 +363,14 @@ public class StaticDataStore implements DataStore<byte[], byte[]> {
     }
     
     /**
+     * @return the capacity of this data store.
+     */
+    @Override
+    public final int capacity() {
+        return _dataArray.length();
+    }
+    
+    /**
      * @return the home directory of this data store.
      */
     public final File getHomeDir() {

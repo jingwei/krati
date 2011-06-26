@@ -25,7 +25,7 @@ import krati.util.Chronos;
  * <pre>
  * Version 0:
  * +--------------------------+
- * |Header                    |
+ * |Array header              |
  * |--------------------------|
  * |Storage Version    | long | 
  * |LWM Scn            | long |
@@ -33,7 +33,7 @@ import krati.util.Chronos;
  * |Array Length       | int  |
  * |Data Element Size  | int  |
  * |--------------------------|
- * | Array data begins at 1024|
+ * |Array body starts at 1024 |
  * |                          |
  * +--------------------------+
  * </pre>

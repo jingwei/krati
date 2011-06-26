@@ -19,6 +19,11 @@ import krati.io.Closeable;
  */
 public interface DataStore<K, V> extends Iterable<Entry<K, V>>, Closeable {
     
+    /**
+     * @return the capacity of this DataStore.
+     */
+    public int capacity();
+    
     public V get(K key);
     
     public boolean put(K key, V value) throws Exception;

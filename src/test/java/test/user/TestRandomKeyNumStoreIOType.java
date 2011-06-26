@@ -7,12 +7,12 @@ import krati.core.StoreFactory;
 import krati.store.DataStore;
 
 /**
- * TestRandomKeyNumDynamicStore
+ * TestRandomKeyNumStoreIOType
  * 
  * @author jwu
- * 06/09, 2011
+ * 06/26, 2011
  */
-public class TestRandomKeyNumStaticStore extends TestRandomKeyNumStore {
+public class TestRandomKeyNumStoreIOType extends TestRandomKeyNumStore {
     
     @Override
     protected DataStore<byte[], byte[]> createStore(File homeDir) throws Exception {
@@ -20,6 +20,9 @@ public class TestRandomKeyNumStaticStore extends TestRandomKeyNumStore {
         config.setSegmentFileSizeMB(getSegmentFileSizeMB());
         config.setSegmentFactory(createSegmentFactory());
         
-        return StoreFactory.createStaticDataStore(config);
+        // Do not cache indexes in memory
+        config.setIndexesCached(false);
+        
+        return StoreFactory.createDynamicDataStore(config);
     }
 }

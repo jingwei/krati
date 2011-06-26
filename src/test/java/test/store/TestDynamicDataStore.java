@@ -42,7 +42,7 @@ public class TestDynamicDataStore extends AbstractTest {
         StatsLog.logger.info("create dynStore1"); 
         StatsLog.logger.info("level=" + dynStore1.getLevel() +
                              " split=" + dynStore1.getSplit() +
-                             " capacity=" + dynStore1.getCapacity() +
+                             " capacity=" + dynStore1.capacity() +
                              " loadFactor=" + dynStore1.getLoadFactor());
         
         int keyStart;
@@ -55,9 +55,9 @@ public class TestDynamicDataStore extends AbstractTest {
         StatsLog.logger.info("update keyStart=" + keyStart + " keyCount=" + keyCount);
         StatsLog.logger.info("level=" + dynStore1.getLevel() +
                              " split=" + dynStore1.getSplit() +
-                             " capacity=" + dynStore1.getCapacity() +
+                             " capacity=" + dynStore1.capacity() +
                              " loadFactor=" + dynStore1.getLoadFactor());
-        if ((unitCapacity * 2) != dynStore1.getCapacity())
+        if ((unitCapacity * 2) != dynStore1.capacity())
             throw new RuntimeException("capacity expected: " + (unitCapacity * 2));
         
         keyStart += keyCount;
@@ -65,9 +65,9 @@ public class TestDynamicDataStore extends AbstractTest {
         StatsLog.logger.info("update keyStart=" + keyStart + " keyCount=" + keyCount);
         StatsLog.logger.info("level=" + dynStore1.getLevel() +
                              " split=" + dynStore1.getSplit() +
-                             " capacity=" + dynStore1.getCapacity() +
+                             " capacity=" + dynStore1.capacity() +
                              " loadFactor=" + dynStore1.getLoadFactor());
-        if ((unitCapacity * 3) != dynStore1.getCapacity())
+        if ((unitCapacity * 3) != dynStore1.capacity())
             throw new RuntimeException("capacity expected: " + (unitCapacity * 3));
         
         keyStart += keyCount;
@@ -75,9 +75,9 @@ public class TestDynamicDataStore extends AbstractTest {
         StatsLog.logger.info("update keyStart=" + keyStart + " keyCount=" + keyCount);
         StatsLog.logger.info("level=" + dynStore1.getLevel() +
                              " split=" + dynStore1.getSplit() +
-                             " capacity=" + dynStore1.getCapacity() +
+                             " capacity=" + dynStore1.capacity() +
                              " loadFactor=" + dynStore1.getLoadFactor());
-        if ((unitCapacity * 4) != dynStore1.getCapacity())
+        if ((unitCapacity * 4) != dynStore1.capacity())
             throw new RuntimeException("capacity expected: " + (unitCapacity * 4));
         
         keyStart += keyCount;
@@ -85,9 +85,9 @@ public class TestDynamicDataStore extends AbstractTest {
         StatsLog.logger.info("update keyStart=" + keyStart + " keyCount=" + keyCount);
         StatsLog.logger.info("level=" + dynStore1.getLevel() +
                              " split=" + dynStore1.getSplit() +
-                             " capacity=" + dynStore1.getCapacity() +
+                             " capacity=" + dynStore1.capacity() +
                              " loadFactor=" + dynStore1.getLoadFactor());
-        if ((unitCapacity * 5) != dynStore1.getCapacity())
+        if ((unitCapacity * 5) != dynStore1.capacity())
             throw new RuntimeException("capacity expected: " + (unitCapacity * 5));
         
         keyStart += keyCount;
@@ -95,22 +95,22 @@ public class TestDynamicDataStore extends AbstractTest {
         StatsLog.logger.info("update keyStart=" + keyStart + " keyCount=" + keyCount);
         StatsLog.logger.info("level=" + dynStore1.getLevel() +
                              " split=" + dynStore1.getSplit() +
-                             " capacity=" + dynStore1.getCapacity() +
+                             " capacity=" + dynStore1.capacity() +
                              " loadFactor=" + dynStore1.getLoadFactor());
-        if ((unitCapacity * 6) != dynStore1.getCapacity())
+        if ((unitCapacity * 6) != dynStore1.capacity())
             throw new RuntimeException("capacity expected: " + (unitCapacity * 6));
         
         dynStore1.rehash();
         StatsLog.logger.info("rehash()");
         StatsLog.logger.info("level=" + dynStore1.getLevel() +
                              " split=" + dynStore1.getSplit() +
-                             " capacity=" + dynStore1.getCapacity() +
+                             " capacity=" + dynStore1.capacity() +
                              " loadFactor=" + dynStore1.getLoadFactor());
         if(dynStore1.getLevel() != 3)
             throw new RuntimeException("level expected: " + 3);
         if(dynStore1.getSplit() != 0)
             throw new RuntimeException("split expected: " + 0);
-        if(dynStore1.getLevelCapacity() != dynStore1.getCapacity())
+        if(dynStore1.getLevelCapacity() != dynStore1.capacity())
             throw new RuntimeException("capacity expected: " + dynStore1.getLevelCapacity());
         
         keyStart = 0;
@@ -119,9 +119,9 @@ public class TestDynamicDataStore extends AbstractTest {
         StatsLog.logger.info("update keyStart=" + keyStart + " keyCount=" + keyCount);
         StatsLog.logger.info("level=" + dynStore1.getLevel() +
                              " split=" + dynStore1.getSplit() +
-                             " capacity=" + dynStore1.getCapacity() +
+                             " capacity=" + dynStore1.capacity() +
                              " loadFactor=" + dynStore1.getLoadFactor());
-        if ((unitCapacity * 18) != dynStore1.getCapacity())
+        if ((unitCapacity * 18) != dynStore1.capacity())
             throw new RuntimeException("capacity expected: " + (unitCapacity * 18));
         
         keyStart = 0;
@@ -130,47 +130,47 @@ public class TestDynamicDataStore extends AbstractTest {
         StatsLog.logger.info("update keyStart=" + keyStart + " keyCount=" + keyCount);
         StatsLog.logger.info("level=" + dynStore1.getLevel() +
                              " split=" + dynStore1.getSplit() +
-                             " capacity=" + dynStore1.getCapacity() +
+                             " capacity=" + dynStore1.capacity() +
                              " loadFactor=" + dynStore1.getLoadFactor());
-        if ((unitCapacity * 26) != dynStore1.getCapacity())
+        if ((unitCapacity * 26) != dynStore1.capacity())
             throw new RuntimeException("capacity expected: " + (unitCapacity * 26));
         
         dynStore1.rehash();
         StatsLog.logger.info("rehash()");
         StatsLog.logger.info("level=" + dynStore1.getLevel() +
                              " split=" + dynStore1.getSplit() +
-                             " capacity=" + dynStore1.getCapacity() +
+                             " capacity=" + dynStore1.capacity() +
                              " loadFactor=" + dynStore1.getLoadFactor());
         if(dynStore1.getLevel() != 5)
             throw new RuntimeException("level expected: " + 5);
         if(dynStore1.getSplit() != 0)
             throw new RuntimeException("split expected: " + 0);
-        if ((dynStore1.getLevelCapacity()) != dynStore1.getCapacity())
+        if ((dynStore1.getLevelCapacity()) != dynStore1.capacity())
             throw new RuntimeException("capacity expected: " + dynStore1.getLevelCapacity());
         
         // Bring loadFactor up to 75%
         keyStart = unitCapacity << 5;
-        keyCount = (int)(dynStore1.getCapacity() * 0.75);
+        keyCount = (int)(dynStore1.capacity() * 0.75);
         write(keyStart, keyCount, dynStore1);
         StatsLog.logger.info("update keyStart=" + keyStart + " keyCount=" + keyCount);
         StatsLog.logger.info("level=" + dynStore1.getLevel() +
                              " split=" + dynStore1.getSplit() +
-                             " capacity=" + dynStore1.getCapacity() +
+                             " capacity=" + dynStore1.capacity() +
                              " loadFactor=" + dynStore1.getLoadFactor());
-        if ((unitCapacity << 5) != dynStore1.getCapacity())
+        if ((unitCapacity << 5) != dynStore1.capacity())
             throw new RuntimeException("capacity expected: " + (unitCapacity << 5));
         
         dynStore1.sync();
-        int capacity1 = dynStore1.getCapacity();
+        int capacity1 = dynStore1.capacity();
         
         // Create DynamicDataStore 2
         DynamicDataStore dynStore2 = getDynamicDataStore(storeDir, 0, 32);
         StatsLog.logger.info("create dynStore2");
         StatsLog.logger.info("level=" + dynStore2.getLevel() +
                              " split=" + dynStore2.getSplit() +
-                             " capacity=" + dynStore2.getCapacity() +
+                             " capacity=" + dynStore2.capacity() +
                              " loadFactor=" + dynStore2.getLoadFactor());
-        int capacity2 = dynStore2.getCapacity();
+        int capacity2 = dynStore2.capacity();
         
         // Check capacity
         if (capacity1 != capacity2)
@@ -178,7 +178,7 @@ public class TestDynamicDataStore extends AbstractTest {
         
         // Compare two data stores
         boolean b = true;
-        for (int i = 0, cnt = dynStore1.getCapacity(); i < cnt; i++) {
+        for (int i = 0, cnt = dynStore1.capacity(); i < cnt; i++) {
             byte[] value1 = get(i, dynStore1);
             byte[] value2 = get(i, dynStore2);
             
@@ -289,7 +289,7 @@ public class TestDynamicDataStore extends AbstractTest {
     }
     
     private void checkRandomPuts(DynamicDataStore dynStore, double ratio) throws Exception {
-        int capacity = dynStore.getCapacity();
+        int capacity = dynStore.capacity();
         int[] keys = new int[(int)(capacity  * ratio)];
         
         Random rand = new Random(capacity);
@@ -307,7 +307,7 @@ public class TestDynamicDataStore extends AbstractTest {
     }
     
     private void checkRandomDeletes(DynamicDataStore dynStore, double ratio) throws Exception {
-        int capacity = dynStore.getCapacity();
+        int capacity = dynStore.capacity();
         int[] keys = new int[(int)(capacity  * ratio)];
         
         Random rand = new Random(capacity);

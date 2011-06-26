@@ -172,6 +172,7 @@ public class StoreParams {
     
     /**
      * Parameter for specifying the indexes (i.e. indexes.dat) cached in memory.
+     * The value is <code>true</code> or <code>false</code>.
      */
     public static final String PARAM_INDEXES_CACHED         = "krati.indexes.cached";
     
@@ -191,7 +192,7 @@ public class StoreParams {
     public static final String PARAM_SEGMENT_FILE_SIZE_MB   = "krati.store.segment.file.size";
     
     /**
-     * Parameter for specifying the store segment compactor factor between 0.25 and 0.75.
+     * Parameter for specifying the store segment compactor factor between 0 and 0.75.
      */
     public static final String PARAM_SEGMENT_COMPACT_FACTOR = "krati.store.segment.compact.factor";
     
