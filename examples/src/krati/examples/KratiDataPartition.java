@@ -4,9 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Random;
 
+import krati.core.StoreFactory;
 import krati.core.segment.SegmentFactory;
 import krati.store.ArrayStorePartition;
-import krati.store.StaticArrayStorePartition;
 
 /**
  * Sample code for Krati Partition.
@@ -20,17 +20,14 @@ public class KratiDataPartition {
     /**
      * Constructs KratiDataPartition.
      * 
+     * @param homeDir    the home directory.
      * @param idStart    the start of member IDs.
      * @param idCount    the count of member IDs.
-     * @param homeDir    the home directory for storing data.
      * @throws Exception if a partition instance can not be created.
      */
-    public KratiDataPartition(int idStart, int idCount, File homeDir) throws Exception {
-        _partition = new StaticArrayStorePartition(idStart,
-                                                   idCount,
-                                                   homeDir,
-                                                   createSegmentFactory(),
-                                                   128);
+    public KratiDataPartition(File homeDir, int idStart, int idCount) throws Exception {
+        _partition = StoreFactory.createArrayStorePartition(
+                homeDir, idStart, idCount, 64 /* segmentFileSizeMB */, createSegmentFactory());
     }
     
     /**
@@ -43,7 +40,7 @@ public class KratiDataPartition {
     /**
      * Creates a segment factory.
      * Subclasses can override this method to provide a specific segment factory
-     * such as ChannelSegmentFactory and MappedSegmentFactory.
+     * such as ChannelSegmentFactory, MappedSegmentFactory and WriteBufferSegmentFactory.
      * 
      * @return the segment factory. 
      */
@@ -99,27 +96,26 @@ public class KratiDataPartition {
     }
     
     /**
-     * java -Xmx4G krati.examples.KratiDataPartition idStart idCount homeDir
+     * java -Xmx4G krati.examples.KratiDataPartition homeDir idStart idCount
      */
     public static void main(String[] args) {
         try {
             // Parse arguments: idStart idCount homeDir
-            int idStart = Integer.parseInt(args[0]);
-            int idCount = Integer.parseInt(args[1]);
-            File homeDir = new File(args[2]);
+            File homeDir = new File(args[0]);
+            int idStart = Integer.parseInt(args[1]);
+            int idCount = Integer.parseInt(args[2]);
             
             // Create an instance of KratiDataPartition
-            File dcHomeDir = new File(homeDir, KratiDataPartition.class.getSimpleName());
-            KratiDataPartition dc = new KratiDataPartition(idStart, idCount, dcHomeDir);
+            KratiDataPartition p = new KratiDataPartition(homeDir, idStart, idCount);
             
             // Populate data partition
-            dc.populate();
+            p.populate();
             
             // Perform some random reads from data partition.
-            dc.doRandomReads(10);
+            p.doRandomReads(10);
             
             // Close data partition
-            dc.close();
+            p.close();
         } catch(Exception e) {
             e.printStackTrace();
         }

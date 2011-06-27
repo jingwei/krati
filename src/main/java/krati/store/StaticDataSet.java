@@ -283,6 +283,11 @@ public class StaticDataSet implements DataSet<byte[]> {
     }
     
     @Override
+    public final int capacity() {
+        return _dataArray.length();
+    }
+    
+    @Override
     public void sync() throws IOException {
         _dataArray.sync();
     }

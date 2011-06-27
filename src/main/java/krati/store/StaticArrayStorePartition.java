@@ -35,7 +35,7 @@ public class StaticArrayStorePartition implements ArrayStorePartition {
      *    segmentCompactFactor : 0.5
      *    updateBatchSize      : 10000
      *    numSyncBatches       : 5
-     *    checked              : No
+     *    checked              : false
      *    segmentFactory       : MappedSegmentFactory
      * </pre>
      * 
@@ -55,7 +55,7 @@ public class StaticArrayStorePartition implements ArrayStorePartition {
      *    segmentCompactFactor : 0.5
      *    updateBatchSize      : 10000
      *    numSyncBatches       : 5
-     *    checked              : No
+     *    checked              : false
      * </pre>
      * 
      * @param idStart            Start of memberId
@@ -80,7 +80,7 @@ public class StaticArrayStorePartition implements ArrayStorePartition {
      * @param homeDir              Directory where persistent data will be stored
      * @param segmentFactory       Factory for creating Segment(s)
      * @param segmentFileSizeMB    Segment size in MB
-     * @param checked                whether to apply default checksum (Adler32) to ensure data integrity
+     * @param checked              Whether to apply default checksum (Adler32) to ensure data integrity
      * @throws Exception
      */
     public StaticArrayStorePartition(int idStart,
@@ -129,7 +129,7 @@ public class StaticArrayStorePartition implements ArrayStorePartition {
      * @param segmentFactory         Factory for creating Segment(s)
      * @param segmentFileSizeMB      Segment size in MB
      * @param segmentCompactFactor   Load factor of segment, below which a segment is eligible for compaction
-     * @param checked                whether to apply default checksum (Adler32) to ensure data integrity
+     * @param checked                Whether to apply default checksum (Adler32) to ensure data integrity
      * @throws Exception
      */
     public StaticArrayStorePartition(int idStart,

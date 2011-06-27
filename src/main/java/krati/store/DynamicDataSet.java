@@ -410,6 +410,11 @@ public class DynamicDataSet implements DataSet<byte[]> {
     }
     
     @Override
+    public final int capacity() {
+        return _dataArray.length();
+    }
+    
+    @Override
     public synchronized void sync() throws IOException {
         _dataArray.sync();
     }

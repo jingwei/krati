@@ -174,17 +174,17 @@ public class StoreParams {
      * Parameter for specifying the indexes (i.e. indexes.dat) cached in memory.
      * The value is <code>true</code> or <code>false</code>.
      */
-    public static final String PARAM_INDEXES_CACHED         = "krati.indexes.cached";
+    public static final String PARAM_INDEXES_CACHED         = "krati.store.indexes.cached";
     
     /**
      * Parameter for specifying the indexes update batch size.
      */
-    public static final String PARAM_BATCH_SIZE             = "krati.indexes.batchSize";
+    public static final String PARAM_BATCH_SIZE             = "krati.store.batchSize";
     
     /**
      * Parameter for specifying the number of batches required for updating the underlying indexes.
      */
-    public static final String PARAM_NUM_SYNC_BATCHES       = "krati.indexes.numSyncBatches";
+    public static final String PARAM_NUM_SYNC_BATCHES       = "krati.store.numSyncBatches";
     
     /**
      * Parameter for specifying the store segment file size in MB.

@@ -4,10 +4,12 @@ import java.io.File;
 
 import krati.core.segment.SegmentFactory;
 import krati.store.ArrayStore;
+import krati.store.ArrayStorePartition;
 import krati.store.DynamicDataArray;
 import krati.store.DynamicDataSet;
 import krati.store.DynamicDataStore;
 import krati.store.IndexedDataStore;
+import krati.store.StaticArrayStorePartition;
 import krati.store.StaticDataArray;
 import krati.store.StaticDataSet;
 import krati.store.StaticDataStore;
@@ -26,6 +28,117 @@ import krati.util.FnvHashFunction;
  * 06/25, 2011 - Added factory methods using StoreConfig
  */
 public class StoreFactory {
+
+    /**
+     * Creates a {@link krati.store.ArrayStorePartition ArrayStorePartition} with the default parameters below.
+     * 
+     * <pre>
+     *   batchSize            : 10000
+     *   numSyncBatches       : 5
+     *   segmentCompactFactor : 0.5
+     * </pre>
+     * 
+     * @param homeDir              - the store home directory
+     * @param idStart              - the partition idStart (i.e. the first index)
+     * @param idCount              - the partition idCount (i.e. capacity) which cannot be changed after the store is created
+     * @param segmentFileSizeMB    - the segment size in MB
+     * @param segmentFactory       - the segment factory
+     * @return A range-based ArrayStore.
+     * @throws Exception if the store can not be created or loaded from the given directory.
+     */
+    public static ArrayStorePartition createArrayStorePartition(
+            File homeDir,
+            int idStart,
+            int idCount,
+            int segmentFileSizeMB,
+            SegmentFactory segmentFactory) throws Exception {
+        int batchSize = StoreParams.BATCH_SIZE_DEFAULT;
+        int numSyncBatches = StoreParams.NUM_SYNC_BATCHES_DEFAULT;
+        double segmentCompactFactor = StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT;
+        
+        return StoreFactory.createArrayStorePartition(
+                homeDir,
+                idStart,
+                idCount,
+                batchSize,
+                numSyncBatches,
+                segmentFileSizeMB,
+                segmentFactory,
+                segmentCompactFactor);
+    }
+    
+    /**
+     * Creates a {@link krati.store.ArrayStorePartition ArrayStorePartition} with the default parameters below.
+     * 
+     * <pre>
+     *   segmentCompactFactor : 0.5
+     * </pre>
+     * 
+     * @param homeDir              - the store home directory
+     * @param idStart              - the partition idStart (i.e. the first index)
+     * @param idCount              - the partition idCount (i.e. capacity) which cannot be changed after the store is created
+     * @param batchSize            - the number of updates per update batch
+     * @param numSyncBatches       - the number of update batches required for updating the underlying indexes
+     * @param segmentFileSizeMB    - the segment size in MB
+     * @param segmentFactory       - the segment factory
+     * @return A range-based ArrayStore.
+     * @throws Exception if the store can not be created or loaded from the given directory.
+     */
+    public static ArrayStorePartition createArrayStorePartition(
+            File homeDir,
+            int idStart,
+            int idCount,
+            int batchSize,
+            int numSyncBatches,
+            int segmentFileSizeMB,
+            SegmentFactory segmentFactory) throws Exception {
+        double segmentCompactFactor = StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT;
+        
+        return StoreFactory.createArrayStorePartition(
+                homeDir,
+                idStart,
+                idCount,
+                batchSize,
+                numSyncBatches,
+                segmentFileSizeMB,
+                segmentFactory,
+                segmentCompactFactor);
+    }
+    
+    /**
+     * Creates a {@link krati.store.ArrayStorePartition ArrayStorePartition}.
+     * 
+     * @param homeDir              - the store home directory
+     * @param idStart              - the partition idStart (i.e. the first index)
+     * @param idCount              - the partition idCount (i.e. capacity) which cannot be changed after the store is created
+     * @param batchSize            - the number of updates per update batch
+     * @param numSyncBatches       - the number of update batches required for updating the underlying indexes
+     * @param segmentFileSizeMB    - the segment size in MB
+     * @param segmentFactory       - the segment factory
+     * @param segmentCompactFactor - the segment load threshold, below which a segment is eligible for compaction
+     * @return A range-based ArrayStore.
+     * @throws Exception if the store can not be created or loaded from the given directory.
+     */
+    public static ArrayStorePartition createArrayStorePartition(
+            File homeDir,
+            int idStart,
+            int idCount,
+            int batchSize,
+            int numSyncBatches,
+            int segmentFileSizeMB,
+            SegmentFactory segmentFactory,
+            double segmentCompactFactor) throws Exception {
+        return new StaticArrayStorePartition(
+                idStart,
+                idCount,
+                batchSize,
+                numSyncBatches,
+                homeDir,
+                segmentFactory,
+                segmentFileSizeMB,
+                segmentCompactFactor,
+                false);
+    }
     
     /**
      * Creates a fixed-length {@link krati.store.ArrayStore ArrayStore}.

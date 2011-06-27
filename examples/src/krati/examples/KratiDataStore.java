@@ -4,8 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Random;
 
+import krati.core.StoreConfig;
 import krati.core.StoreFactory;
-import krati.core.segment.SegmentFactory;
+import krati.core.segment.MemorySegmentFactory;
 import krati.store.DataStore;
 
 /**
@@ -15,19 +16,19 @@ import krati.store.DataStore;
  * 
  */
 public class KratiDataStore {
-    private final int _keyCount;
+    private final int _initialCapacity;
     private final DataStore<byte[], byte[]> _store;
     
     /**
      * Constructs KratiDataStore.
      * 
-     * @param keyCount   the number of keys.
-     * @param homeDir    the home directory for storing data.
+     * @param homeDir           the home directory of DataStore.
+     * @param initialCapacity   the initial capacity of DataStore.
      * @throws Exception if a DataStore instance can not be created.
      */
-    public KratiDataStore(int keyCount, File homeDir) throws Exception {
-        _keyCount = keyCount;
-        _store = createDataStore(keyCount, homeDir);
+    public KratiDataStore(File homeDir, int initialCapacity) throws Exception {
+        _initialCapacity = initialCapacity;
+        _store = createDataStore(homeDir, initialCapacity);
     }
     
     /**
@@ -38,30 +39,18 @@ public class KratiDataStore {
     }
     
     /**
-     * Creates a data store instance.
+     * Creates a DataStore instance.
+     * <p>
      * Subclasses can override this method to provide a specific DataStore implementation
-     * such as DynamicDataStore and IndexedDataStore.
+     * such as DynamicDataStore and IndexedDataStore or provide a specific SegmentFactory
+     * such as ChannelSegmentFactory, MappedSegmentFactory and WriteBufferSegment.
      */
-    protected DataStore<byte[], byte[]> createDataStore(int keyCount, File storeDir) throws Exception {
-        int capacity = (int)(keyCount * 1.5);
-        return StoreFactory.createStaticDataStore(
-                storeDir,
-                capacity,
-                10000,    /* update batch size */
-                5,        /* number of update batches required to sync indexes.dat */
-                128,      /* segment file size in MB */
-                createSegmentFactory());
-    }
-    
-    /**
-     * Creates a segment factory.
-     * Subclasses can override this method to provide a specific segment factory
-     * such as ChannelSegmentFactory and MappedSegmentFactory.
-     * 
-     * @return the segment factory. 
-     */
-    protected SegmentFactory createSegmentFactory() {
-        return new krati.core.segment.MemorySegmentFactory();
+    protected DataStore<byte[], byte[]> createDataStore(File homeDir, int initialCapacity) throws Exception {
+        StoreConfig config = new StoreConfig(homeDir, initialCapacity);
+        config.setSegmentFactory(new MemorySegmentFactory());
+        config.setSegmentFileSizeMB(64);
+        
+        return StoreFactory.createStaticDataStore(config);
     }
     
     /**
@@ -78,7 +67,7 @@ public class KratiDataStore {
      * @throws Exception
      */
     public void populate() throws Exception {
-        for (int i = 0; i < _keyCount; i++) {
+        for (int i = 0; i < _initialCapacity; i++) {
             String str = "key." + i;
             byte[] key = str.getBytes();
             byte[] value = createDataForKey(str);
@@ -95,7 +84,7 @@ public class KratiDataStore {
     public void doRandomReads(int readCnt) {
         Random rand = new Random();
         for (int i = 0; i < readCnt; i++) {
-            int keyId = rand.nextInt(_keyCount);
+            int keyId = rand.nextInt(_initialCapacity);
             String str = "key." + keyId;
             byte[] key = str.getBytes();
             byte[] value = _store.get(key);
@@ -113,17 +102,16 @@ public class KratiDataStore {
     }
     
     /**
-     * java -Xmx4G krati.examples.KratiDataStore keyCount homeDir
+     * java -Xmx4G krati.examples.KratiDataStore homeDir initialCapacity 
      */
     public static void main(String[] args) {
         try {
             // Parse arguments: keyCount homeDir
-            int keyCount = Integer.parseInt(args[0]);
-            File homeDir = new File(args[1]);
+            File homeDir = new File(args[0]);
+            int initialCapacity = Integer.parseInt(args[1]);
             
             // Create an instance of Krati DataStore
-            File storeHomeDir = new File(homeDir, KratiDataStore.class.getSimpleName());
-            KratiDataStore store = new KratiDataStore(keyCount, storeHomeDir);
+            KratiDataStore store = new KratiDataStore(homeDir, initialCapacity);
             
             // Populate data store
             store.populate();
