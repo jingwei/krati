@@ -64,7 +64,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
      */
     public DynamicDataSet(StoreConfig config) throws Exception {
         config.validate();
-        config.store();
+        config.save();
         
         this._config = config;
         this._homeDir = config.getHomeDir();
@@ -361,7 +361,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
         _config.setHashLoadFactor(hashLoadFactor);
         _config.setHashFunction(hashFunction);
         _config.validate();
-        _config.store();
+        _config.save();
         
         // Create data set handler
         _dataHandler = new DefaultDataSetHandler();

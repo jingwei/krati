@@ -217,6 +217,16 @@ public class StoreParams {
     public static final String PARAM_INITIAL_CAPACITY       = "krati.store.initial.capacity";
     
     /**
+     * Parameter for specifying the start index of a array store partition.
+     */
+    public static final String PARAM_PARTITION_START        = "krati.store.partition.start";
+    
+    /**
+     * Parameter for specifying the count (i.e. capacity) of a array store partition.
+     */
+    public static final String PARAM_PARTITION_COUNT        = "krati.store.partition.count";
+    
+    /**
      * Get the initial level of {@link krati.store.DynamicDataStore DynamicDataStore}, {@link krati.store.DynamicDataSet DynamicDataSet}
      * and {@link krati.store.IndexedDataStore IndexedDataStore} based an initial store capacity.
      * The initial <code>level</code> is the minimum integer which satisfies the condition

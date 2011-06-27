@@ -52,7 +52,7 @@ public class StaticDataStore implements DataStore<byte[], byte[]> {
      */
     public StaticDataStore(StoreConfig config) throws Exception {
         config.validate();
-        config.store();
+        config.save();
         
         this._config = config;
         this._homeDir = _config.getHomeDir();
@@ -238,7 +238,7 @@ public class StaticDataStore implements DataStore<byte[], byte[]> {
         _config.setSegmentCompactFactor(segmentCompactFactor);
         _config.setHashFunction(hashFunction);
         _config.validate();
-        _config.store();
+        _config.save();
         
         // Create data store handler
         _dataHandler = new DefaultDataStoreHandler();

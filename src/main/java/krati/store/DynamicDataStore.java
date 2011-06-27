@@ -68,7 +68,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
      */
     public DynamicDataStore(StoreConfig config) throws Exception {
         config.validate();
-        config.store();
+        config.save();
         
         this._config = config;
         this._homeDir = config.getHomeDir();
@@ -365,7 +365,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
         _config.setHashLoadFactor(hashLoadFactor);
         _config.setHashFunction(hashFunction);
         _config.validate();
-        _config.store();
+        _config.save();
         
         // Create data store handler
         _dataHandler = new DefaultDataStoreHandler();

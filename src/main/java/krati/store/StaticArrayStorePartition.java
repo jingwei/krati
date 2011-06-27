@@ -7,9 +7,12 @@ import java.nio.channels.WritableByteChannel;
 import org.apache.log4j.Logger;
 
 import krati.array.Array;
+import krati.core.StorePartitionConfig;
+import krati.core.array.AddressArray;
+import krati.core.array.AddressArrayFactory;
 import krati.core.array.SimpleDataArray;
-import krati.core.array.basic.StaticLongArray;
 import krati.core.segment.MappedSegmentFactory;
+import krati.core.segment.Segment;
 import krati.core.segment.SegmentFactory;
 import krati.core.segment.SegmentManager;
 
@@ -21,13 +24,42 @@ import krati.core.segment.SegmentManager;
  * <p>
  * 05/30, 2011 - Added support for Closeable
  * 06/03, 2011 - Constructor cleanup
+ * 06/26, 2011 - Added StorePartitionConfig-based constructor
  */
 public class StaticArrayStorePartition implements ArrayStorePartition {
     private final static Logger _log = Logger.getLogger(StaticArrayStorePartition.class);
+    private final StorePartitionConfig _config;
     private final SimpleDataArray _dataArray;
     private final int _idCount;
     private final int _idStart;
     private final int _idEnd;
+    
+    public StaticArrayStorePartition(StorePartitionConfig config) throws Exception {
+        config.validate();
+        config.save();
+        
+        this._config = config;
+        this._idCount = config.getPartitionCount();
+        this._idStart = config.getPartitionStart();
+        this._idEnd = config.getPartitionEnd();
+        
+        AddressArray addressArray = createAddressArray(
+                _config.getHomeDir(),
+                _idCount,
+                _config.getBatchSize(),
+                _config.getNumSyncBatches(),
+                _config.isIndexesCached());
+        
+        String segmentHome = _config.getHomeDir().getCanonicalPath() + File.separator + "segs";
+        SegmentManager segManager = SegmentManager.getInstance(
+                segmentHome,
+                _config.getSegmentFactory(),
+                _config.getSegmentFileSizeMB());
+        
+        _dataArray = new SimpleDataArray(addressArray, segManager, _config.getSegmentCompactFactor());
+        
+        _log.info("init: " + getStatus());
+    }
     
     /**
      * Constructs a StaticArrayStorePartition with default values below.
@@ -91,31 +123,15 @@ public class StaticArrayStorePartition implements ArrayStorePartition {
                                      SegmentFactory segmentFactory,
                                      int segmentFileSizeMB,
                                      boolean checked) throws Exception {
-        this._idStart = idStart;
-        this._idCount = idCount;
-        this._idEnd = idStart + idCount;
-        
-        StaticLongArray addressArray =
-            new StaticLongArray(idCount,
-                                batchSize,
-                                numSyncBatches,
-                                homeDir);
-        
-        if (addressArray.length() != idCount) {
-            throw new IOException("Capacity expected: " + addressArray.length() + " not " + idCount);
-        }
-        
-        String segmentHome = homeDir.getCanonicalPath() + File.separator + "segs";
-        SegmentManager segManager = SegmentManager.getInstance(segmentHome,
-                                                               segmentFactory,
-                                                               segmentFileSizeMB);
-        _dataArray = new SimpleDataArray(addressArray, segManager);
-        
-        if (checked) {
-            // TODO
-        }
-        
-        _log.info("Partition init: " + getStatus());
+        this(idStart,
+             idCount,
+             batchSize,
+             numSyncBatches,
+             homeDir,
+             segmentFactory,
+             segmentFileSizeMB,
+             Segment.defaultSegmentCompactFactor,
+             checked);
     }
     
     /**
@@ -141,32 +157,54 @@ public class StaticArrayStorePartition implements ArrayStorePartition {
                                      int segmentFileSizeMB,
                                      double segmentCompactFactor,
                                      boolean checked) throws Exception {
-        this._idStart = idStart;
-        this._idCount = idCount;
-        this._idEnd = idStart + idCount;
+        _config = new StorePartitionConfig(homeDir, idStart, idCount);
+        _config.setBatchSize(batchSize);
+        _config.setNumSyncBatches(numSyncBatches);
+        _config.setSegmentFactory(segmentFactory);
+        _config.setSegmentFileSizeMB(segmentFileSizeMB);
+        _config.setSegmentCompactFactor(segmentCompactFactor);
+        _config.validate();
+        _config.save();
         
-        StaticLongArray addressArray =
-            new StaticLongArray(idCount,
-                                batchSize,
-                                numSyncBatches,
-                                homeDir);
+        this._idStart = _config.getPartitionStart();
+        this._idCount = _config.getPartitionCount();
+        this._idEnd = _config.getPartitionEnd();
         
-        if(addressArray.length() != idCount) {
-            throw new IOException("Capacity expected: " + addressArray.length() + " not " + idCount);
-        }
+        AddressArray addressArray = createAddressArray(
+                _config.getHomeDir(),
+                _idCount,
+                _config.getBatchSize(),
+                _config.getNumSyncBatches(),
+                _config.isIndexesCached());
         
-        String segmentHome = homeDir.getCanonicalPath() + File.separator + "segs";
-        SegmentManager segManager = SegmentManager.getInstance(segmentHome,
-                                                               segmentFactory,
-                                                               segmentFileSizeMB);
+        String segmentHome = _config.getHomeDir().getCanonicalPath() + File.separator + "segs";
+        SegmentManager segManager = SegmentManager.getInstance(
+                segmentHome,
+                _config.getSegmentFactory(),
+                _config.getSegmentFileSizeMB());
         
-        _dataArray = new SimpleDataArray(addressArray, segManager, segmentCompactFactor);
+        _dataArray = new SimpleDataArray(addressArray, segManager, _config.getSegmentCompactFactor());
         
         if (checked) {
             // TODO
         }
         
-        _log.info("Partition init: " + getStatus());
+        _log.info("init: " + getStatus());
+    }
+    
+    protected AddressArray createAddressArray(File homeDir,
+                                              int length,
+                                              int batchSize,
+                                              int numSyncBatches,
+                                              boolean indexesCached) throws Exception {
+        AddressArrayFactory factory = new AddressArrayFactory(indexesCached);
+        AddressArray addrArray = factory.createStaticAddressArray(homeDir, length, batchSize, numSyncBatches);
+        
+        if(addrArray.length() != length) {
+            throw new IOException("Capacity expected: " + addrArray.length() + " not " + length);
+        }
+        
+        return addrArray;
     }
     
     protected String getStatus() {
@@ -197,6 +235,10 @@ public class StaticArrayStorePartition implements ArrayStorePartition {
     private void rangeCheck(int memberId) {
         if(memberId < _idStart || _idEnd <= memberId)
             throw new ArrayIndexOutOfBoundsException(memberId);
+    }
+    
+    public final File getHomeDir() {
+        return _config.getHomeDir();
     }
     
     @Override

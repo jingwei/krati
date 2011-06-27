@@ -49,7 +49,7 @@ public class StaticDataSet implements DataSet<byte[]> {
      */
     public StaticDataSet(StoreConfig config) throws Exception {
         config.validate();
-        config.store();
+        config.save();
         
         this._config = config;
         this._homeDir = _config.getHomeDir();
@@ -235,7 +235,7 @@ public class StaticDataSet implements DataSet<byte[]> {
         _config.setSegmentCompactFactor(segmentCompactFactor);
         _config.setHashFunction(hashFunction);
         _config.validate();
-        _config.store();
+        _config.save();
         
         // Create data set handler
         _dataHandler = new DefaultDataSetHandler();

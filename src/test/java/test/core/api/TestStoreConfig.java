@@ -83,7 +83,7 @@ public class TestStoreConfig extends TestCase {
         assertEquals(hashLoadFactor, config.getHashLoadFactor());
         
         config.validate();
-        config.store();
+        config.save();
         
         StoreConfig config2 = new StoreConfig(getHomeDir(), getInitialCapacity());
         
@@ -104,7 +104,7 @@ public class TestStoreConfig extends TestCase {
         config.setSegmentFileSizeMB(StoreParams.SEGMENT_FILE_SIZE_MB_MIN);
         config.setNumSyncBatches(StoreParams.BATCH_SIZE_MIN);
         config.setBatchSize(StoreParams.BATCH_SIZE_MIN);
-        config.store(propertiesFile, null);
+        config.save(propertiesFile, null);
         
         config2.load(propertiesFile);
         assertEquals(MemorySegmentFactory.class, config2.getSegmentFactory().getClass());

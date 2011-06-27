@@ -28,7 +28,19 @@ import krati.util.FnvHashFunction;
  * 06/25, 2011 - Added factory methods using StoreConfig
  */
 public class StoreFactory {
-
+    
+    /**
+     * Creates a fixed-length {@link krati.store.ArrayStorePartition ArrayStorePartition}.
+     * A configuration file <code>config.properties</code> is created automatically in the store home directory. 
+     * 
+     * @param config - ArrayStorePartition configuration
+     * @return A range-based ArrayStorePartition.
+     * @throws Exception if the store cannot be created.
+     */
+    public static ArrayStorePartition createArrayStorePartition(StorePartitionConfig config) throws Exception {
+        return new StaticArrayStorePartition(config);
+    }
+    
     /**
      * Creates a {@link krati.store.ArrayStorePartition ArrayStorePartition} with the default parameters below.
      * 
@@ -44,7 +56,7 @@ public class StoreFactory {
      * @param segmentFileSizeMB    - the segment size in MB
      * @param segmentFactory       - the segment factory
      * @return A range-based ArrayStore.
-     * @throws Exception if the store can not be created or loaded from the given directory.
+     * @throws Exception if the store cannot be created.
      */
     public static ArrayStorePartition createArrayStorePartition(
             File homeDir,
@@ -82,7 +94,7 @@ public class StoreFactory {
      * @param segmentFileSizeMB    - the segment size in MB
      * @param segmentFactory       - the segment factory
      * @return A range-based ArrayStore.
-     * @throws Exception if the store can not be created or loaded from the given directory.
+     * @throws Exception if the store cannot be created.
      */
     public static ArrayStorePartition createArrayStorePartition(
             File homeDir,
@@ -117,7 +129,7 @@ public class StoreFactory {
      * @param segmentFactory       - the segment factory
      * @param segmentCompactFactor - the segment load threshold, below which a segment is eligible for compaction
      * @return A range-based ArrayStore.
-     * @throws Exception if the store can not be created or loaded from the given directory.
+     * @throws Exception if the store cannot be created.
      */
     public static ArrayStorePartition createArrayStorePartition(
             File homeDir,
@@ -146,7 +158,7 @@ public class StoreFactory {
      * 
      * @param config - ArrayStore configuration
      * @return A fixed-length ArrayStore.
-     * @throws Exception if the store can not be created or loaded from the given directory.
+     * @throws Exception if the store cannot be created.
      */
     public static ArrayStore createStaticArrayStore(StoreConfig config) throws Exception {
         return new StaticDataArray(config);
@@ -166,7 +178,7 @@ public class StoreFactory {
      * @param segmentFileSizeMB    - the segment size in MB
      * @param segmentFactory       - the segment factory
      * @return A fixed-length ArrayStore.
-     * @throws Exception if the store can not be created or loaded from the given directory.
+     * @throws Exception if the store cannot be created.
      */
     public static ArrayStore createStaticArrayStore(
             File homeDir,
@@ -201,7 +213,7 @@ public class StoreFactory {
      * @param segmentFileSizeMB    - the segment size in MB
      * @param segmentFactory       - the segment factory
      * @return A fixed-length ArrayStore.
-     * @throws Exception if the store can not be created or loaded from the given directory.
+     * @throws Exception if the store cannot be created.
      */
     public static ArrayStore createStaticArrayStore(
             File homeDir,
@@ -233,7 +245,7 @@ public class StoreFactory {
      * @param segmentFactory       - the segment factory
      * @param segmentCompactFactor - the segment load threshold, below which a segment is eligible for compaction
      * @return A fixed-length ArrayStore.
-     * @throws Exception if the store can not be created or loaded from the given directory.
+     * @throws Exception if the store cannot be created.
      */
     public static ArrayStore createStaticArrayStore(
             File homeDir,
@@ -259,7 +271,7 @@ public class StoreFactory {
      * 
      * @param config - ArrayStore configuration
      * @return a dynamic ArrayStore with growing capacity as needed.
-     * @throws Exception if the store can not be created or loaded from the given directory.
+     * @throws Exception if the store cannot be created.
      */
     public static ArrayStore createDynamicArrayStore(StoreConfig config) throws Exception {
         return new DynamicDataArray(config);
@@ -280,7 +292,7 @@ public class StoreFactory {
      * @param segmentFileSizeMB    - the segment size in MB 
      * @param segmentFactory       - the segment factory
      * @return a dynamic ArrayStore with growing capacity as needed.
-     * @throws Exception if the store can not be created or loaded from the given directory.
+     * @throws Exception if the store cannot be created.
      */
     public static ArrayStore createDynamicArrayStore(
             File homeDir,
@@ -316,7 +328,7 @@ public class StoreFactory {
      * @param segmentFileSizeMB    - the segment size in MB
      * @param segmentFactory       - the segment factory
      * @return a dynamic ArrayStore with growing capacity as needed.
-     * @throws Exception if the store can not be created or loaded from the given directory.
+     * @throws Exception if the store cannot be created.
      */
     public static ArrayStore createDynamicArrayStore(
             File homeDir,
@@ -348,7 +360,7 @@ public class StoreFactory {
      * @param segmentFactory       - the segment factory
      * @param segmentCompactFactor - the segment load threshold, below which a segment is eligible for compaction
      * @return a dynamic ArrayStore with growing capacity as needed.
-     * @throws Exception if the store can not be created or loaded from the given directory.
+     * @throws Exception if the store cannot be created.
      */
     public static ArrayStore createDynamicArrayStore(
             File homeDir,
@@ -374,7 +386,7 @@ public class StoreFactory {
      * 
      * @param config - DataStore configuration
      * @return A fixed-capacity DataStore.
-     * @throws Exception if the store can not be created or loaded from the given directory.
+     * @throws Exception if the store cannot be created.
      */
     public static StaticDataStore createStaticDataStore(StoreConfig config) throws Exception {
         return new StaticDataStore(config);
@@ -394,7 +406,7 @@ public class StoreFactory {
      * @param segmentFileSizeMB    - the segment size in MB
      * @param segmentFactory       - the segment factory
      * @return A fixed-capacity DataStore.
-     * @throws Exception if the store can not be created or loaded from the given directory.
+     * @throws Exception if the store cannot be created.
      */
     public static StaticDataStore createStaticDataStore(
             File homeDir,
@@ -429,7 +441,7 @@ public class StoreFactory {
      * @param segmentFileSizeMB    - the segment size in MB
      * @param segmentFactory       - the segment factory
      * @return A fixed-capacity DataStore.
-     * @throws Exception if the store can not be created or loaded from the given directory.
+     * @throws Exception if the store cannot be created.
      */
     public static StaticDataStore createStaticDataStore(
             File homeDir,
@@ -461,7 +473,7 @@ public class StoreFactory {
      * @param segmentFactory       - the segment factory
      * @param segmentCompactFactor - the segment load threshold, below which a segment is eligible for compaction
      * @return A fixed-capacity DataStore.
-     * @throws Exception if the store can not be created or loaded from the given directory.
+     * @throws Exception if the store cannot be created.
      */
     public static StaticDataStore createStaticDataStore(
             File homeDir,
@@ -488,7 +500,7 @@ public class StoreFactory {
      * 
      * @param config - DataStore configuration
      * @return A dynamic DataStore with growing capacity as needed.
-     * @throws Exception if the store can not be created or loaded from the given directory.
+     * @throws Exception if the store cannot be created.
      */
     public static DynamicDataStore createDynamicDataStore(StoreConfig config) throws Exception {
         return new DynamicDataStore(config);
@@ -514,7 +526,7 @@ public class StoreFactory {
      * @param segmentFileSizeMB    - the segment size in MB
      * @param segmentFactory       - the segment factory
      * @return A dynamic DataStore with growing capacity as needed.
-     * @throws Exception if the store can not be created or loaded from the given directory.
+     * @throws Exception if the store cannot be created.
      */
     public static DynamicDataStore createDynamicDataStore(
             File homeDir,
@@ -557,7 +569,7 @@ public class StoreFactory {
      * @param segmentFileSizeMB    - the segment size in MB
      * @param segmentFactory       - the segment factory
      * @return A dynamic DataStore with growing capacity as needed.
-     * @throws Exception if the store can not be created or loaded from the given directory.
+     * @throws Exception if the store cannot be created.
      */
     public static DynamicDataStore createDynamicDataStore(
             File homeDir,
@@ -600,7 +612,7 @@ public class StoreFactory {
      * @param segmentFactory       - the segment factory
      * @param segmentCompactFactor - the segment load threshold, below which a segment is eligible for compaction
      * @return A dynamic DataStore with growing capacity as needed.
-     * @throws Exception if the store can not be created or loaded from the given directory.
+     * @throws Exception if the store cannot be created.
      */
     public static DynamicDataStore createDynamicDataStore(
             File homeDir,
@@ -639,7 +651,7 @@ public class StoreFactory {
      * @param segmentCompactFactor - the segment load threshold, below which a segment is eligible for compaction
      * @param hashLoadFactor       - the load factor of the underlying hash table
      * @return A dynamic DataStore with growing capacity as needed.
-     * @throws Exception if the store can not be created or loaded from the given directory.
+     * @throws Exception if the store cannot be created.
      */
     public static DynamicDataStore createDynamicDataStore(
             File homeDir,
@@ -689,7 +701,7 @@ public class StoreFactory {
      * @param storeSegmentFileSizeMB - the store segment size in MB with a recommended range from 8 to 256
      * @param storeSegmentFactory    - the store segment factory, {@link krati.core.segment.WriteBufferSegmentFactory WriteBufferSegmentFactory} recommended
      * @return A dynamic DataStore with growing capacity as needed.
-     * @throws Exception if the store can not be created or loaded from the given directory.
+     * @throws Exception if the store cannot be created.
      */
     public static IndexedDataStore createIndexedDataStore(
             File homeDir,
@@ -739,7 +751,7 @@ public class StoreFactory {
      * @param storeSegmentFileSizeMB - the store segment size in MB with a recommended range from 8 to 256
      * @param storeSegmentFactory    - the store segment factory, {@link krati.core.segment.WriteBufferSegmentFactory WriteBufferSegmentFactory} recommended
      * @return A dynamic DataStore with growing capacity as needed.
-     * @throws Exception if the store can not be created or loaded from the given directory.
+     * @throws Exception if the store cannot be created.
      */
     public static IndexedDataStore createIndexedDataStore(
             File homeDir,
@@ -770,7 +782,7 @@ public class StoreFactory {
      * 
      * @param config - DataSet configuration
      * @return A fixed-capacity DataSet.
-     * @throws Exception if the set can not be created or loaded from the given directory.
+     * @throws Exception if the set cannot be created.
      */
     public static StaticDataSet createStaticDataSet(StoreConfig config) throws Exception {
         return new StaticDataSet(config);
@@ -790,7 +802,7 @@ public class StoreFactory {
      * @param segmentFileSizeMB    - the segment size in MB
      * @param segmentFactory       - the segment factory
      * @return A fixed-capacity DataSet.
-     * @throws Exception if the set can not be created or loaded from the given directory.
+     * @throws Exception if the set cannot be created.
      */
     public static StaticDataSet createStaticDataSet(
             File homeDir,
@@ -825,7 +837,7 @@ public class StoreFactory {
      * @param segmentFileSizeMB    - the segment size in MB
      * @param segmentFactory       - the segment factory
      * @return A fixed-capacity DataSet.
-     * @throws Exception if the set can not be created or loaded from the given directory.
+     * @throws Exception if the set cannot be created.
      */
     public static StaticDataSet createStaticDataSet(
             File homeDir,
@@ -857,7 +869,7 @@ public class StoreFactory {
      * @param segmentFactory       - the segment factory
      * @param segmentCompactFactor - the segment load threshold, below which a segment is eligible for compaction
      * @return A fixed-capacity DataSet.
-     * @throws Exception if the set can not be created or loaded from the given directory.
+     * @throws Exception if the set cannot be created.
      */
     public static StaticDataSet createStaticDataSet(
             File homeDir,
@@ -884,7 +896,7 @@ public class StoreFactory {
      * 
      * @param config - DataSet configuration
      * @return A dynamic DataSet with growing capacity as needed.
-     * @throws Exception if the set can not be created or loaded from the given directory.
+     * @throws Exception if the set cannot be created.
      */
     public static DynamicDataSet createDynamicDataSet(StoreConfig config) throws Exception {
         return new DynamicDataSet(config);
@@ -910,7 +922,7 @@ public class StoreFactory {
      * @param segmentFileSizeMB    - the segment size in MB
      * @param segmentFactory       - the segment factory
      * @return A dynamic DataSet with growing capacity as needed.
-     * @throws Exception if the set can not be created or loaded from the given directory.
+     * @throws Exception if the set cannot be created.
      */
     public static DynamicDataSet createDynamicDataSet(
             File homeDir,
@@ -953,7 +965,7 @@ public class StoreFactory {
      * @param segmentFileSizeMB    - the segment size in MB
      * @param segmentFactory       - the segment factory
      * @return A dynamic DataSet with growing capacity as needed.
-     * @throws Exception if the set can not be created or loaded from the given directory.
+     * @throws Exception if the set cannot be created.
      */
     public static DynamicDataSet createDynamicDataSet(
             File homeDir,
@@ -996,7 +1008,7 @@ public class StoreFactory {
      * @param segmentFactory       - the segment factory
      * @param segmentCompactFactor - the segment load threshold, below which a segment is eligible for compaction
      * @return A dynamic DataSet with growing capacity as needed.
-     * @throws Exception if the set can not be created or loaded from the given directory.
+     * @throws Exception if the set cannot be created.
      */
     public static DynamicDataSet createDynamicDataSet(
             File homeDir,
@@ -1035,7 +1047,7 @@ public class StoreFactory {
      * @param segmentCompactFactor - the segment load threshold, below which a segment is eligible for compaction
      * @param hashLoadFactor       - the load factor of the underlying hash table
      * @return A dynamic DataSet with growing capacity as needed.
-     * @throws Exception if the set can not be created or loaded from the given directory.
+     * @throws Exception if the set cannot be created.
      */
     public static DynamicDataSet createDynamicDataSet(
             File homeDir,

@@ -31,7 +31,7 @@ public abstract class AbstractDataArray implements DataArray, Persistable {
     
     protected AbstractDataArray(StoreConfig config) throws Exception {
         config.validate();
-        config.store();
+        config.save();
         
         this._config = config;
         this._homeDir = _config.getHomeDir();
@@ -86,7 +86,7 @@ public abstract class AbstractDataArray implements DataArray, Persistable {
         _config.setSegmentFileSizeMB(segmentFileSizeMB);
         _config.setSegmentCompactFactor(segmentCompactFactor);
         _config.validate();
-        _config.store();
+        _config.save();
         
         // Create address array 
         _addrArray = createAddressArray(
