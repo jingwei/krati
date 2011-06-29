@@ -15,9 +15,9 @@ import krati.util.LinearHashing;
  */
 public class TestLinearHashing extends TestCase {
     
-    public void testBasic() {
+    public void testBasics() {
         int capacity;
-        int unitCapacity = 1 << DynamicConstants.SUB_ARRAY_BITS;
+        int unitCapacity = DynamicConstants.SUB_ARRAY_SIZE;
         LinearHashing h = new LinearHashing(unitCapacity);
         assertEquals(unitCapacity, h.getUnitCapacity());
         
@@ -114,5 +114,13 @@ public class TestLinearHashing extends TestCase {
             assertEquals(level, h.getLevel());
             assertEquals(h.getUnitCapacity() << level, h.getLevelCapacity());
         }
+    }
+    
+    public void testMaxLevel() {
+        int unitCapacity = DynamicConstants.SUB_ARRAY_SIZE;
+        LinearHashing h = new LinearHashing(unitCapacity);
+        h.reinit(Integer.MAX_VALUE);
+        assertEquals(14, h.getLevel());
+        assertEquals(1 << 30, h.getLevelCapacity());
     }
 }

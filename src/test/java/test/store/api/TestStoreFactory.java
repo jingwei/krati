@@ -1,6 +1,7 @@
 package test.store.api;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -12,10 +13,12 @@ import junit.framework.TestCase;
 import krati.core.StoreConfig;
 import krati.core.StoreFactory;
 import krati.core.StoreParams;
+import krati.core.StorePartitionConfig;
 import krati.core.array.basic.DynamicConstants;
 import krati.core.segment.MappedSegmentFactory;
 import krati.core.segment.SegmentFactory;
 import krati.store.ArrayStore;
+import krati.store.ArrayStorePartition;
 import krati.store.DataStore;
 
 /**
@@ -63,8 +66,99 @@ public class TestStoreFactory extends TestCase {
         assertEquals(15, StoreParams.getDynamicStoreInitialLevel(initialCapacity));
     }
     
+    public void testCreateArrayStorePartition() throws Exception {
+        File homeDir = FileUtils.getTestDir("TestStoreFactory.ArrayStorePartition");
+        int length = 1000 + _rand.nextInt(1000000);
+        int batchSize = StoreParams.BATCH_SIZE_DEFAULT;
+        int numSyncBatches = StoreParams.NUM_SYNC_BATCHES_DEFAULT;
+        int segmentFileSizeMB = StoreParams.SEGMENT_FILE_SIZE_MB_MIN;
+        double segmentCompactFactor = StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT;
+        SegmentFactory segmentFactory = new MappedSegmentFactory();
+        
+        int start = _rand.nextInt(1000000);
+        int count = length;
+        
+        /**
+         * ArrayStorePartition does not change length after the store has been created.
+         */
+        ArrayStorePartition store = StoreFactory.createArrayStorePartition(
+                homeDir,
+                start,
+                count,
+                segmentFileSizeMB,
+                segmentFactory);
+        
+        assertEquals(length, store.length());
+        assertEquals(length, store.capacity());
+        assertEquals(start, store.getIndexStart());
+        store.clear();
+        store.close();
+        
+        // Fail on smaller capacity
+        int smallerCapacity = length - 500;
+        try {
+            store = StoreFactory.createArrayStorePartition(
+                homeDir,
+                start,
+                smallerCapacity,
+                batchSize,
+                numSyncBatches,
+                segmentFileSizeMB,
+                segmentFactory);
+            assertFalse(true);
+        } catch(IOException e) {}
+        
+        // Fail on larger capacity
+        int largerCapacity = length + 500;
+        try {
+            store = StoreFactory.createArrayStorePartition(
+                homeDir,
+                start,
+                largerCapacity,
+                batchSize,
+                numSyncBatches,
+                segmentFileSizeMB,
+                segmentFactory,
+                segmentCompactFactor);
+            assertFalse(true);
+        } catch(IOException e) {}
+        
+        store = StoreFactory.createArrayStorePartition(
+                homeDir,
+                start,
+                count,
+                batchSize,
+                numSyncBatches,
+                segmentFileSizeMB,
+                segmentFactory,
+                segmentCompactFactor);
+        
+        assertEquals(length, store.length());
+        assertEquals(length, store.capacity());
+        assertEquals(start, store.getIndexStart());
+        store.clear();
+        store.close();
+        
+        // Use StoreConfig
+        StorePartitionConfig config = new StorePartitionConfig(homeDir, start, count);
+        config.setBatchSize(batchSize);
+        config.setNumSyncBatches(numSyncBatches);
+        config.setSegmentFileSizeMB(segmentFileSizeMB);
+        config.setSegmentFactory(segmentFactory);
+        config.setSegmentCompactFactor(segmentCompactFactor);
+        store = StoreFactory.createArrayStorePartition(config);
+        
+        assertEquals(length, store.length());
+        assertEquals(length, store.capacity());
+        assertEquals(start, store.getIndexStart());
+        store.clear();
+        store.close();
+        
+        FileUtils.deleteDirectory(homeDir);
+    }
+    
     public void testCreateStaticArrayStore() throws Exception {
-        File homeDir = FileUtils.getTestDir(getClass().getSimpleName());
+        File homeDir = FileUtils.getTestDir("TestStoreFactory.StaticArrayStore");
         int length = 1000 + _rand.nextInt(1000000);
         int batchSize = StoreParams.BATCH_SIZE_DEFAULT;
         int numSyncBatches = StoreParams.NUM_SYNC_BATCHES_DEFAULT;
@@ -139,7 +233,7 @@ public class TestStoreFactory extends TestCase {
     }
     
     public void testCreateDynamicArrayStore() throws Exception {
-        File homeDir = FileUtils.getTestDir(getClass().getSimpleName());
+        File homeDir = FileUtils.getTestDir("TestStoreFactory.DynamicArrayStore");
         int initialLength = DynamicConstants.SUB_ARRAY_SIZE << 2;
         int batchSize = StoreParams.BATCH_SIZE_DEFAULT;
         int numSyncBatches = StoreParams.NUM_SYNC_BATCHES_DEFAULT;
@@ -215,7 +309,7 @@ public class TestStoreFactory extends TestCase {
     }
     
     public void testCreateStaticDataStore() throws Exception {
-        File homeDir = FileUtils.getTestDir(getClass().getSimpleName());
+        File homeDir = FileUtils.getTestDir("TestStoreFactory.StaticDataStore");
         int capacity = 1000 + _rand.nextInt(1000000);
         int batchSize = StoreParams.BATCH_SIZE_DEFAULT;
         int numSyncBatches = StoreParams.NUM_SYNC_BATCHES_DEFAULT;
@@ -276,7 +370,7 @@ public class TestStoreFactory extends TestCase {
     }
     
     public void testCreateDynamicDataStore() throws Exception {
-        File homeDir = FileUtils.getTestDir(getClass().getSimpleName());
+        File homeDir = FileUtils.getTestDir("TestStoreFactory.DynamicDataStore");
         int capacity = DynamicConstants.SUB_ARRAY_SIZE << 2;
         int batchSize = StoreParams.BATCH_SIZE_DEFAULT;
         int numSyncBatches = StoreParams.NUM_SYNC_BATCHES_DEFAULT;

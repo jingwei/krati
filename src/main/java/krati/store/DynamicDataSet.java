@@ -90,7 +90,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
             _log.warn("initLevel reset from " + initLevel + " to " + _maxLevel);
             initLevel = _maxLevel;
         }
-        _addrArray.expandCapacity(_unitCapacity * (1 << initLevel) - 1);
+        _addrArray.expandCapacity((_unitCapacity << initLevel) - 1);
         
         // Create underlying segment manager
         String segmentHome = _homeDir.getCanonicalPath() + File.separator + "segs";
@@ -250,7 +250,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
      * @param homeDir              the home directory of DataSet
      * @param initLevel            the level for initializing DataSet
      * @param batchSize            the number of updates per update batch
-     * @param numSyncBatches       the number of update batches required for updating the underlying address array
+     * @param numSyncBatches       the number of update batches required for updating <code>indexes.dat</code>
      * @param segmentFileSizeMB    the size of segment file in MB
      * @param segmentFactory       the segment factory
      * @throws Exception           if this dynamic data set cannot be created.
@@ -282,7 +282,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
      * @param homeDir              the home directory of DataSet
      * @param initLevel            the level for initializing DataSet
      * @param batchSize            the number of updates per update batch
-     * @param numSyncBatches       the number of update batches required for updating the underlying address array
+     * @param numSyncBatches       the number of update batches required for updating <code>indexes.dat</code>
      * @param segmentFileSizeMB    the size of segment file in MB
      * @param segmentFactory       the segment factory
      * @param hashLoadFactor       the load factor of the underlying address array (hash table)
@@ -314,7 +314,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
      * @param homeDir              the home directory of DataSet
      * @param initLevel            the initial level for creating DataSet
      * @param batchSize            the number of updates per update batch
-     * @param numSyncBatches       the number of update batches required for updating the underlying address array
+     * @param numSyncBatches       the number of update batches required for updating <code>indexes.dat</code>
      * @param segmentFileSizeMB    the size of segment file in MB
      * @param segmentFactory       the segment factory
      * @param segmentCompactFactor the load factor of segment, below which a segment is eligible for compaction
@@ -343,7 +343,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
                 _log.warn("initLevel reset from " + initLevel + " to " + _maxLevel);
                 initLevel = _maxLevel;
             }
-            initialCapacity = DynamicConstants.SUB_ARRAY_SIZE * (1 << initLevel);
+            initialCapacity = DynamicConstants.SUB_ARRAY_SIZE << initLevel;
         } else {
             _log.warn("initLevel ignored: " + initLevel);
         }

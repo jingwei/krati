@@ -7,10 +7,11 @@ import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
+import krati.core.StoreConfig;
+import krati.core.StoreParams;
 import krati.core.segment.SegmentFactory;
 import krati.store.DynamicDataStore;
 import krati.util.FnvHashFunction;
-import krati.util.HashFunction;
 
 /**
  * HashIndex is for serving index lookup from main memory and has the
@@ -21,58 +22,46 @@ import krati.util.HashFunction;
  * 
  * <p>
  * 06/04, 2011 - Added support for Closeable
+ * 06/28, 2011 - Added constructor using StoreConfig
  */
 public class HashIndex implements Index {
     private final static Logger _logger = Logger.getLogger(HashIndex.class);
     private final DynamicDataStore _store;
     
-    public HashIndex(File homeDir, SegmentFactory segmentFactory) throws Exception {
-        this(homeDir,
-             6,     /* initLevel */
-             1000,  /* batchSize */
-             5,     /* numSyncBatches */
-             32,    /* segmentFileSizeMB */
-             segmentFactory,
-             new FnvHashFunction());
+    /**
+     * Creates a new HashIndex instance.
+     * 
+     * @param config - HashIndex configuration
+     * @throws Exception if the index cannot be created.
+     */
+    public HashIndex(StoreConfig config) throws Exception {
+        _store = new DynamicDataStore(config);
+        _logger.info("init " + config.getHomeDir().getPath());
     }
     
-    public HashIndex(File homeDir,
-                     int initLevel,
-                     int batchSize,
-                     int numSyncBatches,
-                     SegmentFactory segmentFactory) throws Exception {
-        this(homeDir,
-             initLevel,
-             batchSize,
-             numSyncBatches,
-             32,    /* segmentFileSizeMB */
-             segmentFactory,
-             new FnvHashFunction());
-    }
-    
-    public HashIndex(File homeDir,
-                     int initLevel,
-                     int batchSize,
-                     int numSyncBatches,
-                     int segmentFileSizeMB,
-                     SegmentFactory segmentFactory) throws Exception {
-        this(homeDir,
-             initLevel,
-             batchSize,
-             numSyncBatches,
-             segmentFileSizeMB,
-             segmentFactory,
-             new FnvHashFunction());
-    }
-    
+    /**
+     * Creates a new HashIndex instance with the following parameters. 
+     * 
+     * <pre>
+     *    segmentCompactFactor : 0.5
+     *    Store hashLoadFactor : 0.75
+     *    Store hashFunction   : krati.util.FnvHashFunction
+     * </pre>
+     * 
+     * @param homeDir           - the home directory of HashIndex
+     * @param initLevel         - the level for initializing HashIndex
+     * @param batchSize         - the number of updates per update batch
+     * @param numSyncBatches    - the number of update batches required for updating <code>indexes.dat</code>
+     * @param segmentFileSizeMB - the size of segment file in MB
+     * @param segmentFactory    - the segment factory
+     * @throws Exception if the index cannot be created.
+     */
     public HashIndex(File homeDir,
                      int initLevel,
                      int batchSize,
                      int numSyncBatches,
                      int segmentFileSizeMB,
-                     SegmentFactory segmentFactory,
-                     HashFunction<byte[]> hashFunction) throws Exception {
-        _logger.info("init " + homeDir.getPath());
+                     SegmentFactory segmentFactory) throws Exception {
         _store = new DynamicDataStore(
                 homeDir,
                 initLevel,
@@ -80,10 +69,10 @@ public class HashIndex implements Index {
                 numSyncBatches,
                 segmentFileSizeMB,
                 segmentFactory,
-                0.5,   /* segmentCompactFactor */
-                0.75,  /* store hashHoadFactor */
-                hashFunction);
-        _logger.info("init done");
+                StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT,
+                StoreParams.HASH_LOAD_FACTOR_DEFAULT,
+                new FnvHashFunction());
+        _logger.info("init " + homeDir.getPath());
     }
     
     @Override

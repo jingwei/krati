@@ -771,7 +771,7 @@ public class StoreFactory {
                 initLevel,
                 indexSegmentFileSizeMB,
                 indexSegmentFactory,
-                initLevel >> 1,
+                initLevel,
                 storeSegmentFileSizeMB,
                 storeSegmentFactory);
     }

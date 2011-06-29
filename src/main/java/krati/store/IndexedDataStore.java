@@ -9,6 +9,8 @@ import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
+import krati.core.StoreConfig;
+import krati.core.StoreParams;
 import krati.core.segment.SegmentFactory;
 import krati.store.DataStore;
 import krati.store.index.HashIndex;
@@ -34,6 +36,27 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
     
     private volatile int _updateCnt;
     
+    /**
+     * Creates a new IndexedDataStore instance of initial capacity of <code>1 << 24</code> (i.e. 16M).
+     * The created store has the following parameters:
+     * 
+     * <pre>
+     *   Index initLevel            : 8  (i.e. initialCapacity : 1 << (8 + 16) = 16M)
+     *   Index segmentFileSizeMB    : 32
+     *   Index segmentCompactFactor : 0.5
+     *   Index hashLoadFactor       : 0.75
+     *   Index hashFunction         : krati.util.FnvHashFunction
+     *   BytesDB initLevel          : 8  (i.e. initialCapacity : 1 << (8 + 16) = 16M)
+     *   BytesDB segmentFileSizeMB  : 256
+     * </pre>
+     * 
+     * @param homeDir                - the home directory of IndexedDataStore
+     * @param batchSize              - the number of updates per update batch
+     * @param numSyncBatches         - the number of update batches required for updating <code>indexes.dat</code>
+     * @param indexSegmentFactory    - the segment factory for HashIndex
+     * @param storeSegmentFactory    - the segment factory for BytesDB
+     * @throws Exception if the store cannot be created.
+     */
     public IndexedDataStore(File homeDir,
                             int batchSize,
                             int numSyncBatches,
@@ -50,6 +73,20 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
              storeSegmentFactory);
     }
     
+    /**
+     * Creates a new IndexedDataStore instance.
+     * 
+     * @param homeDir                - the home directory of IndexedDataStore
+     * @param batchSize              - the number of updates per update batch
+     * @param numSyncBatches         - the number of update batches required for updating <code>indexes.dat</code>
+     * @param indexInitLevel         - the level for initializing HashIndex
+     * @param indexSegmentFileSizeMB - the segment file size in MB for HashIndex
+     * @param indexSegmentFactory    - the segment factory for HashIndex
+     * @param storeInitLevel         - the level for initializing BytesDB
+     * @param storeSegmentFileSizeMB - the segment file size in MB for BytesDB
+     * @param storeSegmentFactory    - the segment factory for BytesDB
+     * @throws Exception if this IndexedDataStore cannot be created.
+     */
     public IndexedDataStore(File homeDir,
                             int batchSize,
                             int numSyncBatches,
@@ -64,12 +101,13 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
         
         // Create bytesDB
         _storeHome = new File(homeDir, "store");
-        _bytesDB = new BytesDB(_storeHome,
-                               storeInitLevel,
-                               batchSize,
-                               numSyncBatches,
-                               storeSegmentFileSizeMB,
-                               storeSegmentFactory);
+        int storeInitialCapacity = StoreParams.getDynamicStoreInitialCapacity(storeInitLevel);
+        StoreConfig config = new StoreConfig(_storeHome, storeInitialCapacity);
+        config.setBatchSize(batchSize);
+        config.setNumSyncBatches(numSyncBatches);
+        config.setSegmentFileSizeMB(storeSegmentFileSizeMB);
+        config.setSegmentFactory(storeSegmentFactory);
+        _bytesDB = new BytesDB(config);
         
         // Create index
         _indexHome = new File(homeDir, "index");

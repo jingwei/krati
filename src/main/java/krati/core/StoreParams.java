@@ -4,6 +4,7 @@ import java.util.Properties;
 
 import krati.core.array.basic.DynamicConstants;
 import krati.core.segment.Segment;
+import krati.util.LinearHashing;
 
 /**
  * StoreParams
@@ -104,12 +105,12 @@ public class StoreParams {
     private double _hashLoadFactor = HASH_LOAD_FACTOR_DEFAULT;
     
     protected StoreParams() {
-        this.setIndexesCached(INDEXES_CACHED_DEFAULT);
         this.setBatchSize(BATCH_SIZE_DEFAULT);
         this.setNumSyncBatches(NUM_SYNC_BATCHES_DEFAULT);
         this.setSegmentFileSizeMB(SEGMENT_FILE_SIZE_MB_DEFAULT);
         this.setSegmentCompactFactor(SEGMENT_COMPACT_FACTOR_DEFAULT);
         this.setHashLoadFactor(HASH_LOAD_FACTOR_DEFAULT);
+        this.setIndexesCached(INDEXES_CACHED_DEFAULT);
     }
     
     public void setBatchSize(int batchSize) {
@@ -227,16 +228,16 @@ public class StoreParams {
     public static final String PARAM_PARTITION_COUNT        = "krati.store.partition.count";
     
     /**
-     * Get the initial level of {@link krati.store.DynamicDataStore DynamicDataStore}, {@link krati.store.DynamicDataSet DynamicDataSet}
-     * and {@link krati.store.IndexedDataStore IndexedDataStore} based an initial store capacity.
-     * The initial <code>level</code> is the minimum integer which satisfies the condition
+     * Gets the initial level of {@link krati.store.DynamicDataStore DynamicDataStore}, {@link krati.store.DynamicDataSet DynamicDataSet}
+     * and {@link krati.store.IndexedDataStore IndexedDataStore} based on the initial store capacity.
+     * The returned initial <code>level</code> is the minimum integer which satisfies the condition
      * <code>initialCapacity</code> less than or equal to <code>2 ^ (16 + level)</code>.
      * 
      * @param initialCapacity - the initial store capacity
      * @return an initial level which satisfies the condition
      * <code>initialCapacity</code> less than or equal to <code>2 ^ (16 + level)</code>.
      */
-    public static int getDynamicStoreInitialLevel(int initialCapacity) {
+    public static final int getDynamicStoreInitialLevel(int initialCapacity) {
         if (initialCapacity <= DynamicConstants.SUB_ARRAY_SIZE) {
             return 0;
         } else {
@@ -244,5 +245,32 @@ public class StoreParams {
             int level = (int)Math.ceil(Math.log(d)/Math.log(2));
             return level;
         }
+    }
+    
+    /**
+     * Gets the initial capacity of {@link krati.store.DynamicDataStore DynamicDataStore}, {@link krati.store.DynamicDataSet DynamicDataSet}
+     * and {@link krati.store.IndexedDataStore IndexedDataStore} based on the <code>initialLevel</code> of store.
+     * The <code>initialLevel</code> determines that the <code>initialCapacity</code> should be
+     * equal to <code>2 ^ (16 + level)</code> and less than <code>Integer.MAX_VALUE</code>.
+     * 
+     * @param initialLevel - the initial level of store, which should be in the range [0, 15).
+     * @return the initial capacity of a dynamic store.
+     */
+    public static final int getDynamicStoreInitialCapacity(int initialLevel) {
+        // Compute maxLevel
+        LinearHashing h = new LinearHashing(DynamicConstants.SUB_ARRAY_SIZE);
+        h.reinit(Integer.MAX_VALUE);
+        int maxLevel = h.getLevel();
+        
+        // Compute initialCapacity
+        int initialCapacity = DynamicConstants.SUB_ARRAY_SIZE;
+        if(initialLevel > 0) {
+            if(initialLevel > maxLevel) {
+                initialLevel = maxLevel;
+            }
+            initialCapacity = DynamicConstants.SUB_ARRAY_SIZE << initialLevel;
+        }
+        
+        return initialCapacity;
     }
 }

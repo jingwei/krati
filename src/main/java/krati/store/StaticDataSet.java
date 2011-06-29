@@ -149,7 +149,7 @@ public class StaticDataSet implements DataSet<byte[]> {
      * @param homeDir            the home directory
      * @param capacity           the capacity of data set
      * @param batchSize          the number of updates per update batch
-     * @param numSyncBatches     the number of update batches required for updating the underlying address array
+     * @param numSyncBatches     the number of update batches required for updating <code>indexes.dat</code>
      * @param segmentFileSizeMB  the size of segment file in MB
      * @param segmentFactory     the segment factory
      * @throws Exception
@@ -180,7 +180,7 @@ public class StaticDataSet implements DataSet<byte[]> {
      * @param homeDir            the home directory
      * @param capacity           the capacity of data set
      * @param batchSize          the number of updates per update batch
-     * @param numSyncBatches     the number of update batches required for updating the underlying address array
+     * @param numSyncBatches     the number of update batches required for updating <code>indexes.dat</code>
      * @param segmentFileSizeMB  the size of segment file in MB
      * @param segmentFactory     the segment factory
      * @param hashFunction       the hash function for mapping values to indexes
@@ -209,7 +209,7 @@ public class StaticDataSet implements DataSet<byte[]> {
      * @param homeDir              the home directory
      * @param capacity             the capacity of data set
      * @param batchSize            the number of updates per update batch
-     * @param numSyncBatches       the number of update batches required for updating the underlying address array
+     * @param numSyncBatches       the number of update batches required for updating <code>indexes.dat</code>
      * @param segmentFileSizeMB    the size of segment file in MB
      * @param segmentFactory       the segment factory
      * @param segmentCompactFactor the load factor of segment, below which a segment is eligible for compaction

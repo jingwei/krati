@@ -108,7 +108,7 @@ public class StaticArrayStorePartition implements ArrayStorePartition {
      * @param idStart              Start of memberId
      * @param idCount              Total of memberId(s)
      * @param batchSize            The number of updates per update batch
-     * @param numSyncBatches       The number of update batches required for updating the underlying address array
+     * @param numSyncBatches       The number of update batches required for updating <code>indexes.dat</code>
      * @param homeDir              Directory where persistent data will be stored
      * @param segmentFactory       Factory for creating Segment(s)
      * @param segmentFileSizeMB    Segment size in MB
@@ -140,7 +140,7 @@ public class StaticArrayStorePartition implements ArrayStorePartition {
      * @param idStart                Start of memberId
      * @param idCount                Total of memberId(s)
      * @param batchSize              The number of updates per update batch
-     * @param numSyncBatches         The number of update batches required for updating the underlying address array
+     * @param numSyncBatches         The number of update batches required for updating <code>indexes.dat</code>
      * @param homeDir                Directory where persistent data will be stored
      * @param segmentFactory         Factory for creating Segment(s)
      * @param segmentFileSizeMB      Segment size in MB

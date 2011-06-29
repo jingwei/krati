@@ -5,7 +5,8 @@ import java.io.IOException;
 import java.util.Random;
 
 import krati.core.StoreFactory;
-import krati.core.segment.SegmentFactory;
+import krati.core.StorePartitionConfig;
+import krati.core.segment.MemorySegmentFactory;
 import krati.store.ArrayStorePartition;
 
 /**
@@ -26,8 +27,11 @@ public class KratiDataPartition {
      * @throws Exception if a partition instance can not be created.
      */
     public KratiDataPartition(File homeDir, int idStart, int idCount) throws Exception {
-        _partition = StoreFactory.createArrayStorePartition(
-                homeDir, idStart, idCount, 64 /* segmentFileSizeMB */, createSegmentFactory());
+        StorePartitionConfig config = new StorePartitionConfig(homeDir, idStart, idCount);
+        config.setSegmentFactory(new MemorySegmentFactory());
+        config.setSegmentFileSizeMB(64);
+        
+        _partition = StoreFactory.createArrayStorePartition(config);
     }
     
     /**
@@ -38,21 +42,8 @@ public class KratiDataPartition {
     }
     
     /**
-     * Creates a segment factory.
-     * Subclasses can override this method to provide a specific segment factory
-     * such as ChannelSegmentFactory, MappedSegmentFactory and WriteBufferSegmentFactory.
-     * 
-     * @return the segment factory. 
-     */
-    protected SegmentFactory createSegmentFactory() {
-        return new krati.core.segment.MemorySegmentFactory();
-    }
-    
-    /**
      * Creates data for a given member.
      * Subclasses can override this method to provide specific data for a given member.
-     * 
-     * @return
      */
     protected byte[] createDataForMember(int memberId) {
         return ("Here is your data for member " + memberId).getBytes();

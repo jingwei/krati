@@ -94,7 +94,7 @@ public final class DynamicDataArray extends AbstractDataArray implements Dynamic
      * 
      * @param initialLength        - the initial array length
      * @param batchSize            - the number of updates per update batch
-     * @param numSyncBatches       - the number of update batches required for updating the underlying address array
+     * @param numSyncBatches       - the number of update batches required for updating <code>indexes.dat</code>
      * @param homeDirectory        - the home directory of data array
      * @param segmentFactory       - the segment factory
      * @param segmentFileSizeMB    - the segment size in MB

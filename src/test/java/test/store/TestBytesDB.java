@@ -7,6 +7,7 @@ import java.util.Random;
 import test.util.FileUtils;
 import test.util.RandomBytes;
 import junit.framework.TestCase;
+import krati.core.StoreConfig;
 import krati.core.segment.MemorySegmentFactory;
 import krati.core.segment.Segment;
 import krati.core.segment.SegmentFactory;
@@ -23,11 +24,20 @@ public class TestBytesDB extends TestCase {
     protected BytesDB _bytesDB;
     protected final Random _rand = new Random();
     
+    protected int getInitialCapacity() {
+        return 10000;
+    }
+    
     @Override
     protected void setUp() {
         try {
             File homeDir = FileUtils.getTestDir(getClass().getSimpleName());
-            _bytesDB = new BytesDB(homeDir, 0, 1000, 5, Segment.minSegmentFileSizeMB, createSegmentFactory());
+            StoreConfig config = new StoreConfig(homeDir, getInitialCapacity());
+            config.setBatchSize(1000);
+            config.setNumSyncBatches(5);
+            config.setSegmentFileSizeMB(Segment.minSegmentFileSizeMB);
+            config.setSegmentFactory(createSegmentFactory());
+            _bytesDB = new BytesDB(config);
         } catch(Exception e) {
             e.printStackTrace();
         }

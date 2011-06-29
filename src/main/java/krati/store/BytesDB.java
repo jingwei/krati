@@ -11,12 +11,11 @@ import org.apache.log4j.Logger;
 
 import krati.Mode;
 import krati.Persistable;
+import krati.core.StoreConfig;
 import krati.core.array.AddressArray;
+import krati.core.array.AddressArrayFactory;
 import krati.core.array.SimpleDataArray;
-import krati.core.array.basic.DynamicConstants;
-import krati.core.array.basic.DynamicLongArray;
 import krati.core.segment.Segment;
-import krati.core.segment.SegmentFactory;
 import krati.core.segment.SegmentManager;
 import krati.io.Closeable;
 import krati.util.DaemonThreadFactory;
@@ -28,14 +27,15 @@ import krati.util.DaemonThreadFactory;
  * 
  * <p>
  * 05/31, 2011 - Added support for Closeable
+ * 06/28, 2011 - Added constructor using StoreConfig
  */
 public final class BytesDB implements Persistable, Closeable {
     final static Logger _logger = Logger.getLogger(BytesDB.class);
     
     // Main internal objects
-    private final File _homeDir;
     private final SimpleDataArray _dataArray;
     private final AddressArray _addrArray;
+    private final StoreConfig _config;
     
     /**
      * The mode can only be <code>Mode.INIT</code>, <code>Mode.OPEN</code> and <code>Mode.CLOSED</code>.
@@ -49,47 +49,29 @@ public final class BytesDB implements Persistable, Closeable {
     private final LinkedBlockingQueue<Integer> _nextIndexQueue = new LinkedBlockingQueue<Integer>(_nextIndexQueueCapacity);
     private ExecutorService _nextIndexExecutor = null;
     
-    public BytesDB(File homeDir,
-                   int initLevel,
-                   int batchSize,
-                   int numSyncBatches,
-                   int segmentFileSizeMB,
-                   SegmentFactory segmentFactory) throws Exception {
-        this(homeDir,
-             initLevel,
-             batchSize,
-             numSyncBatches,
-             segmentFileSizeMB,
-             segmentFactory,
-             Segment.defaultSegmentCompactFactor);
-    }
-    
-    public BytesDB(File homeDir,
-                   int initLevel,
-                   int batchSize,
-                   int numSyncBatches,
-                   int segmentFileSizeMB,
-                   SegmentFactory segmentFactory,
-                   double segmentCompactFactor) throws Exception {
-        _logger.info("init " + homeDir.getAbsolutePath());
+    public BytesDB(StoreConfig config) throws Exception {
+        config.validate();
+        config.save();
         
-        // Set home directory
-        this._homeDir = homeDir;
+        // Set StoreConfig
+        this._config = config;
         
         // Create address array
-        _addrArray = createAddressArray(batchSize, numSyncBatches, homeDir);
-        if(initLevel > 0) {
-            long capacity = DynamicConstants.SUB_ARRAY_SIZE * (1L << initLevel);
-            if(capacity > Integer.MAX_VALUE) capacity = Integer.MAX_VALUE;
-            _addrArray.expandCapacity((int)capacity - 1); 
-        }
+        this._addrArray = createAddressArray(
+                _config.getInitialCapacity(),
+                _config.getBatchSize(),
+                _config.getNumSyncBatches(),
+                _config.isIndexesCached());
         
         // Create segment manager
-        String segmentHomePath = new File(homeDir, "segs").getAbsolutePath();
-        SegmentManager segManager = SegmentManager.getInstance(segmentHomePath, segmentFactory, segmentFileSizeMB);
+        String segmentHomePath = new File(_config.getHomeDir(), "segs").getAbsolutePath();
+        SegmentManager segManager = SegmentManager.getInstance(
+                segmentHomePath,
+                _config.getSegmentFactory(),
+                _config.getSegmentFileSizeMB());
         
         // Create simple data array
-        this._dataArray = new SimpleDataArray(_addrArray, segManager, segmentCompactFactor);
+        this._dataArray = new SimpleDataArray(_addrArray, segManager, _config.getSegmentCompactFactor());
         
         // Scan to count nextIndex
         this.initNextIndexCount();
@@ -104,14 +86,18 @@ public final class BytesDB implements Persistable, Closeable {
         _logger.info("mode=" + _mode);
     }
     
-    protected AddressArray createAddressArray(int batchSize,
-                                              int numSyncBatches,
-                                              File homeDirectory) throws Exception {
-        return new DynamicLongArray(batchSize, numSyncBatches, homeDirectory);
+    private AddressArray createAddressArray(int length,
+                                            int batchSize,
+                                            int numSyncBatches,
+                                            boolean indexesCached) throws Exception {
+        AddressArrayFactory factory = new AddressArrayFactory(indexesCached);
+        AddressArray addrArray = factory.createDynamicAddressArray(getHomeDir(), batchSize, numSyncBatches);
+        addrArray.expandCapacity(length - 1);
+        return addrArray;
     }
     
     public final File getHomeDir() {
-        return _homeDir;
+        return _config.getHomeDir();
     }
     
     public final int capacity() {

@@ -209,6 +209,14 @@ public abstract class AbstractTestDynamicAddressArray extends TestCase {
         _array.sync();
         assertEquals(_array.getLWMark(), _array.getHWMark());
         
+        // Test hwMark upon re-open and re-create
+        endOfPeriod = _array.getHWMark();
+        _array.close();
+        _array.open();
+
+        assertEquals(endOfPeriod, _array.getLWMark());
+        assertEquals(endOfPeriod, _array.getHWMark());
+        
         AddressArray array2 = createAddressArray(getHomeDir());
         assertEquals(_array.getLWMark(), array2.getLWMark());
         assertEquals(_array.getHWMark(), array2.getHWMark());

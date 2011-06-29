@@ -43,7 +43,7 @@ public final class LinearHashing {
             }
             
             _split = (unitCount - (1 << _level) - 1) * _unitCapacity;
-            _levelCapacity = _unitCapacity * (1 << _level);
+            _levelCapacity = _unitCapacity << _level;
         }
     }
     
