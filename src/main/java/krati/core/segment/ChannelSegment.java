@@ -256,6 +256,7 @@ public class ChannelSegment extends AbstractSegment {
 
     @Override
     public synchronized void force() throws IOException {
+        if (_channel == null) return;
         if (getMode() == Segment.Mode.READ_WRITE) {
             long currentTime = System.currentTimeMillis();
             ByteBuffer bb = ByteBuffer.wrap(new byte[8]);

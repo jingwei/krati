@@ -253,6 +253,7 @@ public class MemorySegment extends AbstractSegment {
 
     @Override
     public synchronized void force() throws IOException {
+        if (_channel == null) return;
         if (getMode() == Segment.Mode.READ_WRITE) {
             int offset = (int) _channel.position();
             int length = _buffer.position() - offset;
