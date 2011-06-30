@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
+import krati.io.Serializer;
 import krati.store.DataStore;
 import krati.store.StoreClosedException;
 
@@ -28,8 +29,8 @@ import krati.store.StoreClosedException;
  */
 public class SerializableObjectStore<K, V> implements ObjectStore<K, V> {
     protected final DataStore<byte[], byte[]> _store;
-    protected final ObjectSerializer<K> _keySerializer;
-    protected final ObjectSerializer<V> _valSerializer;
+    protected final Serializer<K> _keySerializer;
+    protected final Serializer<V> _valSerializer;
 
     /**
      * Constructs a key-value store for serializable objects.
@@ -41,7 +42,7 @@ public class SerializableObjectStore<K, V> implements ObjectStore<K, V> {
      * @param valSerializer
      *            the object serializer to serialize/de-serialize values.
      */
-    public SerializableObjectStore(DataStore<byte[], byte[]> store, ObjectSerializer<K> keySerializer, ObjectSerializer<V> valSerializer) {
+    public SerializableObjectStore(DataStore<byte[], byte[]> store, Serializer<K> keySerializer, Serializer<V> valSerializer) {
         this._store = store;
         this._keySerializer = keySerializer;
         this._valSerializer = valSerializer;
@@ -57,7 +58,7 @@ public class SerializableObjectStore<K, V> implements ObjectStore<K, V> {
     /**
      * @return the key serializer.
      */
-    public ObjectSerializer<K> getKeySerializer() {
+    public Serializer<K> getKeySerializer() {
         return _keySerializer;
     }
 
@@ -69,7 +70,7 @@ public class SerializableObjectStore<K, V> implements ObjectStore<K, V> {
     /**
      * @return the value serializer.
      */
-    public ObjectSerializer<V> getValueSerializer() {
+    public Serializer<V> getValueSerializer() {
         return _valSerializer;
     }
 
@@ -82,7 +83,7 @@ public class SerializableObjectStore<K, V> implements ObjectStore<K, V> {
      */
     @Override
     public V get(K key) {
-        return getValueSerializer().construct(_store.get(getKeySerializer().serialize(key)));
+        return getValueSerializer().deserialize(_store.get(getKeySerializer().serialize(key)));
     }
 
     /**

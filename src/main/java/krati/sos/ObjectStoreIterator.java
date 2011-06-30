@@ -4,6 +4,8 @@ import java.util.AbstractMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
+import krati.io.Serializer;
+
 /**
  * ObjectStoreIterator
  * 
@@ -12,12 +14,12 @@ import java.util.Map.Entry;
  */
 public class ObjectStoreIterator<K, V> implements Iterator<Entry<K, V>>{
     private final Iterator<Entry<byte[], byte[]>> _rawIterator;
-    private final ObjectSerializer<K> _keySerializer;
-    private final ObjectSerializer<V> _valSerializer;
+    private final Serializer<K> _keySerializer;
+    private final Serializer<V> _valSerializer;
     
     public ObjectStoreIterator(Iterator<Entry<byte[], byte[]>> rawKeyIterator,
-                               ObjectSerializer<K> keySerializer,
-                               ObjectSerializer<V> valSerializer) {
+                               Serializer<K> keySerializer,
+                               Serializer<V> valSerializer) {
         this._rawIterator = rawKeyIterator;
         this._keySerializer = keySerializer;
         this._valSerializer = valSerializer;
@@ -33,7 +35,7 @@ public class ObjectStoreIterator<K, V> implements Iterator<Entry<K, V>>{
         Entry<byte[], byte[]> entry = _rawIterator.next();
         return (entry == null) ? null :
             new AbstractMap.SimpleEntry<K, V>(
-                _keySerializer.construct(entry.getKey()), _valSerializer.construct(entry.getValue()));
+                _keySerializer.deserialize(entry.getKey()), _valSerializer.deserialize(entry.getValue()));
     }
     
     @Override

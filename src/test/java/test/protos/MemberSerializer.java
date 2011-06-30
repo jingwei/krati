@@ -1,14 +1,14 @@
 package test.protos;
 
-import krati.sos.ObjectSerializer;
+import krati.io.Serializer;
 import test.protos.MemberProtos.Member;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
-public class MemberSerializer implements ObjectSerializer<MemberProtos.Member> {
+public class MemberSerializer implements Serializer<MemberProtos.Member> {
     
     @Override
-    public Member construct(byte[] binary) {
+    public Member deserialize(byte[] binary) {
         try {
             return Member.parseFrom(binary);
         } catch (InvalidProtocolBufferException e) {

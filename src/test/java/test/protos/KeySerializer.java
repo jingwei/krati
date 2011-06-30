@@ -1,10 +1,10 @@
 package test.protos;
 
-import krati.sos.ObjectSerializer;
+import krati.io.Serializer;
 
-public class KeySerializer implements ObjectSerializer<String> {
+public class KeySerializer implements Serializer<String> {
     @Override
-    public String construct(byte[] binary) {
+    public String deserialize(byte[] binary) {
         return new String(binary);
     }
 

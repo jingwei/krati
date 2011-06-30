@@ -2,6 +2,8 @@ package krati.sos;
 
 import java.util.Iterator;
 
+import krati.io.Serializer;
+
 /**
  * ObjectStoreKeyIterator
  * 
@@ -10,9 +12,9 @@ import java.util.Iterator;
  */
 public class ObjectStoreKeyIterator<K> implements Iterator<K> {
     private final Iterator<byte[]> _rawKeyIterator;
-    private final ObjectSerializer<K> _keySerializer;
+    private final Serializer<K> _keySerializer;
     
-    public ObjectStoreKeyIterator(Iterator<byte[]> rawKeyIterator, ObjectSerializer<K> keySerializer) {
+    public ObjectStoreKeyIterator(Iterator<byte[]> rawKeyIterator, Serializer<K> keySerializer) {
         this._rawKeyIterator = rawKeyIterator;
         this._keySerializer = keySerializer;
     }
@@ -25,7 +27,7 @@ public class ObjectStoreKeyIterator<K> implements Iterator<K> {
     @Override
     public K next() {
         byte[] rawKey = _rawKeyIterator.next();
-        return (rawKey == null) ? null : _keySerializer.construct(rawKey);
+        return (rawKey == null) ? null : _keySerializer.deserialize(rawKey);
     }
     
     @Override

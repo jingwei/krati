@@ -3,6 +3,7 @@ package krati.sos;
 import java.io.IOException;
 
 import krati.array.DynamicArray;
+import krati.io.Serializer;
 import krati.store.ArrayStorePartition;
 
 /**
@@ -22,7 +23,7 @@ import krati.store.ArrayStorePartition;
  */
 public class SerializableObjectPartition<T> implements ObjectPartition<T> {
     protected final ArrayStorePartition _partition;
-    protected final ObjectSerializer<T> _serializer;
+    protected final Serializer<T> _serializer;
 
     /**
      * Constructs an array-like object partition for serializable objects.
@@ -32,7 +33,7 @@ public class SerializableObjectPartition<T> implements ObjectPartition<T> {
      * @param serializer
      *            the object serializer to serialize/de-serialize objects.
      */
-    public SerializableObjectPartition(ArrayStorePartition partition, ObjectSerializer<T> serializer) {
+    public SerializableObjectPartition(ArrayStorePartition partition, Serializer<T> serializer) {
         this._partition = partition;
         this._serializer = serializer;
     }
@@ -47,7 +48,7 @@ public class SerializableObjectPartition<T> implements ObjectPartition<T> {
     /**
      * @return the object serializer.
      */
-    public ObjectSerializer<T> getSerializer() {
+    public Serializer<T> getSerializer() {
         return _serializer;
     }
 
@@ -76,7 +77,7 @@ public class SerializableObjectPartition<T> implements ObjectPartition<T> {
      */
     @Override
     public T get(int objectId) {
-        return getSerializer().construct(_partition.get(objectId));
+        return getSerializer().deserialize(_partition.get(objectId));
     }
 
     /**
