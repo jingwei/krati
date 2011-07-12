@@ -62,4 +62,9 @@ public class Range implements Serializable, Partition<Integer> {
     public boolean contains(Integer key) {
         return key == null ? false : has(key);
     }
+    
+    @Override
+    public int capacity() {
+        return count;
+    }
 }

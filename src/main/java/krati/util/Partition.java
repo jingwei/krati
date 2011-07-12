@@ -17,4 +17,9 @@ public interface Partition<K> {
      * @return <code>true</code> if this Partition contains the key.
      */
     public boolean contains(K key);
+    
+    /**
+     * @return the capacity of this Partition.
+     */
+    public int capacity();
 }
