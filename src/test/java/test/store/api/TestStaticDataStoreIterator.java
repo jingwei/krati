@@ -7,14 +7,14 @@ import krati.store.DataStore;
 import krati.store.StaticDataStore;
 
 /**
- * TestStaticDataStoreApi
+ * TestStaticDataStoreIterator
  * 
- * @author jwu
- * 06/05, 2011
- * 
+ * @author  jwu
+ * @since   0.4.2
+ * @version 0.4.2
  */
-public class TestStaticDataStoreApi extends AbstractTestDataStoreApi {
-
+public class TestStaticDataStoreIterator extends AbstractTestDataStoreIterator {
+    
     @Override
     protected DataStore<byte[], byte[]> createStore(File homeDir) throws Exception {
         return new StaticDataStore(

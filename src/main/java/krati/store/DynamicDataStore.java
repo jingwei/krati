@@ -3,7 +3,6 @@ package krati.store;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -23,6 +22,7 @@ import krati.store.DataStore;
 import krati.store.DataStoreHandler;
 import krati.util.FnvHashFunction;
 import krati.util.HashFunction;
+import krati.util.IndexedIterator;
 import krati.util.LinearHashing;
 
 /**
@@ -743,7 +743,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
     }
     
     @Override
-    public Iterator<byte[]> keyIterator() {
+    public IndexedIterator<byte[]> keyIterator() {
         if(isOpen()) {
             return new DataStoreKeyIterator(_dataArray, _dataHandler);
         }
@@ -752,7 +752,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
     }
     
     @Override
-    public Iterator<Entry<byte[], byte[]>> iterator() {
+    public IndexedIterator<Entry<byte[], byte[]>> iterator() {
         if(isOpen()) {
             return new DataStoreIterator(_dataArray, _dataHandler);
         }

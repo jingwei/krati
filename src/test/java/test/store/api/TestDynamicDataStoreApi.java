@@ -3,7 +3,6 @@ package test.store.api;
 import java.io.File;
 
 import krati.core.segment.MappedSegmentFactory;
-import krati.core.segment.Segment;
 import krati.store.DataStore;
 import krati.store.DynamicDataStore;
 
@@ -23,7 +22,7 @@ public class TestDynamicDataStoreApi extends AbstractTestDataStoreApi {
                 1,     /* initLevel */
                 100,   /* batchSize */
                 5,     /* numSyncBatches */
-                Segment.defaultSegmentFileSizeMB,
+                32,    /* segmentFileSizeMB */
                 new MappedSegmentFactory());
     }
 }

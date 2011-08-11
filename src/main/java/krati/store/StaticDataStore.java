@@ -2,7 +2,6 @@ package krati.store;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
@@ -18,6 +17,7 @@ import krati.store.DataStore;
 import krati.store.DataStoreHandler;
 import krati.util.FnvHashFunction;
 import krati.util.HashFunction;
+import krati.util.IndexedIterator;
 
 /**
  * A simple implementation of key value store. The store has a fixed capacity.
@@ -385,7 +385,7 @@ public class StaticDataStore implements DataStore<byte[], byte[]> {
     }
     
     @Override
-    public Iterator<byte[]> keyIterator() {
+    public IndexedIterator<byte[]> keyIterator() {
         if(isOpen()) {
             return new DataStoreKeyIterator(_dataArray, _dataHandler);
         }
@@ -394,7 +394,7 @@ public class StaticDataStore implements DataStore<byte[], byte[]> {
     }
     
     @Override
-    public Iterator<Entry<byte[], byte[]>> iterator() {
+    public IndexedIterator<Entry<byte[], byte[]>> iterator() {
         if(isOpen()) {
             return new DataStoreIterator(_dataArray, _dataHandler);
         }

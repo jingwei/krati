@@ -1,10 +1,10 @@
 package krati.store;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.Map.Entry;
 
 import krati.io.Closeable;
+import krati.util.IndexedIterator;
 
 /**
  * Key Value Store.
@@ -36,5 +36,8 @@ public interface DataStore<K, V> extends Iterable<Entry<K, V>>, Closeable {
     
     public void clear() throws IOException;
     
-    public Iterator<K> keyIterator();
+    public IndexedIterator<K> keyIterator();
+    
+    @Override
+    public IndexedIterator<Entry<K, V>> iterator();
 }

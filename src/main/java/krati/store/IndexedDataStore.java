@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.AbstractMap;
-import java.util.Iterator;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
@@ -15,6 +14,7 @@ import krati.core.segment.SegmentFactory;
 import krati.store.DataStore;
 import krati.store.index.HashIndex;
 import krati.store.index.Index;
+import krati.util.IndexedIterator;
 
 /**
  * IndexedDataStore.
@@ -268,7 +268,7 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
     }
 
     @Override
-    public Iterator<byte[]> keyIterator() {
+    public IndexedIterator<byte[]> keyIterator() {
         if(isOpen()) {
             return _index.keyIterator();
         }
@@ -277,7 +277,7 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
     }
 
     @Override
-    public Iterator<Entry<byte[], byte[]>> iterator() {
+    public IndexedIterator<Entry<byte[], byte[]>> iterator() {
         if(isOpen()) {
             return new IndexedDataStoreIterator(_index.iterator());
         }
@@ -285,10 +285,10 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
         throw new StoreClosedException();
     }
     
-    private class IndexedDataStoreIterator implements Iterator<Entry<byte[], byte[]>> {
-        final Iterator<Entry<byte[], byte[]>> _indexIter;
+    private class IndexedDataStoreIterator implements IndexedIterator<Entry<byte[], byte[]>> {
+        final IndexedIterator<Entry<byte[], byte[]>> _indexIter;
         
-        IndexedDataStoreIterator(Iterator<Entry<byte[], byte[]>> indexIter) {
+        IndexedDataStoreIterator(IndexedIterator<Entry<byte[], byte[]>> indexIter) {
             this._indexIter = indexIter;
         }
 
@@ -315,6 +315,16 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
         @Override
         public void remove() {
             throw new UnsupportedOperationException();
+        }
+        
+        @Override
+        public int index() {
+            return _indexIter.index();
+        }
+        
+        @Override
+        public void reset(int indexStart) {
+            _indexIter.reset(indexStart);
         }
     }
     

@@ -1,10 +1,10 @@
 package krati.store.index;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.Map.Entry;
 
 import krati.io.Closeable;
+import krati.util.IndexedIterator;
 
 /**
  * Index.
@@ -22,9 +22,10 @@ public interface Index extends Iterable<Entry<byte[], byte[]>>, Closeable {
     
     public void update(byte[] keyBytes, byte[] metaBytes) throws Exception;
     
-    public Iterator<byte[]> keyIterator();
+    public IndexedIterator<byte[]> keyIterator();
     
-    public Iterator<Entry<byte[], byte[]>> iterator();
+    @Override
+    public IndexedIterator<Entry<byte[], byte[]>> iterator();
     
     public void persist() throws IOException;
     

@@ -2,7 +2,6 @@ package krati.store.index;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
@@ -12,6 +11,7 @@ import krati.core.StoreParams;
 import krati.core.segment.SegmentFactory;
 import krati.store.DynamicDataStore;
 import krati.util.FnvHashFunction;
+import krati.util.IndexedIterator;
 
 /**
  * HashIndex is for serving index lookup from main memory and has the
@@ -106,12 +106,12 @@ public class HashIndex implements Index {
     }
     
     @Override
-    public Iterator<byte[]> keyIterator() {
+    public IndexedIterator<byte[]> keyIterator() {
         return _store.keyIterator();
     }
     
     @Override
-    public Iterator<Entry<byte[], byte[]>> iterator() {
+    public IndexedIterator<Entry<byte[], byte[]>> iterator() {
         return _store.iterator();
     }
     

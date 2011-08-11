@@ -1,21 +1,25 @@
 package krati.store;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Map.Entry;
 
 import krati.array.DataArray;
+import krati.util.IndexedIterator;
 
 /**
  * DataStoreIterator
  * 
- * @author jwu
+ * @author  jwu
+ * @since   0.3.5
+ * @version 0.4.2
  * 
+ * <p>
+ * 08/10, 2011 - Implemented IndexedIterator
  */
-final class DataStoreIterator implements Iterator<Entry<byte[], byte[]>> {
-    private final ArrayList<Entry<byte[], byte[]>> _keyBucket;
+final class DataStoreIterator implements IndexedIterator<Entry<byte[], byte[]>> {
+    private final ArrayList<Entry<byte[], byte[]>> _bucket;
     private final DataStoreHandler _dataHandler;
     private final DataArray _dataArray;
     private int _index = 0;
@@ -23,28 +27,28 @@ final class DataStoreIterator implements Iterator<Entry<byte[], byte[]>> {
     DataStoreIterator(DataArray dataArray, DataStoreHandler dataHandler) {
         this._dataArray = dataArray;
         this._dataHandler = dataHandler;
-        this._keyBucket = new ArrayList<Entry<byte[], byte[]>>(20);
+        this._bucket = new ArrayList<Entry<byte[], byte[]>>(20);
         this.findNext();
     }
     
     @Override
     public boolean hasNext() {
-        if(_keyBucket.size() == 0) {
+        if(_bucket.size() == 0) {
             findNext();
         }
-        return _keyBucket.size() > 0;
+        return _bucket.size() > 0;
     }
     
     @Override
     public Entry<byte[], byte[]> next() {
-        int size = _keyBucket.size();
+        int size = _bucket.size();
         if (size == 0) {
             findNext();
-            size = _keyBucket.size();
+            size = _bucket.size();
         }
         
         if(size > 0) {
-            return _keyBucket.remove(--size);
+            return _bucket.remove(--size);
         }
         
         throw new NoSuchElementException();
@@ -62,10 +66,22 @@ final class DataStoreIterator implements Iterator<Entry<byte[], byte[]>> {
             if(data != null) {
                 List<Entry<byte[], byte[]>> entries = _dataHandler.extractEntries(data);
                 if(entries != null && entries.size() > 0) {
-                    _keyBucket.addAll(entries);
+                    _bucket.addAll(entries);
                     break;
                 }
             }
         }
+    }
+    
+    @Override
+    public int index() {
+        return _index;
+    }
+    
+    @Override
+    public void reset(int indexStart) {
+        _index = Math.max(0, indexStart);
+        _bucket.clear();
+        findNext();
     }
 }

@@ -2,19 +2,23 @@ package krati.store;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import krati.array.DataArray;
+import krati.util.IndexedIterator;
 
 /**
  * DataStoreKeyIterator
  * 
- * @author jwu
+ * @author  jwu
+ * @since   0.3.5
+ * @version 0.4.2
  * 
+ * <p>
+ * 08/10, 2011 - Implemented IndexedIterator
  */
-final class DataStoreKeyIterator implements Iterator<byte[]> {
-    private final ArrayList<byte[]> _keyBucket;
+final class DataStoreKeyIterator implements IndexedIterator<byte[]> {
+    private final ArrayList<byte[]> _bucket;
     private final DataStoreHandler _dataHandler;
     private final DataArray _dataArray;
     private int _index = 0;
@@ -22,28 +26,28 @@ final class DataStoreKeyIterator implements Iterator<byte[]> {
     DataStoreKeyIterator(DataArray dataArray, DataStoreHandler dataHandler) {
         this._dataArray = dataArray;
         this._dataHandler = dataHandler;
-        this._keyBucket = new ArrayList<byte[]>(20);
+        this._bucket = new ArrayList<byte[]>(20);
         this.findNext();
     }
     
     @Override
     public boolean hasNext() {
-        if(_keyBucket.size() == 0) {
+        if(_bucket.size() == 0) {
             findNext();
         }
-        return _keyBucket.size() > 0;
+        return _bucket.size() > 0;
     }
     
     @Override
     public byte[] next() {
-        int size = _keyBucket.size();
+        int size = _bucket.size();
         if (size == 0) {
             findNext();
-            size = _keyBucket.size();
+            size = _bucket.size();
         }
         
         if(size > 0) {
-            return _keyBucket.remove(--size);
+            return _bucket.remove(--size);
         }
         
         throw new NoSuchElementException();
@@ -61,10 +65,22 @@ final class DataStoreKeyIterator implements Iterator<byte[]> {
             if(data != null) {
                 List<byte[]> keys = _dataHandler.extractKeys(data);
                 if(keys != null && keys.size() > 0) {
-                    _keyBucket.addAll(keys);
+                    _bucket.addAll(keys);
                     break;
                 }
             }
         }
+    }
+    
+    @Override
+    public int index() {
+        return _index;
+    }
+    
+    @Override
+    public void reset(int indexStart) {
+        _index = Math.max(0, indexStart);
+        _bucket.clear();
+        findNext();
     }
 }

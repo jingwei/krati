@@ -1,12 +1,12 @@
 package krati.sos;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.Map.Entry;
 
 import krati.io.Serializer;
 import krati.store.DataStore;
 import krati.store.StoreClosedException;
+import krati.util.IndexedIterator;
 
 /**
  * A key-value store for serializable objects. The store requires that both key and value be serializable objects.
@@ -163,7 +163,7 @@ public class SerializableObjectStore<K, V> implements ObjectStore<K, V> {
     }
 
     @Override
-    public Iterator<K> keyIterator() {
+    public IndexedIterator<K> keyIterator() {
         if(_store.isOpen()) {
             return new ObjectStoreKeyIterator<K>(_store.keyIterator(), _keySerializer);
         }
@@ -172,7 +172,7 @@ public class SerializableObjectStore<K, V> implements ObjectStore<K, V> {
     }
 
     @Override
-    public Iterator<Entry<K, V>> iterator() {
+    public IndexedIterator<Entry<K, V>> iterator() {
         if(_store.isOpen()) {
             return new ObjectStoreIterator<K, V>(_store.iterator(), _keySerializer, _valSerializer);
         }
