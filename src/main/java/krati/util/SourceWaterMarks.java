@@ -17,8 +17,11 @@ import org.apache.log4j.Logger;
  * SourceWaterMarks (not thread safe)
  * 
  * @author jwu
- * 03/04, 2011
+ * @since 03/04, 2011
+ * @version 0.4.2
  * 
+ * <p>
+ * 08/18, 2011 - Added syncWaterMarks(String source)
  */
 public class SourceWaterMarks {
     private File file;
@@ -159,19 +162,28 @@ public class SourceWaterMarks {
 
     public boolean syncWaterMarks(String source, long lwmScn, long hwmScn) {
         setWaterMarks(source, lwmScn, hwmScn);
-        return syncWaterMarks();
+        return syncInternal();
+    }
+
+    public boolean syncWaterMarks(String source) {
+        setLWMScn(source, getHWMScn(source));
+        return syncInternal();
     }
 
     public boolean syncWaterMarks() {
-        boolean ret = true;
-        PrintWriter out = null;
-
         // Sync up low water marks
         for (String source : sourceWaterMarkMap.keySet()) {
             WaterMarkEntry wmEntry = sourceWaterMarkMap.get(source);
             wmEntry.setLWMScn(wmEntry.getHWMScn());
         }
+        
+        return syncInternal();
+    }
 
+    protected boolean syncInternal() {
+        boolean ret = true;
+        PrintWriter out = null;
+        
         // Save source water marks
         try {
             // Backup the original file
@@ -205,7 +217,7 @@ public class SourceWaterMarks {
 
     public void clear() {
         sourceWaterMarkMap.clear();
-        syncWaterMarks();
+        syncInternal();
         if (fileOriginal != null && fileOriginal.exists()) {
             fileOriginal.delete();
         }
