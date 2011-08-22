@@ -22,8 +22,9 @@ import krati.util.IndexedIterator;
  * @author jwu
  * 
  * <p>
- * 06/04, 2011 - Added support for Closeable
- * 06/04, 2011 - Added getHomeDir
+ * 06/04, 2011 - Added support for Closeable <br/>
+ * 06/04, 2011 - Added method getHomeDir() <br/>
+ * 08/21, 2011 - Added constructors using initialCapacity <br/> 
  */
 public class IndexedDataStore implements DataStore<byte[], byte[]> {
     private final static Logger _logger = Logger.getLogger(IndexedDataStore.class);
@@ -35,6 +36,79 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
     private final int _batchSize;
     
     private volatile int _updateCnt;
+    
+    /**
+     * Creates a new IndexedDataStore instance of initial capacity of <code>1 << 24</code> (i.e. 16M).
+     * The created store has the following parameters:
+     * 
+     * <pre>
+     *   Index segmentFileSizeMB    : 32
+     *   Index segmentCompactFactor : 0.5
+     *   Index hashLoadFactor       : 0.75
+     *   Index hashFunction         : krati.util.FnvHashFunction
+     *   BytesDB segmentFileSizeMB  : 256
+     * </pre>
+     * 
+     * @param homeDir                - the home directory of IndexedDataStore
+     * @param initialCapacity        - the initial store capacity, which should not be changed after the store is created
+     * @param batchSize              - the number of updates per update batch
+     * @param numSyncBatches         - the number of update batches required for updating <code>indexes.dat</code>
+     * @param indexSegmentFactory    - the segment factory for HashIndex
+     * @param storeSegmentFactory    - the segment factory for BytesDB
+     * 
+     * @throws Exception if the store cannot be created.
+     */
+    public IndexedDataStore(File homeDir,
+                            int initialCapacity,
+                            int batchSize, int numSyncBatches,
+                            SegmentFactory indexSegmentFactory,
+                            SegmentFactory storeSegmentFactory) throws Exception {
+        this(homeDir,
+             initialCapacity,
+             batchSize,
+             numSyncBatches,
+             32, // indexSegmentFileSizeMB
+             indexSegmentFactory,
+             256, // storeSegmentFileSizeMB
+             storeSegmentFactory);
+    }
+    
+    /**
+     * Creates a new IndexedDataStore instance of initial capacity of <code>1 << 24</code> (i.e. 16M).
+     * The created store has the following parameters:
+     * 
+     * <pre>
+     *   Index segmentCompactFactor : 0.5
+     *   Index hashLoadFactor       : 0.75
+     *   Index hashFunction         : krati.util.FnvHashFunction
+     * </pre>
+     * 
+     * @param homeDir                - the home directory of IndexedDataStore
+     * @param initialCapacity        - the initial store capacity, which should not be changed after the store is created
+     * @param batchSize              - the number of updates per update batch
+     * @param numSyncBatches         - the number of update batches required for updating <code>indexes.dat</code>
+     * @param indexSegmentFileSizeMB - the size of index segment in MB 
+     * @param indexSegmentFactory    - the segment factory for HashIndex
+     * @param storeSegmentFileSizeMB - the size of store segment in MB
+     * @param storeSegmentFactory    - the segment factory for BytesDB
+     * 
+     * @throws Exception if the store cannot be created.
+     */
+    public IndexedDataStore(File homeDir,
+                            int initialCapacity,
+                            int batchSize, int numSyncBatches,
+                            int indexSegmentFileSizeMB, SegmentFactory indexSegmentFactory,
+                            int storeSegmentFileSizeMB, SegmentFactory storeSegmentFactory) throws Exception {
+        this(homeDir,
+             batchSize,
+             numSyncBatches,
+             StoreParams.getDynamicStoreInitialLevel(initialCapacity),
+             indexSegmentFileSizeMB,
+             indexSegmentFactory,
+             StoreParams.getDynamicStoreInitialLevel(initialCapacity),
+             storeSegmentFileSizeMB,
+             storeSegmentFactory);
+    }
     
     /**
      * Creates a new IndexedDataStore instance of initial capacity of <code>1 << 24</code> (i.e. 16M).
@@ -101,22 +175,25 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
         
         // Create bytesDB
         _storeHome = new File(homeDir, "store");
+        
         int storeInitialCapacity = StoreParams.getDynamicStoreInitialCapacity(storeInitLevel);
-        StoreConfig config = new StoreConfig(_storeHome, storeInitialCapacity);
-        config.setBatchSize(batchSize);
-        config.setNumSyncBatches(numSyncBatches);
-        config.setSegmentFileSizeMB(storeSegmentFileSizeMB);
-        config.setSegmentFactory(storeSegmentFactory);
-        _bytesDB = new BytesDB(config);
+        StoreConfig storeConfig = new StoreConfig(_storeHome, storeInitialCapacity);
+        storeConfig.setBatchSize(batchSize);
+        storeConfig.setNumSyncBatches(numSyncBatches);
+        storeConfig.setSegmentFileSizeMB(storeSegmentFileSizeMB);
+        storeConfig.setSegmentFactory(storeSegmentFactory);
+        _bytesDB = new BytesDB(storeConfig);
         
         // Create index
         _indexHome = new File(homeDir, "index");
-        _index = new HashIndex(_indexHome,
-                               indexInitLevel,
-                               batchSize,
-                               numSyncBatches,
-                               indexSegmentFileSizeMB,
-                               indexSegmentFactory);
+        
+        int indexInitialCapacity = StoreParams.getDynamicStoreInitialCapacity(indexInitLevel);
+        StoreConfig indexConfig = new StoreConfig(_indexHome, indexInitialCapacity);
+        indexConfig.setBatchSize(batchSize);
+        indexConfig.setNumSyncBatches(numSyncBatches);
+        indexConfig.setSegmentFileSizeMB(indexSegmentFileSizeMB);
+        indexConfig.setSegmentFactory(indexSegmentFactory);
+        _index = new HashIndex(indexConfig);
         
         _logger.info("opened indexHome=" + _indexHome.getAbsolutePath() + " storeHome=" + _storeHome.getAbsolutePath());
     }

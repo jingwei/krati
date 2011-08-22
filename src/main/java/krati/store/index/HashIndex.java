@@ -1,16 +1,12 @@
 package krati.store.index;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
 import krati.core.StoreConfig;
-import krati.core.StoreParams;
-import krati.core.segment.SegmentFactory;
 import krati.store.DynamicDataStore;
-import krati.util.FnvHashFunction;
 import krati.util.IndexedIterator;
 
 /**
@@ -21,8 +17,9 @@ import krati.util.IndexedIterator;
  * @author jwu
  * 
  * <p>
- * 06/04, 2011 - Added support for Closeable
- * 06/28, 2011 - Added constructor using StoreConfig
+ * 06/04, 2011 - Added support for Closeable <br/>
+ * 06/28, 2011 - Added constructor using StoreConfig <br/>
+ * 08/21, 2011 - code cleanup <br/>
  */
 public class HashIndex implements Index {
     private final static Logger _logger = Logger.getLogger(HashIndex.class);
@@ -37,42 +34,6 @@ public class HashIndex implements Index {
     public HashIndex(StoreConfig config) throws Exception {
         _store = new DynamicDataStore(config);
         _logger.info("init " + config.getHomeDir().getPath());
-    }
-    
-    /**
-     * Creates a new HashIndex instance with the following parameters. 
-     * 
-     * <pre>
-     *    segmentCompactFactor : 0.5
-     *    Store hashLoadFactor : 0.75
-     *    Store hashFunction   : krati.util.FnvHashFunction
-     * </pre>
-     * 
-     * @param homeDir           - the home directory of HashIndex
-     * @param initLevel         - the level for initializing HashIndex
-     * @param batchSize         - the number of updates per update batch
-     * @param numSyncBatches    - the number of update batches required for updating <code>indexes.dat</code>
-     * @param segmentFileSizeMB - the size of segment file in MB
-     * @param segmentFactory    - the segment factory
-     * @throws Exception if the index cannot be created.
-     */
-    public HashIndex(File homeDir,
-                     int initLevel,
-                     int batchSize,
-                     int numSyncBatches,
-                     int segmentFileSizeMB,
-                     SegmentFactory segmentFactory) throws Exception {
-        _store = new DynamicDataStore(
-                homeDir,
-                initLevel,
-                batchSize,
-                numSyncBatches,
-                segmentFileSizeMB,
-                segmentFactory,
-                StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT,
-                StoreParams.HASH_LOAD_FACTOR_DEFAULT,
-                new FnvHashFunction());
-        _logger.info("init " + homeDir.getPath());
     }
     
     @Override
