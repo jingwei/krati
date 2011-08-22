@@ -9,7 +9,7 @@ import java.util.Map.Entry;
  * @author jwu
  * 
  */
-public interface DataStoreHandler {
+public interface DataStoreHandler extends DataHandler {
     
     public byte[] assemble(byte[] key, byte[] value);
     

@@ -6,7 +6,7 @@ package krati.store;
  * @author jwu
  * 
  */
-public interface DataSetHandler {
+public interface DataSetHandler extends DataHandler {
     
     public int count(byte[] data);
     

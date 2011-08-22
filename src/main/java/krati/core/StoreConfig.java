@@ -11,6 +11,9 @@ import java.util.Set;
 
 import krati.core.segment.MappedSegmentFactory;
 import krati.core.segment.SegmentFactory;
+import krati.store.DataHandler;
+import krati.store.DefaultDataSetHandler;
+import krati.store.DefaultDataStoreHandler;
 import krati.util.FnvHashFunction;
 import krati.util.HashFunction;
 
@@ -30,6 +33,7 @@ public class StoreConfig extends StoreParams {
     private final static Logger _logger = Logger.getLogger(StoreConfig.class);
     private final File _homeDir;
     private final int _initialCapacity;
+    private DataHandler _dataHandler = null;
     private SegmentFactory _segmentFactory = null;
     private HashFunction<byte[]> _hashFunction = null;
     
@@ -236,6 +240,21 @@ public class StoreConfig extends StoreParams {
             hashFunction = new FnvHashFunction();
         }
         setHashFunction(hashFunction);
+        
+        // Create _dataHandler
+        paramName = StoreParams.PARAM_DATA_HANDLER_CLASS;
+        paramValue = _properties.getProperty(paramName);
+        DataHandler dataHandler = null;
+        if(paramValue != null) {
+            try {
+                dataHandler = (DataHandler)Class.forName(paramValue).newInstance();
+            } catch(Exception e) {
+                _logger.warn("Invalid DataHandler class: " + paramValue);
+            }
+        }
+        if(dataHandler != null) {
+            setDataHandler(dataHandler);
+        }
     }
     
     /**
@@ -399,5 +418,29 @@ public class StoreConfig extends StoreParams {
      */
     public HashFunction<byte[]> getHashFunction() {
         return _hashFunction;
+    }
+    
+    /**
+     * Sets the data handler of the target {#link krati.store.DataStore DataStore}.
+     * 
+     * @param dataHandler
+     */
+    public void setDataHandler(DataHandler dataHandler) {
+        this._dataHandler = dataHandler;
+        if(dataHandler == null) {
+            _properties.remove(PARAM_DATA_HANDLER_CLASS);
+        } else {
+            if (dataHandler.getClass() != DefaultDataSetHandler.class &&
+                dataHandler.getClass() != DefaultDataStoreHandler.class) {
+                _properties.setProperty(PARAM_DATA_HANDLER_CLASS, dataHandler.getClass().getName());
+            }
+        }
+    }
+    
+    /**
+     * Gets the data handler of the target {#link krati.store.DataStore DataStore}.
+     */
+    public DataHandler getDataHandler() {
+        return _dataHandler;
     }
 }

@@ -61,6 +61,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
      * 
      * @param config - Store configuration
      * @throws Exception if the set can not be created.
+     * @throws ClassCastException if the data handler from <tt>config</tt> is not {@link DataSetHandler}.
      */
     public DynamicDataSet(StoreConfig config) throws Exception {
         config.validate();
@@ -70,7 +71,8 @@ public class DynamicDataSet implements DataSet<byte[]> {
         this._homeDir = config.getHomeDir();
         
         // Create data set handler
-        _dataHandler = new DefaultDataSetHandler();
+        _dataHandler = (config.getDataHandler() == null) ?
+                new DefaultDataSetHandler() : (DataSetHandler)config.getDataHandler();
         
         // Create dynamic address array
         _addrArray = createAddressArray(

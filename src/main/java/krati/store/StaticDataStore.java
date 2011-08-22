@@ -49,6 +49,7 @@ public class StaticDataStore implements DataStore<byte[], byte[]> {
      * 
      * @param config - DataStore configuration
      * @throws Exception if the store can not be created.
+     * @throws ClassCastException if the data handler from <tt>config</tt> is not {@link DataStoreHandler}.
      */
     public StaticDataStore(StoreConfig config) throws Exception {
         config.validate();
@@ -58,7 +59,8 @@ public class StaticDataStore implements DataStore<byte[], byte[]> {
         this._homeDir = _config.getHomeDir();
         
         // Create data store handler
-        _dataHandler = new DefaultDataStoreHandler();
+        _dataHandler = (config.getDataHandler() == null) ?
+                new DefaultDataStoreHandler() : (DataStoreHandler)config.getDataHandler();
         
         // Create address array
         AddressArray addressArray = createAddressArray(

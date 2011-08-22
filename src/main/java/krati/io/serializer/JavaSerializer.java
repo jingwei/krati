@@ -13,8 +13,7 @@ import krati.io.Serializer;
  * JavaSerializer
  * 
  * @author jwu
- * 06/30, 2011
- * 
+ * @since 06/30, 2011
  */
 public class JavaSerializer<T extends Serializable> implements Serializer<T> {
     

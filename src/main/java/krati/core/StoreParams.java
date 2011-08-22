@@ -228,6 +228,11 @@ public class StoreParams {
     public static final String PARAM_PARTITION_COUNT        = "krati.store.partition.count";
     
     /**
+     * Parameter for specifying the data handler class of a data store.
+     */
+    public static final String PARAM_DATA_HANDLER_CLASS     = "krati.store.data.handler.class";
+    
+    /**
      * Gets the initial level of {@link krati.store.DynamicDataStore DynamicDataStore}, {@link krati.store.DynamicDataSet DynamicDataSet}
      * and {@link krati.store.IndexedDataStore IndexedDataStore} based on the initial store capacity.
      * The returned initial <code>level</code> is the minimum integer which satisfies the condition

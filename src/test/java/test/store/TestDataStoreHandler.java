@@ -1,13 +1,18 @@
 package test.store;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.Map.Entry;
 
+import test.util.FileUtils;
+
 import junit.framework.TestCase;
+import krati.core.StoreConfig;
 import krati.store.DataStoreHandler;
 import krati.store.DefaultDataStoreHandler;
+import krati.store.DynamicDataStore;
 
 /**
  * TestDataStoreHandler
@@ -134,5 +139,34 @@ public class TestDataStoreHandler extends TestCase {
         
         assertEquals(null, h.extractByKey(key, data1));
         assertEquals(data1.length, h.removeByKey(key, data1));
+    }
+    
+    public void testDataStoreConfig() throws Exception {
+        File dir = FileUtils.getTestDir(getClass().getSimpleName());
+        
+        StoreConfig config;
+        DynamicDataStore store;
+        
+        config = new StoreConfig(dir, 10000);
+        config.setSegmentFileSizeMB(32);
+        assertTrue(config.getDataHandler() == null);
+        
+        store = new DynamicDataStore(config);
+        store.put("key".getBytes(), "value".getBytes());
+        assertTrue(Arrays.equals("value".getBytes(), store.get("key".getBytes())));
+        store.close();
+        
+        config.setDataHandler(new DefaultDataStoreHandler());
+        assertTrue(config.getDataHandler() != null);
+        config.save();
+        
+        StoreConfig config2 = new StoreConfig(dir, 10000);
+        assertTrue(config2.getDataHandler() == null);
+        
+        store = new DynamicDataStore(config2);
+        assertTrue(Arrays.equals("value".getBytes(), store.get("key".getBytes())));
+        store.close();
+        
+        FileUtils.deleteDirectory(dir);
     }
 }

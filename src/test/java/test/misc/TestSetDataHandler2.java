@@ -1,7 +1,12 @@
 package test.misc;
 
+import java.io.File;
+
+import krati.core.StoreConfig;
 import krati.store.DataSetHandler;
+import krati.store.DefaultDataSetHandler;
 import test.AbstractTest;
+import test.util.FileUtils;
 
 /**
  * TestSetDataHandler2
@@ -94,5 +99,27 @@ public class TestSetDataHandler2 extends AbstractTest {
         // Delete value3
         len = _dataHandler.remove(value3, data5);
         assertEquals("Failed on remove(byte[] value, byte[] data)", 0, len);
+    }
+    
+    public void testStoreConfig() throws Exception {
+        File dir = FileUtils.getTestDir(getClass().getSimpleName());
+        
+        StoreConfig config = new StoreConfig(dir, 10000);
+        assertTrue(config.getDataHandler() == null);
+        
+        config.setDataHandler(new DefaultDataSetHandler());
+        config.save();
+        
+        StoreConfig config2 = new StoreConfig(dir, 10000);
+        assertTrue(config2.getDataHandler() == null);
+        
+        config.setDataHandler(new DataSetHandler2());
+        config.save();
+        
+        StoreConfig config3 = new StoreConfig(dir, 10000);
+        assertTrue(config3.getDataHandler() != null);
+        assertTrue(config3.getDataHandler().getClass() == DataSetHandler2.class);
+        
+        FileUtils.deleteDirectory(dir);
     }
 }

@@ -162,12 +162,12 @@ public class SourceWaterMarks {
 
     public boolean syncWaterMarks(String source, long lwmScn, long hwmScn) {
         setWaterMarks(source, lwmScn, hwmScn);
-        return syncInternal();
+        return flush();
     }
 
     public boolean syncWaterMarks(String source) {
         setLWMScn(source, getHWMScn(source));
-        return syncInternal();
+        return flush();
     }
 
     public boolean syncWaterMarks() {
@@ -177,10 +177,10 @@ public class SourceWaterMarks {
             wmEntry.setLWMScn(wmEntry.getHWMScn());
         }
         
-        return syncInternal();
+        return flush();
     }
 
-    protected boolean syncInternal() {
+    public boolean flush() {
         boolean ret = true;
         PrintWriter out = null;
         
@@ -217,7 +217,7 @@ public class SourceWaterMarks {
 
     public void clear() {
         sourceWaterMarkMap.clear();
-        syncInternal();
+        flush();
         if (fileOriginal != null && fileOriginal.exists()) {
             fileOriginal.delete();
         }

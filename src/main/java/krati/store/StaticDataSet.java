@@ -46,6 +46,7 @@ public class StaticDataSet implements DataSet<byte[]> {
      * 
      * @param config - DataSet configuration
      * @throws Exception if the set can not be created.
+     * @throws ClassCastException if the data handler from <tt>config</tt> is not {@link DataSetHandler}.
      */
     public StaticDataSet(StoreConfig config) throws Exception {
         config.validate();
@@ -55,7 +56,8 @@ public class StaticDataSet implements DataSet<byte[]> {
         this._homeDir = _config.getHomeDir();
         
         // Create data set handler
-        _dataHandler = new DefaultDataSetHandler();
+        _dataHandler = (config.getDataHandler() == null) ?
+                new DefaultDataSetHandler() : (DataSetHandler)config.getDataHandler();
         
         // Create address array
         AddressArray addressArray = createAddressArray(
