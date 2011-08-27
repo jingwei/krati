@@ -41,6 +41,14 @@ public class FileUtils {
         return dir;
     }
     
+    public static File getTestDir(Class<?> testClass) {
+        File dir = new File(TEST_OUTPUT_DIR, testClass.getSimpleName());
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        return dir;
+    }
+    
     public static void cleanDirectory(File dir) throws IOException {
         File[] files = dir.listFiles();
         if(files != null) {
