@@ -125,14 +125,18 @@ public class SimpleRetention<T> implements Retention<T> {
         this._batch = nextEventBatch(batchOrigin, batchClock);
         this._lastBatch = null;
         
-        // Schedule retention policy with a fixed delay of 5 seconds
-        this._retentionPolicyExecutor.scheduleWithFixedDelay(_retentionPolicyApply, 1, 5, TimeUnit.SECONDS);
+        scheduleRetentionPolicy();
     }
     
     protected EventBatch<T> nextEventBatch(long offset, Clock initClock) {
         EventBatch<T> b = new SimpleEventBatch<T>(offset, initClock, _eventBatchSize);
         _logger.info("Created EventBatch: " + b.getOrigin());
         return b;
+    }
+    
+    protected void scheduleRetentionPolicy() {
+        // Schedule retention policy with a fixed delay of 5 seconds
+        _retentionPolicyExecutor.scheduleWithFixedDelay(_retentionPolicyApply, 1, 5, TimeUnit.SECONDS);
     }
     
     public final File getHomeDir() {
@@ -432,7 +436,9 @@ public class SimpleRetention<T> implements Retention<T> {
                                 EventBatch<T> b = _eventBatchSerializer.deserialize(dat);
                                 _retentionPolicy.applyCallbackOn(b);
                             } catch(Exception e) {
-                                _logger.error("Failed to apply callback on cursor: " + c.getHeader().getOrigin(), e);
+                                if(_store.isOpen()) {
+                                    _logger.error("Failed to apply callback on cursor: " + c.getHeader().getOrigin(), e);
+                                }
                             }
                         }
                         
@@ -440,7 +446,9 @@ public class SimpleRetention<T> implements Retention<T> {
                         _store.set(index, null, getOffset());
                         _logger.info("Removed EventBatch: " + c.getHeader().getOrigin());
                     } catch(Exception e) {
-                        _logger.error("Failed to apply retention policy on cursor " + index, e.getCause());
+                        if(_store.isOpen()) {
+                            _logger.error("Failed to apply retention policy on cursor " + index, e.getCause());
+                        }
                     }
                 }
             }
@@ -456,12 +464,14 @@ public class SimpleRetention<T> implements Retention<T> {
     public synchronized void open() throws IOException {
         if(!_store.isOpen()) {
             _store.open();
+            scheduleRetentionPolicy();
         }
     }
     
     @Override
     public synchronized void close() throws IOException {
         if(_store.isOpen()) {
+            _retentionPolicyExecutor.shutdown();
             _store.close();
         }
     }

@@ -14,7 +14,11 @@ import java.io.IOException;
 public final class DirUtils {
     
     public static File getTestDir(Class<?> testClass) {
-        return new File(System.getProperty("krati.test.output.dir"), testClass.getSimpleName());
+        File dir = new File(System.getProperty("krati.test.output.dir"), testClass.getSimpleName());
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        return dir;
     }
     
     public static void cleanDirectory(File dir) throws IOException {
