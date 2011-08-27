@@ -1,0 +1,105 @@
+package test.retention.clock;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Random;
+
+import test.util.DirUtils;
+
+import junit.framework.TestCase;
+import krati.retention.clock.Clock;
+import krati.retention.clock.SourceWaterMarksClock;
+import krati.util.SourceWaterMarks;
+
+/**
+ * TestSourceWaterMarksClock
+ * 
+ * @version 0.4.2
+ * @author jwu
+ * 
+ * <p>
+ * 08/15, 2011 - Created
+ */
+public class TestSourceWaterMarksClock extends TestCase {
+    Random _rand = new Random();
+    File _sourceWaterMarksFile = null;
+    SourceWaterMarks _sourceWaterMarks = null;
+    SourceWaterMarksClock _clock = null;
+    
+    @Override
+    protected void setUp() {
+        try {
+            _sourceWaterMarksFile = new File(DirUtils.getTestDir(getClass()), "sourceWaterMarks.scn");
+            _sourceWaterMarks = new SourceWaterMarks(_sourceWaterMarksFile);
+            ArrayList<String> sources = new ArrayList<String>();
+            sources.add("member_picture");
+            sources.add("member_profile");
+            sources.add("member_flex_store");
+            sources.add("member_contact");
+            _clock = new SourceWaterMarksClock(sources, _sourceWaterMarks);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    protected void tearDown() {
+        try {
+            DirUtils.deleteDirectory(DirUtils.getTestDir(getClass()));
+        } catch(Exception e) {
+            e.printStackTrace();
+        } finally {
+            _sourceWaterMarksFile = null;
+            _sourceWaterMarks = null;
+            _clock = null;
+        }
+    }
+    
+    public void testApiBasics() {
+        Iterator<String> iter;
+        Clock clock;
+        
+        iter = _clock.sourceIterator();
+        while(iter.hasNext()) {
+            String source = iter.next();
+            assertEquals(0, _clock.getLWMScn(source));
+            assertEquals(0, _clock.getHWMScn(source));
+        }
+        
+        clock = _clock.current();
+        
+        // Save hwmScn
+        iter = _clock.sourceIterator();
+        while(iter.hasNext()) {
+            String source = iter.next();
+            long hwm = _clock.getHWMScn(source) + _rand.nextInt(100) + 1;
+            _clock.saveHWMark(source, hwm);
+            assertTrue(_clock.getLWMScn(source) < _clock.getHWMScn(source));
+            assertTrue(clock.compareTo(_clock.current()) < 0);
+            clock = _clock.current();
+        }
+        
+        assertTrue(clock.compareTo(_clock.current()) == 0);
+        
+        // Sync water marks
+        _clock.syncWaterMarks();
+        
+        // Check lwmScn = hwmScn
+        iter = _clock.sourceIterator();
+        while(iter.hasNext()) {
+            String source = iter.next();
+            assertEquals(_clock.getLWMScn(source), _clock.getHWMScn(source));
+        }
+        
+        // Open a new source water marks clock
+        List<String> sources2 = new ArrayList<String>();
+        iter = _clock.sourceIterator();
+        while(iter.hasNext()) {
+            sources2.add(iter.next());
+        }
+        
+        SourceWaterMarksClock clock2 = new SourceWaterMarksClock(sources2, _sourceWaterMarks);
+        assertTrue(_clock.current().compareTo(clock2.current()) == 0);
+    }
+}
