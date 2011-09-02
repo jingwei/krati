@@ -17,18 +17,23 @@ import org.apache.log4j.Logger;
  * SourceWaterMarks (not thread safe)
  * 
  * @author jwu
- * @since 03/04, 2011
  * @version 0.4.2
+ * @since 03/04, 2011
  * 
  * <p>
- * 08/18, 2011 - Added syncWaterMarks(String source)
+ * 08/18, 2011 - Added syncWaterMarks(String source) <br/> 
  */
 public class SourceWaterMarks {
     private File file;
     private File fileOriginal;
     private final Map<String, WaterMarkEntry> sourceWaterMarkMap;
     private final static Logger logger = Logger.getLogger(SourceWaterMarks.class);
-
+    
+    /**
+     * Create a new instance of SourceWaterMarks.
+     * 
+     * @param file - the file for storing water marks.
+     */
     public SourceWaterMarks(File file) {
         this.file = file;
         this.fileOriginal = new File(file.getPath() + ".original");
@@ -45,15 +50,26 @@ public class SourceWaterMarks {
             logger.error("Failed to load water marks");
         }
     }
-
+    
+    /**
+     * Gets the file for storing water marks.
+     */
     public File getFile() {
         return file;
     }
-
+    
+    /**
+     * Gets the original file for storing water marks.
+     */
     public File getFileOriginal() {
         return fileOriginal;
     }
-
+    
+    /**
+     * Load water marks from underlying files.
+     * 
+     * @throws IOException
+     */
     protected void loadWaterMarks() throws IOException {
         // Load source water marks from file
         if (file != null && file.exists()) {
@@ -66,7 +82,13 @@ public class SourceWaterMarks {
             }
         }
     }
-
+    
+    /**
+     * Load water marks from an underlying file.
+     * 
+     * @param waterMarksFile
+     * @throws IOException
+     */
     protected void loadWaterMarks(File waterMarksFile) throws IOException {
         Properties p = new Properties();
         FileInputStream fis = new FileInputStream(waterMarksFile);
@@ -105,16 +127,30 @@ public class SourceWaterMarks {
             fis = null;
         }
     }
-
+    
+    /**
+     * Gets the sources of this SourceWaterMarks.
+     */
     public Set<String> sources() {
         return sourceWaterMarkMap.keySet();
     }
-
+    
+    /**
+     * Gets the high water mark of a source.
+     * 
+     * @param source - the source
+     */
     public long getHWMScn(String source) {
         WaterMarkEntry e = sourceWaterMarkMap.get(source);
         return (e == null) ? 0 : e.getHWMScn();
     }
-
+    
+    /**
+     * Sets the high water mark of a source.
+     * 
+     * @param source - the source
+     * @param scn    - the water mark value
+     */
     public void setHWMScn(String source, long scn) {
         WaterMarkEntry e = sourceWaterMarkMap.get(source);
         if (e == null) {
@@ -123,12 +159,23 @@ public class SourceWaterMarks {
         }
         e.setHWMScn(scn);
     }
-
+    
+    /**
+     * Gets the low water mark of a source.
+     * 
+     * @param source - the source
+     */
     public long getLWMScn(String source) {
         WaterMarkEntry e = sourceWaterMarkMap.get(source);
         return (e == null) ? 0 : e.getLWMScn();
     }
-
+    
+    /**
+     * Sets the low water mark of a source
+     * 
+     * @param source - the source
+     * @param scn    - the water mark value
+     */
     public void setLWMScn(String source, long scn) {
         WaterMarkEntry e = sourceWaterMarkMap.get(source);
         if (e == null) {
@@ -137,7 +184,13 @@ public class SourceWaterMarks {
         }
         e.setLWMScn(scn);
     }
-
+    
+    /**
+     * Saves the high water mark of a source.
+     * 
+     * @param source - the source
+     * @param hwm    - the high water mark
+     */
     public void saveHWMark(String source, long hwm) {
         WaterMarkEntry wmEntry = sourceWaterMarkMap.get(source);
         if (wmEntry != null) {
@@ -149,7 +202,14 @@ public class SourceWaterMarks {
             sourceWaterMarkMap.put(source, wmEntry);
         }
     }
-
+    
+    /**
+     * Sets the water marks of a source.
+     * 
+     * @param source - the source
+     * @param lwmScn - the low water mark SCN
+     * @param hwmScn - the high water mark SCN
+     */
     public void setWaterMarks(String source, long lwmScn, long hwmScn) {
         WaterMarkEntry e = sourceWaterMarkMap.get(source);
         if (e == null) {
@@ -159,17 +219,36 @@ public class SourceWaterMarks {
         e.setLWMScn(lwmScn);
         e.setHWMScn(hwmScn);
     }
-
+    
+    /**
+     * Sets and flushes the water marks of a source.
+     * 
+     * @param source - the source
+     * @param lwmScn - the low water mark SCN
+     * @param hwmScn - the high water mark SCN
+     * @return <tt>true</tt> if flush is successful.
+     */
     public boolean syncWaterMarks(String source, long lwmScn, long hwmScn) {
         setWaterMarks(source, lwmScn, hwmScn);
         return flush();
     }
-
+    
+    /**
+     * Sync up the low water mark to the high water mark for a source.
+     * 
+     * @param source - the source
+     * @return <tt>true</tt> if flush is successful.
+     */
     public boolean syncWaterMarks(String source) {
         setLWMScn(source, getHWMScn(source));
         return flush();
     }
-
+    
+    /**
+     * Sync up low water marks to high water marks for all the sources.
+     * 
+     * @return <tt>true</tt> if flush is successful.
+     */
     public boolean syncWaterMarks() {
         // Sync up low water marks
         for (String source : sourceWaterMarkMap.keySet()) {
@@ -179,7 +258,12 @@ public class SourceWaterMarks {
         
         return flush();
     }
-
+    
+    /**
+     * Flushes low water marks and high water marks for all the sources.
+     * 
+     * @return <tt>true</tt> if flush is successful.
+     */
     public boolean flush() {
         boolean ret = true;
         PrintWriter out = null;
@@ -203,7 +287,7 @@ public class SourceWaterMarks {
             }
             out.flush();
         } catch (IOException ioe) {
-            logger.error("Failed to sync water marks", ioe);
+            logger.error("Failed to flush water marks", ioe);
             ret = false;
         } finally {
             if (out != null) {
@@ -214,7 +298,10 @@ public class SourceWaterMarks {
 
         return ret;
     }
-
+    
+    /**
+     * Clears SourceWaterMark.
+     */
     public void clear() {
         sourceWaterMarkMap.clear();
         flush();
