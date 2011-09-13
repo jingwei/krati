@@ -12,7 +12,7 @@ import krati.io.Serializer;
 public class StringSerializer implements Serializer<String> {
     
     /**
-     * Deserialize a byte array to String.
+     * Deserialize a byte array to String using the platform's default charset.
      * 
      * @throws NullPointerException if the <tt>raw</tt> is null.
      */
@@ -22,7 +22,7 @@ public class StringSerializer implements Serializer<String> {
     }
     
     /**
-     * Serialize a String to a byte array.
+     * Serialize a String to a byte array using the platform's default charset.
      * 
      * @throws NullPointerException if the <tt>str</tt> is null.
      */

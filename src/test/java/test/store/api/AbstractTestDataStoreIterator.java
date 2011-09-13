@@ -3,6 +3,7 @@ package test.store.api;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.UUID;
 import java.util.Map.Entry;
 
 import junit.framework.TestCase;
@@ -50,7 +51,7 @@ public abstract class AbstractTestDataStoreIterator extends TestCase {
         // Generate keys
         HashSet<String> keySet = new HashSet<String>(199);
         while(keySet.size() < 100) {
-            keySet.add(new String(RandomBytes.getBytes(16)));
+            keySet.add(UUID.randomUUID().toString());
         }
         assertEquals(100, keySet.size());
         
@@ -81,7 +82,7 @@ public abstract class AbstractTestDataStoreIterator extends TestCase {
         // Generate keys
         HashSet<String> keySet = new HashSet<String>(199);
         while(keySet.size() < 100) {
-            keySet.add(new String(RandomBytes.getBytes(16)));
+            keySet.add(UUID.randomUUID().toString());
         }
         assertEquals(100, keySet.size());
         

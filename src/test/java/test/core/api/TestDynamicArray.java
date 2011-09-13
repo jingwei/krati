@@ -91,8 +91,8 @@ public class TestDynamicArray extends AbstractTest {
         DynamicIntArray array2 = new DynamicIntArray(maxEntrySize, maxEntries, TEST_OUTPUT_DIR);
         assertTrue("array2.getHWMark() is greater than array1.getHWMark()", array2.getHWMark() <= array1.getHWMark());
         
-        // Persist the first array
-        array1.persist();
+        // Sync the first array
+        array1.sync();
         
         // Create the third array, which should load data from cache
         DynamicIntArray array3 = new DynamicIntArray(maxEntrySize, maxEntries, TEST_OUTPUT_DIR);
@@ -169,8 +169,8 @@ public class TestDynamicArray extends AbstractTest {
         DynamicLongArray array2 = new DynamicLongArray(maxEntrySize, maxEntries, TEST_OUTPUT_DIR);
         assertTrue("array2.getHWMark() is greater than array1.getHWMark()", array2.getHWMark() <= array1.getHWMark());
         
-        // Persist the first array
-        array1.persist();
+        // Sync the first array
+        array1.sync();
         
         // Create the third array, which should load data from cache
         DynamicLongArray array3 = new DynamicLongArray(maxEntrySize, maxEntries, TEST_OUTPUT_DIR);
@@ -247,8 +247,8 @@ public class TestDynamicArray extends AbstractTest {
         DynamicShortArray array2 = new DynamicShortArray(maxEntrySize, maxEntries, TEST_OUTPUT_DIR);
         assertTrue("array2.getHWMark() is greater than array1.getHWMark()", array2.getHWMark() <= array1.getHWMark());
         
-        // Persist the first array
-        array1.persist();
+        // Sync the first array
+        array1.sync();
         
         // Create the third array, which should load data from cache
         DynamicShortArray array3 = new DynamicShortArray(maxEntrySize, maxEntries, TEST_OUTPUT_DIR);

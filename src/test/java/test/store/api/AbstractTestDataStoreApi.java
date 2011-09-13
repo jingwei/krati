@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.UUID;
 import java.util.Map.Entry;
 
 import test.util.FileUtils;
@@ -90,7 +91,7 @@ public abstract class AbstractTestDataStoreApi extends TestCase {
         // Generate keys
         HashSet<String> keySet = new HashSet<String>(199);
         while(keySet.size() < 100) {
-            keySet.add(new String(RandomBytes.getBytes(16)));
+            keySet.add(UUID.randomUUID().toString());
         }
         assertEquals(100, keySet.size());
         
@@ -149,7 +150,7 @@ public abstract class AbstractTestDataStoreApi extends TestCase {
         // Generate keys
         HashSet<String> keySet = new HashSet<String>(199);
         while(keySet.size() < 100) {
-            keySet.add(new String(RandomBytes.getBytes(16)));
+            keySet.add(UUID.randomUUID().toString());
         }
         assertEquals(100, keySet.size());
         
@@ -158,8 +159,8 @@ public abstract class AbstractTestDataStoreApi extends TestCase {
         // Populate store
         for(String key : keySet) {
             byte[] value = RandomBytes.getBytes();
-            map.put(new String(key), value);
             _store.put(key.getBytes(), value);
+            map.put(key, value);
         }
         
         // Check key-value pairs

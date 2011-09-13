@@ -88,28 +88,37 @@ public class TestRandomKeyNumStore extends TestCase {
         StatsLog.beginUnit(unitTestName);
         long startTime = System.currentTimeMillis();
         
-        byte[] key = new byte[getKeySize()];
-        byte[] value = new byte[getValueSize()];
+        byte[] keyBytes = new byte[getKeySize()];
+        byte[] valBytes = new byte[getValueSize()];
         
         Map<String, byte[]> map = new HashMap<String, byte[]>();
-        float threshold = 1000.0F / getKeyCount();
+        int maxSize = 3000;
         
         for(int i = 0, cnt = getKeyCount(); i < cnt; i++) {
-            _rand.nextBytes(key);
-            _rand.nextBytes(value);
-            _store.put(key, value);
+            _rand.nextBytes(keyBytes);
+            _rand.nextBytes(valBytes);
             
-            if(_rand.nextFloat() < threshold) {
-                map.put(new String((byte[])key.clone()), (byte[])value.clone());
+            String strKey = new String((byte[])keyBytes.clone(), "UTF-16");
+            byte[] rawKey = strKey.getBytes("UTF-16");
+            
+            // Update store
+            _store.put(rawKey, valBytes);
+            
+            // Update test map
+            if(map.size() < maxSize) {
+                map.put(strKey, (byte[])valBytes.clone());
+            }
+            if(map.containsKey(strKey)) {
+                map.put(strKey, (byte[])valBytes.clone());
             }
         }
         
         _store.sync();
         
         for(Map.Entry<String, byte[]> e : map.entrySet()) {
-            assertTrue(Arrays.equals(e.getValue(), _store.get(e.getKey().getBytes())));
+            assertTrue(Arrays.equals(e.getValue(), _store.get(e.getKey().getBytes("UTF-16"))));
         }
-        StatsLog.logger.info(map.size() + " keys verfied");
+        StatsLog.logger.info(map.size() + " keys verified");
         
         long elapsedTime = System.currentTimeMillis() - startTime;
         double rate = Math.ceil(getKeyCount() * 100.0 / elapsedTime) / 100.0;

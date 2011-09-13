@@ -35,13 +35,13 @@ import org.apache.log4j.Logger;
  *           segment = manger.nextSegment();
  *        }
  *    }
- *    
  * </pre>
  * 
  * @author jwu
- * 02/05, 2010
- * 05/24, 2010 - Always try to open the manager upon call to SegmentManager.getInstance(...)
- *  
+ * @since 02/05, 2010
+ * 
+ * <p>
+ * 05/24, 2010 - Always try to open the manager upon call to SegmentManager.getInstance(...) <br/>
  */
 public final class SegmentManager implements Closeable {
     private final static Logger _log = Logger.getLogger(SegmentManager.class);
