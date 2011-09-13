@@ -87,21 +87,17 @@ public class TestDynamicArray extends AbstractTest {
             assertEquals(array1.get(u.getMemberId()), u.getData());
         }
         
+        // Sync the first array
+        array1.sync();
+        
         // Create the second array, which should load data from cache
         DynamicIntArray array2 = new DynamicIntArray(maxEntrySize, maxEntries, TEST_OUTPUT_DIR);
         assertTrue("array2.getHWMark() is greater than array1.getHWMark()", array2.getHWMark() <= array1.getHWMark());
         
-        // Sync the first array
-        array1.sync();
-        
-        // Create the third array, which should load data from cache
-        DynamicIntArray array3 = new DynamicIntArray(maxEntrySize, maxEntries, TEST_OUTPUT_DIR);
-        assertTrue("array3.getHWMark() is greater than array1.getHWMark()", array3.getHWMark() <= array1.getHWMark());
-        
         int nonZeroCount = 0;
         for (int index = 0; index < array1.length(); index++) {
             if (array1.get(index) > 0) nonZeroCount++;
-            assertEquals(array1.get(index), array3.get(index));
+            assertEquals(array1.get(index), array2.get(index));
         }
         
         assertTrue("all zeros in array1", nonZeroCount > 0);
@@ -165,21 +161,17 @@ public class TestDynamicArray extends AbstractTest {
             assertEquals(array1.get(u.getMemberId()), u.getData());
         }
         
-        // Create the second array, which should load data from cache
-        DynamicLongArray array2 = new DynamicLongArray(maxEntrySize, maxEntries, TEST_OUTPUT_DIR);
-        assertTrue("array2.getHWMark() is greater than array1.getHWMark()", array2.getHWMark() <= array1.getHWMark());
-        
         // Sync the first array
         array1.sync();
         
-        // Create the third array, which should load data from cache
-        DynamicLongArray array3 = new DynamicLongArray(maxEntrySize, maxEntries, TEST_OUTPUT_DIR);
-        assertTrue("array3.getHWMark() is greater than array1.getHWMark()", array3.getHWMark() <= array1.getHWMark());
+        // Create the second array, which should load data from cache
+        DynamicLongArray array2 = new DynamicLongArray(maxEntrySize, maxEntries, TEST_OUTPUT_DIR);
+        assertTrue("array3.getHWMark() is greater than array1.getHWMark()", array2.getHWMark() <= array1.getHWMark());
         
         int nonZeroCount = 0;
         for (int index = 0; index < array1.length(); index++) {
             if (array1.get(index) > 0) nonZeroCount++;
-            assertEquals(array1.get(index), array3.get(index));
+            assertEquals(array1.get(index), array2.get(index));
         }
         
         assertTrue("all zeros in array1", nonZeroCount > 0);
@@ -243,21 +235,17 @@ public class TestDynamicArray extends AbstractTest {
             assertEquals(array1.get(u.getMemberId()), (short)u.getData());
         }
         
+        // Sync the first array
+        array1.sync();
+        
         // Create the second array, which should load data from cache
         DynamicShortArray array2 = new DynamicShortArray(maxEntrySize, maxEntries, TEST_OUTPUT_DIR);
         assertTrue("array2.getHWMark() is greater than array1.getHWMark()", array2.getHWMark() <= array1.getHWMark());
         
-        // Sync the first array
-        array1.sync();
-        
-        // Create the third array, which should load data from cache
-        DynamicShortArray array3 = new DynamicShortArray(maxEntrySize, maxEntries, TEST_OUTPUT_DIR);
-        assertTrue("array3.getHWMark() is greater than array1.getHWMark()", array3.getHWMark() <= array1.getHWMark());
-        
         int nonZeroCount = 0;
         for (int index = 0; index < array1.length(); index++) {
             if (array1.get(index) > 0) nonZeroCount++;
-            assertEquals(array1.get(index), array3.get(index));
+            assertEquals(array1.get(index), array2.get(index));
         }
         
         assertTrue("all zeros in array1", nonZeroCount > 0);
