@@ -1,4 +1,4 @@
-package krati.sos;
+package krati.store;
 
 import krati.io.Serializer;
 import krati.util.IndexedIterator;

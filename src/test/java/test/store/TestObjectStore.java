@@ -1,12 +1,12 @@
-package test.sos;
+package test.store;
 
 import java.io.File;
 import java.util.Iterator;
 
 import krati.core.segment.SegmentFactory;
-import krati.sos.ObjectStore;
-import krati.sos.SerializableObjectStore;
 import krati.store.DataStore;
+import krati.store.ObjectStore;
+import krati.store.SerializableObjectStore;
 import krati.store.StaticDataStore;
 
 import test.AbstractTest;

@@ -1,4 +1,4 @@
-package krati.sos;
+package krati.store;
 
 import java.util.AbstractMap;
 import java.util.Map.Entry;

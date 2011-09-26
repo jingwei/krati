@@ -1,6 +1,4 @@
-package krati.sos;
-
-import krati.store.DataStore;
+package krati.store;
 
 /**
  * ObjectStore

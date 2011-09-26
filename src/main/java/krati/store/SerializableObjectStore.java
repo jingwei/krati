@@ -1,11 +1,9 @@
-package krati.sos;
+package krati.store;
 
 import java.io.IOException;
 import java.util.Map.Entry;
 
 import krati.io.Serializer;
-import krati.store.DataStore;
-import krati.store.StoreClosedException;
 import krati.util.IndexedIterator;
 
 /**
@@ -19,10 +17,11 @@ import krati.util.IndexedIterator;
  * 
  * It is expected that this class is used in the case of multiple readers and single writer.
  * 
+ * <p>
+ * 
+ * @param <K> Key
+ * @param <V> Value
  * @author jwu
- *
- * @param <K> Key (serializable object)
- * @param <V> Value (serializable object)
  * 
  * <p>
  * 06/04, 2011 - Added support for Closeable

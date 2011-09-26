@@ -12,10 +12,10 @@ import krati.core.segment.SegmentFactory;
 import krati.io.Serializer;
 import krati.retention.clock.Clock;
 import krati.retention.policy.RetentionPolicy;
-import krati.sos.ObjectStore;
-import krati.sos.SerializableObjectStore;
 import krati.store.DataStore;
 import krati.store.DynamicDataStore;
+import krati.store.ObjectStore;
+import krati.store.SerializableObjectStore;
 import krati.util.IndexedIterator;
 
 /**
