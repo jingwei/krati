@@ -25,7 +25,7 @@ version: 0.4.1
 
 ### Code Examples:
 
-https://github.com/jingwei/krati/tree/master/examples/src/krati/examples
+https://github.com/jingwei/krati/tree/master/src/examples/java
 
 ### Eclipse:
 

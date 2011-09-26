@@ -450,7 +450,7 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
     }
     
     /**
-     * Reads data byte at an index into a byte array.
+     * Reads data bytes at an index into a byte array.
      * 
      * This method does a full read of data bytes only if the destination byte
      * array has enough capacity to store all the bytes from the specified index.

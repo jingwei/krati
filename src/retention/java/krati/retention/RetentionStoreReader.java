@@ -2,6 +2,8 @@ package krati.retention;
 
 import java.util.Map;
 
+import krati.store.StoreReader;
+
 /**
  * RetentionStoreReader
  * 
@@ -12,8 +14,9 @@ import java.util.Map;
  * 
  * <p>
  * 08/23, 2011 - Created <br/>
+ * 09/21, 2011 - Added interface StoreReader <br/>
  */
-public interface RetentionStoreReader<K, V> extends RetentionClient<K> {
+public interface RetentionStoreReader<K, V> extends RetentionClient<K>, StoreReader<K, V> {
     
     /**
      * @return the data source of this RetentionStoreReader.
@@ -24,9 +27,10 @@ public interface RetentionStoreReader<K, V> extends RetentionClient<K> {
      * Gets a value from the underlying data store.
      * 
      * @param key - the key
-     * @return a value associated with <tt>key</tt>.
+     * @return a value associated with the <tt>key</tt>.
      * @throws Exception
      */
+    @Override
     public V get(K key) throws Exception;
     
     /**
