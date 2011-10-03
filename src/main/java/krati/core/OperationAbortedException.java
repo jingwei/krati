@@ -4,7 +4,7 @@ package krati.core;
  * OperationAbortedException
  * 
  * @author jwu
- * 06/12, 2011
+ * @since 06/12, 2011
  * 
  */
 public class OperationAbortedException extends RuntimeException {

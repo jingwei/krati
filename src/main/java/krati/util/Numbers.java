@@ -53,31 +53,31 @@ public class Numbers {
     }
     
     public static int intValueLE(byte[] bytes) {
-        return (((int) (bytes[3] & 0xFF) << 24) |
-                ((int) (bytes[2] & 0xFF) << 16) |
-                ((int) (bytes[1] & 0xFF) << 8) |
-                ((int) (bytes[0] & 0xFF)));
+        return (((bytes[3] & 0xFF) << 24) |
+                ((bytes[2] & 0xFF) << 16) |
+                ((bytes[1] & 0xFF) << 8) |
+                ((bytes[0] & 0xFF)));
     }
     
     public static int intValueBE(byte[] bytes) {
-        return (((int) (bytes[0] & 0xFF) << 24) |
-                ((int) (bytes[1] & 0xFF) << 16) |
-                ((int) (bytes[2] & 0xFF) << 8) |
-                ((int) (bytes[3] & 0xFF)));
+        return (((bytes[0] & 0xFF) << 24) |
+                ((bytes[1] & 0xFF) << 16) |
+                ((bytes[2] & 0xFF) << 8) |
+                ((bytes[3] & 0xFF)));
     }
     
     public static int intValueLE(byte[] bytes, int offset) {
-        return (((int) (bytes[3 + offset] & 0xFF) << 24) |
-                ((int) (bytes[2 + offset] & 0xFF) << 16) |
-                ((int) (bytes[1 + offset] & 0xFF) << 8) |
-                ((int) (bytes[offset] & 0xFF)));
+        return (((bytes[3 + offset] & 0xFF) << 24) |
+                ((bytes[2 + offset] & 0xFF) << 16) |
+                ((bytes[1 + offset] & 0xFF) << 8) |
+                ((bytes[0 + offset] & 0xFF)));
     }
     
     public static int intValueBE(byte[] bytes, int offset) {
-        return (((int) (bytes[offset] & 0xFF) << 24) |
-                ((int) (bytes[1 + offset] & 0xFF) << 16) |
-                ((int) (bytes[2 + offset] & 0xFF) << 8) |
-                ((int) (bytes[3 + offset] & 0xFF)));
+        return (((bytes[0 + offset] & 0xFF) << 24) |
+                ((bytes[1 + offset] & 0xFF) << 16) |
+                ((bytes[2 + offset] & 0xFF) << 8) |
+                ((bytes[3 + offset] & 0xFF)));
     }
     
     public static long longValueLE(byte[] bytes) {
@@ -110,11 +110,11 @@ public class Numbers {
                 ((long) (bytes[3 + offset] & 0xFF) << 24) |
                 ((long) (bytes[2 + offset] & 0xFF) << 16) |
                 ((long) (bytes[1 + offset] & 0xFF) << 8) |
-                ((long) (bytes[offset] & 0xFF)));
+                ((long) (bytes[0 + offset] & 0xFF)));
     }
     
     public static long longValueBE(byte[] bytes, int offset) {
-        return (((long) (bytes[offset] & 0xFF) << 56) |
+        return (((long) (bytes[0 + offset] & 0xFF) << 56) |
                 ((long) (bytes[1 + offset] & 0xFF) << 48) |
                 ((long) (bytes[2 + offset] & 0xFF) << 40) |
                 ((long) (bytes[3 + offset] & 0xFF) << 32) |

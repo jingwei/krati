@@ -7,7 +7,7 @@ import java.io.IOException;
  * StorePartitionConfig
  * 
  * @author jwu
- * 06/26, 2011
+ * @since 06/26, 2011
  * 
  */
 public class StorePartitionConfig extends StoreConfig {

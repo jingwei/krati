@@ -20,12 +20,12 @@ import krati.util.FnvHashFunction;
  * {@link krati.store.ArrayStore ArrayStore} and {@link krati.store.DataStore DataStore}.
  * 
  * @author jwu
- * 06/09, 2011
+ * @since 06/09, 2011
  * 
  * <p>
- * 06/11, 2011 - Added methods for creating static and dynamic DataSet
- * 06/12, 2011 - Added JavaDoc comment
- * 06/25, 2011 - Added factory methods using StoreConfig
+ * 06/11, 2011 - Added methods for creating static and dynamic DataSet <br/>
+ * 06/12, 2011 - Added JavaDoc comment <br/>
+ * 06/25, 2011 - Added factory methods using StoreConfig <br/>
  */
 public class StoreFactory {
     

@@ -4,9 +4,7 @@ package krati.util;
  * Partition
  * 
  * @author jwu
- * 07/11, 2011
- * 
- * @param <K> Key
+ * @since 07/11, 2011
  */
 public interface Partition<K> {
     

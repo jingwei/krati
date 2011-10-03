@@ -4,7 +4,7 @@ package krati.core;
  * InvalidStoreConfigException
  * 
  * @author jwu
- * 06/25, 2011
+ * @since 06/25, 2011
  * 
  */
 public class InvalidStoreConfigException extends RuntimeException {

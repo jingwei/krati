@@ -1,12 +1,14 @@
 package krati.core;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.util.Properties;
 import java.util.Set;
 
 import krati.core.segment.MappedSegmentFactory;
@@ -23,19 +25,24 @@ import org.apache.log4j.Logger;
  * StoreConfig
  * 
  * @author jwu
- * 06/22, 2011
+ * @since 06/22, 2011
  * 
  * <p>
- * 06/25, 2011 - Added method validate()
+ * 06/25, 2011 - Added method validate() <br/>
+ * 10/01, 2011 - Added static method newInstance(File) <br/>
  */
 public class StoreConfig extends StoreParams {
-    public final static String CONFIG_PROPERTIES_FILE = "config.properties";
     private final static Logger _logger = Logger.getLogger(StoreConfig.class);
     private final File _homeDir;
     private final int _initialCapacity;
     private DataHandler _dataHandler = null;
     private SegmentFactory _segmentFactory = null;
     private HashFunction<byte[]> _hashFunction = null;
+    
+    /**
+     * The store configuration properties file: <code>config.properties</code>.
+     */
+    public final static String CONFIG_PROPERTIES_FILE = "config.properties";
     
     /**
      * Creates the configuration of a target store
@@ -442,5 +449,64 @@ public class StoreConfig extends StoreParams {
      */
     public DataHandler getDataHandler() {
         return _dataHandler;
+    }
+    
+    /**
+     * Creates a new instance of StoreConfig.
+     * 
+     * @param filePath - the <code>config.properties</code> file or the directory containing <code>config.properties</code> 
+     * @return a new instance of StoreConfig
+     * @throws IOException
+     * @throws InvalidStoreConfigException
+     */
+    public static StoreConfig newInstance(File filePath) throws IOException {
+        File homeDir;
+        Properties p = new Properties();
+        if(filePath.exists()) {
+            if(filePath.isDirectory()) {
+                homeDir = filePath;
+                File propertiesFile = new File(filePath, CONFIG_PROPERTIES_FILE);
+                if(propertiesFile.exists()) {
+                    FileReader reader = new FileReader(propertiesFile);
+                    p.load(reader);
+                    reader.close();
+                } else {
+                    throw new FileNotFoundException(propertiesFile.toString());
+                }
+            } else {
+                homeDir = filePath.getParentFile();
+                FileReader reader = new FileReader(filePath);
+                p.load(reader);
+                reader.close();
+            }
+        } else {
+            throw new FileNotFoundException(filePath.toString());
+        }
+        
+        int initialCapacity = -1;
+        String initialCapacityStr = p.getProperty(StoreParams.PARAM_INITIAL_CAPACITY);
+        if(initialCapacityStr == null) {
+            throw new InvalidStoreConfigException(StoreParams.PARAM_INITIAL_CAPACITY + " not found");
+        } else if((initialCapacity = parseInt(StoreParams.PARAM_INITIAL_CAPACITY, initialCapacityStr, -1)) < 1) {
+            throw new InvalidStoreConfigException(StoreParams.PARAM_INITIAL_CAPACITY + "=" + initialCapacityStr);
+        }
+        
+        int partitionStart = -1;
+        int partitionCount = -1;
+        String partitionStartStr = p.getProperty(StoreParams.PARAM_PARTITION_START);
+        String partitionCountStr = p.getProperty(StoreParams.PARAM_PARTITION_COUNT);
+        if(partitionStartStr != null && partitionCountStr != null) {
+            if((partitionStart = parseInt(StoreParams.PARAM_PARTITION_START, partitionStartStr, -1)) < 0) {
+                throw new InvalidStoreConfigException(StoreParams.PARAM_PARTITION_START + "=" + partitionStartStr);
+            }
+            
+            if((partitionCount = parseInt(StoreParams.PARAM_PARTITION_COUNT, partitionCountStr, -1)) < 1) {
+                throw new InvalidStoreConfigException(StoreParams.PARAM_PARTITION_COUNT + "=" + partitionCountStr);
+            }
+        } else {
+            return new StoreConfig(homeDir, initialCapacity);
+        }
+        
+        return new StorePartitionConfig(homeDir, partitionStart, partitionCount);
     }
 }

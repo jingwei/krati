@@ -6,8 +6,7 @@ import java.io.Serializable;
  * Range
  * 
  * @author jwu
- * 07/11, 2011
- * 
+ * @since 07/11, 2011
  */
 public class Range implements Serializable, Partition<Integer> {
     private final static long serialVersionUID = 1L;

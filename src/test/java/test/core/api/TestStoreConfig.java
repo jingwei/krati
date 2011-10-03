@@ -7,6 +7,7 @@ import test.util.FileUtils;
 import junit.framework.TestCase;
 import krati.core.StoreConfig;
 import krati.core.StoreParams;
+import krati.core.StorePartitionConfig;
 import krati.core.segment.MappedSegmentFactory;
 import krati.core.segment.MemorySegmentFactory;
 import krati.util.Fnv1aHash64;
@@ -16,7 +17,7 @@ import krati.util.FnvHashFunction;
  * TestStoreConfig
  * 
  * @author jwu
- * 06/23, 2011
+ * @since 06/23, 2011
  * 
  */
 public class TestStoreConfig extends TestCase {
@@ -116,5 +117,35 @@ public class TestStoreConfig extends TestCase {
         assertEquals(StoreParams.BATCH_SIZE_MIN, config2.getBatchSize());
         
         config2.validate();
+    }
+    
+    public void testNewInstance() throws IOException {
+        StoreConfig config = new StoreConfig(getHomeDir(), getInitialCapacity());
+        StoreConfig config1 = StoreConfig.newInstance(new File(getHomeDir(), StoreConfig.CONFIG_PROPERTIES_FILE));
+        StoreConfig config2 = StoreConfig.newInstance(getHomeDir());
+        
+        assertEquals(config.getInitialCapacity(), config1.getInitialCapacity());
+        assertEquals(config.getInitialCapacity(), config2.getInitialCapacity());
+        assertEquals(config.getClass(), config1.getClass());
+        assertEquals(config.getClass(), config2.getClass());
+
+        int partitionStart = 100;
+        int partitionCount = config.getInitialCapacity();
+        config.setProperty(StoreParams.PARAM_PARTITION_COUNT, "" +  partitionCount);
+        config.setProperty(StoreParams.PARAM_PARTITION_START, "" + partitionStart);
+        config.save();
+        
+        StorePartitionConfig config3 = (StorePartitionConfig)StoreConfig.newInstance(new File(getHomeDir(), StoreConfig.CONFIG_PROPERTIES_FILE));
+        StorePartitionConfig config4 = (StorePartitionConfig)StoreConfig.newInstance(getHomeDir());
+        
+        assertEquals(config.getInitialCapacity(), config3.getInitialCapacity());
+        assertEquals(config.getInitialCapacity(), config4.getInitialCapacity());
+        assertEquals(StorePartitionConfig.class, config3.getClass());
+        assertEquals(StorePartitionConfig.class, config4.getClass());
+        
+        assertEquals(partitionStart, config3.getPartitionStart());
+        assertEquals(partitionCount, config3.getPartitionCount());
+        assertEquals(partitionStart, config4.getPartitionStart());
+        assertEquals(partitionCount, config4.getPartitionCount());
     }
 }

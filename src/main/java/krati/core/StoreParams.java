@@ -10,11 +10,11 @@ import krati.util.LinearHashing;
  * StoreParams
  * 
  * @author jwu
- * 06/09, 2011
+ * @since 06/09, 2011
  * 
  * <p>
- * 06/12, 2011 - Added JavaDoc comment
- * 06/22, 2011 - Added new parameter names
+ * 06/12, 2011 - Added JavaDoc comment <br/>
+ * 06/22, 2011 - Added new parameter names <br/>
  */
 public class StoreParams {
     /**
