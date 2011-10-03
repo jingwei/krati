@@ -7,7 +7,7 @@ package krati.retention.clock;
  * @author jwu
  * 
  * <p>
- * 08/18, 2011 - Created
+ * 08/18, 2011 - Created <br/>
  */
 public interface ClockWatcher {
 

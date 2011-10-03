@@ -7,6 +7,7 @@ import krati.retention.Event;
 import krati.retention.SimpleRetention;
 import krati.retention.SimpleEvent;
 import krati.retention.clock.Clock;
+import krati.retention.clock.Occurred;
 import krati.retention.policy.RetentionPolicy;
 import krati.retention.policy.RetentionPolicyOnSize;
 
@@ -53,7 +54,7 @@ public class TestSimpleRetentionOnSize extends AbstractTestRetention<String> {
         clock = _clockFactory.next();
         startClock = clock;
         _retention.put(nextEvent(clock));
-        assertTrue(_retention.getMinClock().compareTo(startClock) == 0);
+        assertTrue(_retention.getMinClock().compareTo(startClock) == Occurred.EQUICONCURRENTLY);
         
         long startTime = System.currentTimeMillis();
         int cnt = getEventBatchSize() * getNumRetentionBatches() * 2;
@@ -65,14 +66,14 @@ public class TestSimpleRetentionOnSize extends AbstractTestRetention<String> {
         double rate = cnt / (double)(System.currentTimeMillis() - startTime);
         
         int sleepCnt = 10;
-        while(_retention.getMinClock().compareTo(startClock) == 0) {
+        while(_retention.getMinClock().compareTo(startClock) == Occurred.EQUICONCURRENTLY) {
             Thread.sleep(1000);
             if(--sleepCnt == 0) {
                 break;
             }
         }
         
-        assertTrue(_retention.getMinClock().compareTo(startClock) > 0);
+        assertTrue(_retention.getMinClock().after(startClock));
         
         System.out.printf("%10.2f Events per ms, #Events=%d (Populate)%n", rate, cnt);
     }

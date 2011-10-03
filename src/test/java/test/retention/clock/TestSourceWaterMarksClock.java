@@ -10,6 +10,7 @@ import test.util.DirUtils;
 
 import junit.framework.TestCase;
 import krati.retention.clock.Clock;
+import krati.retention.clock.Occurred;
 import krati.retention.clock.SourceWaterMarksClock;
 import krati.util.SourceWaterMarks;
 
@@ -76,11 +77,11 @@ public class TestSourceWaterMarksClock extends TestCase {
             long hwm = _clock.getHWMScn(source) + _rand.nextInt(100) + 1;
             _clock.saveHWMark(source, hwm);
             assertTrue(_clock.getLWMScn(source) < _clock.getHWMScn(source));
-            assertTrue(clock.compareTo(_clock.current()) < 0);
+            assertTrue(clock.before(_clock.current()));
             clock = _clock.current();
         }
         
-        assertTrue(clock.compareTo(_clock.current()) == 0);
+        assertTrue(clock.compareTo(_clock.current()) == Occurred.EQUICONCURRENTLY);
         
         // Sync water marks
         _clock.syncWaterMarks();
@@ -100,6 +101,6 @@ public class TestSourceWaterMarksClock extends TestCase {
         }
         
         SourceWaterMarksClock clock2 = new SourceWaterMarksClock(sources2, _sourceWaterMarks);
-        assertTrue(_clock.current().compareTo(clock2.current()) == 0);
+        assertTrue(_clock.current().compareTo(clock2.current()) == Occurred.EQUICONCURRENTLY);
     }
 }

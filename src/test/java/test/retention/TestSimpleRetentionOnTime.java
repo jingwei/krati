@@ -3,6 +3,7 @@ package test.retention;
 import java.util.concurrent.TimeUnit;
 
 import krati.retention.clock.Clock;
+import krati.retention.clock.Occurred;
 import krati.retention.policy.RetentionPolicy;
 import krati.retention.policy.RetentionPolicyOnTime;
 
@@ -35,7 +36,7 @@ public class TestSimpleRetentionOnTime extends TestSimpleRetentionOnSize {
         startClock = clock;
         _retention.put(nextEvent(clock));
         
-        assertTrue(_retention.getMinClock().compareTo(startClock) == 0);
+        assertTrue(_retention.getMinClock().compareTo(startClock) == Occurred.EQUICONCURRENTLY);
         
         int cnt = 1;
         long startTime = System.currentTimeMillis();
@@ -50,7 +51,7 @@ public class TestSimpleRetentionOnTime extends TestSimpleRetentionOnSize {
             }
         }
         
-        assertTrue(_retention.getMinClock().compareTo(startClock) > 0);
+        assertTrue(_retention.getMinClock().after(startClock));
         
         double rate = cnt / (double)(System.currentTimeMillis() - startTime);
         System.out.printf("%10.2f Events per ms, #Events=%d (Populate)%n", rate, cnt);

@@ -9,7 +9,7 @@ import java.util.Iterator;
  * @author jwu
  * 
  * <p>
- * 08/16, 2011 - Created
+ * 08/16, 2011 - Created <br/>
  */
 public interface WaterMarksClock extends ClockWatcher {
     

@@ -191,7 +191,7 @@ public class SimpleEventBus<T> implements Retention<T> {
         }
         
         // Check that event has a monotonically increasing clock.  
-        if(event.getClock().compareTo(getMaxClock()) < 0) {
+        if(!event.getClock().afterEqual(getMaxClock())) {
             return false;
         }
         

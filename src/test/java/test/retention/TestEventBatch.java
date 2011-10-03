@@ -16,6 +16,7 @@ import krati.retention.SimpleEventBatch;
 import krati.retention.SimpleEventBatchSerializer;
 import krati.retention.clock.Clock;
 import krati.retention.clock.ClockSerializer;
+import krati.retention.clock.Occurred;
 
 /**
  * TestEventBatch
@@ -41,31 +42,31 @@ public class TestEventBatch extends TestCase {
         assertEquals(EventBatch.VERSION, batch.getVersion());
         assertEquals(0, batch.getSize());
         assertEquals(origin, batch.getOrigin());
-        assertEquals(0, clock.compareTo(batch.getMinClock()));
-        assertEquals(0, clock.compareTo(batch.getMaxClock()));
+        assertEquals(Occurred.EQUICONCURRENTLY, clock.compareTo(batch.getMinClock()));
+        assertEquals(Occurred.EQUICONCURRENTLY, clock.compareTo(batch.getMaxClock()));
         
         // Add the first event
         clock = _randClockFactory.next();
         batch.put(new SimpleEvent<String>("Event." + clock, clock));
         
-        assertTrue(clock.compareTo(batch.getMinClock()) == 0);
-        assertTrue(clock.compareTo(batch.getMaxClock()) == 0);
+        assertTrue(clock.compareTo(batch.getMinClock()) == Occurred.EQUICONCURRENTLY);
+        assertTrue(clock.compareTo(batch.getMaxClock()) == Occurred.EQUICONCURRENTLY);
         assertEquals(1, batch.getSize());
         
         // Add the second event
         clock = _randClockFactory.next();
         batch.put(new SimpleEvent<String>("Event." + clock, clock));
         
-        assertTrue(clock.compareTo(batch.getMinClock()) > 0);
-        assertTrue(clock.compareTo(batch.getMaxClock()) == 0);
+        assertTrue(clock.after(batch.getMinClock()));
+        assertTrue(clock.compareTo(batch.getMaxClock()) == Occurred.EQUICONCURRENTLY);
         assertEquals(2, batch.getSize());
         
         do {
             clock = _randClockFactory.next();
         } while(batch.put(new SimpleEvent<String>("Event." + clock, clock)));
         
-        assertTrue(clock.compareTo(batch.getMinClock()) > 0);
-        assertTrue(clock.compareTo(batch.getMaxClock()) > 0);
+        assertTrue(clock.after(batch.getMinClock()));
+        assertTrue(clock.after(batch.getMaxClock()));
         assertEquals(capacity, batch.getSize());
         
         batch.setCompletionTime(System.currentTimeMillis() + 1);
@@ -77,8 +78,8 @@ public class TestEventBatch extends TestCase {
         assertEquals(batch.getOrigin(), header.getOrigin());
         assertEquals(batch.getCreationTime(), header.getCreationTime());
         assertEquals(batch.getCompletionTime(), header.getCompletionTime());
-        assertTrue(header.getMinClock().compareTo(batch.getMinClock()) == 0);
-        assertTrue(header.getMaxClock().compareTo(batch.getMaxClock()) == 0);
+        assertTrue(header.getMinClock().compareTo(batch.getMinClock()) == Occurred.EQUICONCURRENTLY);
+        assertTrue(header.getMaxClock().compareTo(batch.getMaxClock()) == Occurred.EQUICONCURRENTLY);
         
         long nextOffset;
         ArrayList<Event<String>> list = new ArrayList<Event<String>>();
@@ -121,7 +122,7 @@ public class TestEventBatch extends TestCase {
         assertEquals(header.getOrigin(), header2.getOrigin());
         assertEquals(header.getCreationTime(), header2.getCreationTime());
         assertEquals(header.getCompletionTime(), header2.getCompletionTime());
-        assertTrue(header.getMinClock().compareTo(header2.getMinClock()) == 0);
-        assertTrue(header.getMaxClock().compareTo(header2.getMaxClock()) == 0);
+        assertTrue(header.getMinClock().compareTo(header2.getMinClock()) == Occurred.EQUICONCURRENTLY);
+        assertTrue(header.getMaxClock().compareTo(header2.getMaxClock()) == Occurred.EQUICONCURRENTLY);
     }
 }

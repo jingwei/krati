@@ -15,6 +15,7 @@ import krati.retention.Position;
 import krati.retention.SimpleEventBatchSerializer;
 import krati.retention.clock.Clock;
 import krati.retention.clock.ClockSerializer;
+import krati.retention.clock.Occurred;
 import krati.retention.policy.RetentionPolicy;
 import krati.retention.policy.RetentionPolicyOnSize;
 
@@ -115,8 +116,8 @@ public abstract class AbstractTestRetention<T> extends TestCase {
         assertEquals((long)cnt, pos.getOffset());
         assertEquals(cnt, _retention.getOffset());
         
-        assertTrue(minClock.compareTo(_retention.getMinClock()) == 0);
-        assertTrue(maxClock.compareTo(_retention.getMaxClock()) == 0);
+        assertTrue(minClock.compareTo(_retention.getMinClock()) == Occurred.EQUICONCURRENTLY);
+        assertTrue(maxClock.compareTo(_retention.getMaxClock()) == Occurred.EQUICONCURRENTLY);
         
         Position sincePosition = _retention.getPosition(idleClock0);
         assertEquals(getId(), sincePosition.getId());
@@ -127,8 +128,8 @@ public abstract class AbstractTestRetention<T> extends TestCase {
         assertEquals(1, sincePosition.getOffset());
         
         Retention<T> retention2 = createRetention();
-        assertTrue(minClock.compareTo(retention2.getMinClock()) == 0);
-        assertTrue(retention2.getMaxClock().compareTo(_retention.getMaxClock()) <= 0);
+        assertTrue(minClock.compareTo(retention2.getMinClock()) == Occurred.EQUICONCURRENTLY);
+        assertTrue(retention2.getMaxClock().beforeEqual(_retention.getMaxClock()));
         
         sincePosition = retention2.getPosition(idleClock0);
         assertEquals(getId(), sincePosition.getId());

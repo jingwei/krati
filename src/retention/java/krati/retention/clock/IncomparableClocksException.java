@@ -7,7 +7,7 @@ package krati.retention.clock;
  * @author jwu
  * 
  * <p>
- * 08/11, 2011 - Created
+ * 08/11, 2011 - Created <br/>
  */
 public class IncomparableClocksException extends RuntimeException {
     private static final long serialVersionUID = 1L;

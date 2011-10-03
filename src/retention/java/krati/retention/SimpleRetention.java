@@ -21,6 +21,7 @@ import krati.core.StoreConfig;
 import krati.core.segment.SegmentFactory;
 import krati.core.segment.WriteBufferSegmentFactory;
 import krati.retention.clock.Clock;
+import krati.retention.clock.Occurred;
 import krati.retention.policy.RetentionPolicy;
 import krati.store.BytesDB;
 import krati.util.DaemonThreadFactory;
@@ -263,11 +264,12 @@ public class SimpleRetention<T> implements Retention<T> {
         EventBatch<T> b;
         long sinceOffset;
         
-        if(sinceClock.compareTo(getMinClock()) < 0) {
+        Occurred occ = sinceClock.compareTo(getMinClock());
+        if(occ == Occurred.BEFORE || occ == Occurred.CONCURRENTLY) {
             return null;
         }
         
-        if(sinceClock.compareTo(getMaxClock()) > 0) {
+        if(sinceClock.after(getMaxClock())) {
             return getPosition();
         }
         
@@ -298,8 +300,8 @@ public class SimpleRetention<T> implements Retention<T> {
         while(iter.hasNext()) {
             EventBatchCursor c = iter.next();
             EventBatchHeader h = c.getHeader();
-            if(h.getMinClock().compareTo(sinceClock) < 0) {
-                if(h.getMaxClock().compareTo(sinceClock) >= 0) {
+            if(h.getMinClock().before(sinceClock)) {
+                if(!sinceClock.after(h.getMaxClock())) {
                     byte[] dat = _store.get(c.getLookup());
                     try {
                         b = _eventBatchSerializer.deserialize(dat);

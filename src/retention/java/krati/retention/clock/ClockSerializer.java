@@ -10,7 +10,7 @@ import krati.io.Serializer;
  * @author jwu
  * 
  * <p>
- * 08/11, 2011 - Created
+ * 08/11, 2011 - Created <br/>
  */
 public final class ClockSerializer implements Serializer<Clock> {
     

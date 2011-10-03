@@ -12,7 +12,7 @@ import krati.util.SourceWaterMarks;
  * @author jwu
  * 
  * <p>
- * 08/15, 2011 - Created
+ * 08/15, 2011 - Created <br/>
  */
 public class SourceWaterMarksClock implements WaterMarksClock {
     private final List<String> _sources;

@@ -5,6 +5,7 @@ import junit.framework.TestCase;
 import krati.retention.clock.Clock;
 import krati.retention.clock.ClockSerializer;
 import krati.retention.clock.IncomparableClocksException;
+import krati.retention.clock.Occurred;
 
 /**
  * TestClock
@@ -22,21 +23,29 @@ public class TestClock extends TestCase {
         
         Clock c1 = f.next();
         Clock c2 = f.next();
-        assertTrue(c1.compareTo(c2) < 0);
-        assertTrue(c2.compareTo(c1) > 0);
+        assertTrue(c1.before(c2));
+        assertTrue(c2.after(c1));
         
         long[] scnValues = (long[])c1.values().clone();
         Clock c = new Clock(scnValues);
-        assertTrue(c.compareTo(c1) == 0);
-        assertTrue(c1.compareTo(c) == 0);
+        assertTrue(c.compareTo(c1) == Occurred.EQUICONCURRENTLY);
+        assertTrue(c1.compareTo(c) == Occurred.EQUICONCURRENTLY);
         
         scnValues[0] = scnValues[0] + 1;
         c = new Clock(scnValues);
-        assertTrue(c.compareTo(c1) > 0);
-        assertTrue(c1.compareTo(c) < 0);
+        assertTrue(c.after(c1));
+        assertTrue(c1.before(c));
         
         scnValues[1] = c.values()[1] - 1;
         c = new Clock(scnValues);
+        
+        assertEquals(Occurred.CONCURRENTLY, c.compareTo(c1));
+        
+        long[] scnValuesNew = new long[2];
+        scnValuesNew[0] = scnValuesNew[0];
+        scnValuesNew[1] = scnValuesNew[1];
+        c = new Clock(scnValuesNew);
+        
         try {
             c.compareTo(c1);
             assertTrue(false);
@@ -54,13 +63,13 @@ public class TestClock extends TestCase {
         Clock c2 = Clock.parseClock(raw);
         Clock c3 = serializer.deserialize(raw);
         
-        assertEquals(0, c.compareTo(c2));
-        assertEquals(0, c.compareTo(c3));
+        assertEquals(Occurred.EQUICONCURRENTLY, c.compareTo(c2));
+        assertEquals(Occurred.EQUICONCURRENTLY, c.compareTo(c3));
         
         String str = c.toString();
         Clock c4 = Clock.parseClock(str);
-        assertEquals(0, c.compareTo(c4));
+        assertEquals(Occurred.EQUICONCURRENTLY, c.compareTo(c4));
         
-        assertTrue(c.compareTo(Clock.ZERO) > 0);
+        assertTrue(c.after(Clock.ZERO));
     }
 }

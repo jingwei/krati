@@ -132,7 +132,7 @@ class SimpleSnapshot<T> implements Retention<T>, RetentionFlushListener {
             Entry<T, Clock> e = iter.next();
             
             evtClock = e.getValue();
-            if(posClock.compareTo(evtClock) <= 0) {
+            if(posClock.beforeEqual(evtClock)) {
                 list.add(new SimpleEvent<T>(e.getKey(), evtClock));
                 cnt++;
             }
@@ -143,7 +143,7 @@ class SimpleSnapshot<T> implements Retention<T>, RetentionFlushListener {
                     e = iter.next();
                     
                     evtClock = e.getValue();
-                    if(posClock.compareTo(evtClock) <= 0) {
+                    if(posClock.beforeEqual(evtClock)) {
                         list.add(new SimpleEvent<T>(e.getKey(), evtClock));
                         cnt++;
                     }

@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import krati.retention.clock.Clock;
+import krati.retention.clock.Occurred;
 
 /**
  * SimpleEventBatch
@@ -121,14 +122,14 @@ public final class SimpleEventBatch<T> implements EventBatch<T> {
     
     @Override
     public long getOffset(Clock sinceClock) {
-        if(_minClock.compareTo(sinceClock) < 0 && sinceClock.compareTo(_maxClock) <= 0) {
+        if(_minClock.before(sinceClock) && !sinceClock.after(_maxClock)) {
             int i = 0;
             for(; i < _events.size(); i++) {
                 Event<T> e = _events.get(i);
-                int cmp = sinceClock.compareTo(e.getClock());
-                if(cmp == 0) {
+                Occurred occ = sinceClock.compareTo(e.getClock());
+                if(occ == Occurred.EQUICONCURRENTLY) {
                     break;
-                } else if(cmp < 0) {
+                } else if(occ == Occurred.BEFORE || occ == Occurred.CONCURRENTLY) {
                     i--;
                     break;
                 }
@@ -144,12 +145,12 @@ public final class SimpleEventBatch<T> implements EventBatch<T> {
         Clock clock = event.getClock();
         int size = _events.size();
         
-        if(size == 0 && _minClock.compareTo(clock) < 0) {
+        if(size == 0 && _minClock.before(clock)) {
             _minClock = clock;
             _maxClock = clock;
         }
         
-        if(size < _capacity && _maxClock.compareTo(clock) <= 0) {
+        if(size < _capacity && _maxClock.beforeEqual(clock)) {
             _events.add(event);
             _maxClock = clock;
             return true;

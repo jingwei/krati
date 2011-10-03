@@ -1,7 +1,6 @@
 package krati.retention;
 
 import krati.Persistable;
-import krati.store.VersionedStoreWriter;
 
 /**
  * RetentionStoreWriter
@@ -13,9 +12,8 @@ import krati.store.VersionedStoreWriter;
  * 
  * <p>
  * 08/16, 2011 - Created <br/>
- * 09/21, 2011 - Added interface VersionedStoreWriter <br/>
  */
-public interface RetentionStoreWriter<K, V> extends Persistable, VersionedStoreWriter<K, V> {
+public interface RetentionStoreWriter<K, V> extends Persistable {
     
     /**
      * @return the data source of this RetentionStoreWriter.
@@ -32,7 +30,6 @@ public interface RetentionStoreWriter<K, V> extends Persistable, VersionedStoreW
      *         Otherwise, <cod>false</code>.
      * @throws Exception
      */
-    @Override
     public boolean put(K key, V value, long scn) throws Exception;
     
     /**
@@ -44,6 +41,5 @@ public interface RetentionStoreWriter<K, V> extends Persistable, VersionedStoreW
      *         Otherwise, <cod>false</code>.
      * @throws Exception
      */
-    @Override
     public boolean delete(K key, long scn) throws Exception;
 }
