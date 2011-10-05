@@ -42,9 +42,14 @@ public final class Clock implements Serializable {
      * Parses a Clock value from its string representation.
      *  
      * @param str - the string representation of Clock
-     * @return A Clock object 
+     * @return A Clock object.
+     * <code>Clock.ZERO</code> is returned <code>upon</code> null or zero-length string.  
      */
     public static Clock parseClock(String str) {
+        if(str == null || str.length() == 0) {
+            return Clock.ZERO;
+        }
+        
         String[] parts = str.split(":");
         long[] values = new long[parts.length];
         for(int i = 0; i < values.length; i++) {
@@ -57,7 +62,8 @@ public final class Clock implements Serializable {
      * Parses a Clock value from its raw bytes.
      * 
      * @param raw - the raw bytes of Clock
-     * @return a Clock object
+     * @return a Clock object.
+     * <code>Clock.ZERO</code> is returned upon <code>null</code> or a byte array with the length less than 8.
      */
     public static Clock parseClock(byte[] raw) {
         if(raw == null || raw.length < 8) {

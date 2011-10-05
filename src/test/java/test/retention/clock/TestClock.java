@@ -2,6 +2,7 @@ package test.retention.clock;
 
 import test.retention.util.RandomClockFactory;
 import junit.framework.TestCase;
+import krati.retention.SimplePosition;
 import krati.retention.clock.Clock;
 import krati.retention.clock.ClockSerializer;
 import krati.retention.clock.IncomparableClocksException;
@@ -71,5 +72,17 @@ public class TestClock extends TestCase {
         assertEquals(Occurred.EQUICONCURRENTLY, c.compareTo(c4));
         
         assertTrue(c.after(Clock.ZERO));
+    }
+    
+    public void testClockZero() {
+        Clock c1 = Clock.parseClock(Clock.ZERO.toByteArray());
+        assertEquals(Clock.ZERO, c1);
+        
+        Clock c2 = Clock.parseClock(Clock.ZERO.toString());
+        assertEquals(Clock.ZERO, c2);
+        
+        SimplePosition position = new SimplePosition(1, 23467L, Clock.ZERO);
+        Clock c3 = SimplePosition.parsePosition(position.toString()).getClock();
+        assertEquals(Clock.ZERO, c3);
     }
 }
