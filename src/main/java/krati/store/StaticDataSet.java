@@ -29,8 +29,8 @@ import krati.util.HashFunction;
  * @author jwu
  * 
  * <p>
- * 06/06, 2011 - Added support for Closeable
- * 06/25, 2011 - Added constructor using StoreConfig
+ * 06/06, 2011 - Added support for Closeable <br/>
+ * 06/25, 2011 - Added constructor using StoreConfig <br/>
  */
 public class StaticDataSet implements DataSet<byte[]> {
     private final static Logger _log = Logger.getLogger(StaticDataSet.class);

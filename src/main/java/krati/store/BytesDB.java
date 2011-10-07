@@ -27,7 +27,7 @@ import krati.util.DaemonThreadFactory;
  * 
  * <p>
  * 05/31, 2011 - Added support for Closeable <br/>
- * 06/28, 2011 - Added constructor using StoreConfig
+ * 06/28, 2011 - Added constructor using StoreConfig <br/>
  */
 public final class BytesDB implements Persistable, Closeable {
     final static Logger _logger = Logger.getLogger(BytesDB.class);

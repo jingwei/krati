@@ -4,7 +4,7 @@ package krati.store;
  * StoreClosedException
  * 
  * @author jwu
- * 06/04, 2011
+ * @since 06/04, 2011
  * 
  */
 public class StoreClosedException extends RuntimeException {

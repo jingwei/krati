@@ -22,9 +22,9 @@ import krati.core.segment.SegmentManager;
  * @author jwu
  * 
  * <p>
- * 05/30, 2011 - Added support for Closeable
- * 06/03, 2011 - Constructor cleanup
- * 06/26, 2011 - Added StorePartitionConfig-based constructor
+ * 05/30, 2011 - Added support for Closeable <br/>
+ * 06/03, 2011 - Constructor cleanup <br/>
+ * 06/26, 2011 - Added StorePartitionConfig-based constructor <br/>
  */
 public class StaticArrayStorePartition implements ArrayStorePartition {
     private final static Logger _log = Logger.getLogger(StaticArrayStorePartition.class);

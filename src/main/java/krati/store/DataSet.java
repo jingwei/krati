@@ -12,7 +12,7 @@ import krati.io.Closeable;
  * @param <V> value
  * 
  * <p>
- * 06/06, 2011 - Extended interface Closeable
+ * 06/06, 2011 - Extended interface Closeable <br/>
  */
 public interface DataSet<V> extends Closeable {
     

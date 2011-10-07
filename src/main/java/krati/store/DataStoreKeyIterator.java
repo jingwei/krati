@@ -15,7 +15,7 @@ import krati.util.IndexedIterator;
  * @version 0.4.2
  * 
  * <p>
- * 08/10, 2011 - Implemented IndexedIterator
+ * 08/10, 2011 - Implemented IndexedIterator <br/>
  */
 final class DataStoreKeyIterator implements IndexedIterator<byte[]> {
     private final ArrayList<byte[]> _bucket;

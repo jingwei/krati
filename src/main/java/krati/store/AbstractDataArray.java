@@ -20,7 +20,7 @@ import krati.core.segment.SegmentManager;
  * 09/24, 2010
  * 
  * <p>
- * 06/25, 2011 - Added support for StoreConfig
+ * 06/25, 2011 - Added support for StoreConfig <br/>
  */
 public abstract class AbstractDataArray implements DataArray, Persistable {
     protected final SimpleDataArray _dataArray;

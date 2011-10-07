@@ -31,9 +31,9 @@ import krati.util.IndexedIterator;
  * @author jwu
  * 
  * <p>
- * 06/04, 2011 - Added support for Closeable
- * 06/04, 2011 - Added getHomeDir
- * 06/25, 2011 - Added constructor using StoreConfig
+ * 06/04, 2011 - Added support for Closeable <br/>
+ * 06/04, 2011 - Added getHomeDir <br/>
+ * 06/25, 2011 - Added constructor using StoreConfig <br/>
  */
 public class StaticDataStore implements DataStore<byte[], byte[]> {
     private final static Logger _log = Logger.getLogger(StaticDataStore.class);

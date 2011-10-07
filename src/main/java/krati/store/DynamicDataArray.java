@@ -19,7 +19,7 @@ import org.apache.log4j.Logger;
  * 09/24, 2010
  * 
  * <p>
- * 06/25, 2011 - Added constructor using StoreConfig
+ * 06/25, 2011 - Added constructor using StoreConfig <br/>
  */
 public final class DynamicDataArray extends AbstractDataArray implements DynamicArray, ArrayStore {
     private final static Logger _log = Logger.getLogger(DynamicDataArray.class);

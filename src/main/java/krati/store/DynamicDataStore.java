@@ -37,10 +37,10 @@ import krati.util.LinearHashing;
  * @author jwu
  * 
  * <p>
- * 06/04, 2011 - Added support for Closeable
- * 06/04, 2011 - Added getHomeDir
- * 06/08, 2011 - Scale to the Integer.MAX_VALUE capacity
- * 06/25, 2011 - Added constructor using StoreConfig
+ * 06/04, 2011 - Added support for Closeable <br/>
+ * 06/04, 2011 - Added getHomeDir <br/>
+ * 06/08, 2011 - Scale to the Integer.MAX_VALUE capacity <br/>
+ * 06/25, 2011 - Added constructor using StoreConfig <br/>
  */
 public class DynamicDataStore implements DataStore<byte[], byte[]> {
     private final static Logger _log = Logger.getLogger(DynamicDataStore.class);

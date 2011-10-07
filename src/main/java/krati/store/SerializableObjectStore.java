@@ -24,7 +24,7 @@ import krati.util.IndexedIterator;
  * @author jwu
  * 
  * <p>
- * 06/04, 2011 - Added support for Closeable
+ * 06/04, 2011 - Added support for Closeable <br/>
  */
 public class SerializableObjectStore<K, V> implements ObjectStore<K, V> {
     protected final DataStore<byte[], byte[]> _store;

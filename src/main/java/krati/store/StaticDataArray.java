@@ -15,10 +15,10 @@ import krati.core.segment.SegmentFactory;
  * StaticDataArray - a convenient class for creating a fixed-size data array.
  * 
  * @author jwu
- * 09/24, 2010
+ * @since 09/24, 2010
  * 
  * <p>
- * 06/25, 2011 - Added constructor using StoreConfig
+ * 06/25, 2011 - Added constructor using StoreConfig <br/>
  */
 public final class StaticDataArray extends AbstractDataArray implements ArrayStore {
     private final static Logger _log = Logger.getLogger(StaticDataArray.class);

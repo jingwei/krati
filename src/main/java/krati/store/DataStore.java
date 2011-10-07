@@ -15,7 +15,7 @@ import krati.util.IndexedIterator;
  * @param <V> value
  * 
  * <p>
- * 06/04, 2011 - Added support for Closeable
+ * 06/04, 2011 - Added support for Closeable <br/>
  */
 public interface DataStore<K, V> extends Iterable<Entry<K, V>>, Closeable {
     

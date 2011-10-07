@@ -11,7 +11,7 @@ import krati.util.IndexedIterator;
  * @version 0.4.2
  * 
  * <p>
- * 08/10, 2011 - Implemented IndexedIterator
+ * 08/10, 2011 - Implemented IndexedIterator <br/>
  */
 public class ObjectStoreKeyIterator<K> implements IndexedIterator<K> {
     private final IndexedIterator<byte[]> _rawKeyIterator;
