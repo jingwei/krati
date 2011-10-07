@@ -61,16 +61,19 @@ public class SerializableObjectStore<K, V> implements ObjectStore<K, V> {
         return _keySerializer;
     }
 
-    @Override
-    public final int capacity() {
-        return _store.capacity();
-    }
-
     /**
      * @return the value serializer.
      */
     public Serializer<V> getValueSerializer() {
         return _valSerializer;
+    }
+
+    /**
+     * @return the store capacity.
+     */
+    @Override
+    public final int capacity() {
+        return _store.capacity();
     }
 
     /**
@@ -137,6 +140,11 @@ public class SerializableObjectStore<K, V> implements ObjectStore<K, V> {
         return _store.delete(getKeySerializer().serialize(key));
     }
 
+    /**
+     * Sync changes to this object store for persistency.
+     * 
+     * @throws IOException
+     */
     @Override
     public void sync() throws IOException {
         _store.sync();

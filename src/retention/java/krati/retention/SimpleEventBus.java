@@ -131,7 +131,7 @@ public class SimpleEventBus<T> implements Retention<T> {
         
         if(pos.getId() != getId()) {
             if(pos.isIndexed()) {
-                throw new InvalidPositionException("Bootstrap reconnection not allowed", pos);
+                throw new InvalidPositionException("Bootstrap reconnection refused", pos);
             } else {
                 pos = getPosition(pos.getClock());
             }
@@ -170,7 +170,6 @@ public class SimpleEventBus<T> implements Retention<T> {
                      * WARN:
                      * Bootstrap takes longer than retention time and need to restart.
                      */
-                    // TODO: Disable restart?
                     nextPos = new SimplePosition(getId(), getOffset(), 0, nextPos.getClock());
                     _logger.warn("Bootstrap restart: Position=" + nextPos);
                 }

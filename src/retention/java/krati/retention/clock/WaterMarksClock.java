@@ -72,4 +72,13 @@ public interface WaterMarksClock extends ClockWatcher {
      * Sync the water marks of all sources for persistency.
      */
     public Clock syncWaterMarks();
+    
+    /**
+     * Gets the water mark of a source from the specified clock.
+     * 
+     * @param source - the data source
+     * @param clock  - the clock
+     * @return the water mark of the specified source
+     */
+    public long getWaterMark(String source, Clock clock);
 }

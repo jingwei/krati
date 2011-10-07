@@ -29,8 +29,16 @@ public class SimpleRetentionStoreReader<K, V> implements RetentionStoreReader<K,
         this._store = store;
     }
     
+    public final DataStore<K, V> getStore() {
+        return _store;
+    }
+    
+    public final Retention<K> getRetention() {
+        return _retention;
+    }
+    
     @Override
-    public String getSource() {
+    public final String getSource() {
         return _source;
     }
     

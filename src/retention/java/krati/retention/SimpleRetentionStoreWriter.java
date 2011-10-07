@@ -26,6 +26,8 @@ public class SimpleRetentionStoreWriter<K, V> implements RetentionStoreWriter<K,
     private volatile long _hwmScn = 0;
     
     /**
+     * Creates a new RetentionStoreWriter instance.
+     * 
      * @param source    - the source of store
      * @param retention - the retention for store update events.  
      * @param store     - the store
@@ -37,15 +39,32 @@ public class SimpleRetentionStoreWriter<K, V> implements RetentionStoreWriter<K,
         this._store = store;
         this._waterMarksClock = waterMarksClock;
         
-        // TODO
+        // Initialize the water mark scn from clock
+        Clock clock = retention.getMaxClock();
+        long scn = waterMarksClock.getWaterMark(source, clock);
         
-        _lwmScn = waterMarksClock.getLWMScn(source);
+        // Initialize the high water mark scn
         _hwmScn = waterMarksClock.getHWMScn(source);
+        _hwmScn = Math.min(_hwmScn, scn);
+        
+        // Initialize the low water mark scn
+        _lwmScn = waterMarksClock.getLWMScn(source);
+        _lwmScn = Math.min(_lwmScn, _hwmScn);
+        
+        // Reset water marks
         waterMarksClock.setWaterMarks(source, _lwmScn, _hwmScn);
     }
     
+    public final DataStore<K, V> getStore() {
+        return _store;
+    }
+    
+    public final Retention<K> getRetention() {
+        return _retention;
+    }
+    
     @Override
-    public String getSource() {
+    public final String getSource() {
         return _source;
     }
     

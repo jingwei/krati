@@ -115,4 +115,15 @@ public class SourceWaterMarksClock implements WaterMarksClock {
         _sourceWaterMarks.syncWaterMarks();
         return current();
     }
+    
+    @Override
+    public long getWaterMark(String source, Clock clock) {
+        for(int i = 0, cnt = _sources.size(); i < cnt; i++) {
+            if(source.equals(_sources.get(i))) {
+                return clock.values()[i];
+            }
+        }
+        
+        throw new IllegalArgumentException("Unknown " + source);
+    }
 }
