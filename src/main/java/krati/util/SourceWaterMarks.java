@@ -21,7 +21,8 @@ import org.apache.log4j.Logger;
  * @since 03/04, 2011
  * 
  * <p>
- * 08/18, 2011 - Added syncWaterMarks(String source) <br/> 
+ * 08/18, 2011 - Added syncWaterMarks(String source) <br/>
+ * 10/08, 2011 - Added getEntry(String source) <br/>
  */
 public class SourceWaterMarks {
     private File file;
@@ -136,6 +137,16 @@ public class SourceWaterMarks {
     }
     
     /**
+     * Gets the water mark entry of the specified <code>source</code>.
+     * 
+     * @param source - the source
+     * @return the water mark entry mapped to the specified <code>source</code>.
+     */
+    public WaterMarkEntry getEntry(String source) {
+        return sourceWaterMarkMap.get(source);
+    }
+    
+    /**
      * Gets the high water mark of a source.
      * 
      * @param source - the source
@@ -147,6 +158,7 @@ public class SourceWaterMarks {
     
     /**
      * Sets the high water mark of a source.
+     * This method has the same functionality as {{@link #saveHWMark(String, long)}.
      * 
      * @param source - the source
      * @param scn    - the water mark value
@@ -187,6 +199,7 @@ public class SourceWaterMarks {
     
     /**
      * Saves the high water mark of a source.
+     * This method has the same functionality as {@link #setHWMScn(String, long)}.
      * 
      * @param source - the source
      * @param hwm    - the high water mark
@@ -310,9 +323,9 @@ public class SourceWaterMarks {
         }
     }
 
-    static class WaterMarkEntry {
-        private long lwmScn = 0;
-        private long hwmScn = 0;
+    public static class WaterMarkEntry {
+        private volatile long lwmScn = 0;
+        private volatile long hwmScn = 0;
         private final String source;
 
         public WaterMarkEntry(String source) {

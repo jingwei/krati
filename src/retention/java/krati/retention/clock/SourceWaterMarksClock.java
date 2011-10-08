@@ -1,9 +1,11 @@
 package krati.retention.clock;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import krati.util.SourceWaterMarks;
+import krati.util.SourceWaterMarks.WaterMarkEntry;
 
 /**
  * SourceWaterMarksClock
@@ -13,9 +15,11 @@ import krati.util.SourceWaterMarks;
  * 
  * <p>
  * 08/15, 2011 - Created <br/>
+ * 10/08, 2011 - Improved efficiency of method {@link #current()} <br/>
  */
 public class SourceWaterMarksClock implements WaterMarksClock {
     private final List<String> _sources;
+    private final List<WaterMarkEntry> _entries;
     private final SourceWaterMarks _sourceWaterMarks;
     
     /**
@@ -32,6 +36,13 @@ public class SourceWaterMarksClock implements WaterMarksClock {
             long lwm = sourceWaterMarks.getLWMScn(source);
             long hwm = sourceWaterMarks.getHWMScn(source);
             sourceWaterMarks.setWaterMarks(source, lwm, hwm);
+        }
+        
+        // Initialize water mark entries
+        int size = _sources.size();
+        _entries = new ArrayList<WaterMarkEntry>(size);
+        for(int i = 0; i < size; i++) {
+            _entries.add(sourceWaterMarks.getEntry(_sources.get(i)));
         }
     }
     
@@ -59,9 +70,10 @@ public class SourceWaterMarksClock implements WaterMarksClock {
      */
     @Override
     public synchronized Clock current() {
-        long[] values = new long[_sources.size()];
-        for(int i = 0, cnt = _sources.size(); i < cnt; i++) {
-            values[i] = _sourceWaterMarks.getHWMScn(_sources.get(i));
+        int cnt = _entries.size();
+        long[] values = new long[cnt];
+        for(int i = 0; i < cnt; i++) {
+            values[i] = _entries.get(i).getHWMScn();
         }
         return new Clock(values);
     }
