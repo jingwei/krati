@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.List;
 
 import krati.Mode;
+import krati.core.OperationAbortedException;
 import krati.retention.clock.Clock;
 import krati.retention.policy.RetentionPolicy;
 
@@ -17,7 +18,8 @@ import org.apache.log4j.Logger;
  * @author jwu
  * 
  * <p>
- * 08/11, 2011 - Created
+ * 08/11, 2011 - Created <br/>
+ * 10/07, 2011 - Abort bootstrap if it takes longer than retention time <br/>
  */
 public class SimpleEventBus<T> implements Retention<T> {
     private final static Logger _logger = Logger.getLogger(SimpleEventBus.class);
@@ -167,18 +169,17 @@ public class SimpleEventBus<T> implements Retention<T> {
                     _logger.info("Bootstrap success: Position=" + nextPos);
                 } else {
                     /**
-                     * WARN:
-                     * Bootstrap takes longer than retention time and need to restart.
+                     * Bootstrap takes longer than retention time and need to abort.
                      */
                     nextPos = new SimplePosition(getId(), getOffset(), 0, nextPos.getClock());
-                    _logger.warn("Bootstrap restart: Position=" + nextPos);
+                    throw new OperationAbortedException("Bootstrap aborted: Position=" + nextPos);
                 }
             }
             return nextPos;
         } else {
             // Read from the beginning of snapshot
             Position boostrapStart = new SimplePosition(getId(), getOffset(), 0, pos.getClock());
-            _logger.warn("Bootstrap start: Position=" + boostrapStart);
+            _logger.warn("Bootstrap started: Position=" + boostrapStart);
             return _snapshot.get(boostrapStart, list);
         }
     }

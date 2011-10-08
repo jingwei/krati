@@ -87,19 +87,30 @@ public class SourceWaterMarksClock implements WaterMarksClock {
     }
     
     /**
+     * Sets the high water mark of a given source.
+     * 
+     * @param source - the data source
+     * @param hwm    - the high water mark
+     */
+    @Override
+    public synchronized void setHWMark(String source, long hwm) {
+        _sourceWaterMarks.saveHWMark(source, hwm);
+    }
+    
+    /**
      * Save the high water mark of a given source.
      * 
      * @param source
      * @param hwm
      */
     @Override
-    public synchronized Clock saveHWMark(String source, long hwm) {
+    public synchronized Clock updateHWMark(String source, long hwm) {
         _sourceWaterMarks.saveHWMark(source, hwm);
         return current();
     }
     
     @Override
-    public synchronized Clock setWaterMarks(String source, long lwm, long hwm) {
+    public synchronized Clock updateWaterMarks(String source, long lwm, long hwm) {
         _sourceWaterMarks.setWaterMarks(source, lwm, hwm);
         return current();
     }
@@ -114,6 +125,11 @@ public class SourceWaterMarksClock implements WaterMarksClock {
     public synchronized Clock syncWaterMarks() {
         _sourceWaterMarks.syncWaterMarks();
         return current();
+    }
+    
+    @Override
+    public synchronized boolean flush() {
+        return _sourceWaterMarks.flush();
     }
     
     @Override

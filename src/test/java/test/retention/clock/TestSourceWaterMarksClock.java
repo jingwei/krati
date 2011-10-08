@@ -21,7 +21,8 @@ import krati.util.SourceWaterMarks;
  * @author jwu
  * 
  * <p>
- * 08/15, 2011 - Created
+ * 08/15, 2011 - Created <br/>
+ * 10/07, 2011 - Added testFlush <br/>
  */
 public class TestSourceWaterMarksClock extends TestCase {
     Random _rand = new Random();
@@ -75,7 +76,7 @@ public class TestSourceWaterMarksClock extends TestCase {
         while(iter.hasNext()) {
             String source = iter.next();
             long hwm = _clock.getHWMScn(source) + _rand.nextInt(100) + 1;
-            _clock.saveHWMark(source, hwm);
+            _clock.updateHWMark(source, hwm);
             assertTrue(_clock.getLWMScn(source) < _clock.getHWMScn(source));
             assertTrue(clock.before(_clock.current()));
             clock = _clock.current();
@@ -92,6 +93,37 @@ public class TestSourceWaterMarksClock extends TestCase {
             String source = iter.next();
             assertEquals(_clock.getLWMScn(source), _clock.getHWMScn(source));
         }
+        
+        // Open a new source water marks clock
+        List<String> sources2 = new ArrayList<String>();
+        iter = _clock.sourceIterator();
+        while(iter.hasNext()) {
+            sources2.add(iter.next());
+        }
+        
+        SourceWaterMarksClock clock2 = new SourceWaterMarksClock(sources2, _sourceWaterMarks);
+        assertTrue(_clock.current().compareTo(clock2.current()) == Occurred.EQUICONCURRENTLY);
+    }
+    
+    public void testFlush() {
+        Iterator<String> iter;
+        
+        iter = _clock.sourceIterator();
+        while(iter.hasNext()) {
+            String source = iter.next();
+            _clock.setHWMark(source, _clock.getHWMScn(source) + _rand.nextInt(1000) + 1);
+            assertTrue(_clock.getLWMScn(source) < _clock.getHWMScn(source));
+        }
+        
+        Clock current = _clock.current();
+        
+        iter = _clock.sourceIterator();
+        while(iter.hasNext()) {
+            String source = iter.next();
+            assertEquals(_clock.getHWMScn(source), _clock.getWaterMark(source, current));
+        }
+        
+        _clock.flush();
         
         // Open a new source water marks clock
         List<String> sources2 = new ArrayList<String>();

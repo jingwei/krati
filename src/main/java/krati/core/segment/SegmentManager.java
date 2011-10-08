@@ -211,6 +211,7 @@ public final class SegmentManager implements Closeable {
     }
 
     private void initSegs() throws IOException {
+        int loaded = 0;
         File[] segFiles = listSegmentFiles();
         if (segFiles.length == 0) {
             return;
@@ -229,6 +230,7 @@ public final class SegmentManager implements Closeable {
                     Segment s = getSegmentFactory().createSegment(segId, segFile, _segFileSizeMB, Segment.Mode.READ_ONLY);
                     s.incrLoadSize(getMeta().getSegmentLoadSize(segId));
                     _segList.add(s);
+                    loaded++;
                 } else {
                     // Segment is not live and is free for reuse
                     _segList.add(null);
@@ -241,7 +243,7 @@ public final class SegmentManager implements Closeable {
             throw e;
         }
 
-        _log.info("init done");
+        _log.info("loaded: " + loaded + "/" + segFiles.length);
     }
 
     private void clearInternal(boolean clearMeta) {

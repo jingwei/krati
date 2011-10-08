@@ -52,7 +52,7 @@ public class SimpleRetentionStoreWriter<K, V> implements RetentionStoreWriter<K,
         _lwmScn = Math.min(_lwmScn, _hwmScn);
         
         // Reset water marks
-        waterMarksClock.setWaterMarks(source, _lwmScn, _hwmScn);
+        waterMarksClock.updateWaterMarks(source, _lwmScn, _hwmScn);
     }
     
     public final DataStore<K, V> getStore() {
@@ -82,21 +82,21 @@ public class SimpleRetentionStoreWriter<K, V> implements RetentionStoreWriter<K,
     public synchronized void saveHWMark(long hwMark) {
         if(hwMark > _hwmScn) {
             _hwmScn = hwMark;
-            _waterMarksClock.saveHWMark(_source, _hwmScn);
+            _waterMarksClock.setHWMark(_source, _hwmScn);
         }
     }
     
     @Override
     public synchronized void persist() throws IOException {
         _store.persist();
-        _waterMarksClock.saveHWMark(_source, _hwmScn);
+        _waterMarksClock.setHWMark(_source, _hwmScn);
         _waterMarksClock.syncWaterMarks(_source);
     }
     
     @Override
     public synchronized void sync() throws IOException {
         _store.sync();
-        _waterMarksClock.saveHWMark(_source, _hwmScn);
+        _waterMarksClock.setHWMark(_source, _hwmScn);
         _waterMarksClock.syncWaterMarks(_source);
     }
     
@@ -108,7 +108,7 @@ public class SimpleRetentionStoreWriter<K, V> implements RetentionStoreWriter<K,
             _store.put(key, value);
             clock = (scn == _hwmScn) ?
                     _waterMarksClock.current() :
-                    _waterMarksClock.saveHWMark(_source, scn);
+                    _waterMarksClock.updateHWMark(_source, scn);
             _retention.put(new SimpleEvent<K>(key, clock));
             _hwmScn = scn;
             
@@ -126,7 +126,7 @@ public class SimpleRetentionStoreWriter<K, V> implements RetentionStoreWriter<K,
             _store.delete(key);
             clock = (scn == _hwmScn) ?
                     _waterMarksClock.current() :
-                    _waterMarksClock.saveHWMark(_source, scn);
+                    _waterMarksClock.updateHWMark(_source, scn);
             _retention.put(new SimpleEvent<K>(key, clock));
             _hwmScn = scn;
             

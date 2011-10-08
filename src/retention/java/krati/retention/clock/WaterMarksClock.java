@@ -47,31 +47,54 @@ public interface WaterMarksClock extends ClockWatcher {
     public long getHWMScn(String source);
     
     /**
-     * Save the high water mark of a given source.
+     * Sets the high water mark of a given source.
+     * This method is similar to {{@link #updateHWMark(String, long)}
+     * except that it does not return the current clock.
      * 
      * @param source - the data source
      * @param hwm    - the high water mark
      */
-    public Clock saveHWMark(String source, long hwm);
+    public void setHWMark(String source, long hwm);
     
     /**
-     * Resets the water marks for a given source.
+     * Updates the high water mark of a given source.
+     * 
+     * @param source - the data source
+     * @param hwm    - the high water mark
+     * @return the current clock. 
+     */
+    public Clock updateHWMark(String source, long hwm);
+    
+    /**
+     * Updates the water marks of a given source.
      * 
      * @param source - the data source
      * @param lwm    - the low water mark
      * @param hwm    - the high water mark
+     * @return the current clock.
      */
-    public Clock setWaterMarks(String source, long lwm, long hwm);
+    public Clock updateWaterMarks(String source, long lwm, long hwm);
     
     /**
      * Sync the water marks of one source for persistency.
+     * 
+     * @return the current clock.
      */
     public Clock syncWaterMarks(String source);
     
     /**
      * Sync the water marks of all sources for persistency.
+     * 
+     * @return the current clock.
      */
     public Clock syncWaterMarks();
+    
+    /**
+     * Flushes low water marks and high water marks for all the sources.
+     * 
+     * @return <tt>true</tt> if flush is successful.
+     */
+    public boolean flush();
     
     /**
      * Gets the water mark of a source from the specified clock.

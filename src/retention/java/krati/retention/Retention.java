@@ -82,6 +82,10 @@ public interface Retention<T> extends Closeable, RetentionClient<T> {
      * @param list - the event list to fill in
      * @return the next position from where new events will be read. 
      * @throws NullPointerException if any argument is <tt>null</tt>.
+     * @throws InvalidPositionException if <tt>pos</tt> refers to a position in bootstrap
+     *         that originates from a different retention replica.
+     * @throws OperationAbortedException if bootstrap takes longer than what is allowed
+     *         by this retention.
      */
     @Override
     public Position get(Position pos, List<Event<T>> list);
