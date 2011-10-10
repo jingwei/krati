@@ -196,7 +196,7 @@ public class AbstractTest extends TestCase {
         return _numReaders;
     }
     
-    public static int gethitPercent() {
+    public static int getHitPercent() {
         return _hitPercent;
     }
     

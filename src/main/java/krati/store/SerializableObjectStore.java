@@ -7,17 +7,21 @@ import krati.io.Serializer;
 import krati.util.IndexedIterator;
 
 /**
- * A key-value store for serializable objects. The store requires that both key and value be serializable objects.
+ * SerializableObjectStore is a key-value store for serializable objects.
+ * This store requires that both key and value be serializable objects.
  * 
+ * <p>
  * This class is not thread-safe by design. It is expected that the conditions below hold within one JVM.
  * <pre>
  *    1. There is one and only one instance of SerializableObjectStore for a given data store.
  *    2. There is one and only one thread is calling put and delete methods at any given time. 
  * </pre>
  * 
- * It is expected that this class is used in the case of multiple readers and single writer.
+ * <p>
+ * However, if the underlying data store is thread safe, SerializableObjectStore becomes thread-safe automatically. 
  * 
  * <p>
+ * It is expected that this class is used in the case of multiple readers and single writer.
  * 
  * @param <K> Key
  * @param <V> Value
@@ -30,7 +34,7 @@ public class SerializableObjectStore<K, V> implements ObjectStore<K, V> {
     protected final DataStore<byte[], byte[]> _store;
     protected final Serializer<K> _keySerializer;
     protected final Serializer<V> _valSerializer;
-
+    
     /**
      * Constructs a key-value store for serializable objects.
      * 
@@ -38,36 +42,36 @@ public class SerializableObjectStore<K, V> implements ObjectStore<K, V> {
      *            the underlying data store for serializable objects.
      * @param keySerializer
      *            the object serializer to serialize/de-serialize keys.
-     * @param valSerializer
+     * @param valueSerializer
      *            the object serializer to serialize/de-serialize values.
      */
-    public SerializableObjectStore(DataStore<byte[], byte[]> store, Serializer<K> keySerializer, Serializer<V> valSerializer) {
+    public SerializableObjectStore(DataStore<byte[], byte[]> store, Serializer<K> keySerializer, Serializer<V> valueSerializer) {
         this._store = store;
         this._keySerializer = keySerializer;
-        this._valSerializer = valSerializer;
+        this._valSerializer = valueSerializer;
     }
-
+    
     /**
      * @return the underlying data store.
      */
-    protected DataStore<byte[], byte[]> getStore() {
+    public final DataStore<byte[], byte[]> getStore() {
         return _store;
     }
-
+    
     /**
      * @return the key serializer.
      */
-    public Serializer<K> getKeySerializer() {
+    public final Serializer<K> getKeySerializer() {
         return _keySerializer;
     }
-
+    
     /**
      * @return the value serializer.
      */
-    public Serializer<V> getValueSerializer() {
+    public final Serializer<V> getValueSerializer() {
         return _valSerializer;
     }
-
+    
     /**
      * @return the store capacity.
      */
@@ -85,9 +89,14 @@ public class SerializableObjectStore<K, V> implements ObjectStore<K, V> {
      */
     @Override
     public V get(K key) {
-        return getValueSerializer().deserialize(_store.get(getKeySerializer().serialize(key)));
+        if(key == null) {
+            return null;
+        }
+        
+        byte[] bytes = _store.get(_keySerializer.serialize(key));
+        return bytes == null ? null : _valSerializer.deserialize(bytes);
     }
-
+    
     /**
      * Gets an object in the form of byte array from the store.
      * 
@@ -97,9 +106,13 @@ public class SerializableObjectStore<K, V> implements ObjectStore<K, V> {
      */
     @Override
     public byte[] getBytes(K key) {
-        return _store.get(getKeySerializer().serialize(key));
+        if(key == null) {
+            return null;
+        }
+        
+        return _store.get(_keySerializer.serialize(key));
     }
-
+    
     /**
      * Gets an object in the form of byte array from the store.
      * 
@@ -111,7 +124,7 @@ public class SerializableObjectStore<K, V> implements ObjectStore<K, V> {
     public byte[] getBytes(byte[] keyBytes) {
         return _store.get(keyBytes);
     }
-
+    
     /**
      * Puts an serializable object into the store.
      * 
@@ -120,26 +133,40 @@ public class SerializableObjectStore<K, V> implements ObjectStore<K, V> {
      * @param value
      *            the serializable object.
      * @return true if the put operation is succeeds.
-     * @throws Exception
+     * @throws NullPointerException if <code>key</code> is null.
+     * @throws Exception if this operation cannot be completed successfully.
      */
     @Override
     public boolean put(K key, V value) throws Exception {
-        return _store.put(getKeySerializer().serialize(key), getValueSerializer().serialize(value));
+        if(key == null) {
+            throw new NullPointerException("key");
+        }
+        
+        if(value == null) {
+            return _store.delete(_keySerializer.serialize(key));
+        } else {
+            return _store.put(_keySerializer.serialize(key), _valSerializer.serialize(value));
+        }
     }
-
+    
     /**
      * Deletes an object from the store based on its key.
      * 
      * @param key
      *            the object key.
      * @return true if the delete operation succeeds.
-     * @throws Exception
+     * @throws NullPointerException if <code>key</code> is null.
+     * @throws Exception if this operation cannot be completed successfully.
      */
     @Override
     public boolean delete(K key) throws Exception {
-        return _store.delete(getKeySerializer().serialize(key));
+        if(key == null) {
+            throw new NullPointerException("key");
+        }
+        
+        return _store.delete(_keySerializer.serialize(key));
     }
-
+    
     /**
      * Sync changes to this object store for persistency.
      * 
@@ -149,7 +176,7 @@ public class SerializableObjectStore<K, V> implements ObjectStore<K, V> {
     public void sync() throws IOException {
         _store.sync();
     }
-
+    
     /**
      * Persists this object store.
      * 
@@ -159,16 +186,7 @@ public class SerializableObjectStore<K, V> implements ObjectStore<K, V> {
     public void persist() throws IOException {
         _store.persist();
     }
-
-    /**
-     * Clears this object store by removing all the persisted data permanently.
-     * 
-     * @throws IOException
-     */
-    public void clear() throws IOException {
-        _store.clear();
-    }
-
+    
     @Override
     public IndexedIterator<K> keyIterator() {
         if(_store.isOpen()) {
@@ -177,7 +195,7 @@ public class SerializableObjectStore<K, V> implements ObjectStore<K, V> {
         
         throw new StoreClosedException();
     }
-
+    
     @Override
     public IndexedIterator<Entry<K, V>> iterator() {
         if(_store.isOpen()) {
@@ -186,19 +204,28 @@ public class SerializableObjectStore<K, V> implements ObjectStore<K, V> {
         
         throw new StoreClosedException();
     }
-
+    
     @Override
     public boolean isOpen() {
         return _store.isOpen();
     }
-
+    
     @Override
     public void open() throws IOException {
         _store.open();
     }
-
+    
     @Override
     public void close() throws IOException {
         _store.close();
+    }
+    
+    /**
+     * Clears this object store by removing all the persisted data permanently.
+     * 
+     * @throws IOException if this operation cannot be completed successfully.
+     */
+    public void clear() throws IOException {
+        _store.clear();
     }
 }
