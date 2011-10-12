@@ -2,6 +2,8 @@ package krati.retention;
 
 import java.io.IOException;
 
+import org.apache.log4j.Logger;
+
 import krati.retention.clock.Clock;
 import krati.retention.clock.WaterMarksClock;
 import krati.store.DataStore;
@@ -18,9 +20,10 @@ import krati.store.DataStore;
  * 08/16, 2011 - Created <br/>
  */
 public class SimpleRetentionStoreWriter<K, V> implements RetentionStoreWriter<K, V> {
-    private final Retention<K> _retention;
+    private final static Logger _logger = Logger.getLogger(SimpleRetentionStoreWriter.class);
     private final String _source;
     private final DataStore<K, V> _store;
+    private final Retention<K> _retention;
     private final WaterMarksClock _waterMarksClock;
     private volatile long _lwmScn = 0;
     private volatile long _hwmScn = 0;
@@ -39,20 +42,29 @@ public class SimpleRetentionStoreWriter<K, V> implements RetentionStoreWriter<K,
         this._store = store;
         this._waterMarksClock = waterMarksClock;
         
-        // Initialize the water mark scn from clock
-        Clock clock = retention.getMaxClock();
-        long scn = waterMarksClock.getWaterMark(source, clock);
-        
         // Initialize the high water mark scn
         _hwmScn = waterMarksClock.getHWMScn(source);
-        _hwmScn = Math.min(_hwmScn, scn);
         
         // Initialize the low water mark scn
         _lwmScn = waterMarksClock.getLWMScn(source);
-        _lwmScn = Math.min(_lwmScn, _hwmScn);
+        
+        // Initialize the water mark scn from clock if necessary
+        if(waterMarksClock.hasSource(source)) {
+            Clock clock = retention.getMaxClock();
+            long scn = waterMarksClock.getWaterMark(source, clock);
+            _hwmScn = Math.min(_hwmScn, scn);
+            _lwmScn = Math.min(_lwmScn, _hwmScn);
+        }
         
         // Reset water marks
         waterMarksClock.updateWaterMarks(source, _lwmScn, _hwmScn);
+        
+        // Log water marks
+        getLogger().info(String.format("%s since[lwm=%d hwm=%d]", source, _lwmScn, _hwmScn));
+    }
+    
+    protected Logger getLogger() {
+        return _logger;
     }
     
     public final DataStore<K, V> getStore() {

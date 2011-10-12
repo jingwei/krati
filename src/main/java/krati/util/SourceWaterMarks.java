@@ -23,6 +23,7 @@ import org.apache.log4j.Logger;
  * <p>
  * 08/18, 2011 - Added syncWaterMarks(String source) <br/>
  * 10/08, 2011 - Added getEntry(String source) <br/>
+ * 10/10, 2011 - When loaded, hwmScn and lwmScn are always equal <br/>
  */
 public class SourceWaterMarks {
     private File file;
@@ -107,15 +108,20 @@ public class SourceWaterMarks {
                 if (parts.length == 2) {
                     long lwmScn = Long.parseLong(parts[0].trim());
                     long hwmScn = Long.parseLong(parts[1].trim());
-                    if (hwmScn < lwmScn)
+                    
+                    // Make sure that hwmScn and lwmScn are always equal when loaded
+                    if (hwmScn < lwmScn) {
                         lwmScn = hwmScn;
-
+                    } else {
+                        hwmScn = lwmScn;
+                    }
+                    
                     WaterMarkEntry wmEntry = sourceWaterMarkMap.get(source);
                     if (wmEntry == null) {
                         wmEntry = new WaterMarkEntry(source);
                         sourceWaterMarkMap.put(source, wmEntry);
                     }
-
+                    
                     wmEntry.setLWMScn(lwmScn);
                     wmEntry.setHWMScn(hwmScn);
                 }

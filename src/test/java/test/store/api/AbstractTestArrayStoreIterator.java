@@ -93,7 +93,7 @@ public abstract class AbstractTestArrayStoreIterator  extends TestCase {
         assertEquals(randomIndex, iter1.index());
         assertEquals(randomIndex, iter1.next().intValue());
         
-        // Test ArraystoreIndexIterator
+        // Test ArrayStoreIndexIterator
         ArrayStoreIterator iter2 = new ArrayStoreIterator(_store);
         assertEquals(_store.getIndexStart(), iter2.index());
         assertTrue(iter2.hasNext());
@@ -103,7 +103,7 @@ public abstract class AbstractTestArrayStoreIterator  extends TestCase {
             iter2.next();
             cnt2++;
         }
-        assertEquals(_store.capacity(), cnt1);
+        assertEquals(_store.capacity(), cnt2);
         
         for(int i = 0; i < 100; i++) {
             iter2.reset(getRandomIndex());

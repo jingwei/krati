@@ -146,6 +146,10 @@ public class SourceWaterMarksClock implements WaterMarksClock {
     
     @Override
     public long getWaterMark(String source, Clock clock) {
+        if(Clock.ZERO == clock) {
+            return 0;
+        }
+        
         for(int i = 0, cnt = _sources.size(); i < cnt; i++) {
             if(source.equals(_sources.get(i))) {
                 return clock.values()[i];

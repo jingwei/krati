@@ -101,7 +101,8 @@ public interface WaterMarksClock extends ClockWatcher {
      * 
      * @param source - the data source
      * @param clock  - the clock
-     * @return the water mark of the specified source
+     * @return the water mark of the specified source, or
+     *         value <tt>0</tt> if the specified <tt>clock</tt> is <tt>Clock.ZERO</tt>.
      */
     public long getWaterMark(String source, Clock clock);
 }

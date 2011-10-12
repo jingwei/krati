@@ -113,6 +113,7 @@ public class TestSourceWaterMarksClock extends TestCase {
             String source = iter.next();
             _clock.setHWMark(source, _clock.getHWMScn(source) + _rand.nextInt(1000) + 1);
             assertTrue(_clock.getLWMScn(source) < _clock.getHWMScn(source));
+            assertEquals(0, _clock.getWaterMark(source, Clock.ZERO));
         }
         
         Clock current = _clock.current();
