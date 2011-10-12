@@ -16,8 +16,9 @@ import krati.store.StaticDataStore;
 import krati.util.FnvHashFunction;
 
 /**
- * StoreFactory offers a standard API for creating different stores including
- * {@link krati.store.ArrayStore ArrayStore} and {@link krati.store.DataStore DataStore}.
+ * StoreFactory offers a standard static API for creating different data stores including
+ * {@link krati.store.ArrayStore ArrayStore} and {@link krati.store.DataStore DataStore},
+ * which are handling byte array based keys and values.
  * 
  * @author jwu
  * @since 06/09, 2011
