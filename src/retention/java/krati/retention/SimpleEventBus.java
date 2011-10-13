@@ -21,11 +21,11 @@ import org.apache.log4j.Logger;
  * 08/11, 2011 - Created <br/>
  * 10/07, 2011 - Abort bootstrap if it takes longer than retention time <br/>
  */
-public class SimpleEventBus<T> implements Retention<T> {
+public class SimpleEventBus<K> implements Retention<K> {
     private final static Logger _logger = Logger.getLogger(SimpleEventBus.class);
-    protected final RetentionConfig<T> _config;
-    protected SimpleSnapshot<T> _snapshot;
-    protected SimpleRetention<T> _retention;
+    protected final RetentionConfig<K> _config;
+    protected SimpleSnapshot<K> _snapshot;
+    protected SimpleRetention<K> _retention;
     private volatile Mode _mode = Mode.OPEN;
     
     /**
@@ -34,7 +34,7 @@ public class SimpleEventBus<T> implements Retention<T> {
      * @param config - configuration
      * @throws Exception
      */
-    public SimpleEventBus(RetentionConfig<T> config) throws Exception {
+    public SimpleEventBus(RetentionConfig<K> config) throws Exception {
         this._config = config;
         if(_config.getEventValueSerializer() == null) {
             throw new Exception("Invalid configuration: eventValueSerializer not found");
@@ -44,18 +44,23 @@ public class SimpleEventBus<T> implements Retention<T> {
             throw new Exception("Invalid configuration: eventClockSerializer not found");
         }
         
-        _retention = new SimpleRetention<T>(
+        if(_config.getSnapshotClockStoreFactory() == null) {
+            throw new Exception("Invalid configuration: clockStoreFactory not found");
+        }
+        
+        _retention = new SimpleRetention<K>(
                 _config.getId(),
                 new File(_config.getHomeDir(), "retention"),
+                _config.getRetentionInitialSize(),
                 _config.getRetentionPolicy(),
-                new SimpleEventBatchSerializer<T>(
+                new SimpleEventBatchSerializer<K>(
                         _config.getEventValueSerializer(),
                         _config.getEventClockSerializer()),
                 _config.getBatchSize(),
                 _config.getRetentionSegmentFactory(),
                 _config.getRetentionSegmentFileSizeMB());
         
-        _snapshot = new SimpleSnapshot<T>(
+        _snapshot = new SimpleSnapshot<K>(
                 _config.getId(),
                 new File(_config.getHomeDir(), "snapshot"),
                 _config.getSnapshotInitialSize(),
@@ -63,6 +68,7 @@ public class SimpleEventBus<T> implements Retention<T> {
                 _config.getNumSyncBatchs(),
                 _config.getSnapshotSegmentFactory(),
                 _config.getSnapshotSegmentFileSizeMB(),
+                _config.getSnapshotClockStoreFactory(),
                 _config.getEventValueSerializer(),
                 _config.getEventClockSerializer());
         
@@ -126,7 +132,7 @@ public class SimpleEventBus<T> implements Retention<T> {
     }
     
     @Override
-    public Position get(Position pos, List<Event<T>> list) {
+    public Position get(Position pos, List<Event<K>> list) {
         if(pos == null || list == null) {
             throw new NullPointerException();
         }
@@ -185,7 +191,7 @@ public class SimpleEventBus<T> implements Retention<T> {
     }
     
     @Override
-    public synchronized boolean put(Event<T> event) throws Exception {
+    public synchronized boolean put(Event<K> event) throws Exception {
         if(event == null || event.getValue() == null | event.getClock() == null) {
             return false;
         }

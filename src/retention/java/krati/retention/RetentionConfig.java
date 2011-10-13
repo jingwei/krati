@@ -9,6 +9,7 @@ import krati.io.Serializer;
 import krati.retention.clock.Clock;
 import krati.retention.policy.RetentionPolicy;
 import krati.retention.policy.RetentionPolicyOnSize;
+import krati.store.factory.ObjectStoreFactory;
 
 /**
  * RetentionConfig
@@ -20,19 +21,78 @@ import krati.retention.policy.RetentionPolicyOnSize;
  * 08/12, 2011 - Created
  */
 public class RetentionConfig<T> {
-    private int _id;
-    private File _homeDir;
+    /**
+     * Retention Id.
+     */
+    private int _id;                                                 // required
+    
+    /**
+     * Retention home directory.
+     */
+    private File _homeDir;                                           // required
+    
+    /**
+     * Event batch size.
+     */
     private int _batchSize = EventBatch.DEFAULT_BATCH_SIZE;
+    
+    /**
+     * Number of event batches needed to sync updates to <tt>indexes.dat</tt>.
+     */
     private int _numSyncBatchs = 10;
+    
+    /**
+     * Snapshot store initial size.
+     */
     private int _snapshotInitialSize = 10000000;
+    
+    /**
+     * Snapshot store segmentFileSizeMB.
+     */
     private int _snapshotSegmentFileSizeMB = 32;
+    
+    /**
+     * Retention store initial size.
+     */
+    private int _retentionInitialSize = 10000;
+    
+    /**
+     * Retention store segmentFileSizeMB.
+     */
     private int _retentionSegmentFileSizeMB = 32;
+    
+    /**
+     * Snapshot segment factory.
+     */
     private SegmentFactory _snapshotSegmentFactory = new WriteBufferSegmentFactory();
+    
+    /**
+     * Retention segment factory.
+     */
     private SegmentFactory _retentionSegmentFactory = new WriteBufferSegmentFactory();
+    
+    /**
+     * Retention policy.
+     */
     private RetentionPolicy _retentionPolicy = new RetentionPolicyOnSize(1000);
     
-    private Serializer<T> _eventValueSerializer;
-    private Serializer<Clock> _eventClockSerializer;
+    /**
+     * {@link krati.retention.Event Event} value serializer.
+     */
+    private Serializer<T> _eventValueSerializer;                     // required
+
+    /**
+     * {@link krati.retention.Event Event} clock serializer.
+     */
+    private Serializer<Clock> _eventClockSerializer;                 // required
+    
+    /**
+     * Snapshot clock store factory.
+     */
+    private ObjectStoreFactory<T, Clock> _snapshotClockStoreFactory; // required
+    
+    private final static int SNAPSHOT_INITIAL_SIZE_MIN = 1000;
+    private final static int RETENTION_INITIAL_SIZE_MIN = 1000;
     
     public RetentionConfig(int id, File homeDir) {
         this._id = id;
@@ -48,7 +108,7 @@ public class RetentionConfig<T> {
     }
     
     public void setSnapshotInitialSize(int snapshotInitialSize) {
-        this._snapshotInitialSize = snapshotInitialSize;
+        this._snapshotInitialSize = Math.max(SNAPSHOT_INITIAL_SIZE_MIN, snapshotInitialSize);
     }
     
     public int getSnapshotInitialSize() {
@@ -61,6 +121,14 @@ public class RetentionConfig<T> {
     
     public int getSnapshotSegmentFileSizeMB() {
         return _snapshotSegmentFileSizeMB;
+    }
+    
+    public void setRetentionInitialSize(int retentionInitialSize) {
+        this._retentionInitialSize = Math.max(RETENTION_INITIAL_SIZE_MIN, retentionInitialSize);
+    }
+    
+    public int getRetentionInitialSize() {
+        return _retentionInitialSize;
     }
     
     public void setRetentionSegmentFileSizeMB(int retentionSegmentFileSizeMB) {
@@ -127,5 +195,13 @@ public class RetentionConfig<T> {
     
     public Serializer<Clock> getEventClockSerializer() {
         return _eventClockSerializer;
+    }
+    
+    public void setSnapshotClockStoreFactory(ObjectStoreFactory<T, Clock> clockStoreFactory) {
+        this._snapshotClockStoreFactory = clockStoreFactory;
+    }
+    
+    public ObjectStoreFactory<T, Clock> getSnapshotClockStoreFactory() {
+        return _snapshotClockStoreFactory;
     }
 }

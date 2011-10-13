@@ -12,10 +12,8 @@ import krati.core.segment.SegmentFactory;
 import krati.io.Serializer;
 import krati.retention.clock.Clock;
 import krati.retention.policy.RetentionPolicy;
-import krati.store.DataStore;
-import krati.store.DynamicDataStore;
 import krati.store.ObjectStore;
-import krati.store.SerializableObjectStore;
+import krati.store.factory.ObjectStoreFactory;
 import krati.util.IndexedIterator;
 
 /**
@@ -25,7 +23,8 @@ import krati.util.IndexedIterator;
  * @author jwu
  * 
  * <p>
- * 08/10, 2011 - Created
+ * 08/10, 2011 - Created <br/>
+ * 10/11, 2011 - Added clockStoreFactory to constructor
  */
 class SimpleSnapshot<T> implements Retention<T>, RetentionFlushListener {
     private final static Logger _logger = Logger.getLogger(SimpleSnapshot.class);
@@ -40,6 +39,7 @@ class SimpleSnapshot<T> implements Retention<T>, RetentionFlushListener {
             int id, File homeDir,
             int initialCapacity, int batchSize, int numSyncBatches,
             SegmentFactory storeSegmentFactory, int storeSegmentFileSizeMB,
+            ObjectStoreFactory<T, Clock> clockStoreFactory,
             Serializer<T> eventValueSerializer, Serializer<Clock> eventClockSerializer) throws Exception {
         this._id = id;
         this._eventBatchSize = batchSize;
@@ -52,18 +52,13 @@ class SimpleSnapshot<T> implements Retention<T>, RetentionFlushListener {
         _clockStoreConfig.setSegmentFileSizeMB(storeSegmentFileSizeMB);
         
         // Create clock store
-        _clockStore = new SerializableObjectStore<T, Clock>(
-        createDataStore(), eventValueSerializer, eventClockSerializer);
+        _clockStore = clockStoreFactory.create(_clockStoreConfig, eventValueSerializer, eventClockSerializer);
         
         init();
         _logger.info("started");
     }
     
     protected void init() {}
-    
-    protected DataStore<byte[], byte[]> createDataStore() throws Exception {
-        return new DynamicDataStore(_clockStoreConfig);
-    }
     
     protected Logger getLogger() {
         return _logger;
@@ -122,7 +117,12 @@ class SimpleSnapshot<T> implements Retention<T>, RetentionFlushListener {
         
         int index = pos.getIndex();
         IndexedIterator<Entry<T, Clock>> iter = _clockStore.iterator();
-        iter.reset(index);
+        
+        try {
+            iter.reset(index);
+        } catch(ArrayIndexOutOfBoundsException e) {
+            return new SimplePosition(_id, pos.getOffset(), pos.getClock());
+        }
         
         Clock evtClock;
         Clock posClock = pos.getClock();

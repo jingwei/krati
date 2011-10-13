@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 import krati.retention.clock.Clock;
 import krati.store.DataStore;
 
@@ -19,6 +21,7 @@ import krati.store.DataStore;
  * 08/23, 2011 - Created <br/>
  */
 public class SimpleRetentionStoreReader<K, V> implements RetentionStoreReader<K, V> {
+    private final static Logger _logger = Logger.getLogger(SimpleRetentionStoreReader.class);
     private final String _source;
     private final Retention<K> _retention;
     private final DataStore<K, V> _store;
@@ -62,11 +65,15 @@ public class SimpleRetentionStoreReader<K, V> implements RetentionStoreReader<K,
         ArrayList<Event<K>> list = new ArrayList<Event<K>>(1000);
         Position nextPos = get(pos, list);
         
-        for(Event<K> e : list) {
-            K key = e.getValue();
+        for(Event<K> evt : list) {
+            K key = evt.getValue();
             if(key != null) {
-                V value = _store.get(key);
-                map.put(key, new SimpleEvent<V>(value, e.getClock()));
+                try {
+                    V value = _store.get(key);
+                    map.put(key, new SimpleEvent<V>(value, evt.getClock()));
+                } catch(Exception e) {
+                    _logger.warn(e.getMessage());
+                }
             }
         }
         

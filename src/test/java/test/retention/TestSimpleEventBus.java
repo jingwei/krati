@@ -12,6 +12,7 @@ import krati.retention.Position;
 import krati.retention.SimpleEventBus;
 import krati.retention.SimpleEvent;
 import krati.retention.clock.Clock;
+import krati.store.factory.DynamicObjectStoreFactory;
 import krati.util.Chronos;
 
 /**
@@ -42,6 +43,7 @@ public class TestSimpleEventBus extends AbstractTestRetention<String> {
         config.setRetentionPolicy(createRetentionPolicy());
         config.setEventValueSerializer(createEventValueSerializer());
         config.setEventClockSerializer(createEventClockSerializer());
+        config.setSnapshotClockStoreFactory(new DynamicObjectStoreFactory<String, Clock>());
         return new SimpleEventBus<String>(config);
     }
     

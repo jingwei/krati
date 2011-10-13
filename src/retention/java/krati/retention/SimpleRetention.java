@@ -55,12 +55,15 @@ public class SimpleRetention<T> implements Retention<T> {
     
     private RetentionFlushListener _flushListener = null;
     
-    public SimpleRetention(int id, File homeDir, RetentionPolicy retentionPolicy,
+    public SimpleRetention(int id, File homeDir,
+                           RetentionPolicy retentionPolicy,
                            EventBatchSerializer<T> batchSerializer, int eventBatchSize) throws Exception {
-        this(id, homeDir, retentionPolicy, batchSerializer, eventBatchSize, new WriteBufferSegmentFactory(), 32);
+        this(id, homeDir, 100000, retentionPolicy, batchSerializer, eventBatchSize, new WriteBufferSegmentFactory(), 32);
     }
     
-    public SimpleRetention(int id, File homeDir, RetentionPolicy retentionPolicy,
+    public SimpleRetention(int id,
+                           File homeDir, int initialSize,
+                           RetentionPolicy retentionPolicy,
                            EventBatchSerializer<T> batchSerializer, int eventBatchSize,
                            SegmentFactory storeSegmentFactory, int storeSegmentFileSizeMB) throws Exception {
         this._id = id;
@@ -69,7 +72,7 @@ public class SimpleRetention<T> implements Retention<T> {
         this._eventBatchSerializer = batchSerializer;
         this._eventBatchSize = Math.max(EventBatch.MINIMUM_BATCH_SIZE, eventBatchSize);
         
-        StoreConfig config = new StoreConfig(homeDir, 100000);
+        StoreConfig config = new StoreConfig(homeDir, initialSize);
         /********************************************************
          * NOTE: 1 is required to flush every update to BytesDB *
          ********************************************************/
