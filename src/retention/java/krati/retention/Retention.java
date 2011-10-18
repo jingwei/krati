@@ -1,5 +1,6 @@
 package krati.retention;
 
+import java.io.IOException;
 import java.util.List;
 
 import krati.io.Closeable;
@@ -99,4 +100,10 @@ public interface Retention<T> extends Closeable, RetentionClient<T> {
      */
     public boolean put(Event<T> event) throws Exception;
     
+    /**
+     * Flushes update events contained by this Retention.
+     * 
+     * @throws IOException
+     */
+    public void flush() throws IOException;
 }

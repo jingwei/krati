@@ -70,7 +70,7 @@ public class SimplePosition implements Position {
     }
     
     @Override
-    public String toString() {
+    public final String toString() {
         StringBuilder b = new StringBuilder();
         b.append(_id).append(':')
          .append(_offset).append(':')

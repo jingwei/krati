@@ -195,4 +195,9 @@ class SimpleSnapshot<T> implements Retention<T>, RetentionFlushListener {
             _clockStore.close();
         }
     }
+    
+    @Override
+    public void flush() throws IOException {
+        _clockStore.persist();
+    }
 }

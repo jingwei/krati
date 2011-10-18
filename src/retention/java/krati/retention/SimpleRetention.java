@@ -80,9 +80,10 @@ public class SimpleRetention<T> implements Retention<T> {
         config.setNumSyncBatches(10);
         config.setSegmentFileSizeMB(storeSegmentFileSizeMB);
         config.setSegmentFactory(storeSegmentFactory);
-        this._store = new BytesDB(config);
+        _store = new BytesDB(config);
         
-        this.init();
+        // Initialize
+        init();
     }
     
     protected void init() throws IOException {
@@ -130,6 +131,11 @@ public class SimpleRetention<T> implements Retention<T> {
         this._lastBatch = null;
         
         scheduleRetentionPolicy();
+        
+        // Print initial position
+        _logger.info("init " + cnt + " batches");
+        _logger.info("init position=" + getPosition());
+        _logger.info("init batch=" + _batch);
     }
     
     protected EventBatch<T> nextEventBatch(long offset, Clock initClock) {
@@ -478,6 +484,51 @@ public class SimpleRetention<T> implements Retention<T> {
         if(_store.isOpen()) {
             _retentionPolicyExecutor.shutdown();
             _store.close();
+        }
+    }
+
+    @Override
+    public synchronized void flush() throws IOException {
+        if(isOpen() && !_batch.isEmpty()) {
+            _batch.setCompletionTime(System.currentTimeMillis());
+            byte[] bytes = _eventBatchSerializer.serialize(_batch);
+            
+            if(_flushListener != null) {
+                _flushListener.beforeFlush(_batch);
+            }
+            
+            /* Flush starts automatically upon adding _batch to BytesDB
+             * because the constructor sets update batchSize to 1.
+             */
+            int batchId = 0;
+            try {
+                batchId = _store.add(bytes, getOffset());
+            } catch (Exception e) {
+                if(e instanceof IOException) {
+                    throw (IOException)e;
+                } else {
+                    throw new IOException(e);
+                }
+            }
+            
+            if(_flushListener != null) {
+                _flushListener.afterFlush(_batch);
+            }
+            
+            // Add current batch to cursor queue
+            _retentionQueue.offer(new SimpleEventBatchCursor(batchId, _batch.getHeader()));
+            
+            // Lock when assign _batch to _lastBatch
+            _batchLock.lock();
+            try {
+                // Reset the lastBatch
+                _lastBatch = _batch;
+                
+                // Create the next batch
+                _batch = nextEventBatch(_batch.getOrigin() + _batch.getSize(), _batch.getMaxClock());
+            } finally {
+                _batchLock.unlock();
+            }
         }
     }
 }

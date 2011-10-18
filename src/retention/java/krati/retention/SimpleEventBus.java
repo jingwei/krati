@@ -246,4 +246,12 @@ public class SimpleEventBus<K> implements Retention<K> {
             }
         }
     }
+    
+    @Override
+    public synchronized void flush() throws IOException {
+        if(isOpen()) {
+            _snapshot.flush();
+            _retention.flush();
+        }
+    }
 }

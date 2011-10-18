@@ -26,7 +26,8 @@ import krati.retention.policy.RetentionPolicyOnSize;
  * @author jwu
  * 
  * <p>
- * 08/09, 2011 - Created
+ * 08/09, 2011 - Created <br/>
+ * 10/17, 2011 - Added testFlush <br/>
  */
 public abstract class AbstractTestRetention<T> extends TestCase {
     protected Retention<T> _retention;
@@ -138,5 +139,25 @@ public abstract class AbstractTestRetention<T> extends TestCase {
         sincePosition = _retention.getPosition(idleClock1);
         assertEquals(getId(), sincePosition.getId());
         assertEquals(1, sincePosition.getOffset());
+    }
+    
+    public void testFlush() throws Exception {
+        int cnt = getEventBatchSize() + _rand.nextInt(getEventBatchSize());
+        
+        for(int i = 0; i < cnt; i++) {
+            Clock clock = _clockFactory.next();
+            _retention.put(nextEvent(clock));
+        }
+        
+        _retention.flush();
+        
+        Clock minClock = _retention.getMinClock();
+        Clock maxClock = _retention.getMaxClock();
+        assertTrue(minClock.after(Clock.ZERO));
+        assertTrue(minClock.compareTo(maxClock) == Occurred.BEFORE);
+        
+        Retention<T> retention2 = createRetention();
+        assertTrue(minClock.beforeEqual(retention2.getMinClock()));
+        assertTrue(maxClock.compareTo(retention2.getMaxClock()) == Occurred.EQUICONCURRENTLY);
     }
 }

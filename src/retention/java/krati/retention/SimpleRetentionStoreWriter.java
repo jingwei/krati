@@ -18,6 +18,7 @@ import krati.store.DataStore;
  * 
  * <p>
  * 08/16, 2011 - Created <br/>
+ * 10/17, 2011 - Fixed getLWMark() <br/>
  */
 public class SimpleRetentionStoreWriter<K, V> implements RetentionStoreWriter<K, V> {
     private final static Logger _logger = Logger.getLogger(SimpleRetentionStoreWriter.class);
@@ -25,7 +26,6 @@ public class SimpleRetentionStoreWriter<K, V> implements RetentionStoreWriter<K,
     private final DataStore<K, V> _store;
     private final Retention<K> _retention;
     private final WaterMarksClock _waterMarksClock;
-    private volatile long _lwmScn = 0;
     private volatile long _hwmScn = 0;
     
     /**
@@ -45,22 +45,24 @@ public class SimpleRetentionStoreWriter<K, V> implements RetentionStoreWriter<K,
         // Initialize the high water mark scn
         _hwmScn = waterMarksClock.getHWMScn(source);
         
-        // Initialize the low water mark scn
-        _lwmScn = waterMarksClock.getLWMScn(source);
-        
         // Initialize the water mark scn from clock if necessary
         if(waterMarksClock.hasSource(source)) {
             Clock clock = retention.getMaxClock();
             long scn = waterMarksClock.getWaterMark(source, clock);
             _hwmScn = Math.min(_hwmScn, scn);
-            _lwmScn = Math.min(_lwmScn, _hwmScn);
         }
         
-        // Reset water marks
-        waterMarksClock.updateWaterMarks(source, _lwmScn, _hwmScn);
+        // Reset low/high water marks if necessary
+        long lwmScn = waterMarksClock.getHWMScn(source);
+        if(_hwmScn < lwmScn) {
+            lwmScn = _hwmScn;
+            waterMarksClock.updateWaterMarks(source, lwmScn, _hwmScn);
+        } else {
+            waterMarksClock.setHWMark(source, _hwmScn);
+        }
         
         // Log water marks
-        getLogger().info(String.format("%s since[lwm=%d hwm=%d]", source, _lwmScn, _hwmScn));
+        getLogger().info(String.format("init %s lwmScn=%d hwmScn=%d", source, lwmScn, _hwmScn));
     }
     
     protected Logger getLogger() {
@@ -82,7 +84,7 @@ public class SimpleRetentionStoreWriter<K, V> implements RetentionStoreWriter<K,
     
     @Override
     public long getLWMark() {
-        return _lwmScn;
+        return _waterMarksClock.getLWMScn(_source);
     }
     
     @Override
@@ -101,6 +103,7 @@ public class SimpleRetentionStoreWriter<K, V> implements RetentionStoreWriter<K,
     @Override
     public synchronized void persist() throws IOException {
         _store.persist();
+        _retention.flush();
         _waterMarksClock.setHWMark(_source, _hwmScn);
         _waterMarksClock.syncWaterMarks(_source);
     }
@@ -108,6 +111,7 @@ public class SimpleRetentionStoreWriter<K, V> implements RetentionStoreWriter<K,
     @Override
     public synchronized void sync() throws IOException {
         _store.sync();
+        _retention.flush();
         _waterMarksClock.setHWMark(_source, _hwmScn);
         _waterMarksClock.syncWaterMarks(_source);
     }
