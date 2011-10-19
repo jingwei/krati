@@ -53,7 +53,7 @@ public class SimpleRetentionStoreWriter<K, V> implements RetentionStoreWriter<K,
         }
         
         // Reset low/high water marks if necessary
-        long lwmScn = waterMarksClock.getHWMScn(source);
+        long lwmScn = waterMarksClock.getLWMScn(source);
         if(_hwmScn < lwmScn) {
             lwmScn = _hwmScn;
             waterMarksClock.updateWaterMarks(source, lwmScn, _hwmScn);
