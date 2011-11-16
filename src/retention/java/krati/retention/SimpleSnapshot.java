@@ -24,7 +24,8 @@ import krati.util.IndexedIterator;
  * 
  * <p>
  * 08/10, 2011 - Created <br/>
- * 10/11, 2011 - Added clockStoreFactory to constructor
+ * 10/11, 2011 - Added clockStoreFactory to constructor <br/>
+ * 11/16, 2011 - Put a limit on the number of events upon each call to method get <br/>
  */
 class SimpleSnapshot<T> implements Retention<T>, RetentionFlushListener {
     private final static Logger _logger = Logger.getLogger(SimpleSnapshot.class);
@@ -137,7 +138,7 @@ class SimpleSnapshot<T> implements Retention<T>, RetentionFlushListener {
                 cnt++;
             }
             
-            if(cnt == _eventBatchSize) {
+            if(cnt >= _eventBatchSize) {
                 index = iter.index();
                 while(iter.hasNext() && iter.index() == index) {
                     e = iter.next();
@@ -148,6 +149,9 @@ class SimpleSnapshot<T> implements Retention<T>, RetentionFlushListener {
                         cnt++;
                     }
                 }
+                
+                // Exit loop when enough events are accumulated
+                break;
             }
         }
         
