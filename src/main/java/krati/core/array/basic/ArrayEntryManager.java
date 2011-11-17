@@ -387,6 +387,7 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable {
     String suffix = getEntryLogSuffix();
     
     List<Entry<V>> entryList = new ArrayList<Entry<V>>();
+    if(files == null) return entryList;
     
     for (File file : files) {
       String fileName = file.getName();
@@ -415,6 +416,8 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable {
    */
   protected void deleteEntryFiles() throws IOException {
     File[] files = getDirectory().listFiles();
+    if(files == null) return;
+    
     String prefix = getEntryLogPrefix();
     String suffix = getEntryLogSuffix();
     
