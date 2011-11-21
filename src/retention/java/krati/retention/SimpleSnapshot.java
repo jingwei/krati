@@ -96,6 +96,11 @@ class SimpleSnapshot<T> implements Retention<T>, RetentionFlushListener {
     }
     
     @Override
+    public int getBatchSize() {
+        return _eventBatchSize;
+    }
+    
+    @Override
     public RetentionPolicy getRetentionPolicy() {
         throw new UnsupportedOperationException();
     }
@@ -150,7 +155,7 @@ class SimpleSnapshot<T> implements Retention<T>, RetentionFlushListener {
                     }
                 }
                 
-                // Exit loop when enough events are accumulated
+                // Exit loop when enough events are collected
                 break;
             }
         }

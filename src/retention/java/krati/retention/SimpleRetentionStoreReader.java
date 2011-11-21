@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 
 import krati.retention.clock.Clock;
 import krati.store.DataStore;
+import krati.util.IndexedIterator;
 
 /**
  * SimpleRetentionStoreReader
@@ -19,6 +20,7 @@ import krati.store.DataStore;
  * 
  * <p>
  * 08/23, 2011 - Created <br/>
+ * 11/20, 2011 - Updated for supporting both SimpleRetention and SimpleEventBus <br/> 
  */
 public class SimpleRetentionStoreReader<K, V> implements RetentionStoreReader<K, V> {
     private final static Logger _logger = Logger.getLogger(SimpleRetentionStoreReader.class);
@@ -52,7 +54,14 @@ public class SimpleRetentionStoreReader<K, V> implements RetentionStoreReader<K,
     
     @Override
     public Position getPosition(Clock sinceClock) {
-        return _retention.getPosition(sinceClock);
+        if(Clock.ZERO != sinceClock) {
+            Position pos = _retention.getPosition(sinceClock);
+            if(pos != null) {
+                return pos;
+            }
+        }
+        
+        return new SimplePosition(_retention.getId(), _retention.getOffset(), 0, sinceClock);
     }
     
     @Override
@@ -82,6 +91,65 @@ public class SimpleRetentionStoreReader<K, V> implements RetentionStoreReader<K,
     
     @Override
     public Position get(Position pos, List<Event<K>> list) {
-        return _retention.get(pos, list);
+        if(pos.getId() != _retention.getId()) {
+            if(pos.isIndexed()) {
+                throw new InvalidPositionException("Bootstrap reconnection rejected", pos);
+            } else {
+                Position newPos = getPosition(pos.getClock());
+                if(newPos == null) {
+                    newPos = new SimplePosition(_retention.getId(), _retention.getOffset(), 0, pos.getClock());
+                }
+                pos = newPos;
+            }
+        }
+        
+        // Reset position if necessary
+        if(pos.getOffset() < _retention.getOrigin()) {
+            pos = new SimplePosition(_retention.getId(), _retention.getOffset(), 0, pos.getClock());
+        }
+        
+        // Read from the retention directly
+        Position nextPos = _retention.get(pos, list);
+        
+        // Out of retention and need to start bootstrap
+        if(nextPos == null && pos.isIndexed()) {
+            int index = pos.getIndex();
+            IndexedIterator<K> iter = _store.keyIterator(); 
+            
+            try {
+                iter.reset(index);
+            } catch(ArrayIndexOutOfBoundsException e) {
+                return new SimplePosition(_retention.getId(), pos.getOffset(), pos.getClock());
+            }
+            
+            int cnt = 0;
+            while(iter.hasNext()) {
+                K key = iter.next();
+                list.add(new SimpleEvent<K>(key, pos.getClock()));
+                cnt++;
+                
+                if(cnt >= _retention.getBatchSize()) {
+                    index = iter.index();
+                    while(iter.hasNext() && iter.index() == index) {
+                        key = iter.next();
+                        list.add(new SimpleEvent<K>(key, pos.getClock()));
+                        cnt++;
+                    }
+                    
+                    // Exit loop when enough events are collected
+                    break;
+                }
+            }
+            
+            if(cnt > 0) {
+                _logger.info("Read[" + pos.getIndex() + "," + index + ") " + cnt);
+            }
+            
+            return iter.hasNext() ?
+                    new SimplePosition(_retention.getId(), pos.getOffset(), index, pos.getClock()) :
+                    new SimplePosition(_retention.getId(), pos.getOffset(), pos.getClock());
+        } else {
+            return nextPos;
+        }
     }
 }

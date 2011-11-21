@@ -108,7 +108,12 @@ public class SimpleEventBus<K> implements Retention<K> {
     }
     
     @Override
-    public RetentionPolicy getRetentionPolicy() {
+    public final int getBatchSize() {
+        return _retention.getBatchSize();
+    }
+    
+    @Override
+    public final RetentionPolicy getRetentionPolicy() {
         return _retention.getRetentionPolicy();
     }
     
@@ -139,7 +144,7 @@ public class SimpleEventBus<K> implements Retention<K> {
         
         if(pos.getId() != getId()) {
             if(pos.isIndexed()) {
-                throw new InvalidPositionException("Bootstrap reconnection refused", pos);
+                throw new InvalidPositionException("Bootstrap reconnection rejected", pos);
             } else {
                 pos = getPosition(pos.getClock());
             }

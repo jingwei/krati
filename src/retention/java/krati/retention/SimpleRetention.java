@@ -33,7 +33,8 @@ import krati.util.DaemonThreadFactory;
  * @author jwu
  * 
  * <p>
- * 07/28, 2011 - Created
+ * 07/28, 2011 - Created <br/>
+ * 11/20, 2011 - Added a new constructor based on RetentionConfig <br/>
  */
 public class SimpleRetention<T> implements Retention<T> {
     private final static Logger _logger = Logger.getLogger(SimpleRetention.class);
@@ -54,6 +55,19 @@ public class SimpleRetention<T> implements Retention<T> {
     private final Lock _batchLock = new ReentrantLock();
     
     private RetentionFlushListener _flushListener = null;
+    
+    public SimpleRetention(RetentionConfig<T> config) throws Exception {
+        this(config.getId(),
+             new File(config.getHomeDir(), "retention"),
+             config.getRetentionInitialSize(),
+             config.getRetentionPolicy(),
+             new SimpleEventBatchSerializer<T>(
+                     config.getEventValueSerializer(),
+                     config.getEventClockSerializer()),
+             config.getBatchSize(),
+             config.getRetentionSegmentFactory(),
+             config.getRetentionSegmentFileSizeMB());
+    }
     
     public SimpleRetention(int id, File homeDir,
                            RetentionPolicy retentionPolicy,
@@ -259,18 +273,22 @@ public class SimpleRetention<T> implements Retention<T> {
     }
     
     @Override
+    public final int getBatchSize() {
+        return _eventBatchSize;
+    }
+    
+    @Override
     public final RetentionPolicy getRetentionPolicy() {
         return _retentionPolicy;
     }
     
     @Override
-    public Position getPosition() {
+    public final Position getPosition() {
         return new SimplePosition(getId(), getOffset(), getMaxClock());
     }
     
     @Override
     public Position getPosition(Clock sinceClock) {
-        EventBatch<T> b;
         long sinceOffset;
         
         Occurred occ = sinceClock.compareTo(getMinClock());
@@ -285,18 +303,27 @@ public class SimpleRetention<T> implements Retention<T> {
         _batchLock.lock();
         try {
             // Get position from _batch
-            b = _batch;
-            sinceOffset = b.getOffset(sinceClock);
+            EventBatch<T> b1 = _batch;
+            sinceOffset = b1.getOffset(sinceClock);
             if(sinceOffset >= 0) {
-                return new SimplePosition(getId(), sinceOffset, b.getClock(sinceOffset));
+                return new SimplePosition(getId(), sinceOffset, b1.getClock(sinceOffset));
             }
             
             // Get position from _lastBatch
-            b = _lastBatch;
-            if(b != null) {
-                sinceOffset = b.getOffset(sinceClock);
+            EventBatch<T> b2 = _lastBatch;
+            if(b2 != null) {
+                if(b2.getMaxClock().before(sinceClock)) {
+                    if(b1.getMinClock().compareTo(sinceClock) == Occurred.EQUICONCURRENTLY) {
+                        return new SimplePosition(getId(), b1.getOrigin(), b1.getMinClock());
+                    } else {
+                        sinceOffset = b2.getOrigin() + b2.getSize();
+                        return new SimplePosition(getId(), sinceOffset, b2.getClock(sinceOffset));
+                    }
+                }
+                
+                sinceOffset = b2.getOffset(sinceClock);
                 if(sinceOffset >= 0) {
-                    return new SimplePosition(getId(), sinceOffset, b.getClock(sinceOffset));
+                    return new SimplePosition(getId(), sinceOffset, b2.getClock(sinceOffset));
                 }
             }
         } finally {
@@ -309,11 +336,21 @@ public class SimpleRetention<T> implements Retention<T> {
         while(iter.hasNext()) {
             EventBatchCursor c = iter.next();
             EventBatchHeader h = c.getHeader();
-            if(h.getMinClock().before(sinceClock)) {
+            
+            occ = h.getMinClock().compareTo(sinceClock);
+            if(occ == Occurred.EQUICONCURRENTLY) {
+                if(cnt == 0) {
+                    /* Cannot be sure that the earliest position is sufficient
+                     * for the given sinceClock. So need to return null instead.
+                     */
+                    break;
+                }
+                return new SimplePosition(getId(), h.getOrigin(), h.getMinClock());
+            } else if(occ == Occurred.BEFORE) {
                 if(!sinceClock.after(h.getMaxClock())) {
                     byte[] dat = _store.get(c.getLookup());
                     try {
-                        b = _eventBatchSerializer.deserialize(dat);
+                        EventBatch<T> b = _eventBatchSerializer.deserialize(dat);
                         sinceOffset = b.getOffset(sinceClock);
                         if(sinceOffset >= 0) {
                             return new SimplePosition(getId(), sinceOffset, b.getClock(sinceOffset));
@@ -334,21 +371,22 @@ public class SimpleRetention<T> implements Retention<T> {
     }
     
     /**
-     * Gets a number of events starting from a give position in the Retention.
+     * Gets a number of events starting from a given position in the Retention.
      * The number of events is determined internally by the Retention and it is
      * up to the batch size.   
      * 
      * @param pos  - the retention position from where events will be read
      * @param list - the event list to fill in
      * @return The next position from where new events will be read from the Retention.
-     *         If the <tt>pos</tt> occurs before the origin of the Retention retention,
-     *         <tt>null</tt> is returned.
+     *         If the <tt>pos</tt> occurs before the origin of the Retention or is in the
+     *         indexed form, the value <tt>null</tt> is returned.
      */
     @Override
     public Position get(Position pos, List<Event<T>> list) {
         EventBatch<T> b;
         
-        if(pos.getOffset() < getOrigin()) {
+        // Return null if the position is out of retention or in the indexed form.
+        if(pos.getOffset() < getOrigin() || pos.isIndexed()) {
             return null;
         }
         

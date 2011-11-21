@@ -53,6 +53,11 @@ public interface Retention<T> extends Closeable, RetentionClient<T> {
     public Clock getClock(long offset);
     
     /**
+     * @return the event batch size.
+     */
+    public int getBatchSize();
+    
+    /**
      * @return the retention policy.
      */
     public RetentionPolicy getRetentionPolicy();

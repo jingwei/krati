@@ -10,11 +10,7 @@ import junit.framework.TestCase;
 import krati.io.Serializer;
 import krati.retention.EventBatchSerializer;
 import krati.retention.Retention;
-import krati.retention.RetentionStoreReader;
-import krati.retention.RetentionStoreWriter;
 import krati.retention.SimpleEventBatchSerializer;
-import krati.retention.SimpleRetentionStoreReader;
-import krati.retention.SimpleRetentionStoreWriter;
 import krati.retention.clock.Clock;
 import krati.retention.clock.ClockSerializer;
 import krati.retention.clock.SourceWaterMarksClock;
@@ -49,11 +45,11 @@ public abstract class AbstractTestRetentionStore<K, V> extends TestCase {
     }
     
     protected int getEventBatchSize() {
-        return 100;
+        return 1000;
     }
     
     protected int getNumRetentionBatches() {
-        return 10;
+        return 5;
     }
     
     protected RetentionPolicy createRetentionPolicy() {
@@ -112,42 +108,5 @@ public abstract class AbstractTestRetentionStore<K, V> extends TestCase {
         } finally {
             _retention = null;
         }
-    }
-    
-    public void testIOBasics() throws Exception {
-        RetentionStoreWriter<K, V> writer1 = new SimpleRetentionStoreWriter<K, V>(source1, _retention, _store, _clock);
-        RetentionStoreReader<K, V> reader1 = new SimpleRetentionStoreReader<K, V>(source1, _retention, _store);
-        
-        long scn = System.currentTimeMillis();
-        for(int i = 0; i < 10; i++) {
-            K key = nextKey();
-            V value = nextValue();
-            
-            writer1.put(key, value, scn++);
-            assertTrue(checkValueEquality(value, reader1.get(key)));
-            
-            writer1.delete(key, scn++);
-            assertTrue(null == reader1.get(key));
-        }
-        assertEquals(scn, writer1.getHWMark() + 1);
-        
-        writer1.sync();
-        assertEquals(writer1.getLWMark(), writer1.getHWMark());
-        System.out.println(reader1.getPosition());
-        assertEquals(writer1.getLWMark(), reader1.getPosition().getClock().values()[0]);
-        
-        K key = nextKey();
-        V value = nextValue();
-        writer1.put(key, value, scn++);
-        assertEquals(scn, writer1.getHWMark() + 1);
-        assertTrue(writer1.getLWMark() < writer1.getHWMark());
-        
-        writer1.persist();
-        assertEquals(writer1.getLWMark(), writer1.getHWMark());
-        assertEquals(writer1.getLWMark(), reader1.getPosition().getClock().values()[0]);
-        
-        RetentionStoreWriter<K, V> writer1A = new SimpleRetentionStoreWriter<K, V>(source1, _retention, _store, _clock);
-        assertEquals(writer1.getLWMark(), writer1A.getLWMark());
-        assertEquals(writer1.getHWMark(), writer1A.getHWMark());
     }
 }

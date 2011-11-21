@@ -19,6 +19,18 @@ import krati.retention.EventBatchCursor;
 public class RetentionPolicyOnSize implements RetentionPolicy {
     private int _numRetentionBatches;
     
+    /**
+     * Constructs a retention policy managing up to 1000 retention batches.
+     */
+    public RetentionPolicyOnSize() {
+        this(1000);
+    }
+    
+    /**
+     * Constructs a retention policy with the given <tt>numRetentionBatches</tt>.
+     * 
+     * @param numRetentionBatches
+     */
     public RetentionPolicyOnSize(int numRetentionBatches) {
         setNumRetentionBatches(numRetentionBatches);
     }

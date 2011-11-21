@@ -24,6 +24,19 @@ public class RetentionPolicyOnTime implements RetentionPolicy {
     private TimeUnit _timeUnit;
     private long _timeMillis = MIN_DURATION_MILLIS;
     
+    /**
+     * Constructs a retention policy managing a 4-hour retention period.
+     */
+    public RetentionPolicyOnTime() {
+        this(4, TimeUnit.HOURS);
+    }
+    
+    /**
+     * Constructs a retention policy with the given <tt>duration</tt> and <tt>timeUnit</tt>.
+     * 
+     * @param duration
+     * @param timeUnit
+     */
     public RetentionPolicyOnTime(long duration, TimeUnit timeUnit) {
         setRetention(duration, timeUnit);
     }
