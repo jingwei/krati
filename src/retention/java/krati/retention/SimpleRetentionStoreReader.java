@@ -123,17 +123,22 @@ public class SimpleRetentionStoreReader<K, V> implements RetentionStoreReader<K,
             }
             
             int cnt = 0;
+            int lastIndex = index;
             while(iter.hasNext()) {
+                lastIndex = iter.index();
                 K key = iter.next();
                 list.add(new SimpleEvent<K>(key, pos.getClock()));
                 cnt++;
                 
                 if(cnt >= _retention.getBatchSize()) {
                     index = iter.index();
-                    while(iter.hasNext() && iter.index() == index) {
-                        key = iter.next();
-                        list.add(new SimpleEvent<K>(key, pos.getClock()));
-                        cnt++;
+                    if(lastIndex == index) {
+                        while(iter.hasNext() && iter.index() == index) {
+                            key = iter.next();
+                            list.add(new SimpleEvent<K>(key, pos.getClock()));
+                            cnt++;
+                        }
+                        index++;
                     }
                     
                     // Exit loop when enough events are collected

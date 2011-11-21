@@ -134,7 +134,9 @@ class SimpleSnapshot<T> implements Retention<T>, RetentionFlushListener {
         Clock posClock = pos.getClock();
         
         int cnt = 0;
+        int lastIndex = index;
         while(iter.hasNext()) {
+            lastIndex = iter.index();
             Entry<T, Clock> e = iter.next();
             
             evtClock = e.getValue();
@@ -145,14 +147,17 @@ class SimpleSnapshot<T> implements Retention<T>, RetentionFlushListener {
             
             if(cnt >= _eventBatchSize) {
                 index = iter.index();
-                while(iter.hasNext() && iter.index() == index) {
-                    e = iter.next();
-                    
-                    evtClock = e.getValue();
-                    if(posClock.beforeEqual(evtClock)) {
-                        list.add(new SimpleEvent<T>(e.getKey(), evtClock));
-                        cnt++;
+                if(lastIndex == index) {
+                    while(iter.hasNext() && iter.index() == index) {
+                        e = iter.next();
+                        
+                        evtClock = e.getValue();
+                        if(posClock.beforeEqual(evtClock)) {
+                            list.add(new SimpleEvent<T>(e.getKey(), evtClock));
+                            cnt++;
+                        }
                     }
+                    index++;
                 }
                 
                 // Exit loop when enough events are collected
