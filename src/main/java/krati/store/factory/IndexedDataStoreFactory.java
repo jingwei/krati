@@ -13,7 +13,7 @@ import krati.store.IndexedDataStore;
  * @author jwu
  * @since 12/05, 2011
  */
-public class IndexedDataStoreFactory implements BasicStoreFactory {
+public class IndexedDataStoreFactory implements DataStoreFactory {
     
     /**
      * Creates a {@link IndexedDataStore} with keys and values in the form of byte array.

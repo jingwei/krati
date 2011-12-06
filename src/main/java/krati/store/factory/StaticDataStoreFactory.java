@@ -13,7 +13,7 @@ import krati.store.StaticDataStore;
  * @author jwu
  * @since 12/05, 2011
  */
-public class StaticDataStoreFactory implements BasicStoreFactory {
+public class StaticDataStoreFactory implements DataStoreFactory {
     
     /**
      * Creates a {@link StaticDataStore} with keys and values in the form of byte array.

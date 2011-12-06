@@ -13,7 +13,7 @@ import krati.store.DynamicDataStore;
  * @author jwu
  * @since 12/05, 2011
  */
-public class DynamicDataStoreFactory implements BasicStoreFactory {
+public class DynamicDataStoreFactory implements DataStoreFactory {
     
     /**
      * Creates a {@link DynamicDataStore} with keys and values in the form of byte array.

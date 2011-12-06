@@ -6,13 +6,13 @@ import krati.core.StoreConfig;
 import krati.store.DataStore;
 
 /**
- * BasicStoreFactory defines the interface for creating a {@link DataStore} with
+ * DataStoreFactory defines the interface for creating a {@link DataStore} with
  * keys and values in the form of byte array.
  * 
  * @author jwu
  * @since 12/05, 2011
  */
-public interface BasicStoreFactory {
+public interface DataStoreFactory {
     
     /**
      * Creates a {@link DataStore} with keys and values in the form of byte array.
