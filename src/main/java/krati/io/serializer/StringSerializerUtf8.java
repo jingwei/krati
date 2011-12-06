@@ -17,11 +17,11 @@ public class StringSerializerUtf8 implements Serializer<String> {
     /**
      * Deserialize a byte array to String using the UTF-8 charset.
      * 
-     * @throws NullPointerException if the <tt>raw</tt> is null.
+     * @throws NullPointerException if the <tt>bytes</tt> is null.
      */
     @Override
-    public String deserialize(byte[] raw) throws SerializationException {
-        return new String(raw, UTF8);
+    public String deserialize(byte[] bytes) throws SerializationException {
+        return new String(bytes, UTF8);
     }
     
     /**

@@ -17,6 +17,17 @@ import krati.store.SerializableObjectArray;
  */
 public class DynamicObjectArrayFactory<V> implements ObjectStoreFactory<Integer, V> {
     
+    /**
+     * Create an instance of {@link ObjectStore} for mapping keys to values.
+     * The underlying store is backed by {@link DynamicDataArray} to have better
+     * performance where keys are integer.
+     * 
+     * @param config          - the configuration
+     * @param keySerializer   - the serializer for keys
+     * @param valueSerializer - the serializer for values
+     * @return the newly created store
+     * @throws IOException if the store cannot be created.
+     */
     @Override
     public ObjectStore<Integer, V> create(StoreConfig config, Serializer<Integer> keySerializer, Serializer<V> valueSerializer) throws IOException {
         try {

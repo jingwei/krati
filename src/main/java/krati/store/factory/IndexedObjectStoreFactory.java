@@ -5,22 +5,21 @@ import java.io.IOException;
 import krati.core.StoreConfig;
 import krati.core.StoreFactory;
 import krati.io.Serializer;
-import krati.store.ArrayStore;
+import krati.store.DataStore;
 import krati.store.ObjectStore;
-import krati.store.SerializableObjectArray;
+import krati.store.SerializableObjectStore;
 
 /**
- * StaticObjectArrayFactory
+ * IndexedObjectStoreFactory
  * 
  * @author jwu
- * @since 10/11, 2011
+ * @since 12/05, 2011
  */
-public class StaticObjectArrayFactory<V> implements ObjectStoreFactory<Integer, V> {
+public class IndexedObjectStoreFactory<K, V> implements ObjectStoreFactory<K, V> {
     
     /**
      * Create an instance of {@link ObjectStore} for mapping keys to values.
-     * The underlying store is backed by {@link StaticDataArray} to have better
-     * performance where keys are integer.
+     * The underlying store is backed by {@link IndexedDataStore} for small keys and large values.
      * 
      * @param config          - the configuration
      * @param keySerializer   - the serializer for keys
@@ -29,10 +28,12 @@ public class StaticObjectArrayFactory<V> implements ObjectStoreFactory<Integer, 
      * @throws IOException if the store cannot be created.
      */
     @Override
-    public ObjectStore<Integer, V> create(StoreConfig config, Serializer<Integer> keySerializer, Serializer<V> valueSerializer) throws IOException {
+    public ObjectStore<K, V> create(StoreConfig config,
+                                    Serializer<K> keySerializer,
+                                    Serializer<V> valueSerializer) throws IOException {
         try {
-            ArrayStore base = StoreFactory.createStaticArrayStore(config);
-            return new SerializableObjectArray<V>(base, keySerializer, valueSerializer);
+            DataStore<byte[], byte[]> base = StoreFactory.createIndexedDataStore(config);
+            return new SerializableObjectStore<K, V>(base, keySerializer, valueSerializer);
         } catch (Exception e) {
             if(e instanceof IOException) {
                 throw (IOException)e;
@@ -42,3 +43,4 @@ public class StaticObjectArrayFactory<V> implements ObjectStoreFactory<Integer, 
         }
     }
 }
+

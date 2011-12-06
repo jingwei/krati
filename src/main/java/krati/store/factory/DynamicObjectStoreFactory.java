@@ -17,6 +17,17 @@ import krati.store.SerializableObjectStore;
  */
 public class DynamicObjectStoreFactory<K, V> implements ObjectStoreFactory<K, V> {
     
+
+    /**
+     * Create an instance of {@link ObjectStore} for mapping keys to values.
+     * The underlying store is backed by {@link DynamicDataStore}.
+     * 
+     * @param config          - the configuration
+     * @param keySerializer   - the serializer for keys
+     * @param valueSerializer - the serializer for values
+     * @return the newly created store
+     * @throws IOException if the store cannot be created.
+     */
     @Override
     public ObjectStore<K, V> create(StoreConfig config,
                                     Serializer<K> keySerializer,

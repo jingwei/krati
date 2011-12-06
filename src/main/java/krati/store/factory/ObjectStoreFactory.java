@@ -15,7 +15,7 @@ import krati.store.ObjectStore;
 public interface ObjectStoreFactory<K, V> {
     
     /**
-     * Create an instance of ObjectStore for mapping keys to values.
+     * Create an instance of {@link ObjectStore} for mapping keys to values.
      * 
      * @param config          - the configuration
      * @param keySerializer   - the serializer for keys
