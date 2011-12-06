@@ -19,7 +19,8 @@ public class IndexedObjectStoreFactory<K, V> implements ObjectStoreFactory<K, V>
     
     /**
      * Create an instance of {@link ObjectStore} for mapping keys to values.
-     * The underlying store is backed by {@link IndexedDataStore} for small keys and large values.
+     * The underlying store is backed by {@link krati.store.IndexedDataStore IndexedDataStore}
+     * for small keys and large values.
      * 
      * @param config          - the configuration
      * @param keySerializer   - the serializer for keys

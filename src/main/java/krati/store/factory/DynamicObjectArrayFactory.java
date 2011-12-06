@@ -19,7 +19,7 @@ public class DynamicObjectArrayFactory<V> implements ObjectStoreFactory<Integer,
     
     /**
      * Create an instance of {@link ObjectStore} for mapping keys to values.
-     * The underlying store is backed by {@link DynamicDataArray} to have better
+     * The underlying store is backed by {@link krati.store.DynamicDataArray DynamicDataArray} to have better
      * performance where keys are integer.
      * 
      * @param config          - the configuration

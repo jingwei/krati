@@ -20,7 +20,7 @@ public class DynamicObjectStoreFactory<K, V> implements ObjectStoreFactory<K, V>
 
     /**
      * Create an instance of {@link ObjectStore} for mapping keys to values.
-     * The underlying store is backed by {@link DynamicDataStore}.
+     * The underlying store is backed by {@link krati.store.DynamicDataStore DynamicDataStore}.
      * 
      * @param config          - the configuration
      * @param keySerializer   - the serializer for keys
