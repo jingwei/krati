@@ -15,7 +15,7 @@ public interface StoreWriter<K, V> {
      * @param value - the value
      * @return <code>true</code> if this store is changed as a result of this operation.
      *         Otherwise, <cod>false</code>.
-     * @throws Exception if this operation cannot be completed for any reasons.
+     * @throws Exception if this operation cannot be completed.
      */
     public boolean put(K key, V value) throws Exception;
     
@@ -25,7 +25,7 @@ public interface StoreWriter<K, V> {
      * @param key   - the key
      * @return <code>true</code> if this store is changed as a result of this operation.
      *         Otherwise, <cod>false</code>.
-     * @throws Exception if this operation cannot be completed for any reasons.
+     * @throws Exception if this operation cannot be completed.
      */
     public boolean delete(K key) throws Exception;
     

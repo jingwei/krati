@@ -20,13 +20,12 @@ public class TestIndexedDataStoreIterator extends AbstractTestDataStoreIterator 
     protected DataStore<byte[], byte[]> createStore(File homeDir) throws Exception {
         return new IndexedDataStore(
                 homeDir,
-                100,   /* batchSize */
-                5,     /* numSyncBatches */
-                1,     /* index initLevel */
-                8,     /* index segmentFileSizeMB */
+                1 << 16, /* initialCapacity */
+                100,     /* batchSize */
+                5,       /* numSyncBatches */
+                8,       /* index segmentFileSizeMB */
                 new MemorySegmentFactory(),
-                1,     /* store initLevel */
-                16,    /* store segmentFileSizeMB */
+                16,      /* store segmentFileSizeMB */
                 new MappedSegmentFactory());
     }
 }

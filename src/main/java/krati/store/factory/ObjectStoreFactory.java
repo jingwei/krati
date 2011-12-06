@@ -7,7 +7,7 @@ import krati.io.Serializer;
 import krati.store.ObjectStore;
 
 /**
- * ObjectStoreFactory
+ * ObjectStoreFactory defines the interface for creating a {@link ObjectStore}.
  * 
  * @author jwu
  * @since 10/11, 2011
@@ -21,7 +21,7 @@ public interface ObjectStoreFactory<K, V> {
      * @param keySerializer   - the serializer for keys
      * @param valueSerializer - the serializer for values
      * @return the newly created store
-     * @throws IOException if the store cannot be created for any reasons.
+     * @throws IOException if the store cannot be created.
      */
     public ObjectStore<K, V> create(StoreConfig config, Serializer<K> keySerializer, Serializer<V> valueSerializer) throws IOException;
 }

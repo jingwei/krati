@@ -14,7 +14,7 @@ public interface StoreReader<K, V> {
      * @param key - the key
      * @return the value associated with the <code>key</code>,
      *         or <code>null</code> if the <code>key</code> is not known to this store. 
-     * @throws Exception if this operation cannot be completed for any reasons.
+     * @throws Exception if this operation cannot be completed.
      */
     public V get(K key) throws Exception;
     

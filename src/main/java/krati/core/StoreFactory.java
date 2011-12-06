@@ -523,7 +523,7 @@ public class StoreFactory {
      * eventually added to this store. This can reduce hash conflicts and yield better performance.
      * 
      * @param homeDir              - the store home directory
-     * @param initialCapacity      - the initial length capacity which should not be changed after the store is created
+     * @param initialCapacity      - the initial capacity which should not be changed after the store is created
      * @param segmentFileSizeMB    - the segment size in MB
      * @param segmentFactory       - the segment factory
      * @return A dynamic DataStore with growing capacity as needed.
@@ -564,7 +564,7 @@ public class StoreFactory {
      * eventually added to this store. This can reduce hash conflicts and yield better performance.
      * 
      * @param homeDir              - the store home directory
-     * @param initialCapacity      - the initial length capacity which should not be changed after the store is created
+     * @param initialCapacity      - the initial capacity which should not be changed after the store is created
      * @param batchSize            - the number of updates per update batch
      * @param numSyncBatches       - the number of update batches required for updating the underlying indexes
      * @param segmentFileSizeMB    - the segment size in MB
@@ -677,6 +677,18 @@ public class StoreFactory {
     
     /**
      * Creates a dynamic {@link krati.store.DataStore DataStore} which grows its capacity as needed.
+     * A configuration file <code>config.properties</code> is created automatically in the store home directory. 
+     * 
+     * @param config - DataStore configuration
+     * @return A IndexedDataStore with growing capacity as needed.
+     * @throws Exception if the store cannot be created.
+     */
+    public static IndexedDataStore createIndexedDataStore(StoreConfig config) throws Exception {
+        return new IndexedDataStore(config);
+    }
+    
+    /**
+     * Creates a dynamic {@link krati.store.DataStore DataStore} which grows its capacity as needed.
      * The store created has the default parameters below.
      * 
      * <pre>
@@ -763,16 +775,13 @@ public class StoreFactory {
             SegmentFactory indexSegmentFactory,
             int storeSegmentFileSizeMB,
             SegmentFactory storeSegmentFactory) throws Exception {
-        int initLevel = StoreParams.getDynamicStoreInitialLevel(initialCapacity);
-        
         return new IndexedDataStore(
                 homeDir,
+                initialCapacity,
                 batchSize,
                 numSyncBatches,
-                initLevel,
                 indexSegmentFileSizeMB,
                 indexSegmentFactory,
-                initLevel,
                 storeSegmentFileSizeMB,
                 storeSegmentFactory);
     }
@@ -919,7 +928,7 @@ public class StoreFactory {
      * eventually added to this set. This can reduce hash conflicts and yield better performance.
      * 
      * @param homeDir              - the set home directory
-     * @param initialCapacity      - the initial length capacity which should not be changed after the set is created
+     * @param initialCapacity      - the initial capacity which should not be changed after the set is created
      * @param segmentFileSizeMB    - the segment size in MB
      * @param segmentFactory       - the segment factory
      * @return A dynamic DataSet with growing capacity as needed.
@@ -960,7 +969,7 @@ public class StoreFactory {
      * eventually added to this set. This can reduce hash conflicts and yield better performance.
      * 
      * @param homeDir              - the set home directory
-     * @param initialCapacity      - the initial length capacity which should not be changed after the set is created
+     * @param initialCapacity      - the initial capacity which should not be changed after the set is created
      * @param batchSize            - the number of updates per update batch
      * @param numSyncBatches       - the number of update batches required for updating the underlying indexes
      * @param segmentFileSizeMB    - the segment size in MB

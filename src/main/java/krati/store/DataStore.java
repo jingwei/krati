@@ -41,7 +41,7 @@ public interface DataStore<K, V> extends Iterable<Entry<K, V>>, Closeable {
      * @param key   - store key
      * @param value - store value.
      * @return <code>true</code> if the operation is completed successfully.
-     * @throws Exception if the operation cannot be completed for any reasons.
+     * @throws Exception if the operation cannot be completed.
      */
     public boolean put(K key, V value) throws Exception;
     
@@ -52,14 +52,14 @@ public interface DataStore<K, V> extends Iterable<Entry<K, V>>, Closeable {
      * @return <code>true</code> if the underlying store is changes as result of this operation.
      * Otherwise, <code>false</code>.
      * 
-     * @throws Exception if this operation cannot be completed for any reasons.
+     * @throws Exception if this operation cannot be completed.
      */
     public boolean delete(K key) throws Exception;
     
     /**
      * Sync changes to this store by updating the underlying indexes directly.
      * 
-     * @throws IOException if this operation cannot be completed for any reasons.
+     * @throws IOException if this operation cannot be completed.
      */
     public void sync() throws IOException;
     
@@ -67,14 +67,14 @@ public interface DataStore<K, V> extends Iterable<Entry<K, V>>, Closeable {
      * Persist changes to write-ahead log without updating the underlying indexes directly.
      * This operation is generally faster than {@link #sync()}.
      * 
-     * @throws IOException if this operation cannot be completed for any reasons.
+     * @throws IOException if this operation cannot be completed.
      */
     public void persist() throws IOException;
     
     /**
      * Clears this store by removing all mappings from keys to values.
      * 
-     * @throws IOException if this operation cannot be completed for any reasons.
+     * @throws IOException if this operation cannot be completed.
      */
     public void clear() throws IOException;
     
