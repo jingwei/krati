@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import krati.core.StoreConfig;
 import krati.core.StoreFactory;
+import krati.core.StorePartitionConfig;
 import krati.io.Serializer;
 import krati.store.ArrayStore;
 import krati.store.ObjectStore;
@@ -31,7 +32,9 @@ public class StaticObjectArrayFactory<V> implements ObjectStoreFactory<Integer, 
     @Override
     public ObjectStore<Integer, V> create(StoreConfig config, Serializer<Integer> keySerializer, Serializer<V> valueSerializer) throws IOException {
         try {
-            ArrayStore base = StoreFactory.createStaticArrayStore(config);
+            ArrayStore base =  (config instanceof StorePartitionConfig) ?
+                               StoreFactory.createArrayStorePartition((StorePartitionConfig)config) :
+                               StoreFactory.createStaticArrayStore(config);
             return new SerializableObjectArray<V>(base, keySerializer, valueSerializer);
         } catch (Exception e) {
             if(e instanceof IOException) {
