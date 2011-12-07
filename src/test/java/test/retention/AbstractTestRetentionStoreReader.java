@@ -89,7 +89,7 @@ public abstract class AbstractTestRetentionStoreReader<K, V> extends AbstractTes
             num2++;
         } while(list.size() > 0);
         
-        assertEquals(getNumRetentionBatches(), num1);
+        assertTrue(getNumRetentionBatches() >= num1);
         assertTrue(num1 < num2);
         
         // Sync up from Clock.ZERO

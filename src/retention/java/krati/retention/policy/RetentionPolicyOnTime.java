@@ -15,7 +15,8 @@ import krati.retention.EventBatchCursor;
  * @author jwu
  * 
  * <p>
- * 08/14, 2011 - Created
+ * 08/14, 2011 - Created <br/>
+ * 12/06, 2011 - Added a new constructor using minutes <br/>
  */
 public class RetentionPolicyOnTime implements RetentionPolicy {
     public final static long MIN_DURATION_MILLIS = 1000;
@@ -32,33 +33,57 @@ public class RetentionPolicyOnTime implements RetentionPolicy {
     }
     
     /**
-     * Constructs a retention policy with the given <tt>duration</tt> and <tt>timeUnit</tt>.
-     * 
-     * @param duration
-     * @param timeUnit
+     * Constructs a retention policy managing the specified retention period.
+     *
+     * @param minutes - the retention duration in minutes (at least 1 minute)
      */
-    public RetentionPolicyOnTime(long duration, TimeUnit timeUnit) {
-        setRetention(duration, timeUnit);
+    public RetentionPolicyOnTime(int minutes) {
+        this(Math.max(1, minutes), TimeUnit.MINUTES);
     }
     
+    /**
+     * Constructs a retention policy with the given <tt>duration</tt> and <tt>timeUnit</tt>.
+     * 
+     * @param duration - the retention duration
+     * @param timeUnit - the time unit as defined by {@link TimeUnit}
+     */
+    public RetentionPolicyOnTime(long duration, TimeUnit timeUnit) {
+        setRetention(Math.max(1, duration), timeUnit);
+    }
+    
+    /**
+     * Gets the retention duration.
+     */
     public final long getDuration() {
         return _duration;
     }
     
+    /**
+     * Gets the retention time unit as defined by {@link TimeUnit}.
+     */
     public final TimeUnit getTimeUnit() {
         return _timeUnit;
     }
     
+    /**
+     * Gets the retention time in milliseconds.
+     */
     public final long getTimeMillis() {
         return _timeMillis;
     }
     
+    /**
+     * Sets the retention duration period of this policy.
+     * 
+     * @param duration - the retention duration
+     * @param timeUnit - the time unit as defined by {@link TimeUnit}
+     */
     public void setRetention(long duration, TimeUnit timeUnit) {
-        this._duration = duration;
+        this._duration = Math.max(1, duration);
         this._timeUnit = timeUnit;
         
         long millis = TimeUnit.MILLISECONDS == timeUnit ?
-                duration : TimeUnit.MILLISECONDS.convert(duration, timeUnit);
+                _duration : TimeUnit.MILLISECONDS.convert(_duration, timeUnit);
         _timeMillis = Math.max(millis, MIN_DURATION_MILLIS);
     }
     
