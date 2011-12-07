@@ -74,55 +74,18 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
         
         int indexInitialCapacity = config.getInitialCapacity();
         StoreConfig indexConfig = new StoreConfig(_indexHome, indexInitialCapacity);
-        indexConfig.setIndexesCached(true);                         // indexes.dat is cached
         indexConfig.setBatchSize(config.getBatchSize());
         indexConfig.setNumSyncBatches(config.getNumSyncBatches());
-        indexConfig.setSegmentCompactFactor(config.getSegmentCompactFactor());
+        indexConfig.setIndexesCached(true);                         // indexes.dat is cached
         indexConfig.setSegmentFileSizeMB(8);                        // index segment size is 8 MB
         indexConfig.setSegmentFactory(new MemorySegmentFactory());  // index segment is MemorySegment
+        indexConfig.setSegmentCompactFactor(config.getSegmentCompactFactor());
         indexConfig.setHashLoadFactor(config.getHashLoadFactor());
         indexConfig.setHashFunction(config.getHashFunction());
         indexConfig.setDataHandler(config.getDataHandler());
         _index = new HashIndex(indexConfig);
         
         _logger.info("opened indexHome=" + _indexHome.getAbsolutePath() + " storeHome=" + _storeHome.getAbsolutePath());
-    }
-    
-    /**
-     * Creates a new IndexedDataStore instance.
-     * The created store has the following parameters:
-     * 
-     * <pre>
-     *   Index segmentFileSizeMB      : 8
-     *   Index segmentCompactFactor   : 0.5
-     *   Index hashLoadFactor         : 0.75
-     *   Index hashFunction           : krati.util.FnvHashFunction
-     *   BytesDB segmentFileSizeMB    : 256
-     *   BytesDB segmentCompactFactor : 0.5
-     * </pre>
-     * 
-     * @param homeDir                - the home directory of IndexedDataStore
-     * @param initialCapacity        - the initial store capacity, which should not be changed after the store is created
-     * @param batchSize              - the number of updates per update batch
-     * @param numSyncBatches         - the number of update batches required for updating <code>indexes.dat</code>
-     * @param indexSegmentFactory    - the segment factory for HashIndex
-     * @param storeSegmentFactory    - the segment factory for BytesDB
-     * 
-     * @throws Exception if the store cannot be created.
-     */
-    public IndexedDataStore(File homeDir,
-                            int initialCapacity,
-                            int batchSize, int numSyncBatches,
-                            SegmentFactory indexSegmentFactory,
-                            SegmentFactory storeSegmentFactory) throws Exception {
-        this(homeDir,
-             initialCapacity,
-             batchSize,
-             numSyncBatches,
-             8,   // indexSegmentFileSizeMB
-             indexSegmentFactory,
-             256, // storeSegmentFileSizeMB
-             storeSegmentFactory);
     }
     
     /**
