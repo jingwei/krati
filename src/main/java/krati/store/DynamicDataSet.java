@@ -154,7 +154,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
              StoreParams.SEGMENT_FILE_SIZE_MB_DEFAULT,
              segmentFactory,
              StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT,
-             0.75,  /* hashLoadFactor */
+             StoreParams.HASH_LOAD_FACTOR_DEFAULT,
              new FnvHashFunction());
     }
     
@@ -186,7 +186,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
              StoreParams.SEGMENT_FILE_SIZE_MB_DEFAULT,
              segmentFactory,
              StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT,
-             0.75,  /* hashLoadFactor */
+             StoreParams.HASH_LOAD_FACTOR_DEFAULT,
              hashFunction);
     }
     
@@ -218,7 +218,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
              segmentFileSizeMB,
              segmentFactory,
              StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT,
-             0.75,  /* hashLoadFactor */
+             StoreParams.HASH_LOAD_FACTOR_DEFAULT,
              new FnvHashFunction());
     }
     
@@ -286,7 +286,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
              segmentFileSizeMB,
              segmentFactory,
              StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT,
-             0.75,  /* hashLoadFactor */
+             StoreParams.HASH_LOAD_FACTOR_DEFAULT,
              new FnvHashFunction());
     }
     

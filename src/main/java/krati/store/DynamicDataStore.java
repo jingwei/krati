@@ -158,7 +158,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
              StoreParams.SEGMENT_FILE_SIZE_MB_DEFAULT,
              segmentFactory,
              StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT,
-             0.75,  /* DataStore load factor */
+             StoreParams.HASH_LOAD_FACTOR_DEFAULT,
              new FnvHashFunction());
     }
     
@@ -190,7 +190,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
              StoreParams.SEGMENT_FILE_SIZE_MB_DEFAULT,
              segmentFactory,
              StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT,
-             0.75,  /* DataStore load factor */
+             StoreParams.HASH_LOAD_FACTOR_DEFAULT,
              hashFunction);
     }
     
@@ -222,7 +222,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
              segmentFileSizeMB,
              segmentFactory,
              StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT,
-             0.75,  /* DataStore load factor */
+             StoreParams.HASH_LOAD_FACTOR_DEFAULT,
              new FnvHashFunction());
     }
     
@@ -290,7 +290,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
              segmentFileSizeMB,
              segmentFactory,
              StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT,
-             0.75,  /* DataStore load factor */
+             StoreParams.HASH_LOAD_FACTOR_DEFAULT,
              new FnvHashFunction());
     }
     
