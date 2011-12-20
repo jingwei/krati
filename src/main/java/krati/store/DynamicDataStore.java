@@ -137,8 +137,8 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
                             SegmentFactory segmentFactory) throws Exception {
         this(homeDir,
              initLevel,
-             10000, /* batchSize */
-             5,     /* numSyncBatches */
+             StoreParams.BATCH_SIZE_DEFAULT,
+             StoreParams.NUM_SYNC_BATCHES_DEFAULT,
              256,   /* segmentFileSizeMB */
              segmentFactory,
              0.5,   /* segmentCompactFactor  */
@@ -169,8 +169,8 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
                             HashFunction<byte[]> hashFunction) throws Exception {
         this(homeDir,
              initLevel,
-             10000, /* batchSize */
-             5,     /* numSyncBatches */
+             StoreParams.BATCH_SIZE_DEFAULT,
+             StoreParams.NUM_SYNC_BATCHES_DEFAULT,
              256,   /* segmentFileSizeMB */
              segmentFactory,
              0.5,   /* segmentCompactFactor  */
@@ -201,8 +201,8 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
                             SegmentFactory segmentFactory) throws Exception {
         this(homeDir,
              initLevel,
-             10000, /* batchSize */
-             5,     /* numSyncBatches */
+             StoreParams.BATCH_SIZE_DEFAULT,
+             StoreParams.NUM_SYNC_BATCHES_DEFAULT,
              segmentFileSizeMB,
              segmentFactory,
              0.5,   /* segmentCompactFactor  */
@@ -235,8 +235,8 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
                             HashFunction<byte[]> hashFunction) throws Exception {
         this(homeDir,
              initLevel,
-             10000, /* batchSize */
-             5,     /* numSyncBatches */
+             StoreParams.BATCH_SIZE_DEFAULT,
+             StoreParams.NUM_SYNC_BATCHES_DEFAULT,
              segmentFileSizeMB,
              segmentFactory,
              0.5,   /* segmentCompactFactor  */

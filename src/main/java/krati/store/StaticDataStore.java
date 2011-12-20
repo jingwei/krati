@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map.Entry;
 
+import krati.core.StoreParams;
 import org.apache.log4j.Logger;
 
 import krati.array.DataArray;
@@ -105,8 +106,8 @@ public class StaticDataStore implements DataStore<byte[], byte[]> {
     public StaticDataStore(File homeDir, int capacity, SegmentFactory segmentFactory) throws Exception {
         this(homeDir,
              capacity,
-             10000,
-             5,
+             StoreParams.BATCH_SIZE_DEFAULT,
+             StoreParams.NUM_SYNC_BATCHES_DEFAULT,
              256,
              segmentFactory,
              0.5, /* segment compact factor  */
@@ -135,8 +136,8 @@ public class StaticDataStore implements DataStore<byte[], byte[]> {
                            SegmentFactory segmentFactory) throws Exception {
         this(homeDir,
              capacity,
-             10000,
-             5,
+             StoreParams.BATCH_SIZE_DEFAULT,
+             StoreParams.NUM_SYNC_BATCHES_DEFAULT,
              256,
              segmentFactory,
              0.5, /* segment compact factor  */

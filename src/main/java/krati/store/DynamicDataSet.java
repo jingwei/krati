@@ -133,8 +133,8 @@ public class DynamicDataSet implements DataSet<byte[]> {
                           SegmentFactory segmentFactory) throws Exception {
         this(homeDir,
              initLevel,
-             10000, /* batchSize */
-             5,     /* numSyncBatches */
+             StoreParams.BATCH_SIZE_DEFAULT,
+             StoreParams.NUM_SYNC_BATCHES_DEFAULT,
              256,   /* segmentFileSizeMB */
              segmentFactory,
              0.5,   /* segmentCompactFactor */
@@ -165,8 +165,8 @@ public class DynamicDataSet implements DataSet<byte[]> {
                           HashFunction<byte[]> hashFunction) throws Exception {
         this(homeDir,
              initLevel,
-             10000, /* batchSize */
-             5,     /* numSyncBatches */
+             StoreParams.BATCH_SIZE_DEFAULT,
+             StoreParams.NUM_SYNC_BATCHES_DEFAULT,
              256,   /* segmentFileSizeMB */
              segmentFactory,
              0.5,   /* segmentCompactFactor */
@@ -197,8 +197,8 @@ public class DynamicDataSet implements DataSet<byte[]> {
                           SegmentFactory segmentFactory) throws Exception {
         this(homeDir,
              initLevel,
-             10000, /* batchSize */
-             5,     /* numSyncBatches */
+             StoreParams.BATCH_SIZE_DEFAULT,
+             StoreParams.NUM_SYNC_BATCHES_DEFAULT,
              segmentFileSizeMB,
              segmentFactory,
              0.5,   /* segmentCompactFactor */
@@ -231,8 +231,8 @@ public class DynamicDataSet implements DataSet<byte[]> {
                           HashFunction<byte[]> hashFunction) throws Exception {
         this(homeDir,
              initLevel,
-             10000, /* batchSize */
-             5,     /* numSyncBatches */
+             StoreParams.BATCH_SIZE_DEFAULT,
+             StoreParams.NUM_SYNC_BATCHES_DEFAULT,
              segmentFileSizeMB,
              segmentFactory,
              0.5,   /* segmentCompactFactor */
@@ -451,7 +451,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
             else index = indexNew;
         } while(true);
         
-        return existingData == null ? false : _dataHandler.find(value, existingData);
+        return existingData != null && _dataHandler.find(value, existingData);
     }
     
     public final int countCollisions(byte[] value) {
