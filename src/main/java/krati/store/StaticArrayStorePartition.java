@@ -330,7 +330,7 @@ public class StaticArrayStorePartition implements ArrayStorePartition {
     
     @Override
     public boolean hasIndex(int index) {
-        return (_idStart <= index  && index < _idEnd) ? true : false;
+        return (_idStart <= index && index < _idEnd);
     }
     
     @Override
