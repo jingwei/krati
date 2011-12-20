@@ -451,7 +451,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
             else index = indexNew;
         } while(true);
         
-        return existingData == null ? false : _dataHandler.find(value, existingData);
+        return existingData != null && _dataHandler.find(value, existingData);
     }
     
     public final int countCollisions(byte[] value) {
