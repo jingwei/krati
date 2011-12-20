@@ -155,7 +155,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
              initLevel,
              StoreParams.BATCH_SIZE_DEFAULT,
              StoreParams.NUM_SYNC_BATCHES_DEFAULT,
-             256,   /* segmentFileSizeMB */
+             StoreParams.SEGMENT_FILE_SIZE_MB_DEFAULT,
              segmentFactory,
              0.5,   /* segmentCompactFactor  */
              0.75,  /* DataStore load factor */
@@ -187,7 +187,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
              initLevel,
              StoreParams.BATCH_SIZE_DEFAULT,
              StoreParams.NUM_SYNC_BATCHES_DEFAULT,
-             256,   /* segmentFileSizeMB */
+             StoreParams.SEGMENT_FILE_SIZE_MB_DEFAULT,
              segmentFactory,
              0.5,   /* segmentCompactFactor  */
              0.75,  /* DataStore load factor */
