@@ -157,7 +157,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
              StoreParams.NUM_SYNC_BATCHES_DEFAULT,
              StoreParams.SEGMENT_FILE_SIZE_MB_DEFAULT,
              segmentFactory,
-             0.5,   /* segmentCompactFactor  */
+             StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT,
              0.75,  /* DataStore load factor */
              new FnvHashFunction());
     }
@@ -189,7 +189,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
              StoreParams.NUM_SYNC_BATCHES_DEFAULT,
              StoreParams.SEGMENT_FILE_SIZE_MB_DEFAULT,
              segmentFactory,
-             0.5,   /* segmentCompactFactor  */
+             StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT,
              0.75,  /* DataStore load factor */
              hashFunction);
     }
@@ -221,7 +221,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
              StoreParams.NUM_SYNC_BATCHES_DEFAULT,
              segmentFileSizeMB,
              segmentFactory,
-             0.5,   /* segmentCompactFactor  */
+             StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT,
              0.75,  /* DataStore load factor */
              new FnvHashFunction());
     }
@@ -255,7 +255,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
              StoreParams.NUM_SYNC_BATCHES_DEFAULT,
              segmentFileSizeMB,
              segmentFactory,
-             0.5,   /* segmentCompactFactor  */
+             StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT,
              hashLoadFactor,
              hashFunction);
     }
@@ -289,7 +289,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
              numSyncBatches,
              segmentFileSizeMB,
              segmentFactory,
-             0.5,   /* segmentCompactFactor  */
+             StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT,
              0.75,  /* DataStore load factor */
              new FnvHashFunction());
     }
@@ -325,7 +325,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
              numSyncBatches,
              segmentFileSizeMB,
              segmentFactory,
-             0.5,   /* segmentCompactFactor  */
+             StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT,
              hashLoadFactor,
              hashFunction);
     }

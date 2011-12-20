@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.channels.WritableByteChannel;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import krati.core.StoreParams;
 import org.apache.log4j.Logger;
 
 import krati.Mode;
@@ -89,7 +90,7 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
      * @param segmentManager         the segment manager for loading, creating, freeing, maintaining segments.
      */
     public SimpleDataArray(AddressArray addressArray, SegmentManager segmentManager) {
-        this(addressArray, segmentManager, 0.5);
+        this(addressArray, segmentManager, StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT);
     }
     
     /**

@@ -126,7 +126,7 @@ public class StaticDataStore implements DataStore<byte[], byte[]> {
              StoreParams.NUM_SYNC_BATCHES_DEFAULT,
              StoreParams.SEGMENT_FILE_SIZE_MB_DEFAULT,
              segmentFactory,
-             0.5, /* segment compact factor  */
+             StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT,
              new FnvHashFunction());
     }
     
@@ -156,7 +156,7 @@ public class StaticDataStore implements DataStore<byte[], byte[]> {
              StoreParams.NUM_SYNC_BATCHES_DEFAULT,
              StoreParams.SEGMENT_FILE_SIZE_MB_DEFAULT,
              segmentFactory,
-             0.5, /* segment compact factor  */
+             StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT,
              new FnvHashFunction());
     }
     
@@ -188,7 +188,7 @@ public class StaticDataStore implements DataStore<byte[], byte[]> {
              numSyncBatches,
              segmentFileSizeMB,
              segmentFactory,
-             0.5, /* segment compact factor  */
+             StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT,
              new FnvHashFunction());
     }
     
@@ -221,7 +221,7 @@ public class StaticDataStore implements DataStore<byte[], byte[]> {
              numSyncBatches,
              segmentFileSizeMB,
              segmentFactory,
-             0.5, /* segment compact factor  */
+             StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT,
              hashFunction);
     }
     

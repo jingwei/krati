@@ -153,7 +153,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
              StoreParams.NUM_SYNC_BATCHES_DEFAULT,
              StoreParams.SEGMENT_FILE_SIZE_MB_DEFAULT,
              segmentFactory,
-             0.5,   /* segmentCompactFactor */
+             StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT,
              0.75,  /* hashLoadFactor */
              new FnvHashFunction());
     }
@@ -185,7 +185,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
              StoreParams.NUM_SYNC_BATCHES_DEFAULT,
              StoreParams.SEGMENT_FILE_SIZE_MB_DEFAULT,
              segmentFactory,
-             0.5,   /* segmentCompactFactor */
+             StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT,
              0.75,  /* hashLoadFactor */
              hashFunction);
     }
@@ -217,7 +217,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
              StoreParams.NUM_SYNC_BATCHES_DEFAULT,
              segmentFileSizeMB,
              segmentFactory,
-             0.5,   /* segmentCompactFactor */
+             StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT,
              0.75,  /* hashLoadFactor */
              new FnvHashFunction());
     }
@@ -251,7 +251,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
              StoreParams.NUM_SYNC_BATCHES_DEFAULT,
              segmentFileSizeMB,
              segmentFactory,
-             0.5,   /* segmentCompactFactor */
+             StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT,
              hashLoadThreshold,
              hashFunction);
     }
@@ -285,7 +285,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
              numSyncBatches,
              segmentFileSizeMB,
              segmentFactory,
-             0.5,   /* segmentCompactFactor */
+             StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT,
              0.75,  /* hashLoadFactor */
              new FnvHashFunction());
     }
@@ -321,7 +321,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
              numSyncBatches,
              segmentFileSizeMB,
              segmentFactory,
-             0.5,   /* segmentCompactFactor  */
+             StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT,
              hashLoadFactor,
              hashFunction);
     }
