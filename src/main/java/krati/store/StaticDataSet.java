@@ -102,7 +102,7 @@ public class StaticDataSet implements DataSet<byte[]> {
     public StaticDataSet(File homeDir, int capacity, SegmentFactory segmentFactory) throws Exception {
         this(homeDir,
              capacity,
-             10000,
+             StoreParams.BATCH_SIZE_DEFAULT,
              5,
              256,
              segmentFactory,
@@ -132,7 +132,7 @@ public class StaticDataSet implements DataSet<byte[]> {
                          SegmentFactory segmentFactory) throws Exception {
         this(homeDir,
              capacity,
-             10000,
+             StoreParams.BATCH_SIZE_DEFAULT,
              5,
              256,
              segmentFactory,

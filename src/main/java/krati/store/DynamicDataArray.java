@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import krati.array.DynamicArray;
 import krati.core.StoreConfig;
+import krati.core.StoreParams;
 import krati.core.array.AddressArray;
 import krati.core.array.AddressArrayFactory;
 import krati.core.segment.Segment;
@@ -53,7 +54,7 @@ public final class DynamicDataArray extends AbstractDataArray implements Dynamic
                             File homeDirectory,
                             SegmentFactory segmentFactory) throws Exception {
         this(initialLength,
-             10000,
+             StoreParams.BATCH_SIZE_DEFAULT,
              5,
              homeDirectory,
              segmentFactory,
@@ -81,7 +82,7 @@ public final class DynamicDataArray extends AbstractDataArray implements Dynamic
                             SegmentFactory segmentFactory,
                             int segmentFileSizeMB) throws Exception {
         this(initialLength,
-             10000,
+             StoreParams.BATCH_SIZE_DEFAULT,
              5,
              homeDirectory,
              segmentFactory,

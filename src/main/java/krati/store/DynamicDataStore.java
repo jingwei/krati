@@ -137,7 +137,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
                             SegmentFactory segmentFactory) throws Exception {
         this(homeDir,
              initLevel,
-             10000, /* batchSize */
+             StoreParams.BATCH_SIZE_DEFAULT,
              5,     /* numSyncBatches */
              256,   /* segmentFileSizeMB */
              segmentFactory,
@@ -169,7 +169,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
                             HashFunction<byte[]> hashFunction) throws Exception {
         this(homeDir,
              initLevel,
-             10000, /* batchSize */
+             StoreParams.BATCH_SIZE_DEFAULT,
              5,     /* numSyncBatches */
              256,   /* segmentFileSizeMB */
              segmentFactory,
@@ -201,7 +201,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
                             SegmentFactory segmentFactory) throws Exception {
         this(homeDir,
              initLevel,
-             10000, /* batchSize */
+             StoreParams.BATCH_SIZE_DEFAULT,
              5,     /* numSyncBatches */
              segmentFileSizeMB,
              segmentFactory,
@@ -235,7 +235,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
                             HashFunction<byte[]> hashFunction) throws Exception {
         this(homeDir,
              initLevel,
-             10000, /* batchSize */
+             StoreParams.BATCH_SIZE_DEFAULT,
              5,     /* numSyncBatches */
              segmentFileSizeMB,
              segmentFactory,

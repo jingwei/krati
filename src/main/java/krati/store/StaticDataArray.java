@@ -3,6 +3,7 @@ package krati.store;
 import java.io.File;
 import java.io.IOException;
 
+import krati.core.StoreParams;
 import org.apache.log4j.Logger;
 
 import krati.core.StoreConfig;
@@ -52,7 +53,7 @@ public final class StaticDataArray extends AbstractDataArray implements ArraySto
                            File homeDirectory,
                            SegmentFactory segmentFactory) throws Exception {
         this(length,
-             10000,
+             StoreParams.BATCH_SIZE_DEFAULT,
              5,
              homeDirectory,
              segmentFactory,
@@ -80,7 +81,7 @@ public final class StaticDataArray extends AbstractDataArray implements ArraySto
                            SegmentFactory segmentFactory,
                            int segmentFileSizeMB) throws Exception {
         this(length,
-             10000,
+             StoreParams.BATCH_SIZE_DEFAULT,
              5,
              homeDirectory,
              segmentFactory,

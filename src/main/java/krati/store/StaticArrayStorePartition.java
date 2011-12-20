@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.channels.WritableByteChannel;
 
+import krati.core.StoreParams;
 import org.apache.log4j.Logger;
 
 import krati.array.Array;
@@ -99,7 +100,7 @@ public class StaticArrayStorePartition implements ArrayStorePartition {
      */
     public StaticArrayStorePartition(int idStart, int idCount, File homeDir,
                                      SegmentFactory segmentFactory, int segmentFileSizeMB) throws Exception {
-        this(idStart, idCount, 10000, 5, homeDir, segmentFactory, segmentFileSizeMB, false);
+        this(idStart, idCount, StoreParams.BATCH_SIZE_DEFAULT, 5, homeDir, segmentFactory, segmentFileSizeMB, false);
     }
     
     /**
