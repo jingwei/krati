@@ -54,7 +54,7 @@ public final class StaticDataArray extends AbstractDataArray implements ArraySto
                            SegmentFactory segmentFactory) throws Exception {
         this(length,
              StoreParams.BATCH_SIZE_DEFAULT,
-             5,
+             StoreParams.NUM_SYNC_BATCHES_DEFAULT,
              homeDirectory,
              segmentFactory,
              Segment.defaultSegmentFileSizeMB,
@@ -82,7 +82,7 @@ public final class StaticDataArray extends AbstractDataArray implements ArraySto
                            int segmentFileSizeMB) throws Exception {
         this(length,
              StoreParams.BATCH_SIZE_DEFAULT,
-             5,
+             StoreParams.NUM_SYNC_BATCHES_DEFAULT,
              homeDirectory,
              segmentFactory,
              segmentFileSizeMB,

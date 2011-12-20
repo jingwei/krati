@@ -134,7 +134,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
         this(homeDir,
              initLevel,
              StoreParams.BATCH_SIZE_DEFAULT,
-             5,     /* numSyncBatches */
+             StoreParams.NUM_SYNC_BATCHES_DEFAULT,
              256,   /* segmentFileSizeMB */
              segmentFactory,
              0.5,   /* segmentCompactFactor */
@@ -166,7 +166,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
         this(homeDir,
              initLevel,
              StoreParams.BATCH_SIZE_DEFAULT,
-             5,     /* numSyncBatches */
+             StoreParams.NUM_SYNC_BATCHES_DEFAULT,
              256,   /* segmentFileSizeMB */
              segmentFactory,
              0.5,   /* segmentCompactFactor */
@@ -198,7 +198,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
         this(homeDir,
              initLevel,
              StoreParams.BATCH_SIZE_DEFAULT,
-             5,     /* numSyncBatches */
+             StoreParams.NUM_SYNC_BATCHES_DEFAULT,
              segmentFileSizeMB,
              segmentFactory,
              0.5,   /* segmentCompactFactor */
@@ -232,7 +232,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
         this(homeDir,
              initLevel,
              StoreParams.BATCH_SIZE_DEFAULT,
-             5,     /* numSyncBatches */
+             StoreParams.NUM_SYNC_BATCHES_DEFAULT,
              segmentFileSizeMB,
              segmentFactory,
              0.5,   /* segmentCompactFactor */

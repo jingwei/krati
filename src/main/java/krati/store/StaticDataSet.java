@@ -3,6 +3,7 @@ package krati.store;
 import java.io.File;
 import java.io.IOException;
 
+import krati.core.StoreParams;
 import org.apache.log4j.Logger;
 
 import krati.array.DataArray;
@@ -103,7 +104,7 @@ public class StaticDataSet implements DataSet<byte[]> {
         this(homeDir,
              capacity,
              StoreParams.BATCH_SIZE_DEFAULT,
-             5,
+             StoreParams.NUM_SYNC_BATCHES_DEFAULT,
              256,
              segmentFactory,
              0.5, /* segment compact factor  */
@@ -133,7 +134,7 @@ public class StaticDataSet implements DataSet<byte[]> {
         this(homeDir,
              capacity,
              StoreParams.BATCH_SIZE_DEFAULT,
-             5,
+             StoreParams.NUM_SYNC_BATCHES_DEFAULT,
              256,
              segmentFactory,
              0.5, /* segment compact factor  */

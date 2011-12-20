@@ -100,7 +100,14 @@ public class StaticArrayStorePartition implements ArrayStorePartition {
      */
     public StaticArrayStorePartition(int idStart, int idCount, File homeDir,
                                      SegmentFactory segmentFactory, int segmentFileSizeMB) throws Exception {
-        this(idStart, idCount, StoreParams.BATCH_SIZE_DEFAULT, 5, homeDir, segmentFactory, segmentFileSizeMB, false);
+        this(idStart,
+             idCount,
+             StoreParams.BATCH_SIZE_DEFAULT,
+             StoreParams.NUM_SYNC_BATCHES_DEFAULT,
+             homeDir,
+             segmentFactory,
+             segmentFileSizeMB,
+             false);
     }
     
     /**

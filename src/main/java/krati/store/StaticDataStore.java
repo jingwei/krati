@@ -107,7 +107,7 @@ public class StaticDataStore implements DataStore<byte[], byte[]> {
         this(homeDir,
              capacity,
              StoreParams.BATCH_SIZE_DEFAULT,
-             5,
+             StoreParams.NUM_SYNC_BATCHES_DEFAULT,
              256,
              segmentFactory,
              0.5, /* segment compact factor  */
@@ -137,7 +137,7 @@ public class StaticDataStore implements DataStore<byte[], byte[]> {
         this(homeDir,
              capacity,
              StoreParams.BATCH_SIZE_DEFAULT,
-             5,
+             StoreParams.NUM_SYNC_BATCHES_DEFAULT,
              256,
              segmentFactory,
              0.5, /* segment compact factor  */
