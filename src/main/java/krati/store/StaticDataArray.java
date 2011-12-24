@@ -102,7 +102,7 @@ public final class StaticDataArray extends AbstractDataArray implements ArraySto
              homeDirectory,
              segmentFactory,
              segmentFileSizeMB,
-             0.5);
+             StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT);
     }
     
     /**

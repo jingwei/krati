@@ -103,7 +103,7 @@ public final class DynamicDataArray extends AbstractDataArray implements Dynamic
              homeDirectory,
              segmentFactory,
              segmentFileSizeMB,
-             0.5);
+             StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT);
     }
     
     /**

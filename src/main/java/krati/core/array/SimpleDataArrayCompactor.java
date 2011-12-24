@@ -34,6 +34,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import krati.core.StoreParams;
 import org.apache.log4j.Logger;
 
 import krati.core.segment.AddressFormat;
@@ -147,7 +148,7 @@ class SimpleDataArrayCompactor implements Runnable {
      * @param dataArray          the data array to compact
      */
     public SimpleDataArrayCompactor(SimpleDataArray dataArray) {
-        this(dataArray, 0.5, 1000);
+        this(dataArray, StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT, 1000);
     }
     
     /**
