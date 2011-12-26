@@ -71,10 +71,7 @@ public class WriteBufferSegment extends AbstractSegment {
         if (getMode() == Segment.Mode.READ_ONLY) {
             _raf = new RandomAccessFile(getSegmentFile(), "r");
 
-            if (_raf.length() != getInitialSize()) {
-                int rafSizeMB = (int) (_raf.length() / 1024L / 1024L);
-                throw new SegmentFileSizeException(getSegmentFile().getCanonicalPath(), rafSizeMB, getInitialSizeMB());
-            }
+            checkSegmentSize();
 
             _channel = _raf.getChannel();
             _channel.position(0);
@@ -92,10 +89,7 @@ public class WriteBufferSegment extends AbstractSegment {
 
             _raf = new RandomAccessFile(getSegmentFile(), "rw");
 
-            if (_raf.length() != getInitialSize()) {
-                int rafSizeMB = (int) (_raf.length() / 1024L / 1024L);
-                throw new SegmentFileSizeException(getSegmentFile().getCanonicalPath(), rafSizeMB, getInitialSizeMB());
-            }
+            checkSegmentSize();
 
             _channel = _raf.getChannel();
             _channel.position(0);

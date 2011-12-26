@@ -61,10 +61,7 @@ public class MappedSegment extends AbstractSegment {
             // Load MappedByteBuffer
             _raf = new RandomAccessFile(getSegmentFile(), "r");
 
-            if (_raf.length() != getInitialSize()) {
-                int rafSizeMB = (int) (_raf.length() / 1024L / 1024L);
-                throw new SegmentFileSizeException(getSegmentFile().getCanonicalPath(), rafSizeMB, getInitialSizeMB());
-            }
+            checkSegmentSize();
 
             _channel = _raf.getChannel();
             _mmapBuffer = _channel.map(FileChannel.MapMode.READ_ONLY, 0, bufferLength);
@@ -76,10 +73,7 @@ public class MappedSegment extends AbstractSegment {
             // Create MappedByteBuffer
             _raf = new RandomAccessFile(getSegmentFile(), "rw");
 
-            if (_raf.length() != getInitialSize()) {
-                int rafSizeMB = (int) (_raf.length() / 1024L / 1024L);
-                throw new SegmentFileSizeException(getSegmentFile().getCanonicalPath(), rafSizeMB, getInitialSizeMB());
-            }
+            checkSegmentSize();
 
             _channel = _raf.getChannel();
             _mmapBuffer = _channel.map(FileChannel.MapMode.READ_WRITE, 0, bufferLength);
