@@ -56,9 +56,7 @@ public class ChannelSegment extends AbstractSegment {
         if (getMode() == Segment.Mode.READ_ONLY) {
             _raf = new RandomAccessFile(getSegmentFile(), "r");
 
-            if (_raf.length() != getInitialSize()) {
-                throw new SegmentFileSizeException(getSegmentFile().getCanonicalPath(), getRafSizeInMB(), getInitialSizeMB());
-            }
+            checkSegmentSize();
 
             _channel = _raf.getChannel();
             _channel.position(0);
@@ -69,9 +67,7 @@ public class ChannelSegment extends AbstractSegment {
         } else {
             _raf = new RandomAccessFile(getSegmentFile(), "rw");
 
-            if (_raf.length() != getInitialSize()) {
-                throw new SegmentFileSizeException(getSegmentFile().getCanonicalPath(), getRafSizeInMB(), getInitialSizeMB());
-            }
+            checkSegmentSize();
 
             _channel = _raf.getChannel();
             _channel.position(0);

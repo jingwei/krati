@@ -216,4 +216,10 @@ public abstract class AbstractSegment implements Segment {
     protected int getRafSizeInMB() throws IOException {
         return (int) (_raf.length() / 1024L / 1024L);
     }
+
+    protected void checkSegmentSize() throws IOException {
+        if (_raf.length() != getInitialSize()) {
+            throw new SegmentFileSizeException(getSegmentFile().getCanonicalPath(), getRafSizeInMB(), getInitialSizeMB());
+        }
+    }
 }
