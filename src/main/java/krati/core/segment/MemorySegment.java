@@ -60,7 +60,7 @@ public class MemorySegment extends AbstractSegment {
             _raf = new RandomAccessFile(getSegmentFile(), "r");
 
             if (_raf.length() != getInitialSize()) {
-                int rafSizeMB = (int) (_raf.length() / 1024L / 1024L);
+                int rafSizeMB = getRafSizeInMB();
                 throw new SegmentFileSizeException(getSegmentFile().getCanonicalPath(), rafSizeMB, getInitialSizeMB());
             }
 
@@ -77,7 +77,7 @@ public class MemorySegment extends AbstractSegment {
             _raf = new RandomAccessFile(getSegmentFile(), "rw");
 
             if (_raf.length() != getInitialSize()) {
-                int rafSizeMB = (int) (_raf.length() / 1024L / 1024L);
+                int rafSizeMB = getRafSizeInMB();
                 throw new SegmentFileSizeException(getSegmentFile().getCanonicalPath(), rafSizeMB, getInitialSizeMB());
             }
 
@@ -327,7 +327,7 @@ public class MemorySegment extends AbstractSegment {
         _raf = new RandomAccessFile(getSegmentFile(), "rw");
 
         if (_raf.length() != getInitialSize()) {
-            int rafSizeMB = (int) (_raf.length() / 1024L / 1024L);
+            int rafSizeMB = getRafSizeInMB();
             throw new SegmentFileSizeException(getSegmentFile().getCanonicalPath(), rafSizeMB, getInitialSizeMB());
         }
 

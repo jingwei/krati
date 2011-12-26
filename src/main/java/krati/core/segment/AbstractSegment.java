@@ -212,4 +212,8 @@ public abstract class AbstractSegment implements Segment {
     public final boolean isReadOnly() {
         return (_segMode == Segment.Mode.READ_ONLY);
     }
+
+    protected int getRafSizeInMB() throws IOException {
+        return (int) (_raf.length() / 1024L / 1024L);
+    }
 }
