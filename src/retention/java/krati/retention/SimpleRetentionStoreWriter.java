@@ -27,14 +27,13 @@ import krati.store.DataStore;
 /**
  * SimpleRetentionStoreWriter
  * 
- * @param <K> Key
- * @param <V> Value
  * @version 0.4.2
  * @author jwu
  * 
  * <p>
  * 08/16, 2011 - Created <br/>
  * 10/17, 2011 - Fixed getLWMark() <br/>
+ * 01/06, 2012 - Initialize high water mark from {@link WaterMarksClock} only <br/>
  */
 public class SimpleRetentionStoreWriter<K, V> implements RetentionStoreWriter<K, V> {
     private final static Logger _logger = Logger.getLogger(SimpleRetentionStoreWriter.class);
@@ -60,13 +59,6 @@ public class SimpleRetentionStoreWriter<K, V> implements RetentionStoreWriter<K,
         
         // Initialize the high water mark scn
         _hwmScn = waterMarksClock.getHWMScn(source);
-        
-        // Initialize the water mark scn from clock if necessary
-        if(waterMarksClock.hasSource(source)) {
-            Clock clock = retention.getMaxClock();
-            long scn = waterMarksClock.getWaterMark(source, clock);
-            _hwmScn = Math.min(_hwmScn, scn);
-        }
         
         // Reset low/high water marks if necessary
         long lwmScn = waterMarksClock.getLWMScn(source);
