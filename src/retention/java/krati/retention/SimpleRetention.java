@@ -51,6 +51,7 @@ import krati.util.DaemonThreadFactory;
  * <p>
  * 07/28, 2011 - Created <br/>
  * 11/20, 2011 - Added a new constructor based on RetentionConfig <br/>
+ * 01/25, 2012 - Fixed switching from bootstrap scan to real-time syncUp <br/>
  */
 public class SimpleRetention<T> implements Retention<T> {
     private final static Logger _logger = Logger.getLogger(SimpleRetention.class);
@@ -208,7 +209,8 @@ public class SimpleRetention<T> implements Retention<T> {
     public long getOrigin() {
         long batchOrigin = _batch.getOrigin();
         EventBatchCursor cursor = _retentionQueue.peek();
-        return cursor == null ? batchOrigin : cursor.getHeader().getOrigin();
+        long ret = (cursor == null) ? batchOrigin : cursor.getHeader().getOrigin();
+        return ret;
     }
     
     @Override
@@ -431,11 +433,16 @@ public class SimpleRetention<T> implements Retention<T> {
             EventBatchCursor c = iter.next();
             if(c.getHeader().getOrigin() <= pos.getOffset()) {
                 byte[] dat = _store.get(c.getLookup());
-                b = _eventBatchSerializer.deserialize(dat);
-                long newOffset = b.get(pos.getOffset(), list);
-                Clock clock = pos.getOffset() < newOffset ?
-                        b.getClock(newOffset - 1) : pos.getClock();
-                return new SimplePosition(getId(), newOffset, clock);
+                try {
+                    b = _eventBatchSerializer.deserialize(dat);
+                    long newOffset = b.get(pos.getOffset(), list);
+                    if(pos.getOffset() < newOffset) {
+                        Clock clock = b.getClock(newOffset - 1);
+                        return new SimplePosition(getId(), newOffset, clock);
+                    }
+                } catch(Exception e) {
+                    _logger.warn("Ignored EventBatch: " + c.getHeader().getOrigin());
+                }
             } else {
                 // early stop
                 if(cnt == 0) {
