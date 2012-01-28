@@ -696,7 +696,7 @@ public class StoreFactory {
      * A configuration file <code>config.properties</code> is created automatically in the store home directory. 
      * 
      * @param config - DataStore configuration
-     * @return A IndexedDataStore with growing capacity as needed.
+     * @return A dynamic DataStore with growing capacity as needed.
      * @throws Exception if the store cannot be created.
      */
     public static IndexedDataStore createIndexedDataStore(StoreConfig config) throws Exception {

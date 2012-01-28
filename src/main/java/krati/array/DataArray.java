@@ -19,7 +19,7 @@ package krati.array;
 import java.nio.channels.WritableByteChannel;
 
 /**
- * Data Array
+ * DataArray defines an array interface for accessing raw data bytes. 
  * 
  * @author jwu
  *

@@ -38,7 +38,8 @@ import krati.util.HashFunction;
 import org.apache.log4j.Logger;
 
 /**
- * StoreConfig
+ * StoreConfig provides a simple means for configuring a store
+ * with many default parameters defined in {@link StoreParams}.
  * 
  * @author jwu
  * @since 06/22, 2011

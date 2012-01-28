@@ -25,10 +25,20 @@ package krati.core;
 public class InvalidDataException extends RuntimeException {
     private static final long serialVersionUID = 1L;
     
+    /**
+     * Creates a new instance of InvalidDataException.
+     * 
+     * @param message - the message 
+     */
     public InvalidDataException(String message) {
         super(message);
     }
     
+    /**
+     * Creates a new instance of InvalidDataException.
+     * 
+     * @param index - the array index with which the data associated is invalid.
+     */
     public InvalidDataException(int index) {
         super("Invalid data at index " + index);
     }

@@ -17,17 +17,39 @@
 package krati;
 
 /**
- * Mode
+ * Mode defines the states of a store. 
  * 
  * @author jwu
- * 05/08, 2011
- * 
+ * @since 05/08, 2011
  */
 public enum Mode {
+    /**
+     * Store is being initialized. 
+     */
     INIT,
+    
+    /**
+     * Store is ready for read, write and other operations.
+     */
     OPEN,
+    
+    /**
+     * Store is ready for read-only operations.
+     */
     OPEN_FOR_READ,
+    
+    /**
+     * Store is ready for write-only operations.
+     */
     OPEN_FOR_WRITE,
+    
+    /**
+     * Store is ready for read and write operations.
+     */
     OPEN_FOR_READ_WRITE,
+    
+    /**
+     * Store is closed for read, write and other operations.
+     */
     CLOSED;
 }

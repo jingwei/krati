@@ -49,12 +49,12 @@ public interface Array {
      */
     public static enum Type {
         /**
-         * The type of AddressArray of fixed-length.
+         * The type of {@link Array} of a fixed-length.
          */
         STATIC,
         
         /**
-         * The type of AddressArray of varying length.
+         * The type of {@link Array} of a varying length.
          */
         DYNAMIC;
     }

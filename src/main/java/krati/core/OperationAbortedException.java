@@ -17,7 +17,8 @@
 package krati.core;
 
 /**
- * OperationAbortedException
+ * OperationAbortedException defines a runtime exception
+ * that can be thrown upon an aborted operation. 
  * 
  * @author jwu
  * @since 06/12, 2011
@@ -26,18 +27,40 @@ package krati.core;
 public class OperationAbortedException extends RuntimeException {
     private static final long serialVersionUID = 1L;
     
+    /**
+     * Creates a new instance of OperationAbortedException.
+     */
     public OperationAbortedException() {
         super("Operation aborted");
     }
     
+    /**
+     * Creates a new instance of OperationAbortedException.
+     * 
+     * @param message - the message
+     */
     public OperationAbortedException(String message) {
         super(message);
     }
     
+    /**
+     * Creates a new instance of OperationAbortedException the specified cause.
+     * 
+     * @param cause   - the cause (which is saved for later retrieval by the {@link RuntimeException#getCause()} method).
+     * (A null value is permitted, and indicates that the cause is nonexistent or unknown.)
+     */
     public OperationAbortedException(Throwable cause) {
         super("Operation aborted", cause);
     }
     
+    /**
+     * 
+     * Creates a new instance of OperationAbortedException the specified message and cause.
+     * 
+     * @param message - the message
+     * @param cause   - the cause (which is saved for later retrieval by the {@link RuntimeException#getCause()} method).
+     * (A null value is permitted, and indicates that the cause is nonexistent or unknown.)
+     */
     public OperationAbortedException(String message, Throwable cause) {
         super(message, cause);
     }

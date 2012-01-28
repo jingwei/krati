@@ -31,6 +31,15 @@ public class StorePartitionConfig extends StoreConfig {
     private final int _partitionStart;
     private final int _partitionEnd;
     
+    /**
+     * Creates a range-based partition configuration for instantiating
+     * {@link krati.store.ArrayStorePartition ArrayStorePartition}.
+     *  
+     * @param homeDir        - the store home directory
+     * @param partitionStart - the store partition start
+     * @param partitionCount - the store partition count (i.e., capacity)
+     * @throws IOException if the store configuration file cannot be created.
+     */
     public StorePartitionConfig(File homeDir, int partitionStart, int partitionCount) throws IOException {
         super(homeDir, partitionStart, partitionCount);
         this._partitionStart = partitionStart;
@@ -38,14 +47,23 @@ public class StorePartitionConfig extends StoreConfig {
         this._partitionEnd = partitionStart + partitionCount;
     }
     
+    /**
+     * Gets the store partition count (i.e., capacity).
+     */
     public final int getPartitionCount() {
         return _partitionCount;
     }
     
+    /**
+     * Gets the store partition start index (inclusive).
+     */
     public final int getPartitionStart() {
         return _partitionStart;
     }
     
+    /**
+     * Gets the store partition end index (exclusive).
+     */
     public final int getPartitionEnd() {
         return _partitionEnd;
     }

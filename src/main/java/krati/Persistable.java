@@ -41,17 +41,17 @@ public interface Persistable {
     public void persist() throws IOException;
     
     /**
-     * Gets the low water mark.
+     * Gets the low water mark, below which all updates are persisted.
      */
     public long getLWMark();
     
     /**
-     * Gets the high water mark.
+     * Gets the high water mark, below which all updates are readable.
      */
     public long getHWMark();
     
     /**
-     * Save the high water mark.
+     * Saves the high water mark to indicate the progress made so far.
      * 
      * @param endOfPeriod
      * @throws Exception

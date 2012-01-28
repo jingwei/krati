@@ -113,13 +113,40 @@ public class StoreParams {
      */
     public static final double HASH_LOAD_FACTOR_DEFAULT = 0.75;
     
+    /**
+     * Whether the indexes array is cached in memory.
+     */
     private boolean _indexesCached = INDEXES_CACHED_DEFAULT;
+    
+    /**
+     * The update batch size.
+     */
     private int _batchSize = BATCH_SIZE_DEFAULT;
+    
+    /**
+     * The number of update batches of a sync cycle.
+     */
     private int _numSyncBatches = NUM_SYNC_BATCHES_DEFAULT;
+    
+    /**
+     * The size of a store segment measured in MB.
+     */
     private int _segmentFileSizeMB = SEGMENT_FILE_SIZE_MB_DEFAULT;
+    
+    /**
+     * The segment compaction factor (between 0 and 1), below which a store segment is eligible for being compacted.
+     */
     private double _segmentCompactFactor = SEGMENT_COMPACT_FACTOR_DEFAULT;
+    
+    /**
+     * The hash table load factor (between 0 and 1), above which a hash table will be rehashed through a hashing strategy
+     * such as Linear Hashing or Extensible Hashing.
+     */
     private double _hashLoadFactor = HASH_LOAD_FACTOR_DEFAULT;
     
+    /**
+     * Creates a new instance of StoreParams.
+     */
     protected StoreParams() {
         this.setBatchSize(BATCH_SIZE_DEFAULT);
         this.setNumSyncBatches(NUM_SYNC_BATCHES_DEFAULT);
@@ -129,60 +156,105 @@ public class StoreParams {
         this.setIndexesCached(INDEXES_CACHED_DEFAULT);
     }
     
+    /**
+     * Sets the size of update batch.
+     */
     public void setBatchSize(int batchSize) {
         this._batchSize = batchSize;
         this._properties.setProperty(PARAM_BATCH_SIZE, _batchSize+"");
     }
     
+    /**
+     * Gets the size of update batch.
+     */
     public int getBatchSize() {
         return _batchSize;
     }
     
+    /**
+     * Sets the number of update batches of a sync cycle.
+     */
     public void setNumSyncBatches(int numSyncBatches) {
         this._numSyncBatches = numSyncBatches;
         this._properties.setProperty(PARAM_NUM_SYNC_BATCHES, _numSyncBatches+"");
     }
     
+    /**
+     * Gets the number of update batches of a sync cycle.
+     */
     public int getNumSyncBatches() {
         return _numSyncBatches;
     }
     
+    /**
+     * Sets the size of store segments in MB.
+     */
     public void setSegmentFileSizeMB(int segmentFileSizeMB) {
         this._segmentFileSizeMB = segmentFileSizeMB;
         this._properties.setProperty(PARAM_SEGMENT_FILE_SIZE_MB, _segmentFileSizeMB+"");
     }
-
+    
+    /**
+     * Gets the size of store segments in MB.
+     */
     public int getSegmentFileSizeMB() {
         return _segmentFileSizeMB;
     }
     
+    /**
+     * Sets the segment compaction factor (between 0 and 1),
+     * below which a store segment is eligible for being compacted.
+     *  
+     * @param segmentCompactFactor - the segment compaction factor
+     */
     public void setSegmentCompactFactor(double segmentCompactFactor) {
         this._segmentCompactFactor = segmentCompactFactor;
         this._properties.setProperty(PARAM_SEGMENT_COMPACT_FACTOR, _segmentCompactFactor+"");
     }
     
+    /**
+     * Gets the segment compaction factor.
+     */
     public double getSegmentCompactFactor() {
         return _segmentCompactFactor;
     }
     
+    /**
+     * Sets the hash table load factor (between 0 and 1), above which a hash table will be
+     * rehashed through a hashing strategy such as Linear Hashing or Extensible Hashing.
+     * 
+     * @param hashLoadFactor - the hash table load factor
+     */
     public void setHashLoadFactor(double hashLoadFactor) {
         this._hashLoadFactor = hashLoadFactor;
         this._properties.setProperty(PARAM_HASH_LOAD_FACTOR, _hashLoadFactor+"");
     }
     
+    /**
+     * Gets the hash table load factor.
+     */
     public double getHashLoadFactor() {
         return _hashLoadFactor;
     }
     
+    /**
+     * Sets the boolean value indicating whether the indexes (i.e. indexes.dat) is cached in memory or not.
+     */
     public void setIndexesCached(boolean b) {
         this._indexesCached = b;
         this._properties.setProperty(PARAM_INDEXES_CACHED, _indexesCached ? "true" : "false");
     }
     
+    /**
+     * Gets the boolean value indicating whether the indexes (i.e. indexes.dat) is cached in memory or not.
+     */
     public boolean getIndexesCached() {
         return _indexesCached;
     }
     
+    /**
+     * Tests whether the indexes (i.e. indexes.dat) is cached in memory or not.
+     */
     public boolean isIndexesCached() {
         return _indexesCached;
     }

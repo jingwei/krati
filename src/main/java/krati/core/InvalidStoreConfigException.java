@@ -17,7 +17,8 @@
 package krati.core;
 
 /**
- * InvalidStoreConfigException
+ * InvalidStoreConfigException defines a runtime exception
+ * that can be thrown upon an invalid {@link krati.core.StoreConfig StoreConfig}.
  * 
  * @author jwu
  * @since 06/25, 2011
@@ -26,6 +27,11 @@ package krati.core;
 public class InvalidStoreConfigException extends RuntimeException {
     private static final long serialVersionUID = 1L;
     
+    /**
+     * Creates a new instance of InvalidStoreConfigException.
+     * 
+     * @param message - the message.
+     */
     public InvalidStoreConfigException(String message) {
         super(message);
     }
