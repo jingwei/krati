@@ -45,21 +45,24 @@ import krati.util.Chronos;
 
 /**
  * SimpleDataArray Compactor.
- * 
- * The compaction is a two-stage process: inspect and compact.
- * 
- * The "inspect" determines which segments are eligible for compaction according to
+ * <p>
+ * The compaction is a two-stage process: <strong>inspect</strong> and <strong>compact</strong>.
+ * </p>
+ * <p>
+ * The <strong>inspect</strong> determines which segments are eligible for compaction according to
  * a predefined load factor. It returns no more than 3 source segments for compaction.
- * 
- * The "compact" transfers bytes from source segments to a target segment via zero-copy.
+ * </p>
+ * <p>
+ * The <strong>compact</strong> transfers bytes from source segments to a target segment via zero-copy.
  * It batches compaction update records and sends them to the writer for post-processing. 
+ * </p>
  * 
  * @author jwu
  * 
  * <p>
- * 05/22, 2011 - Fixed start/shutdown
- * 05/23, 2011 - Added method clear() to clean up compactor internal state
- * 06/21, 2011 - Added support for tolerating compaction failure
+ * 05/22, 2011 - Fixed start/shutdown <br/>
+ * 05/23, 2011 - Added method clear() to clean up compactor internal state <br/>
+ * 06/21, 2011 - Added support for tolerating compaction failure <br/>
  */
 class SimpleDataArrayCompactor implements Runnable {
     private final static Logger _log = Logger.getLogger(SimpleDataArrayCompactor.class);
@@ -141,10 +144,10 @@ class SimpleDataArrayCompactor implements Runnable {
      *   Compact Load Factor : 0.5
      *   Compact batch Size  : 1000
      * </pre>
-     * 
+     * <p>
      * A segment is eligible for compaction only if its load factor is less than
      * the default compact load factor (0.5).
-     * 
+     * </p>
      * @param dataArray          the data array to compact
      */
     public SimpleDataArrayCompactor(SimpleDataArray dataArray) {
@@ -153,10 +156,10 @@ class SimpleDataArrayCompactor implements Runnable {
     
     /**
      * Constructs a DataArrayCompactor with a specified compact load factor and a default compact batch size (1000).
-     * 
+     * <p>
      * A segment is eligible for compaction only if its load factor is less than
      * the user-specified compact load factor.
-     * 
+     * </p>
      * @param dataArray          the data array to compact
      * @param compactLoadFactor  the load factor below which a segment is eligible for compaction
      */
@@ -166,10 +169,10 @@ class SimpleDataArrayCompactor implements Runnable {
     
     /**
      * Constructs a DataArrayCompactor with a specified compact load factor and compact batch size.
-     * 
+     * <p>
      * A segment is eligible for compaction only if its load factor is less than
      * the user-specified compact load factor.
-     * 
+     * </p>
      * @param dataArray          the data array to compact
      * @param compactLoadFactor  the load factor below which a segment is eligible for compaction
      * @param compactBatchSize   the size of compaction updates delivered by the compactor to the writer. 
@@ -181,10 +184,16 @@ class SimpleDataArrayCompactor implements Runnable {
         this._updateManager = new CompactionUpdateManager(_dataArray, compactBatchSize);
     }
     
+    /**
+     * Gets the load factor below which a segment is eligible for compaction.
+     */
     public double getCompactLoadFactor() {
         return this._compactLoadFactor;
     }
     
+    /**
+     * A comparator for ordering Segments based on the Segment load factor.
+     */
     private static Comparator<Segment> _segmentLoadCmp = new Comparator<Segment>() {
         @Override
         public int compare(Segment s1, Segment s2) {
@@ -194,7 +203,16 @@ class SimpleDataArrayCompactor implements Runnable {
         }
     };
     
-    private boolean inspect() throws IOException {
+    /**
+     * Inspects and finds the most fragmented Segments for compaction.
+     * <p>
+     * The number of Segments found for compaction is not greater than 3.
+     * In other words, each compaction cycle reclaims no more than 3 Segments. 
+     * </p>
+     * 
+     * @return <code>true</code> is at least one Segment is found to be eligible for compaction.
+     */
+    private boolean inspect() {
         SegmentManager segManager = _dataArray.getSegmentManager();
         if(segManager == null) return false;
         
@@ -264,6 +282,13 @@ class SimpleDataArrayCompactor implements Runnable {
          */
     }
     
+    /**
+     * Compacts a number of source fragmented Segments by moving data into a new target Segment.
+     * 
+     * @return <code>true</code> if this operation finished successfully. Otherwise, <code>false</code>.
+     * 
+     * @throws IOException if this operation can not be finished properly.
+     */
     private boolean compact() throws IOException {
         try {
             _segTarget = _dataArray.getSegmentManager().nextSegment();
@@ -292,6 +317,15 @@ class SimpleDataArrayCompactor implements Runnable {
         return true;
     }
     
+    /**
+     * Compacts data from the specified source Segment into the specified target Segment.
+     * 
+     * @param segment   - the source Segment, from which data is read.
+     * @param segTarget - the target Segment, to which data is written.
+     * @return <code>true</code> if the source Segment is compacted successfully.
+     *         Otherwise, <code>false</code>.
+     * @throws IOException if this operation can not be finished properly.
+     */
     private boolean compact(Segment segment, Segment segTarget) throws IOException {
         Segment segSource = segment; 
         int segSourceId = segSource.getSegmentId();
@@ -349,6 +383,9 @@ class SimpleDataArrayCompactor implements Runnable {
         }
     }
     
+    /**
+     * Compacting Segments.
+     */
     @Override
     public void run() {
         while(_enabled) {
@@ -441,6 +478,9 @@ class SimpleDataArrayCompactor implements Runnable {
         }
     }
     
+    /**
+     * Reset internal data structures before the next compaction cycle.
+     */
     private final void reset() {
         _segTarget = null;
         _segPermits.set(0);
@@ -448,22 +488,42 @@ class SimpleDataArrayCompactor implements Runnable {
         _updateManager.clear();
     }
     
+    /**
+     * Retrieves, but does not remove, the target Segment.
+     */
     protected Segment peekTargetSegment() {
         return _targetQueue.peek();
     }
-    
+
+    /**
+     * Retrieves and removes the target Segment.
+     */
     protected Segment pollTargetSegment() {
         return _targetQueue.poll();
     }
     
+    /**
+     * Retrieves and removes the next {@link CompactionUpdateBatch}.
+     */
     protected CompactionUpdateBatch pollCompactionBatch() {
         return _updateManager.pollBatch();
     }
     
+    /**
+     * Recycles a {@link CompactionUpdateBatch} after it is being consumed.
+     * 
+     * @param batch - the consumed CompactionUpdateBatch.
+     * @return <code>true</code> if recycling is successful.
+     */
     protected boolean recycleCompactionBatch(CompactionUpdateBatch batch) {
         return _updateManager.recycleBatch(batch);
     }
     
+    /**
+     * Gets the buffer for speeding up compaction.
+     * 
+     * @param bufferLength - the length of buffer.
+     */
     protected ByteBuffer getByteBuffer(int bufferLength) {
         if(_buffer == null) {
             _buffer = ByteBuffer.wrap(new byte[bufferLength]);
@@ -473,33 +533,65 @@ class SimpleDataArrayCompactor implements Runnable {
         return _buffer;
     }
     
+    /**
+     * Gets the queue of compacted Segments.
+     */
     final ConcurrentLinkedQueue<Segment> getCompactedQueue() {
         return _compactedQueue;
     }
     
+    /**
+     * Checks whether there is still a permit for instantiating a new target Segment. 
+     */
     final boolean getAndDecrementSegmentPermit() {
         return _segPermits.getAndDecrement() > 0;
     }
     
+    /**
+     * Gets the target Segment to which data is transferred.
+     */
     final Segment getTargetSegment() {
         return _segTarget;
     }
     
+    /**
+     * Starts a new compaction cycle.
+     */
     final void startsCycle() {
         _newCycle.set(true);
     }
     
+    /**
+     * The internal State of the Segment compactor.
+     */
     static enum State {
+        /**
+         * The compaction cycle is initiated.
+         */
         INIT,
+        /**
+         * The compaction cycle is finished.
+         */
         DONE;
     }
     
+    /**
+     * CompactionUpdate specifies how data is moved during compaction.
+     */
     static class CompactionUpdate {
         int _index;
         int _dataSize;
         long _dataAddr;
         long _origAddr;
         
+        /**
+         * Creates a new instance of CompactionUpdate.
+         * 
+         * @param index    - the array index where data is to be moved from.
+         * @param dataSize - the size of data to be moved.
+         * @param dataAddr - the address of the target Segment where data is moved to.
+         * @param origAddr - the address of the source Segment where data is to be moved from.
+         */
         CompactionUpdate(int index, int dataSize, long dataAddr, long origAddr) {
             this._index = index;
             this._dataSize = dataSize;
@@ -507,6 +599,10 @@ class SimpleDataArrayCompactor implements Runnable {
             this._origAddr = origAddr;
         }
         
+        /**
+         * Gets the string representation of this CompactionUpdate.
+         */
+        @Override
         public String toString() {
             StringBuilder buf = new StringBuilder();
             
@@ -525,6 +621,10 @@ class SimpleDataArrayCompactor implements Runnable {
         }
     }
     
+    /**
+     * CompactionUpdateBatch defines a CompactionUpdate container based on {@link ByteBuffer}
+     * to minimize the impact of the Object overhead. It is a tradeoff of efficiency for GC.
+     */
     static class CompactionUpdateBatch {
         static int _counter = 0;
         final int _batchId;
@@ -537,6 +637,10 @@ class SimpleDataArrayCompactor implements Runnable {
         int _serviceId = 0;
         long _lwMark = 0;
         
+        /**
+         * Creates a new instance of CompactionUpdateBatch.
+         * @param capacity - the capacity of the batch.
+         */
         CompactionUpdateBatch(int capacity) {
             this._capacity = capacity;
             this._batchId = _counter++;
@@ -544,6 +648,9 @@ class SimpleDataArrayCompactor implements Runnable {
             _log.info("CompactionUpdateBatch " + _batchId);
         }
         
+        /**
+         * Clears the batch for reuse.
+         */
         public void clear() {
             _buffer.clear();
             _segTarget = null;
@@ -552,46 +659,92 @@ class SimpleDataArrayCompactor implements Runnable {
             _lwMark = 0;
         }
         
+        /**
+         * Gets the batch capacity in the unit of {@link CompactionUpdate}.
+         */
         public int getCapacity() {
             return _capacity;
         }
         
+        /**
+         * Gets the batch capacity in the unit of <code>byte</code>.
+         */
         public int getByteCapacity() {
             return _buffer.capacity();
         }
         
+        /**
+         * Gets the internal {@link ByteBuffer}.
+         */
         public ByteBuffer getInternalBuffer() {
             return _buffer;
         }
         
+        /**
+         * Gets the current size (i.e. the number of {@link CompactionUpdate}s in the batch)
+         * @return
+         */
         public int size() {
             return _buffer.position()/_unitSize;
         }
         
+        /**
+         * Checks if the batch is empty.
+         */
         public boolean isEmpty() {
             return _buffer.position() == 0;
         }
         
+        /**
+         * Gets the batch Id.
+         */
         public int getBatchId() {
             return _batchId;
         }
-
+        
+        /**
+         * Gets the service Id of the batch.
+         * <p>
+         * A batch can be reused for compaction services many times.
+         * </p>
+         */
         public int getServiceId() {
             return _serviceId;
         }
         
+        /**
+         * Gets the descriptive Id of the batch for the purpose of debugging and logging. 
+         * The descriptive Id is in the form below:
+         * <pre>
+         *  &lt;TargetSegementId&gt;[&lt;BatchServiceId&gt;]
+         * </pre>
+         */
         public String getDescriptiveId() {
             return ((_segTarget == null) ? "?[" : (_segTarget.getSegmentId() + "[")) + _serviceId + "]";
         }
         
+        /**
+         * Gets the low water mark of this batch.
+         */
         public long getLWMark() {
             return _lwMark;
         }
         
+        /**
+         * Gets the target Segment to which the updates inside this batch are applied.
+         */
         public Segment getTargetSegment() {
             return _segTarget;
         }
         
+        /**
+         * Add a new {@link CompactionUpdate}.
+         * 
+         * @param index    - the array index where data is to be moved from.
+         * @param dataSize - the size of data to be moved.
+         * @param dataAddr - the address of the target Segment where data is moved to.
+         * @param origAddr - the address of the source Segment where data is to be moved from.
+         */
         public void add(int index, int dataSize, long dataAddr, long origAddr) {
             _buffer.putInt(index);
             _buffer.putInt(dataSize);
@@ -600,6 +753,11 @@ class SimpleDataArrayCompactor implements Runnable {
             _dataSizeTotal += dataSize;
         }
         
+        /**
+         * Gets the {@link CompactionUpdate} at the specified index into the batch.
+         * 
+         * @param i - the index into the batch.
+         */
         public CompactionUpdate get(int i) {
             return new CompactionUpdate(getUpdateIndex(i),
                                         getUpdateDataSize(i),
@@ -607,47 +765,112 @@ class SimpleDataArrayCompactor implements Runnable {
                                         getOriginDataAddr(i));
         }
         
+        /**
+         * Gets the array index of the {@link CompactionUpdate} at the specified index into the batch.
+         * 
+         * @param i - the index into the batch.
+         */
         public int getUpdateIndex(int i) {
             return _buffer.getInt(i * _unitSize);
         }
         
+        /**
+         * Gets the data size of the {@link CompactionUpdate} at the specified index into the batch.
+         * 
+         * @param i - the index into the batch.
+         */
         public int getUpdateDataSize(int i) {
             return _buffer.getInt((i * _unitSize) + 4);
         }
         
+        /**
+         * Gets the update address of the {@link CompactionUpdate} at the specified index into the batch.
+         * 
+         * @param i - the index into the batch.
+         */
         public long getUpdateDataAddr(int i) {
             return _buffer.getLong((i * _unitSize) + 8);
         }
         
+        /**
+         * Gets the original address of the {@link CompactionUpdate} at the specified index into the batch.
+         * 
+         * @param i - the index into the batch.
+         */
         public long getOriginDataAddr(int i) {
             return _buffer.getLong((i * _unitSize) + 16);
         }
         
+        /**
+         * Gets the total size of transferred data in the unit of <code>byte</code> known to this batch.
+         */
         public int getDataSizeTotal() {
             return _dataSizeTotal;
         }
         
+        /**
+         * Sets the low water mark of this batch when it is filled up.
+         */
         void setLWMark(long waterMark) {
             _lwMark = waterMark;
         }
         
+        /**
+         * Sets the target Segment of this batch.
+         */
         void setTargetSegment(Segment seg) {
             _segTarget = seg;
         }
         
+        /**
+         * Sets the service Id of this batch.
+         */
         void setServiceId(int serviceId) {
             _serviceId = serviceId;
         }
     }
     
+    /**
+     * CompactionUpdateManager manages the communication of compaction updates
+     * between the {@link SimpleDataArray} and the associated Segment compactor.
+     */
     static class CompactionUpdateManager {
+        /**
+         * The size of {@link CompactionUpdateBatch}.
+         */
         private final int _batchSize;
+        
+        /**
+         * The service queue of {@link CompactionUpdateBatch} to be consumed.
+         */
         private final ConcurrentLinkedQueue<CompactionUpdateBatch> _serviceBatchQueue;
+        
+        /**
+         * The recycle queue of {@link CompactionUpdateBatch} to be reused.
+         */
         private final ConcurrentLinkedQueue<CompactionUpdateBatch> _recycleBatchQueue;
+        
+        /**
+         * The data array to be compacted.
+         */
         private final SimpleDataArray _dataArray;
-        private int _batchServiceIdCounter = 0; 
+        
+        /**
+         * The counter of batch service Id.
+         */
+        private int _batchServiceIdCounter = 0;
+        
+        /**
+         * The current batch to which a {@link CompactionUpdate} is added.
+         */
         private CompactionUpdateBatch _batch;
         
+        /**
+         * Creates a new instance of CompactionUpdateManager.
+         * 
+         * @param dataArray - the data array to be compacted.
+         * @param batchSize - the size of {@link CompactionUpdateBatch}.
+         */
         public CompactionUpdateManager(SimpleDataArray dataArray, int batchSize) {
             _dataArray = dataArray;
             _batchSize = batchSize;
@@ -656,6 +879,9 @@ class SimpleDataArrayCompactor implements Runnable {
             nextBatch();
         }
         
+        /**
+         * Gets the next batch to used for compaction.
+         */
         private void nextBatch() {
             _batch = _recycleBatchQueue.poll();
             if(_batch == null) {
@@ -666,23 +892,48 @@ class SimpleDataArrayCompactor implements Runnable {
             _batch.setServiceId(_batchServiceIdCounter++);
         }
         
+        /**
+         * Checks if the service queue is empty.
+         */
         public boolean isServiceQueueEmpty() {
             return _serviceBatchQueue.isEmpty();
         }
-
+        
+        /**
+         * Checks if the recycle queue is empty.
+         */
         public boolean isRecycleQueueEmpty() {
             return _recycleBatchQueue.isEmpty();
         }
         
+        /**
+         * Retrieves and removes a {@link CompactionUpdateBatch} from the service queue.
+         */
         public CompactionUpdateBatch pollBatch() {
             return _serviceBatchQueue.poll();
         }
-
+        
+        /**
+         * Clears and adds a {@link CompactionUpdateBatch} to the recycle queue.
+         * 
+         * @param batch - the batch to be recycled.
+         * @return <code>true</code> if the batch is recycled.
+         */
         public boolean recycleBatch(CompactionUpdateBatch batch) {
             batch.clear();
             return _recycleBatchQueue.add(batch);
         }
         
+        /**
+         * Adds a new {@link CompactionUpdate}.
+         * 
+         * @param index     - the array index where data is to be moved from.
+         * @param dataSize  - the size of data to be moved.
+         * @param dataAddr  - the address of the target Segment where data is moved to.
+         * @param origAddr  - the address of the source Segment where data is to be moved from.
+         * @param segTarget - the target Segment to which data is transferred.
+         * @throws IOException if the compaction update can not be added.
+         */
         public void addUpdate(int index, int dataSize, long dataAddr, long origAddr, Segment segTarget) throws IOException {
             try {
                 _batch.add(index, dataSize, dataAddr, origAddr);
@@ -700,6 +951,12 @@ class SimpleDataArrayCompactor implements Runnable {
             }
         }
         
+        /**
+         * Flushes compaction updates to the target Segment.
+         * 
+         * @param segTarget - the target Segment to which data is transferred.
+         * @throws IOException if this operation failed for any reasons.
+         */
         public void endUpdate(Segment segTarget) throws IOException {
             segTarget.force();
             _batch.setTargetSegment(segTarget);
@@ -711,6 +968,9 @@ class SimpleDataArrayCompactor implements Runnable {
             nextBatch();
         }
         
+        /**
+         * Clears the internal state of this CompactionUpdateManager.
+         */
         public void clear() {
             _batchServiceIdCounter = 0;
             _batch.clear();
@@ -718,9 +978,19 @@ class SimpleDataArrayCompactor implements Runnable {
         }
     }
     
+    /**
+     * BufferedSegment loads a Segment into a {@link ByteBuffer} to fast access to segment data.
+     */
     static class BufferedSegment extends MemorySegment {
         private ByteBuffer _byteBuffer = null;
         
+        /**
+         * Creates a new instance of BufferedSegment.
+         * 
+         * @param segment - the Segment to be wrapped.
+         * @param buffer  - the byte buffer
+         * @throws IOException if the instance cannot be created. 
+         */
         public BufferedSegment(Segment segment, ByteBuffer buffer) throws IOException {
             super(segment.getSegmentId(), segment.getSegmentFile(), segment.getInitialSizeMB(), segment.getMode());
             this._byteBuffer = buffer;
@@ -740,6 +1010,9 @@ class SimpleDataArrayCompactor implements Runnable {
         }
     }
     
+    /**
+     * CompactorThreadFactory produces daemon threads for running compaction.
+     */
     static class CompactorThreadFactory implements ThreadFactory {
         @Override
         public Thread newThread(Runnable r) {

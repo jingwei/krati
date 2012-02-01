@@ -35,10 +35,25 @@ import krati.core.array.basic.StaticLongArray;
 public class AddressArrayFactory {
     private boolean _indexesCached = StoreParams.INDEXES_CACHED_DEFAULT;
     
+    /**
+     * Creates a new instance of AddressArrayFactory.
+     * 
+     * @param indexesCached - whether the indexes is cached in memory.
+     */
     public AddressArrayFactory(boolean indexesCached) {
         this.setIndexesCached(indexesCached);
     }
     
+    /**
+     * Creates a fixed-length {@link AddressArray}.
+     * 
+     * @param homeDir        - the home directory where the <code>indexes.dat</code> is located.
+     * @param length         - the length of {@link AddressArray}.
+     * @param batchSize      - the number of updates per update batch.
+     * @param numSyncBatches - the number of update batches required for updating the underlying indexes.
+     * @return an instance of {@link AddressArray}.
+     * @throws Exception if an instance of {@link AddressArray} cannot be created.
+     */
     public AddressArray createStaticAddressArray(File homeDir,
                                                  int length,
                                                  int batchSize,
@@ -56,6 +71,16 @@ public class AddressArrayFactory {
         return addrArray;
     }
     
+    /**
+     * Creates a dynamic {@link AddressArray} which grows its capacity as needed.
+     * The initial capacity of this address array is 64K.
+     * 
+     * @param homeDir        - the home directory where the <code>indexes.dat</code> is located.
+     * @param batchSize      - the number of updates per update batch.
+     * @param numSyncBatches - the number of update batches required for updating the underlying indexes.
+     * @return an instance of {@link AddressArray}.
+     * @throws Exception if an instance of {@link AddressArray} cannot be created.
+     */
     public AddressArray createDynamicAddressArray(File homeDir,
                                                   int batchSize,
                                                   int numSyncBatches) throws Exception {
@@ -66,6 +91,16 @@ public class AddressArrayFactory {
                 numSyncBatches);
     }
     
+    /**
+     * Creates a dynamic {@link AddressArray} which grows its capacity as needed.
+     * 
+     * @param homeDir        - the home directory where the <code>indexes.dat</code> is located.
+     * @param initialLength  - the initial length of the created {@link AddressArray}.
+     * @param batchSize      - the number of updates per update batch.
+     * @param numSyncBatches - the number of update batches required for updating the underlying indexes.
+     * @return an instance of {@link AddressArray}.
+     * @throws Exception if an instance of {@link AddressArray} cannot be created.
+     */
     public AddressArray createDynamicAddressArray(File homeDir,
                                                   int initialLength,
                                                   int batchSize,
@@ -87,14 +122,25 @@ public class AddressArrayFactory {
         return addrArray;
     }
     
-    public final void setIndexesCached(boolean _indexesCached) {
-        this._indexesCached = _indexesCached;
+    /**
+     * Indicates whether this AddressArrayFactory creates an {@link AddressArray} with the indexes cached in memory.
+     * 
+     * @param indexesCached - whether the indexes is cached in memory.
+     */
+    public final void setIndexesCached(boolean indexesCached) {
+        this._indexesCached = indexesCached;
     }
     
+    /**
+     * Checks whether the indexes is cached in memory.
+     */
     public final boolean getIndexesCached() {
         return _indexesCached;
     }
     
+    /**
+     * Checks whether the indexes is cached in memory.
+     */
     public final boolean isIndexesCached() {
         return _indexesCached;
     }
