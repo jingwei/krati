@@ -38,6 +38,8 @@ import krati.core.array.entry.PreFillEntryShort;
  * 
  * @author jwu
  * 
+ * <p>
+ * 02/06, 2012 - Handle BufferUnderflowException or other Exceptions when loading entry files. <br/>
  */
 public class ArrayEntryManager<V extends EntryValue> implements Persistable {
   private static final Logger _log = Logger.getLogger(ArrayEntryManager.class);
@@ -412,7 +414,7 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable {
           Entry<V> entry = _entryPool.next();
           entry.load(file);
           entryList.add(entry);
-        } catch(IOException e) {
+        } catch(Exception e) {
           String filePath = file.getAbsolutePath();
           _log.warn(filePath + " corrupted");
           if(file.delete()) {
