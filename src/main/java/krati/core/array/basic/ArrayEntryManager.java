@@ -416,7 +416,7 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable {
           entryList.add(entry);
         } catch(Exception e) {
           String filePath = file.getAbsolutePath();
-          _log.warn(filePath + " corrupted");
+          _log.warn(filePath + " corrupted: length=" + file.length(), e);
           if(file.delete()) {
             _log.warn(filePath + " deleted");
           }
