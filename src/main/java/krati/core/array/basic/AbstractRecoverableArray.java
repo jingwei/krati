@@ -32,31 +32,54 @@ import krati.core.array.entry.EntryValue;
  * @author jwu
  * 
  * <p>
- * 05/09, 2011 - added abstract method getLogger
+ * 05/09, 2011 - added abstract method getLogger <br/>
  * 
  */
 abstract class AbstractRecoverableArray<V extends EntryValue> implements RecoverableArray<V> {
-  protected int                  _length;         // Length of this array
-  protected File                 _directory;      // array home directory
-  protected ArrayFile            _arrayFile;      // underlying array file
-  protected EntryFactory<V>      _entryFactory;   // factory for creating Entry
-  protected ArrayEntryManager<V> _entryManager;   // manager for entry redo logs
-  
     /**
-     * @param length
-     *            Length of the array.
-     * @param entrySize
-     *            Maximum number of values per entry.
-     * @param maxEntries
-     *            Maximum number of entries before applying them.
-     * @param directory
-     *            Directory to store the array file and redo entries.
+     * The length of this array.
      */
-    protected AbstractRecoverableArray(int length, int elemSize, int entrySize, int maxEntries, File directory, EntryFactory<V> entryFactory) throws Exception {
+    protected int _length;
+    
+    /**
+     * The home directory of this array.
+     */
+    protected File _directory;
+    
+    /**
+     * The underlying array file (i.e. indexes.dat).
+     */
+    protected ArrayFile _arrayFile;
+    
+    /**
+     * The factory for creating redo log entries.
+     */
+    protected EntryFactory<V> _entryFactory;
+    
+    /**
+     * The manager for redo log entries.
+     */
+    protected ArrayEntryManager<V> _entryManager;
+    
+    /**
+     * AbstractRecoverableArray.
+     * 
+     * @param length
+     *            - the length of the array.
+     * @param elemSize
+     *            - the number of bytes per element.
+     * @param batchSize
+     *            - the number of updates per update batch.
+     * @param numSyncBatches
+     *            - the number of update batches required for updating the underlying indexes.
+     * @param directory
+     *            - the home directory to store the underlying indexes and redo log entry files.
+     */
+    protected AbstractRecoverableArray(int length, int elemSize, int batchSize, int numSyncBatches, File directory, EntryFactory<V> entryFactory) throws Exception {
         _length = length;
         _directory = directory;
         _entryFactory = entryFactory;
-        _entryManager = new ArrayEntryManager<V>(this, maxEntries, entrySize);
+        _entryManager = new ArrayEntryManager<V>(this, numSyncBatches, batchSize);
 
         if (!_directory.exists()) {
             _directory.mkdirs();
@@ -69,8 +92,9 @@ abstract class AbstractRecoverableArray<V extends EntryValue> implements Recover
         init();
 
         getLogger().info("length:" + _length +
-                        " entrySize:" + entrySize +
-                        " maxEntries:" + maxEntries + 
+                        " elemSize:" + elemSize +
+                        " batchSize:" + batchSize +
+                        " numSyncBatches:" + numSyncBatches + 
                         " directory:" + directory.getAbsolutePath() +
                         " arrayFile:" + _arrayFile.getName());
     }
@@ -97,7 +121,16 @@ abstract class AbstractRecoverableArray<V extends EntryValue> implements Recover
             throw e;
         }
     }
-
+    
+    /**
+     * Opens the {@link ArrayFile} with the specified initial length and the element size.
+     * 
+     * @param file          - the file backing up the array.
+     * @param initialLength - the initial length of the array.
+     * @param elementSize   - the number of bytes per element.
+     * @return the instance of {@link ArrayFile}.
+     * @throws IOException if this array file cannot be created for any reasons.
+     */
     protected final ArrayFile openArrayFile(File file, int initialLength, int elementSize) throws IOException {
         boolean isNew = true;
         if (file.exists()) {
@@ -111,47 +144,69 @@ abstract class AbstractRecoverableArray<V extends EntryValue> implements Recover
         
         return arrayFile;
     }
-
+    
+    /**
+     * Subclasses need to initialize the array file.
+     * 
+     * @throws IOException
+     */
     protected void initArrayFile() throws IOException {
         // Subclasses need to initialize ArrayFile
     }
-
+    
+    /**
+     * Subclasses need to handle the loading of data in the array file.
+     * 
+     * @throws IOException
+     */
     protected abstract void loadArrayFileData() throws IOException;
-
+    
+    /**
+     * Subclasses need to provide the logger for logging purposes.
+     */
     protected abstract Logger getLogger();
-
+    
+    /**
+     * Gets the home directory of this array file.
+     */
     public File getDirectory() {
         return _directory;
     }
-
+    
+    /**
+     * Gets the factory of redo log entries.
+     */
     public EntryFactory<V> getEntryFactory() {
         return _entryFactory;
     }
-
+    
+    /**
+     * Gets the manger for redo log entries.
+     */
     public ArrayEntryManager<V> getEntryManager() {
         return _entryManager;
     }
-
+    
     @Override
     public boolean hasIndex(int index) {
         return (0 <= index && index < _length);
     }
-
+    
     @Override
     public final int length() {
         return _length;
     }
-
+    
     /**
-     * Sync array file with all entry logs. The writer will be blocked until all
-     * entry logs are applied.
+     * Sync the array file with redo log entries.
+     * The writer will be blocked until all redo log entries are applied.
      */
     @Override
     public void sync() throws IOException {
         _entryManager.sync();
         getLogger().info("array saved: length=" + length());
     }
-
+    
     /**
      * Persists this array.
      */
@@ -160,17 +215,17 @@ abstract class AbstractRecoverableArray<V extends EntryValue> implements Recover
         _entryManager.persist();
         getLogger().info("array persisted: length=" + length());
     }
-
+    
     @Override
     public final long getHWMark() {
         return _entryManager.getHWMark();
     }
-
+    
     @Override
     public final long getLWMark() {
         return _entryManager.getLWMark();
     }
-
+    
     @Override
     public void updateArrayFile(List<Entry<V>> entryList) throws IOException {
         if(_arrayFile != null) {

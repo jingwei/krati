@@ -57,8 +57,8 @@ import krati.util.Chronos;
  * @author jwu
  * 
  * <p>
- * 05/09, 2011 - added support for java.io.Closeable
- * 06/24, 2011 - added setWaterMarks(lwmScn, hwmScn)
+ * 05/09, 2011 - added support for java.io.Closeable <br/>
+ * 06/24, 2011 - added setWaterMarks(lwmScn, hwmScn) <br/>
  */
 public class ArrayFile implements Closeable {
   public static final long STORAGE_VERSION  = 0;
@@ -145,6 +145,11 @@ public class ArrayFile implements Closeable {
     _log.info(_file.getName() + " header: " + getHeader());
   }
   
+  /**
+   * Checks the header of this ArrayFile upon initial loading.
+   * 
+   * @throws IOException the header is not valid.
+   */
   protected void initCheck() throws IOException {
     // Check storage version
     if (_version != STORAGE_VERSION) {
@@ -205,54 +210,102 @@ public class ArrayFile implements Closeable {
     return buf.toString();
   }
   
+  /**
+   * Gets the name of this ArrayFile.
+   */
   public final String getName() {
     return _file.getName();
   }
   
+  /**
+   * Gets the pathname of this ArrayFile.
+   */
   public final String getPath() {
     return _file.getPath();
   }
   
+  /**
+   * Gets the absolute pathname of this ArrayFile.
+   */
   public final String getAbsolutePath() {
     return _file.getAbsolutePath();
   }
   
+  /**
+   * Gets the canonical pathname of this ArrayFile.
+   * 
+   * @throws IOException if the underlying file system queries cannot be performed.
+   */
   public final String getCanonicalPath() throws IOException {
     return _file.getCanonicalPath();
   }
   
+  /**
+   * Gets the storage version of this ArrayFile.
+   */
   public final long getVersion() {
     return _version;
   }
   
+  /**
+   * Gets the low water mark of this ArrayFile.
+   */
   public final long getLwmScn() {
     return _arrayLwmScn;
   }
   
+  /**
+   * Gets the high water mark of this ArrayFile.
+   */
   public final long getHwmScn() {
     return _arrayHwmScn;
   }
   
+  /**
+   * Gets the length of this ArrayFile. The returned length is in the unit elements, NOT bytes.
+   */
   public final int getArrayLength() {
     return _arrayLength;
   }
   
+  /**
+   * Gets the number of bytes per element in this ArrayFile.
+   */
   public final int getElementSize() {
     return _elementSize;
   }
   
+  /**
+   * Gets the {@link BasicIO} of this ArrayFile.
+   */
   public final BasicIO getBasicIO() {
     return (BasicIO)_writer;
   }
   
+  /**
+   * Flushes any updates to this ArrayFile.
+   * 
+   * @throws IOException
+   */
   public void flush() throws IOException {
     _writer.flush();
   }
   
+  /**
+   * Synchronizes any updates to this ArrayFile.
+   * 
+   * @throws IOException
+   */
   public void force() throws IOException {
     _writer.force();
   }
   
+  /**
+   * Closes this ArrayFile and releases any system resources associated with it.
+   * If the ArrayFile is already closed then invoking this method has no effect.
+   * 
+   * @throws IOException
+   */
   @Override
   public void close() throws IOException {
     _writer.close();
@@ -260,7 +313,7 @@ public class ArrayFile implements Closeable {
   }
   
   /**
-   * Load data into a memory-based int array.
+   * Loads this ArrayFile into a memory-based int array.
    * 
    * @throws IOException
    */
@@ -287,7 +340,7 @@ public class ArrayFile implements Closeable {
   }
   
   /**
-   * Load data into a memory-based long array.
+   * Loads this ArrayFile into a memory-based long array.
    * 
    * @throws IOException
    */
@@ -314,7 +367,7 @@ public class ArrayFile implements Closeable {
   }
   
   /**
-   * Load data into a memory-based short array.
+   * Loads this ArrayFile into a memory-based short array.
    * 
    * @throws IOException
    */
@@ -341,7 +394,7 @@ public class ArrayFile implements Closeable {
   }
   
   /**
-   * Load the main array.
+   * Loads the main array.
    * 
    * @return an int array
    * @throws IOException
@@ -371,7 +424,7 @@ public class ArrayFile implements Closeable {
   }
   
   /**
-   * Load the main array.
+   * Loads the main array.
    * 
    * @return a long array
    * @throws IOException
@@ -401,7 +454,7 @@ public class ArrayFile implements Closeable {
   }
   
   /**
-   * Load the main array.
+   * Loads the main array.
    * 
    * @return a short array
    * @throws IOException
@@ -430,6 +483,11 @@ public class ArrayFile implements Closeable {
     }
   }
   
+  /**
+   * Gets the position of the specified index in the array.
+   * 
+   * @param index   an index in the array.
+   */
   protected long getPosition(int index) {
     return DATA_START_POSITION + ((long)index * _elementSize);
   }
@@ -546,6 +604,14 @@ public class ArrayFile implements Closeable {
     _elementSize = value;
   }
   
+  /**
+   * Sets the water marks of this ArrayFile.
+   * 
+   * @param lwmScn - the low water mark
+   * @param hwmScn - the high water mark
+   * @throws IOException if the <code>lwmScn</code> is greater than the <code>hwmScn</code>
+   *         or the changes to the underlying file cannot be flushed.
+   */
   public void setWaterMarks(long lwmScn, long hwmScn) throws IOException {
       if(lwmScn <= hwmScn) {
           writeHwmScn(hwmScn);
@@ -557,6 +623,12 @@ public class ArrayFile implements Closeable {
       }
   }
   
+  /**
+   * Resets this ArrayFile with the specified integer array.
+   * 
+   * @param intArray - the integer array.
+   * @throws IOException
+   */
   public synchronized void reset(MemoryIntArray intArray) throws IOException {
       _writer.flush();
       _writer.position(DATA_START_POSITION);
@@ -566,6 +638,13 @@ public class ArrayFile implements Closeable {
       _writer.flush();
   }
   
+  /**
+   * Resets this ArrayFile with the specified integer array and the max SCN (System Change Number).
+   * 
+   * @param intArray - the integer array.
+   * @param maxScn   - the system change number for the low and high water marks.
+   * @throws IOException
+   */
   public synchronized void reset(MemoryIntArray intArray, long maxScn) throws IOException {
       reset(intArray);
       
@@ -575,6 +654,12 @@ public class ArrayFile implements Closeable {
       flush();
   }
   
+  /**
+   * Resets this ArrayFile with the specified long array.
+   * 
+   * @param longArray - the long array.
+   * @throws IOException
+   */
   public synchronized void reset(MemoryLongArray longArray) throws IOException {
       _writer.flush();
       _writer.position(DATA_START_POSITION);
@@ -584,6 +669,13 @@ public class ArrayFile implements Closeable {
       _writer.flush();
   }
   
+  /**
+   * Resets this ArrayFile with the specified long array and the max SCN (System Change Number).
+   * 
+   * @param longArray - the long array.
+   * @param maxScn    - the system change number for the low and high water marks.
+   * @throws IOException
+   */
   public synchronized void reset(MemoryLongArray longArray, long maxScn) throws IOException {
       reset(longArray);
       
@@ -593,6 +685,12 @@ public class ArrayFile implements Closeable {
       flush();
   }
   
+  /**
+   * Resets this ArrayFile with the specified short array.
+   * 
+   * @param shortArray - the short array.
+   * @throws IOException
+   */
   public synchronized void reset(MemoryShortArray shortArray) throws IOException {
       _writer.flush();
       _writer.position(DATA_START_POSITION);
@@ -602,6 +700,13 @@ public class ArrayFile implements Closeable {
       _writer.flush();
   }
   
+  /**
+   * Resets this ArrayFile with the specified short array and the max SCN (System Change Number).
+   * 
+   * @param shortArray - the short array.
+   * @param maxScn     - the system change number for the low and high water marks.
+   * @throws IOException
+   */
   public synchronized void reset(MemoryShortArray shortArray, long maxScn) throws IOException {
       reset(shortArray);
       
@@ -611,6 +716,12 @@ public class ArrayFile implements Closeable {
       flush();
   }
   
+  /**
+   * Resets this ArrayFile with the specified integer array.
+   * 
+   * @param intArray - the integer array.
+   * @throws IOException
+   */
   public synchronized void reset(int[] intArray) throws IOException {
       _writer.flush();
       _writer.position(DATA_START_POSITION);
@@ -620,6 +731,13 @@ public class ArrayFile implements Closeable {
       _writer.flush();
   }
   
+  /**
+   * Resets this ArrayFile with the specified integer array and the max SCN (System Change Number).
+   * 
+   * @param intArray - the integer array
+   * @param maxScn   - the system change number for the low and high water marks.
+   * @throws IOException
+   */
   public synchronized void reset(int[] intArray, long maxScn) throws IOException {
       reset(intArray);
       
@@ -629,6 +747,12 @@ public class ArrayFile implements Closeable {
       flush();
   }
   
+  /**
+   * Resets this ArrayFile with the specified long array.
+   * 
+   * @param longArray - the long array.
+   * @throws IOException
+   */
   public synchronized void reset(long[] longArray) throws IOException {
       _writer.flush();
       _writer.position(DATA_START_POSITION);
@@ -638,6 +762,13 @@ public class ArrayFile implements Closeable {
       _writer.flush();
   }
   
+  /**
+   * Resets this ArrayFile with the specified long array and the max SCN (System Change Number).
+   * 
+   * @param longArray - the long array
+   * @param maxScn    - the system change number for the low and high water marks.
+   * @throws IOException
+   */
   public synchronized void reset(long[] longArray, long maxScn) throws IOException {
       reset(longArray);
       
@@ -647,6 +778,12 @@ public class ArrayFile implements Closeable {
       flush();
   }
   
+  /**
+   * Resets this ArrayFile with the specified short array.
+   * 
+   * @param shortArray - the short array.
+   * @throws IOException
+   */
   public synchronized void reset(short[] shortArray) throws IOException {
       _writer.flush();
       _writer.position(DATA_START_POSITION);
@@ -656,6 +793,13 @@ public class ArrayFile implements Closeable {
       _writer.flush();
   }
   
+  /**
+   * Resets this ArrayFile with the specified short array and the max SCN (System Change Number).
+   * 
+   * @param shortArray - the short array
+   * @param maxScn     - the system change number for the low and high water marks.
+   * @throws IOException
+   */
   public synchronized void reset(short[] shortArray, long maxScn) throws IOException {
       reset(shortArray);
       
@@ -665,6 +809,12 @@ public class ArrayFile implements Closeable {
       flush();
   }
   
+  /**
+   * Resets all element values to the specified long value.
+   * 
+   * @param value - the element value.
+   * @throws IOException
+   */
   public synchronized void resetAll(long value) throws IOException {
       if(_elementSize != 8) {
           throw new IOException("Operation aborted: elementSize=" + _elementSize);
@@ -678,6 +828,13 @@ public class ArrayFile implements Closeable {
       _writer.flush();
   }
   
+  /**
+   * Resets all element values to the specified long value the max SCN (System Change Number)..
+   * 
+   * @param value  - the element value.
+   * @param maxScn - the system change number for the low and high water marks.
+   * @throws IOException
+   */
   public synchronized void resetAll(long value, long maxScn) throws IOException {
       resetAll(value);
       
@@ -687,6 +844,13 @@ public class ArrayFile implements Closeable {
       flush();
   }
   
+  /**
+   * Updates the length of this ArrayFile to the specified value.
+   * 
+   * @param arrayLength  - the new array length
+   * @param renameToFile - the copy of this ArrayFile. If <code>null</code>, no backup copy will be created.
+   * @throws IOException
+   */
   public synchronized void setArrayLength(int arrayLength, File renameToFile) throws IOException {
       if(arrayLength < 0) {
           throw new IOException("Invalid array length: " + arrayLength);

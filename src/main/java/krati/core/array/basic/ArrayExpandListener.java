@@ -26,5 +26,10 @@ import krati.array.DynamicArray;
  */
 public interface ArrayExpandListener {
     
+    /**
+     * Notifies the listener that the length of the specified array has been expanded.
+     *  
+     * @param dynArray - the dynamic array.
+     */
     public void arrayExpanded(DynamicArray dynArray);
 }

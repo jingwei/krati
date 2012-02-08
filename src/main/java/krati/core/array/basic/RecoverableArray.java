@@ -34,9 +34,21 @@ import krati.core.array.entry.EntryValue;
  */
 public interface RecoverableArray<V extends EntryValue> extends Array, Persistable {
     
+    /**
+     * Gets the home directory of this array.
+     */
     public File getDirectory();
     
+    /**
+     * Gets the factory for creating new redo log entries.
+     */
     public EntryFactory<V> getEntryFactory();
     
+    /**
+     * Updates the underlying array file with the specified list of redo log entries.
+     * 
+     * @param entryList - the list of redo log entries.
+     * @throws IOException if any redo log entry in the list can not be applied.
+     */
     public void updateArrayFile(List<Entry<V>> entryList) throws IOException;
 }
