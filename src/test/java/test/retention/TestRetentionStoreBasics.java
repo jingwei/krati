@@ -24,8 +24,7 @@ import krati.io.Serializer;
 import krati.io.serializer.StringSerializerUtf8;
 import krati.retention.Retention;
 import krati.retention.RetentionConfig;
-import krati.retention.SimpleEventBus;
-import krati.retention.clock.Clock;
+import krati.retention.SimpleRetention;
 import krati.store.DataStore;
 import krati.store.factory.DynamicObjectStoreFactory;
 import krati.store.factory.ObjectStoreFactory;
@@ -50,11 +49,9 @@ public class TestRetentionStoreBasics extends AbstractTestRetentionStoreBasics<S
         config.setRetentionPolicy(createRetentionPolicy());
         config.setEventValueSerializer(createEventValueSerializer());
         config.setEventClockSerializer(createEventClockSerializer());
-        config.setSnapshotClockStoreFactory(new DynamicObjectStoreFactory<String, Clock>());
         config.setRetentionSegmentFileSizeMB(16);
-        config.setSnapshotSegmentFileSizeMB(16);
         
-        return new SimpleEventBus<String>(config);
+        return new SimpleRetention<String>(config);
     }
     
     @Override

@@ -36,7 +36,7 @@ import krati.util.IndexedIterator;
  * 
  * <p>
  * 08/23, 2011 - Created <br/>
- * 11/20, 2011 - Updated for supporting both SimpleRetention and SimpleEventBus <br/>
+ * 11/20, 2011 - Updated for SimpleRetention <br/>
  * 01/25, 2012 - Fixed bootstrap scan logging info <br/>
  */
 public class SimpleRetentionStoreReader<K, V> implements RetentionStoreReader<K, V> {
