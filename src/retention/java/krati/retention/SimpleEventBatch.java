@@ -30,9 +30,10 @@ import krati.retention.clock.Occurred;
  * @author jwu
  * 
  * <p>
- * 08/01, 2011 - Created
+ * 08/01, 2011 - Created <br/>
+ * 02/09, 2012 - Made Cloneable <br/>
  */
-public final class SimpleEventBatch<T> implements EventBatch<T> {
+public final class SimpleEventBatch<T> implements EventBatch<T>, Cloneable {
     private static final long serialVersionUID = 1L;
     private final long _origin;
     private final int _capacity;
@@ -199,6 +200,7 @@ public final class SimpleEventBatch<T> implements EventBatch<T> {
         return offset;
     }
     
+    @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
         b.append(SimpleEventBatch.class.getSimpleName()).append("{");
@@ -210,5 +212,15 @@ public final class SimpleEventBatch<T> implements EventBatch<T> {
         b.append("minClock=").append(_minClock).append(",");
         b.append("maxClock=").append(_maxClock).append("}");
         return b.toString();
+    }
+    
+    @Override
+    public SimpleEventBatch<T> clone() {
+        SimpleEventBatch<T> batch = new SimpleEventBatch<T>(getOrigin(), _minClock, _capacity);
+        batch._maxClock = _maxClock;
+        batch._events.addAll(_events);
+        batch._creationTime = _creationTime;
+        batch._completionTime = _completionTime;
+        return batch;
     }
 }

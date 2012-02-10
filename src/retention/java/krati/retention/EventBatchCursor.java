@@ -23,7 +23,7 @@ package krati.retention;
  * @author jwu
  * 
  * <p>
- * 07/31, 2011 - Created
+ * 07/31, 2011 - Created <br/>
  */
 public interface EventBatchCursor {
     
@@ -31,4 +31,5 @@ public interface EventBatchCursor {
     
     public EventBatchHeader getHeader();
     
+    public void setHeader(EventBatchHeader header);
 }

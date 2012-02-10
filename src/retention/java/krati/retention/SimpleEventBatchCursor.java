@@ -23,11 +23,11 @@ package krati.retention;
  * @author jwu
  * 
  * <p>
- * 07/31, 2011 - Created
+ * 07/31, 2011 - Created <br/>
  */
 public class SimpleEventBatchCursor implements EventBatchCursor {
-    private final int _batchLookup;
-    private final EventBatchHeader _batchHeader;
+    private int _batchLookup;
+    private EventBatchHeader _batchHeader;
     
     /**
      * SimpleEventBatchCursor
@@ -41,12 +41,17 @@ public class SimpleEventBatchCursor implements EventBatchCursor {
     }
     
     @Override
+    public int getLookup() {
+        return _batchLookup;
+    }
+    
+    @Override
     public EventBatchHeader getHeader() {
         return _batchHeader;
     }
     
     @Override
-    public int getLookup() {
-        return _batchLookup;
+    public void setHeader(EventBatchHeader header) {
+        this._batchHeader = header;
     }
 }

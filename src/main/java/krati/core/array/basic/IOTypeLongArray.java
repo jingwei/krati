@@ -39,7 +39,7 @@ import krati.core.array.entry.EntryValueLong;
  * 06/12, 2011
  * 
  * <p>
- * 06/24, 2011 - Fixed the water marks of underlying ArrayFile. 
+ * 06/24, 2011 - Fixed the water marks of underlying ArrayFile. <br/>
  */
 public class IOTypeLongArray extends AbstractRecoverableArray<EntryValueLong> implements AddressArray, DynamicArray {
     private final static int _subArrayBits = DynamicConstants.SUB_ARRAY_BITS;

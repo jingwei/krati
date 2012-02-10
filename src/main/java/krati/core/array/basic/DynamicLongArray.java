@@ -35,8 +35,8 @@ import krati.core.array.entry.EntryValueLong;
  * @author jwu
  * 
  * <p>
- * 05/09, 2011 - added support for Closeable
- * 06/03, 2011 - cleanup _arrayFile file handle
+ * 05/09, 2011 - added support for Closeable <br/>
+ * 06/03, 2011 - cleanup _arrayFile file handle <br/>
  */
 public class DynamicLongArray extends AbstractRecoverableArray<EntryValueLong> implements AddressArray, DynamicArray, ArrayExpandListener {
     private final static int _subArrayBits = DynamicConstants.SUB_ARRAY_BITS;

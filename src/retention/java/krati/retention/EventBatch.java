@@ -29,7 +29,7 @@ import krati.retention.clock.Clock;
  * @author jwu
  * 
  * <p>
- * 07/31, 2011 - Created
+ * 07/31, 2011 - Created <br/>
  */
 public interface EventBatch<T> extends Iterable<Event<T>>, EventBatchHeader, Serializable {
     public static final int VERSION = 0;
