@@ -25,7 +25,6 @@ import krati.io.Serializer;
 import krati.retention.clock.Clock;
 import krati.retention.policy.RetentionPolicy;
 import krati.retention.policy.RetentionPolicyOnSize;
-import krati.store.factory.ObjectStoreFactory;
 
 /**
  * RetentionConfig
@@ -34,7 +33,7 @@ import krati.store.factory.ObjectStoreFactory;
  * @author jwu
  * 
  * <p>
- * 08/12, 2011 - Created
+ * 08/12, 2011 - Created <br/>
  */
 public class RetentionConfig<T> {
     /**
@@ -58,16 +57,6 @@ public class RetentionConfig<T> {
     private int _numSyncBatchs = 10;
     
     /**
-     * Snapshot store initial size.
-     */
-    private int _snapshotInitialSize = 10000000;
-    
-    /**
-     * Snapshot store segmentFileSizeMB.
-     */
-    private int _snapshotSegmentFileSizeMB = 32;
-    
-    /**
      * Retention store initial size.
      */
     private int _retentionInitialSize = 10000;
@@ -76,11 +65,6 @@ public class RetentionConfig<T> {
      * Retention store segmentFileSizeMB.
      */
     private int _retentionSegmentFileSizeMB = 32;
-    
-    /**
-     * Snapshot segment factory.
-     */
-    private SegmentFactory _snapshotSegmentFactory = new WriteBufferSegmentFactory();
     
     /**
      * Retention segment factory.
@@ -102,12 +86,6 @@ public class RetentionConfig<T> {
      */
     private Serializer<Clock> _eventClockSerializer;                 // required
     
-    /**
-     * Snapshot clock store factory.
-     */
-    private ObjectStoreFactory<T, Clock> _snapshotClockStoreFactory; // required
-    
-    private final static int SNAPSHOT_INITIAL_SIZE_MIN = 1000;
     private final static int RETENTION_INITIAL_SIZE_MIN = 1000;
     
     public RetentionConfig(int id, File homeDir) {
@@ -121,22 +99,6 @@ public class RetentionConfig<T> {
     
     public File getHomeDir() {
         return _homeDir;
-    }
-    
-    public void setSnapshotInitialSize(int snapshotInitialSize) {
-        this._snapshotInitialSize = Math.max(SNAPSHOT_INITIAL_SIZE_MIN, snapshotInitialSize);
-    }
-    
-    public int getSnapshotInitialSize() {
-        return _snapshotInitialSize;
-    }
-    
-    public void setSnapshotSegmentFileSizeMB(int snapshotSegmentFileSizeMB) {
-        this._snapshotSegmentFileSizeMB = Math.max(Segment.minSegmentFileSizeMB, snapshotSegmentFileSizeMB);
-    }
-    
-    public int getSnapshotSegmentFileSizeMB() {
-        return _snapshotSegmentFileSizeMB;
     }
     
     public void setRetentionInitialSize(int retentionInitialSize) {
@@ -153,15 +115,6 @@ public class RetentionConfig<T> {
     
     public int getRetentionSegmentFileSizeMB() {
         return _retentionSegmentFileSizeMB;
-    }
-    
-    public void setSnapshotSegmentFactory(SegmentFactory snapshotSegmentFactory) {
-        this._snapshotSegmentFactory = snapshotSegmentFactory == null ?
-                new WriteBufferSegmentFactory() : snapshotSegmentFactory;
-    }
-    
-    public SegmentFactory getSnapshotSegmentFactory() {
-        return _snapshotSegmentFactory;
     }
     
     public void setRetentionSegmentFactory(SegmentFactory retentionSegmentFactory) {
@@ -211,13 +164,5 @@ public class RetentionConfig<T> {
     
     public Serializer<Clock> getEventClockSerializer() {
         return _eventClockSerializer;
-    }
-    
-    public void setSnapshotClockStoreFactory(ObjectStoreFactory<T, Clock> clockStoreFactory) {
-        this._snapshotClockStoreFactory = clockStoreFactory;
-    }
-    
-    public ObjectStoreFactory<T, Clock> getSnapshotClockStoreFactory() {
-        return _snapshotClockStoreFactory;
     }
 }
