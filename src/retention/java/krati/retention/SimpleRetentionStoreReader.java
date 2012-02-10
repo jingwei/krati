@@ -38,6 +38,7 @@ import krati.util.IndexedIterator;
  * 08/23, 2011 - Created <br/>
  * 11/20, 2011 - Updated for SimpleRetention <br/>
  * 01/25, 2012 - Fixed bootstrap scan logging info <br/>
+ * 02/08, 2012 - Update the clock of position upon finishing bootstrap <br/>
  */
 public class SimpleRetentionStoreReader<K, V> implements RetentionStoreReader<K, V> {
     private final static Logger _logger = Logger.getLogger(SimpleRetentionStoreReader.class);
@@ -171,9 +172,14 @@ public class SimpleRetentionStoreReader<K, V> implements RetentionStoreReader<K,
                 _logger.info("Read[" + pos.getIndex() + "," + index + ") " + cnt);
             }
             
-            return iter.hasNext() ?
-                    new SimplePosition(_retention.getId(), pos.getOffset(), index, pos.getClock()) :
-                    new SimplePosition(_retention.getId(), pos.getOffset(), pos.getClock());
+            if(iter.hasNext()) {
+                return new SimplePosition(_retention.getId(), pos.getOffset(), index, pos.getClock());
+            } else {
+                Clock newClock;
+                newClock = _retention.getClock(pos.getOffset());
+                if (newClock == null) newClock = pos.getClock();
+                return new SimplePosition(_retention.getId(), pos.getOffset(), newClock);
+            }
         } else {
             return nextPos;
         }

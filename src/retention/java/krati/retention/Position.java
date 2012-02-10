@@ -42,7 +42,7 @@ public interface Position extends Serializable {
     public long getOffset();
     
     /**
-     * @return the index to snapshot.
+     * @return the index to the underlying snapshot or store.
      */
     public int getIndex();
     
