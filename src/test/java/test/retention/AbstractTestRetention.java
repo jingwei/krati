@@ -17,11 +17,10 @@
 package test.retention;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 import test.retention.util.RandomClockFactory;
+import test.retention.util.RetentionReaderThread;
 import test.util.DirUtils;
 
 import junit.framework.TestCase;
@@ -163,7 +162,7 @@ public abstract class AbstractTestRetention<T> extends TestCase {
         int cnt = getEventBatchSize() * (1 + _rand.nextInt(10)) + 1000;
         
         // Start the Retention reader thread
-        Reader<T> reader = new Reader<T>(_retention);
+        RetentionReaderThread<T> reader = new RetentionReaderThread<T>(_retention);
         reader.start();
         
         // Add new events into the Retention
@@ -193,39 +192,5 @@ public abstract class AbstractTestRetention<T> extends TestCase {
         
         // Close retention
         _retention.close();
-    }
-    
-    static class Reader<T> extends Thread {
-        private final Retention<T> _retention;
-        private volatile int _readCount = 0;
-        private volatile long _stopOffset = Long.MAX_VALUE;
-        
-        public Reader(Retention<T> retention) {
-            this._retention = retention;
-        }
-        
-        public void stop(long offset) {
-            _stopOffset = offset;
-        }
-        
-        public int getReadCount() {
-            return _readCount;
-        }
-        
-        @Override
-        public void run() {
-            Position pos = _retention.getPosition(_retention.getClock(0));
-            List<Event<T>> list = new ArrayList<Event<T>>();
-            
-            try {
-                while(pos.getOffset() < _stopOffset) {
-                    pos = _retention.get(pos, list);
-                    _readCount += list.size();
-                    list.clear();
-                }
-            } catch(Exception e) {
-                e.printStackTrace();
-            }
-        }
     }
 }
