@@ -132,6 +132,8 @@ public final class SimpleEventBatch<T> implements EventBatch<T>, Cloneable {
     public Clock getClock(long offset) {
         if(_origin <= offset && offset < (_origin + _events.size())) {
             return _events.get((int)(offset - _origin)).getClock();
+        } else if(_origin == offset) {
+            return _minClock;
         }
         
         return null;
