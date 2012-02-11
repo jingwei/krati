@@ -52,6 +52,7 @@ import krati.util.DaemonThreadFactory;
  * 07/28, 2011 - Created <br/>
  * 11/20, 2011 - Added a new constructor based on RetentionConfig <br/>
  * 01/25, 2012 - Fixed switching from bootstrap scan to real-time syncUp <br/>
+ * 02/09, 2012 - Added batch merge during flush <br/>
  */
 public class SimpleRetention<T> implements Retention<T> {
     private final static Logger _logger = Logger.getLogger(SimpleRetention.class);
@@ -67,10 +68,29 @@ public class SimpleRetention<T> implements Retention<T> {
     private final RetentionPolicyApply _retentionPolicyApply = new RetentionPolicyApply(); 
     private final ScheduledExecutorService _retentionPolicyExecutor = Executors.newSingleThreadScheduledExecutor(new DaemonThreadFactory());
     
+    /**
+     * The current batch, to which new events will be added.
+     */
     private volatile EventBatch<T> _batch = null;
+    
+    /**
+     * The last batch persisted to disk.
+     */
     private volatile EventBatch<T> _lastBatch = null;
+    
+    /**
+     * The last batch cursor, which is valid if and only if the last batch is not null. 
+     */
+    private volatile EventBatchCursor _lastBatchCursor = null;
+    
+    /**
+     * The lock for protecting the assignment of <code>_batch</code> to <code>_lastBatch</code>.
+     */
     private final Lock _batchLock = new ReentrantLock();
     
+    /**
+     * The listener which is interested in the current batch is flushed for persistency.
+     */
     private RetentionFlushListener _flushListener = null;
     
     public SimpleRetention(RetentionConfig<T> config) throws Exception {
@@ -151,15 +171,14 @@ public class SimpleRetention<T> implements Retention<T> {
                 _retentionQueue.add(list.get(i));
             }
             
-            EventBatchHeader header;
-            
-            header = list.get(cnt - 1).getHeader();
+            EventBatchHeader header = list.get(cnt - 1).getHeader();
             batchOrigin = header.getOrigin() + header.getSize();
             batchClock = header.getMaxClock();
         }
         
         this._batch = nextEventBatch(batchOrigin, batchClock);
         this._lastBatch = null;
+        this._lastBatchCursor = null;
         
         scheduleRetentionPolicy();
         
@@ -310,6 +329,10 @@ public class SimpleRetention<T> implements Retention<T> {
         long sinceOffset;
         
         Occurred occ = sinceClock.compareTo(getMinClock());
+        if(occ == Occurred.EQUICONCURRENTLY) {
+            return new SimplePosition(getId(), getOrigin(), getMinClock());
+        }
+        
         if(occ == Occurred.BEFORE || occ == Occurred.CONCURRENTLY) {
             return null;
         }
@@ -475,13 +498,15 @@ public class SimpleRetention<T> implements Retention<T> {
             }
             
             // Add current batch to cursor queue
-            _retentionQueue.offer(new SimpleEventBatchCursor(batchId, _batch.getHeader()));
+            EventBatchCursor cursor = new SimpleEventBatchCursor(batchId, _batch.getHeader());
+            _retentionQueue.offer(cursor);
             
             // Lock when assign _batch to _lastBatch
             _batchLock.lock();
             try {
                 // Reset the lastBatch
                 _lastBatch = _batch;
+                _lastBatchCursor = cursor;
                 
                 // Create the next batch
                 _batch = nextEventBatch(_batch.getOrigin() + _batch.getSize(), event.getClock());
@@ -551,6 +576,9 @@ public class SimpleRetention<T> implements Retention<T> {
     @Override
     public synchronized void flush() throws IOException {
         if(isOpen() && !_batch.isEmpty()) {
+            // Try to add to the _lastBatch
+            if (mergeEventsToLastBatch()) return;
+            
             _batch.setCompletionTime(System.currentTimeMillis());
             byte[] bytes = _eventBatchSerializer.serialize(_batch);
             
@@ -577,13 +605,15 @@ public class SimpleRetention<T> implements Retention<T> {
             }
             
             // Add current batch to cursor queue
-            _retentionQueue.offer(new SimpleEventBatchCursor(batchId, _batch.getHeader()));
+            EventBatchCursor cursor = new SimpleEventBatchCursor(batchId, _batch.getHeader());
+            _retentionQueue.offer(cursor);
             
-            // Lock when assign _batch to _lastBatch
+            // Lock when assigning _batch to _lastBatch
             _batchLock.lock();
             try {
                 // Reset the lastBatch
                 _lastBatch = _batch;
+                _lastBatchCursor = cursor;
                 
                 // Create the next batch
                 _batch = nextEventBatch(_batch.getOrigin() + _batch.getSize(), _batch.getMaxClock());
@@ -591,5 +621,65 @@ public class SimpleRetention<T> implements Retention<T> {
                 _batchLock.unlock();
             }
         }
+    }
+    
+    /**
+     * Try to merge events from the current batch to the last persisted batch
+     * in order to reduce the number of smaller batches in the retention.
+     * 
+     * @return <code>true</code> if the merge operation is performed successfully
+     * @throws IOException
+     */
+    protected boolean mergeEventsToLastBatch() throws IOException {
+        // Checks if we can merge _batch into _lastBatch
+        if(_lastBatch != null && _eventBatchSize >= (_lastBatch.getSize() + _batch.getSize())) {
+            _batch.setCompletionTime(System.currentTimeMillis());
+            
+            if(_flushListener != null) {
+                _flushListener.beforeFlush(_batch);
+            }
+            
+            // Creates a copy of the _lastBatch
+            SimpleEventBatch<T> copy = ((SimpleEventBatch<T>)_lastBatch).clone();
+            
+            try {
+                // Add events from _batch to the copy
+                Iterator<Event<T>> iter = _batch.iterator();
+                while(iter.hasNext()) {
+                    copy.put(iter.next());
+                }
+                copy.setCompletionTime(_batch.getCompletionTime());
+                
+                /* Flush starts automatically upon adding _batch to BytesDB
+                 * because the constructor sets update batchSize to 1.
+                 */
+                byte[] bytes = _eventBatchSerializer.serialize(copy);
+                _store.set(_lastBatchCursor.getLookup(), bytes, getOffset());
+            } catch (Exception e) {
+                _logger.info("events merge aborted", e);
+                return false;
+            }
+            
+            if(_flushListener != null) {
+                _flushListener.afterFlush(_batch);
+            }
+            
+            _batchLock.lock();
+            try {
+                // Updated _lastBatch
+                _lastBatch = copy;
+                _lastBatchCursor.setHeader(copy.getHeader());
+                _logger.info(_batch.getSize() + " events merged to EventBatch " + _lastBatchCursor.getLookup());
+                
+                // Create the next batch
+                _batch = nextEventBatch(_batch.getOrigin() + _batch.getSize(), _batch.getMaxClock());
+            } finally {
+                _batchLock.unlock();
+            }
+            
+            return true;
+        }
+        
+        return false;
     }
 }

@@ -17,6 +17,8 @@
 package test.retention;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import test.retention.util.RandomClockFactory;
@@ -158,22 +160,72 @@ public abstract class AbstractTestRetention<T> extends TestCase {
     }
     
     public void testFlush() throws Exception {
-        int cnt = getEventBatchSize() + _rand.nextInt(getEventBatchSize());
+        int cnt = getEventBatchSize() * (1 + _rand.nextInt(10)) + 1000;
         
+        // Start the Retention reader thread
+        Reader<T> reader = new Reader<T>(_retention);
+        reader.start();
+        
+        // Add new events into the Retention
         for(int i = 0; i < cnt; i++) {
             Clock clock = _clockFactory.next();
             _retention.put(nextEvent(clock));
+            
+            // Random flush
+            if(_rand.nextFloat() < 0.05f) {
+                _retention.flush();
+            }
         }
         
+        // Final flush
         _retention.flush();
+        
+        // Stop the Retention reader thread
+        reader.stop(_retention.getOffset());
+        reader.join();
+        
+        assertEquals(_retention.getOffset(), reader.getReadCount());
         
         Clock minClock = _retention.getMinClock();
         Clock maxClock = _retention.getMaxClock();
         assertTrue(minClock.after(Clock.ZERO));
         assertTrue(minClock.compareTo(maxClock) == Occurred.BEFORE);
         
-        Retention<T> retention2 = createRetention();
-        assertTrue(minClock.beforeEqual(retention2.getMinClock()));
-        assertTrue(maxClock.compareTo(retention2.getMaxClock()) == Occurred.EQUICONCURRENTLY);
+        // Close retention
+        _retention.close();
+    }
+    
+    static class Reader<T> extends Thread {
+        private final Retention<T> _retention;
+        private volatile int _readCount = 0;
+        private volatile long _stopOffset = Long.MAX_VALUE;
+        
+        public Reader(Retention<T> retention) {
+            this._retention = retention;
+        }
+        
+        public void stop(long offset) {
+            _stopOffset = offset;
+        }
+        
+        public int getReadCount() {
+            return _readCount;
+        }
+        
+        @Override
+        public void run() {
+            Position pos = _retention.getPosition(_retention.getClock(0));
+            List<Event<T>> list = new ArrayList<Event<T>>();
+            
+            try {
+                while(pos.getOffset() < _stopOffset) {
+                    pos = _retention.get(pos, list);
+                    _readCount += list.size();
+                    list.clear();
+                }
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
