@@ -63,6 +63,7 @@ import krati.util.Chronos;
  * 05/22, 2011 - Fixed start/shutdown <br/>
  * 05/23, 2011 - Added method clear() to clean up compactor internal state <br/>
  * 06/21, 2011 - Added support for tolerating compaction failure <br/>
+ * 02/14, 2012 - Removed the delay of compaction <br/>
  */
 class SimpleDataArrayCompactor implements Runnable {
     private final static Logger _log = Logger.getLogger(SimpleDataArrayCompactor.class);
@@ -258,9 +259,6 @@ class SimpleDataArrayCompactor implements Runnable {
                     break;
                 }
             }
-            
-            // Delay compaction if only one segment is eligible for compaction but it is not VERY fragmented.
-            if (_segSourceList.size() == 1 && _segSourceList.get(0).getLoadFactor() > (_compactLoadFactor/2)) return false;
             
             try {
                 for(Segment seg : _segSourceList) {

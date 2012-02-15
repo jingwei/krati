@@ -23,6 +23,7 @@ import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.HashMap;
@@ -58,6 +59,7 @@ import org.apache.log4j.Logger;
  * 
  * <p>
  * 05/24, 2010 - Always try to open the manager upon call to SegmentManager.getInstance(...) <br/>
+ * 02/14, 2012 - Remove the last segment file after being freed <br/>
  */
 public final class SegmentManager implements Closeable {
     private final static Logger _log = Logger.getLogger(SegmentManager.class);
@@ -104,6 +106,7 @@ public final class SegmentManager implements Closeable {
     }
 
     private int computeRecycleLimit(int segmentFileSizeMB) {
+        // Should always return an integer greater than zero.
         return (segmentFileSizeMB <= 64) ? 5 : ((segmentFileSizeMB <= 256) ? 3 : 2);
     }
 
@@ -157,17 +160,27 @@ public final class SegmentManager implements Closeable {
         if (segId < _segList.size() && _segList.get(segId) == seg) {
             _segList.set(segId, null);
             seg.close(false);
-
-            if (seg.isRecyclable() && _recycleList.size() < _recycleLimit) {
-                _recycleList.add(seg);
-                _log.info("Segment " + seg.getSegmentId() + " recycled");
+            
+            if(segId == (_segList.size() - 1)) {
+                // Delete the last segment from disk.
+                File segFile = new File(_segHomePath, segId + ".seg");
+                try {
+                    segFile.delete();
+                    _log.info("Segment " + seg.getSegmentId() + " deleted");
+                } catch(Exception e) {
+                    _log.warn("Segment " + seg.getSegmentId() + " not deleted", e);
+                }
             } else {
-                _log.info("Segment " + seg.getSegmentId() + " freed");
+                if (seg.isRecyclable() && recycle(seg)) {
+                    _log.info("Segment " + seg.getSegmentId() + " recycled");
+                } else {
+                    _log.info("Segment " + seg.getSegmentId() + " freed");
+                }
             }
-
+            
             return true;
         }
-
+        
         return false;
     }
 
@@ -288,6 +301,45 @@ public final class SegmentManager implements Closeable {
         _segList.clear();
         _segCurrent = null;
         _recycleList.clear();
+    }
+    
+    /**
+     * Recycle a free segment into the fixed-length priority queue (i.e., <code>_recycleList</code>).
+     * The segments in the queue are in the ascending order of Segment Id.
+     * 
+     * @param seg - the free Segment
+     * @return <code>true</code> if the specified Segment is added to the recycle list.
+     */
+    private boolean recycle(Segment seg) {
+        if(_recycleList.isEmpty()) {
+            _recycleList.add(seg);
+            return true;
+        }
+        
+        int index = 0;
+        int count = _recycleList.size();
+        Iterator<Segment> iter = _recycleList.iterator();
+        
+        while(iter.hasNext()) {
+            Segment val = iter.next();
+            if(val == seg) {
+                return false; // NOT FEASIBLE!
+            } else if(val.getSegmentId() > seg.getSegmentId()) {
+                break;
+            }
+            index++;
+        }
+        
+        if(count < _recycleLimit) {
+            _recycleList.add(index, seg);
+            return true;
+        } else if(_recycleList.get(count - 1).getSegmentId() > seg.getSegmentId()) {
+            _recycleList.add(index, seg);
+            _recycleList.removeLast();
+            return true;
+        } else {
+            return false;
+        }
     }
     
     protected File[] listSegmentFiles() {
