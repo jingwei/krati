@@ -39,6 +39,7 @@ import krati.util.IndexedIterator;
  * 11/20, 2011 - Updated for SimpleRetention <br/>
  * 01/25, 2012 - Fixed bootstrap scan logging info <br/>
  * 02/08, 2012 - Update the clock of position upon finishing bootstrap <br/>
+ * 02/22, 2012 - Update the initial index start for Clock.ZERO <br/>
  */
 public class SimpleRetentionStoreReader<K, V> implements RetentionStoreReader<K, V> {
     private final static Logger _logger = Logger.getLogger(SimpleRetentionStoreReader.class);
@@ -79,7 +80,9 @@ public class SimpleRetentionStoreReader<K, V> implements RetentionStoreReader<K,
             }
         }
         
-        return new SimplePosition(_retention.getId(), _retention.getOffset(), 0, sinceClock);
+        return new SimplePosition(_retention.getId(),
+                                  _retention.getOffset(),
+                                  getStoreIndexStart(), sinceClock);
     }
     
     @Override
@@ -115,7 +118,9 @@ public class SimpleRetentionStoreReader<K, V> implements RetentionStoreReader<K,
             } else {
                 Position newPos = getPosition(pos.getClock());
                 if(newPos == null) {
-                    newPos = new SimplePosition(_retention.getId(), _retention.getOffset(), 0, pos.getClock());
+                    newPos = new SimplePosition(_retention.getId(),
+                                                _retention.getOffset(),
+                                                getStoreIndexStart(), pos.getClock());
                     _logger.warn("Reset position from " + pos + " to " + newPos);
                 }
                 pos = newPos;
@@ -124,7 +129,9 @@ public class SimpleRetentionStoreReader<K, V> implements RetentionStoreReader<K,
         
         // Reset position if necessary
         if(pos.getOffset() < _retention.getOrigin()) {
-            Position newPos = new SimplePosition(_retention.getId(), _retention.getOffset(), 0, pos.getClock());
+            Position newPos = new SimplePosition(_retention.getId(),
+                                                 _retention.getOffset(),
+                                                 getStoreIndexStart(), pos.getClock());
             _logger.warn("Reset position from " + pos + " to " + newPos);
             pos = newPos;
         }
@@ -140,7 +147,9 @@ public class SimpleRetentionStoreReader<K, V> implements RetentionStoreReader<K,
             try {
                 iter.reset(index);
             } catch(ArrayIndexOutOfBoundsException e) {
-                return new SimplePosition(_retention.getId(), pos.getOffset(), pos.getClock());
+                Position newPos = new SimplePosition(_retention.getId(), pos.getOffset(), pos.getClock()); 
+                _logger.warn("Reset position from " + pos + " to " + newPos, e);
+                return newPos;
             }
             
             int cnt = 0;
@@ -183,5 +192,12 @@ public class SimpleRetentionStoreReader<K, V> implements RetentionStoreReader<K,
         } else {
             return nextPos;
         }
+    }
+    
+    /**
+     * Gets the index start of the underlying store.
+     */
+    protected int getStoreIndexStart() {
+        return _store.keyIterator().index();
     }
 }

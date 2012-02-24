@@ -54,6 +54,7 @@ public abstract class AbstractTestRetentionStoreReader<K, V> extends AbstractTes
         
         Position pos = reader.getPosition(Clock.ZERO);
         assertTrue(pos.isIndexed());
+        assertEquals(_store.keyIterator().index(), pos.getIndex());
         assertEquals(cnt, pos.getOffset());
         assertTrue(pos.getClock() == Clock.ZERO);
         assertEquals(_retention.getId(), pos.getId());
@@ -72,6 +73,7 @@ public abstract class AbstractTestRetentionStoreReader<K, V> extends AbstractTes
         
         pos = reader.getPosition(Clock.ZERO);
         assertTrue(pos.isIndexed());
+        assertEquals(_store.keyIterator().index(), pos.getIndex());
         assertEquals(cnt, pos.getOffset());
         assertTrue(pos.getClock() == Clock.ZERO);
         assertEquals(_retention.getId(), pos.getId());
@@ -105,7 +107,6 @@ public abstract class AbstractTestRetentionStoreReader<K, V> extends AbstractTes
             num2++;
         } while(list.size() > 0);
         
-        assertTrue(getNumRetentionBatches() >= num1);
         assertTrue(num1 < num2);
         
         // Sync up from Clock.ZERO
