@@ -162,10 +162,9 @@ public final class SegmentManager implements Closeable {
             seg.close(false);
             
             if(segId == (_segList.size() - 1)) {
-                // Delete the last segment from disk.
-                File segFile = new File(_segHomePath, segId + ".seg");
                 try {
-                    segFile.delete();
+                    // Delete the last segment.
+                    seg.getSegmentFile().delete();
                     _log.info("Segment " + seg.getSegmentId() + " deleted");
                 } catch(Exception e) {
                     _log.warn("Segment " + seg.getSegmentId() + " not deleted", e);
