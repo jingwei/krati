@@ -149,4 +149,64 @@ public class TestNumbers extends TestCase {
             assertEquals(num1, num2);
         }
     }
+    
+    public void testShortLE() {
+        short num1, num2;
+        
+        num1 = 0;
+        num2 = Numbers.shortValueLE(Numbers.shortBytesLE(num1));
+        assertEquals(num1, num2);
+        
+        num1 = 1;
+        num2 = Numbers.shortValueLE(Numbers.shortBytesLE(num1));
+        assertEquals(num1, num2);
+        
+        num1 = -1;
+        num2 = Numbers.shortValueLE(Numbers.shortBytesLE(num1));
+        assertEquals(num1, num2);
+        
+        num1 = Short.MAX_VALUE;
+        num2 = Numbers.shortValueLE(Numbers.shortBytesLE(num1));
+        assertEquals(num1, num2);
+        
+        num1 = Short.MIN_VALUE;
+        num2 = Numbers.shortValueLE(Numbers.shortBytesLE(num1));
+        assertEquals(num1, num2);
+        
+        for(int i = 0; i < 1000; i++) {
+            num1 = (short)_rand.nextInt();
+            num2 = Numbers.shortValueLE(Numbers.shortBytesLE(num1));
+            assertEquals(num1, num2);
+        }
+    }
+    
+    public void testShortBE() {
+        short num1, num2;
+        
+        num1 = 0;
+        num2 = Numbers.shortValueBE(Numbers.shortBytesBE(num1));
+        assertEquals(num1, num2);
+        
+        num1 = 1;
+        num2 = Numbers.shortValueBE(Numbers.shortBytesBE(num1));
+        assertEquals(num1, num2);
+        
+        num1 = -1;
+        num2 = Numbers.shortValueBE(Numbers.shortBytesBE(num1));
+        assertEquals(num1, num2);
+        
+        num1 = Short.MAX_VALUE;
+        num2 = Numbers.shortValueBE(Numbers.shortBytesBE(num1));
+        assertEquals(num1, num2);
+        
+        num1 = Short.MIN_VALUE;
+        num2 = Numbers.shortValueBE(Numbers.shortBytesBE(num1));
+        assertEquals(num1, num2);
+        
+        for(int i = 0; i < 1000; i++) {
+            num1 = (short)_rand.nextInt();
+            num2 = Numbers.shortValueBE(Numbers.shortBytesBE(num1));
+            assertEquals(num1, num2);
+        }
+    }
 }

@@ -24,6 +24,40 @@ package krati.util;
  */
 public class Numbers {
     
+    public static byte[] shortBytesLE(short val) {
+        byte[] buffer = new byte[2];
+        buffer[0] = (byte) (val);
+        buffer[1] = (byte) (val >> 8);
+        return buffer;
+    }
+    
+    public static byte[] shortBytesBE(int val) {
+        byte[] buffer = new byte[2];
+        buffer[1] = (byte) (val);
+        buffer[0] = (byte) (val >> 8);
+        return buffer;
+    }
+    
+    public static void shortBytesLE(int val, byte[] buffer) {
+        buffer[0] = (byte) (val);
+        buffer[1] = (byte) (val >> 8);
+    }
+    
+    public static void shortBytesBE(int val, byte[] buffer) {
+        buffer[1] = (byte) (val);
+        buffer[0] = (byte) (val >> 8);
+    }
+    
+    public static void shortBytesLE(int val, byte[] buffer, int offset) {
+        buffer[    offset] = (byte) (val);
+        buffer[1 + offset] = (byte) (val >> 8);
+    }
+    
+    public static void shortBytesBE(int val, byte[] buffer, int offset) {
+        buffer[1 + offset] = (byte) (val);
+        buffer[    offset] = (byte) (val >> 8);
+    }
+    
     public static byte[] intBytesLE(int val) {
         byte[] buffer = new byte[4];
         buffer[0] = (byte) (val);
@@ -40,6 +74,34 @@ public class Numbers {
         buffer[1] = (byte) (val >> 16);
         buffer[0] = (byte) (val >> 24);
         return buffer;
+    }
+    
+    public static void intBytesLE(int val, byte[] buffer) {
+        buffer[0] = (byte) (val);
+        buffer[1] = (byte) (val >> 8);
+        buffer[2] = (byte) (val >> 16);
+        buffer[3] = (byte) (val >> 24);
+    }
+    
+    public static void intBytesBE(int val, byte[] buffer) {
+        buffer[3] = (byte) (val);
+        buffer[2] = (byte) (val >> 8);
+        buffer[1] = (byte) (val >> 16);
+        buffer[0] = (byte) (val >> 24);
+    }
+    
+    public static void intBytesLE(int val, byte[] buffer, int offset) {
+        buffer[    offset] = (byte) (val);
+        buffer[1 + offset] = (byte) (val >> 8);
+        buffer[2 + offset] = (byte) (val >> 16);
+        buffer[3 + offset] = (byte) (val >> 24);
+    }
+    
+    public static void intBytesBE(int val, byte[] buffer, int offset) {
+        buffer[3 + offset] = (byte) (val);
+        buffer[2 + offset] = (byte) (val >> 8);
+        buffer[1 + offset] = (byte) (val >> 16);
+        buffer[    offset] = (byte) (val >> 24);
     }
     
     public static byte[] longBytesLE(long val) {
@@ -68,6 +130,70 @@ public class Numbers {
         return buffer;
     }
     
+    public static void longBytesLE(long val, byte[] buffer) {
+        buffer[0] = (byte) (val);
+        buffer[1] = (byte) (val >> 8);
+        buffer[2] = (byte) (val >> 16);
+        buffer[3] = (byte) (val >> 24);
+        buffer[4] = (byte) (val >> 32);
+        buffer[5] = (byte) (val >> 40);
+        buffer[6] = (byte) (val >> 48);
+        buffer[7] = (byte) (val >> 56);
+    }
+    
+    public static void longBytesBE(long val, byte[] buffer) {
+        buffer[7] = (byte) (val);
+        buffer[6] = (byte) (val >> 8);
+        buffer[5] = (byte) (val >> 16);
+        buffer[4] = (byte) (val >> 24);
+        buffer[3] = (byte) (val >> 32);
+        buffer[2] = (byte) (val >> 40);
+        buffer[1] = (byte) (val >> 48);
+        buffer[0] = (byte) (val >> 56);
+    }
+    
+    public static void longBytesLE(long val, byte[] buffer, int offset) {
+        buffer[    offset] = (byte) (val);
+        buffer[1 + offset] = (byte) (val >> 8);
+        buffer[2 + offset] = (byte) (val >> 16);
+        buffer[3 + offset] = (byte) (val >> 24);
+        buffer[4 + offset] = (byte) (val >> 32);
+        buffer[5 + offset] = (byte) (val >> 40);
+        buffer[6 + offset] = (byte) (val >> 48);
+        buffer[7 + offset] = (byte) (val >> 56);
+    }
+    
+    public static void longBytesBE(long val, byte[] buffer, int offset) {
+        buffer[7 + offset] = (byte) (val);
+        buffer[6 + offset] = (byte) (val >> 8);
+        buffer[5 + offset] = (byte) (val >> 16);
+        buffer[4 + offset] = (byte) (val >> 24);
+        buffer[3 + offset] = (byte) (val >> 32);
+        buffer[2 + offset] = (byte) (val >> 40);
+        buffer[1 + offset] = (byte) (val >> 48);
+        buffer[    offset] = (byte) (val >> 56);
+    }
+    
+    public static short shortValueLE(byte[] bytes) {
+        return (short) (((bytes[1] & 0xFF) << 8) |
+                        ((bytes[0] & 0xFF)));
+    }
+    
+    public static short shortValueBE(byte[] bytes) {
+        return (short) (((bytes[0] & 0xFF) << 8) |
+                        ((bytes[1] & 0xFF)));
+    }
+    
+    public static short shortValueLE(byte[] bytes, int offset) {
+        return (short) (((bytes[1 + offset] & 0xFF) << 8) |
+                        ((bytes[    offset] & 0xFF)));
+    }
+    
+    public static short shortValueBE(byte[] bytes, int offset) {
+        return (short) (((bytes[    offset] & 0xFF) << 8) |
+                        ((bytes[1 + offset] & 0xFF)));
+    }
+    
     public static int intValueLE(byte[] bytes) {
         return (((bytes[3] & 0xFF) << 24) |
                 ((bytes[2] & 0xFF) << 16) |
@@ -86,11 +212,11 @@ public class Numbers {
         return (((bytes[3 + offset] & 0xFF) << 24) |
                 ((bytes[2 + offset] & 0xFF) << 16) |
                 ((bytes[1 + offset] & 0xFF) << 8) |
-                ((bytes[0 + offset] & 0xFF)));
+                ((bytes[    offset] & 0xFF)));
     }
     
     public static int intValueBE(byte[] bytes, int offset) {
-        return (((bytes[0 + offset] & 0xFF) << 24) |
+        return (((bytes[    offset] & 0xFF) << 24) |
                 ((bytes[1 + offset] & 0xFF) << 16) |
                 ((bytes[2 + offset] & 0xFF) << 8) |
                 ((bytes[3 + offset] & 0xFF)));
@@ -126,11 +252,11 @@ public class Numbers {
                 ((long) (bytes[3 + offset] & 0xFF) << 24) |
                 ((long) (bytes[2 + offset] & 0xFF) << 16) |
                 ((long) (bytes[1 + offset] & 0xFF) << 8) |
-                ((long) (bytes[0 + offset] & 0xFF)));
+                ((long) (bytes[    offset] & 0xFF)));
     }
     
     public static long longValueBE(byte[] bytes, int offset) {
-        return (((long) (bytes[0 + offset] & 0xFF) << 56) |
+        return (((long) (bytes[    offset] & 0xFF) << 56) |
                 ((long) (bytes[1 + offset] & 0xFF) << 48) |
                 ((long) (bytes[2 + offset] & 0xFF) << 40) |
                 ((long) (bytes[3 + offset] & 0xFF) << 32) |
