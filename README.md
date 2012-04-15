@@ -25,7 +25,9 @@ version: 0.4.4
 
 ### Code Examples:
 
-https://github.com/jingwei/krati/tree/master/src/examples/java
+https://github.com/jingwei/krati/tree/master/krati-main/src/examples/java
+
+https://github.com/jingwei/krati/tree/master/krati-avro/src/demo/java
 
 ### Eclipse:
 
