@@ -1,0 +1,73 @@
+{
+    "namespace": "krati.store.avro.protocol",
+    "protocol": "StoreAvroProtocol",
+
+    "types": [
+        {
+            "name": "KeyValue",
+            "type": "record",
+            "fields": [
+                {"name": "key", "type": "bytes"},
+                {"name": "value", "type": ["null", "bytes"]}
+            ]
+        },
+        {
+            "name": "KeyValueClock",
+            "type": "record",
+            "fields": [
+                {"name": "key", "type": "bytes"},
+                {"name": "value", "type": ["null", "bytes"]},
+                {"name": "clock", "type": ["null", "bytes"]}
+            ]
+        },
+        {
+            "name": "SyncResultSet", 
+            "type": "record", 
+            "fields": [
+                {"name": "results", "type": {"type": "array", "items": "KeyValueClock"}},
+                {"name": "position", "type": "string"}
+            ]
+        }
+    ],
+
+    "messages": {
+        "get": {
+            "request": [{"name": "src", "type": "string"}, {"name": "key", "type": "bytes"}],
+            "response": ["null", "bytes"] 
+        },
+        "put": {
+            "request": [{"name": "src", "type": "string"}, {"name": "kv", "type": "KeyValue"}],
+            "response": "boolean"
+        },
+        "del": {
+            "request": [{"name": "src", "type": "string"}, {"name": "key", "type": "bytes"}],
+            "response": "boolean"
+        },
+        "mget": {
+            "request": [{"name": "src", "type": "string"}, {"name": "keys", "type": {"type": "array", "items": "bytes"}}],
+            "response": {"type": "array", "items": "KeyValue"}
+        },
+        "mput": {
+            "request": [{"name": "src", "type": "string"}, {"name": "kvList", "type": {"type": "array", "items": "KeyValue"}}],
+            "response": "boolean"
+        },
+        "mdel": {
+            "request": [{"name": "src", "type": "string"}, {"name": "keys", "type": {"type": "array", "items": "bytes"}}],
+            "response": "boolean"
+        },
+        "sync": {
+            "request": [{"name": "src", "type": "string"},
+                        {"name": "opt", "type": ["null", "string"]},
+                        {"name": "position", "type": "string"}],
+            "response": "SyncResultSet"
+        },
+        "meta": {
+            "request": [{"name": "src", "type": "string"},
+                        {"name": "opt", "type": "string"},
+                        {"name": "key", "type": ["null", "string"]},
+                        {"name": "value", "type": ["null", "string"]}], 
+            "response": ["null", "string"]
+        }
+    }
+}
+
