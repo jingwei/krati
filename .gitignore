@@ -1,6 +1,7 @@
 .project
 .settings
 .classpath
+.metadata
 eclipse-build
 target
 docs
