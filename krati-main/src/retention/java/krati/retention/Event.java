@@ -31,7 +31,13 @@ import krati.retention.clock.Clock;
  */
 public interface Event<T> extends Serializable {
     
+    /**
+     * Gets the value of this Event.
+     */
     public T getValue();
     
+    /**
+     * Gets the clock of this Event.
+     */
     public Clock getClock();
 }

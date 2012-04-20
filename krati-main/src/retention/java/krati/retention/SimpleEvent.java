@@ -32,6 +32,12 @@ public class SimpleEvent<T> implements Event<T> {
     private final Clock _clock;
     private final T _value;
     
+    /**
+     * Creates a new instance of SimpleEvent.
+     * 
+     * @param value - the event value
+     * @param clock - the event clock
+     */
     public SimpleEvent(T value, Clock clock) {
         this._value = value;
         this._clock = clock;

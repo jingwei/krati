@@ -47,19 +47,20 @@ public class RetentionConfig<T> {
     private File _homeDir;                                           // required
     
     /**
-     * Event batch size.
+     * Event batch size (the number of events in one {@link EventBatch}).
      */
     private int _batchSize = EventBatch.DEFAULT_BATCH_SIZE;
     
     /**
      * Number of event batches needed to sync updates to <tt>indexes.dat</tt>.
+     * The default value is <code>10</code>.
      */
     private int _numSyncBatchs = 10;
     
     /**
      * Retention store initial size.
      */
-    private int _retentionInitialSize = 10000;
+    private int _retentionInitialSize = RETENTION_INITIAL_SIZE_DEFAULT;
     
     /**
      * Retention store segmentFileSizeMB.
@@ -86,8 +87,22 @@ public class RetentionConfig<T> {
      */
     private Serializer<Clock> _eventClockSerializer;                 // required
     
+    /**
+     * The min retention initial size (1000 event batches).
+     */
     private final static int RETENTION_INITIAL_SIZE_MIN = 1000;
     
+    /**
+     * The default retention initial size (10000 event batches).
+     */
+    private final static int RETENTION_INITIAL_SIZE_DEFAULT = 10000;
+    
+    /**
+     * Creates a new instance of RetentionConfig.
+     * 
+     * @param id      - the Retention Id
+     * @param homeDir - the Retention home directory
+     */
     public RetentionConfig(int id, File homeDir) {
         this._id = id;
         this._homeDir = homeDir;

@@ -53,6 +53,7 @@ import krati.util.DaemonThreadFactory;
  * 11/20, 2011 - Added a new constructor based on RetentionConfig <br/>
  * 01/25, 2012 - Fixed switching from bootstrap scan to real-time syncUp <br/>
  * 02/09, 2012 - Added batch merge during flush <br/>
+ * 04/19, 2012 - Constructor refactoring <br/>
  */
 public class SimpleRetention<T> implements Retention<T> {
     private final static Logger _logger = Logger.getLogger(SimpleRetention.class);
@@ -93,6 +94,12 @@ public class SimpleRetention<T> implements Retention<T> {
      */
     private RetentionFlushListener _flushListener = null;
     
+    /**
+     * Constructs a new instance of SimpleRetention
+     * 
+     * @param config - the retention configuration
+     * @throws Exception if this retention cannot be created or instantiated for any reasons.
+     */
     public SimpleRetention(RetentionConfig<T> config) throws Exception {
         this(config.getId(),
              new File(config.getHomeDir(), "retention"),
@@ -102,21 +109,81 @@ public class SimpleRetention<T> implements Retention<T> {
                      config.getEventValueSerializer(),
                      config.getEventClockSerializer()),
              config.getBatchSize(),
+             config.getNumSyncBatchs(),
              config.getRetentionSegmentFactory(),
              config.getRetentionSegmentFileSizeMB());
     }
     
+    /**
+     * Constructs a new instance of SimpleRetention.
+     * <p>
+     * The constructed instance has the initial capacity of 10000 event batches
+     * and synchronizes changes every 10 event batches. The default segment factory
+     * is {@link WriteBufferSegmentFactory}, which produces {@link Segment} of 32MB.
+     * </p>
+     * 
+     * @param id                - the retention Id
+     * @param homeDir           - the retention home directory
+     * @param retentionPolicy   - the retention policy for purging event batches
+     * @param batchSerializer   - the serializer of {@link EventBatch}
+     * @param eventBatchSize    - the size of {@link EventBatch} (number of events)
+     * @throws Exception if this retention cannot be created or instantiated for any reasons.
+     */
     public SimpleRetention(int id, File homeDir,
                            RetentionPolicy retentionPolicy,
                            EventBatchSerializer<T> batchSerializer, int eventBatchSize) throws Exception {
-        this(id, homeDir, 100000, retentionPolicy, batchSerializer, eventBatchSize, new WriteBufferSegmentFactory(), 32);
+        this(id, homeDir, 100000,
+             retentionPolicy, batchSerializer, eventBatchSize,
+             new WriteBufferSegmentFactory(), 32 /* storeSegmentFileSizeMB */);
     }
     
+    /**
+     * Constructs a new instance of SimpleRetention.
+     * <p>
+     * The constructed instance synchronizes changes every 10 event batches.
+     * </p>
+     * 
+     * @param id                - the retention Id
+     * @param homeDir           - the retention home directory
+     * @param initialSize       - the retention initial size (number of event batches)
+     * @param retentionPolicy   - the retention policy for purging event batches
+     * @param batchSerializer   - the serializer of {@link EventBatch}
+     * @param eventBatchSize    - the size of {@link EventBatch} (number of events)
+     * @param segmentFactory    - the underlying store segment factory
+     * @param segmentFileSizeMB - the underlying store segment file size in MB
+     * @throws Exception if this retention cannot be created or instantiated for any reasons.
+     */
     public SimpleRetention(int id,
                            File homeDir, int initialSize,
                            RetentionPolicy retentionPolicy,
                            EventBatchSerializer<T> batchSerializer, int eventBatchSize,
                            SegmentFactory storeSegmentFactory, int storeSegmentFileSizeMB) throws Exception {
+        this(id, homeDir, initialSize,
+             retentionPolicy, batchSerializer,
+             eventBatchSize, 10 /* numSyncBatches */,
+             storeSegmentFactory, storeSegmentFileSizeMB);
+    }
+    
+    /**
+     * Constructs a new instance of SimpleRetention.
+     * 
+     * @param id                - the retention Id
+     * @param homeDir           - the retention home directory
+     * @param initialSize       - the retention initial size (number of event batches)
+     * @param retentionPolicy   - the retention policy for purging event batches
+     * @param batchSerializer   - the serializer of {@link EventBatch}
+     * @param eventBatchSize    - the size of {@link EventBatch} (number of events)
+     * @param numSyncBatches    - the number of event batches needed to sync changes 
+     * @param segmentFactory    - the underlying store segment factory
+     * @param segmentFileSizeMB - the underlying store segment file size in MB
+     * @throws Exception if this retention cannot be created or instantiated for any reasons.
+     */
+    protected SimpleRetention(int id,
+                              File homeDir, int initialSize,
+                              RetentionPolicy retentionPolicy,
+                              EventBatchSerializer<T> batchSerializer,
+                              int eventBatchSize, int numSyncBatches,
+                              SegmentFactory segmentFactory, int segmentFileSizeMB) throws Exception {
         this._id = id;
         this._homeDir = homeDir;
         this._retentionPolicy = retentionPolicy;
@@ -128,9 +195,9 @@ public class SimpleRetention<T> implements Retention<T> {
          * NOTE: 1 is required to flush every update to BytesDB *
          ********************************************************/
         config.setBatchSize(1);
-        config.setNumSyncBatches(10);
-        config.setSegmentFileSizeMB(storeSegmentFileSizeMB);
-        config.setSegmentFactory(storeSegmentFactory);
+        config.setNumSyncBatches(numSyncBatches);
+        config.setSegmentFileSizeMB(segmentFileSizeMB);
+        config.setSegmentFactory(segmentFactory);
         _store = new BytesDB(config);
         
         // Initialize

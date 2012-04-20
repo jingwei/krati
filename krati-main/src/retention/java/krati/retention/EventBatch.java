@@ -30,10 +30,11 @@ import krati.retention.clock.Clock;
  * 
  * <p>
  * 07/31, 2011 - Created <br/>
+ * 04/19, 2012 - Reduced MINIMUM_BATCH_SIZE to 100 <br/>
  */
 public interface EventBatch<T> extends Iterable<Event<T>>, EventBatchHeader, Serializable {
     public static final int VERSION = 0;
-    public static final int MINIMUM_BATCH_SIZE = 1000;
+    public static final int MINIMUM_BATCH_SIZE = 100;
     public static final int DEFAULT_BATCH_SIZE = 10000;
     
     /**
