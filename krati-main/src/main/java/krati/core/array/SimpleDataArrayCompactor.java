@@ -124,6 +124,12 @@ class SimpleDataArrayCompactor implements Runnable {
         new ConcurrentLinkedQueue<Segment>();
     
     /**
+     * Queue for segments that are to be freed by the compactor upon next compaction cycle. 
+     */
+    private final ConcurrentLinkedQueue<Segment> _freeQueue =
+        new ConcurrentLinkedQueue<Segment>();
+    
+    /**
      * Permits for the writer to get next segment without being blocked.
      */
     private final AtomicInteger _segPermits = new AtomicInteger(0);
@@ -203,6 +209,23 @@ class SimpleDataArrayCompactor implements Runnable {
             return (load1 < load2) ? -1 : ((load1 == load2) ? 0 : 1);
         }
     };
+    
+    /**
+     * Frees segments that were compacted successfully.
+     */
+    private void freeCompactedSegments() {
+        SegmentManager segManager = _dataArray.getSegmentManager();
+        if(segManager == null) return;
+        
+        while(!_freeQueue.isEmpty()) {
+            Segment seg = _freeQueue.remove();
+            try {
+                segManager.freeSegment(seg);
+            } catch(Exception e) {
+                _log.error("failed to free Segment " + seg.getSegmentId() + ": " + seg.getStatus(), e);
+            }
+        }
+    }
     
     /**
      * Inspects and finds the most fragmented Segments for compaction.
@@ -396,13 +419,16 @@ class SimpleDataArrayCompactor implements Runnable {
                     _state = State.INIT;
                     _log.info("cycle init");
                     
+                    // Free compacted segments
+                    freeCompactedSegments();
+                    
                     // Inspect the array
                     if(!inspect()) continue;
                     
                     // Compact the array
                     if(!compact()) continue;
                 } catch(Exception e) {
-                    _log.error("failed to compact: " + e.getMessage(), e);
+                    _log.error("compaction failure", e);
                 } finally {
                     reset();
                     _state = State.DONE;
@@ -468,6 +494,7 @@ class SimpleDataArrayCompactor implements Runnable {
     final void clear() {
         reset();
         
+        _freeQueue.clear();
         _targetQueue.clear();
         _compactedQueue.clear();
         while(!_updateManager.isServiceQueueEmpty()) {
@@ -536,6 +563,13 @@ class SimpleDataArrayCompactor implements Runnable {
      */
     final ConcurrentLinkedQueue<Segment> getCompactedQueue() {
         return _compactedQueue;
+    }
+    
+    /**
+     * Gets the queue of compacted Segments.
+     */
+    final ConcurrentLinkedQueue<Segment> getFreeQueue() {
+        return _freeQueue;
     }
     
     /**

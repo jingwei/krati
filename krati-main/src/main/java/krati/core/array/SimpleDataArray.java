@@ -241,12 +241,8 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
         ConcurrentLinkedQueue<Segment> queue = _compactor.getCompactedQueue();
         while(!queue.isEmpty()) {
             Segment seg = queue.remove();
-            try {
-                consumeCompactionBatches();
-                _segmentManager.freeSegment(seg);
-            } catch(IOException e) {
-                _log.error("failed to free Segment " + seg.getSegmentId() + ": " + seg.getStatus(), e);
-            }
+            consumeCompactionBatches();
+            _compactor.getFreeQueue().offer(seg);
         }
         
         consumeCompactionBatches();

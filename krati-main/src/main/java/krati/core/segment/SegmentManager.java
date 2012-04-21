@@ -23,7 +23,6 @@ import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.HashMap;
@@ -65,13 +64,36 @@ public final class SegmentManager implements Closeable {
     private final static Logger _log = Logger.getLogger(SegmentManager.class);
     private final static Map<String, SegmentManager> _segManagerMap = new HashMap<String, SegmentManager>();
     
+    /**
+     * The list of segments.
+     */
     private final List<Segment> _segList = new ArrayList<Segment>(100);
+    
+    /**
+     * The list of segments that were recycled for reuse.
+     */
     private final LinkedList<Segment> _recycleList = new LinkedList<Segment>();
+    
+    /**
+     * The segment factory.
+     */
     private final SegmentFactory _segFactory;
+    
+    /**
+     * The home path where all the segment files are located.
+     */
     private final String _segHomePath;
+    
+    /**
+     * The segment file size in MB.
+     */
     private final int _segFileSizeMB;
+    
+    /**
+     * The limit on the number of recycled segments.
+     */
     private final int _recycleLimit;
-
+    
     /**
      * The meta data for all the managed segments.
      */
@@ -148,7 +170,7 @@ public final class SegmentManager implements Closeable {
     public synchronized void clear() {
         clearInternal(true /* CLEAR META */);
     }
-
+    
     /**
      * Frees a segment.
      */
@@ -164,6 +186,7 @@ public final class SegmentManager implements Closeable {
             if(segId == (_segList.size() - 1)) {
                 try {
                     // Delete the last segment.
+                    _segList.remove(segId);
                     seg.getSegmentFile().delete();
                     _log.info("Segment " + seg.getSegmentId() + " deleted");
                 } catch(Exception e) {
@@ -303,42 +326,17 @@ public final class SegmentManager implements Closeable {
     }
     
     /**
-     * Recycle a free segment into the fixed-length priority queue (i.e., <code>_recycleList</code>).
-     * The segments in the queue are in the ascending order of Segment Id.
+     * Recycle a free segment into the <code>_recycleList</code>.
      * 
      * @param seg - the free Segment
-     * @return <code>true</code> if the specified Segment is added to the recycle list.
+     * @return <code>true</code> if the specified segment is added to the <code>_recycleList</code>.
      */
     private boolean recycle(Segment seg) {
-        if(_recycleList.isEmpty()) {
-            _recycleList.add(seg);
-            return true;
+        if(_recycleList.size() < _recycleLimit) {
+            return _recycleList.add(seg);
         }
         
-        int index = 0;
-        int count = _recycleList.size();
-        Iterator<Segment> iter = _recycleList.iterator();
-        
-        while(iter.hasNext()) {
-            Segment val = iter.next();
-            if(val == seg) {
-                return false; // NOT FEASIBLE!
-            } else if(val.getSegmentId() > seg.getSegmentId()) {
-                break;
-            }
-            index++;
-        }
-        
-        if(count < _recycleLimit) {
-            _recycleList.add(index, seg);
-            return true;
-        } else if(_recycleList.get(count - 1).getSegmentId() > seg.getSegmentId()) {
-            _recycleList.add(index, seg);
-            _recycleList.removeLast();
-            return true;
-        } else {
-            return false;
-        }
+        return false;
     }
     
     protected File[] listSegmentFiles() {
