@@ -677,7 +677,7 @@ class SimpleDataArrayCompactor implements Runnable {
             this._capacity = capacity;
             this._batchId = _counter++;
             this._buffer = ByteBuffer.allocate(_capacity * _unitSize);
-            _log.info("CompactionUpdateBatch " + _batchId);
+            _log.trace("CompactionUpdateBatch " + _batchId);
         }
         
         /**
@@ -973,7 +973,7 @@ class SimpleDataArrayCompactor implements Runnable {
                 segTarget.force();
                 _batch.setTargetSegment(segTarget);
                 _batch.setLWMark(_dataArray.getLWMark());
-                _log.info("compaction batch " + _batch.getDescriptiveId() + " hwMark=" + _batch.getLWMark());
+                _log.trace("compaction batch " + _batch.getDescriptiveId() + " hwMark=" + _batch.getLWMark());
                 
                 _serviceBatchQueue.add(_batch);
                 nextBatch();
@@ -993,7 +993,7 @@ class SimpleDataArrayCompactor implements Runnable {
             segTarget.force();
             _batch.setTargetSegment(segTarget);
             _batch.setLWMark(_dataArray.getLWMark());
-            _log.info("compaction batch " + _batch.getDescriptiveId() + " hwMark=" + _batch.getLWMark());
+            _log.trace("compaction batch " + _batch.getDescriptiveId() + " hwMark=" + _batch.getLWMark());
             
             _serviceBatchQueue.add(_batch);
             _batchServiceIdCounter = 0;

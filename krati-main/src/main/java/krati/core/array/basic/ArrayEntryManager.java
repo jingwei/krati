@@ -208,7 +208,7 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable {
         _log.warn(e.getMessage());
     }
     
-    _log.info("entry files cleared");
+    _log.info("cleared");
   }
   
   @Override
@@ -554,7 +554,7 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable {
         
         if(entryList.size() == 0) {
           deleteEntryFiles();
-          _log.error("entry files for recovery not found");
+          _log.error("recovery aborted");
         }
       }
     }

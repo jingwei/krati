@@ -182,13 +182,13 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
         int consumeCount = updateCount - ignoreCount;
         int totalConsumeBytes = totalUpdateBytes - totalIgnoreBytes;
         
-        _log.info("consumed compaction batch " + updateBatch.getDescriptiveId() +
+        _log.trace("consumed compaction batch " + updateBatch.getDescriptiveId() +
                   " updates " + consumeCount + "/" + updateCount +
                   " bytes " + totalConsumeBytes + "/" + totalUpdateBytes);
         
         // Update segment load size
         segTarget.decrLoadSize(totalIgnoreBytes);
-        _log.info("Segment " + segTarget.getSegmentId() + " catchup " + segTarget.getStatus());
+        _log.trace("Segment " + segTarget.getSegmentId() + " catchup " + segTarget.getStatus());
     }
     
     /**
@@ -792,7 +792,7 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
                 } else {
                     if(_compactor.isStarted()) {
                         if(_compactor.getAndDecrementSegmentPermit()) {
-                            _log.info("nextSegment permit granted");
+                            _log.trace("nextSegment permit granted");
                             
                             persist();
                             
@@ -802,7 +802,7 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
                             
                             _log.info("Segment " + _segment.getSegmentId() + " online: " + _segment.getStatus());
                         } else {
-                            _log.info("nextSegment permit refused");
+                            _log.trace("nextSegment permit refused");
                             
                             // wait until compactor is done
                             while(_compactor.isStarted()) {
@@ -826,7 +826,7 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
                             _log.info("Segment " + _segment.getSegmentId() + " online: " + _segment.getStatus());
                         }
                     } else {
-                        _log.info("nextSegment");
+                        _log.trace("nextSegment");
                         
                         persist();
                         
