@@ -19,9 +19,6 @@ package krati.core.segment;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.Map;
@@ -373,19 +370,7 @@ public final class SegmentManager implements Closeable {
     }
 
     public synchronized void updateMeta() throws IOException {
-        FileLock lock = null;
-        FileChannel channel = null;
-
-        try {
-            channel = new RandomAccessFile(getMeta().getMetaFile(), "rw").getChannel();
-            lock = channel.lock(0, Long.MAX_VALUE, false); // get exclusive file lock
-            _segMeta.wrap(this);
-        } finally {
-            if (lock != null)
-                lock.release();
-            if (channel != null)
-                channel.close();
-        }
+        _segMeta.wrap(this);
     }
 
     public synchronized static SegmentManager getInstance(String segmentHomePath, SegmentFactory segmentFactory, int segmentFileSizeMB) throws IOException {
