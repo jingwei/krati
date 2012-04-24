@@ -26,30 +26,65 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * 
  * @author jwu
  * 
+ * <p>
+ * 04/24, 2012 - The default constructor made lazy to avoid read corruption<br/>
  */
 public class WriteBufferSegmentFactory implements SegmentFactory {
+    private volatile int lazyCount = 0;
     private final ConcurrentLinkedQueue<ByteBuffer> _bufferQueue = new ConcurrentLinkedQueue<ByteBuffer>();
     
+    /**
+     * Constructs a new instance of WriteBufferSegmentFactory.
+     * 
+     * <p>
+     * This constructor is lazy and it does not allocates {@link ByteBuffer}
+     * until this segment factory is called to create new segments.
+     * </p>
+     */
     public WriteBufferSegmentFactory() {}
     
+    /**
+     * Constructs a new instance of WriteBufferSegmentFactory.
+     * 
+     * <p>
+     * This is not a lazy constructor. It directly allocates three {@link ByteBuffer}(s)
+     * based on the specified <code>segmentFileSizeMB</code>.
+     * </p>
+     * 
+     * @param segmentFileSizeMB - the segment file size in MB
+     */
     public WriteBufferSegmentFactory(int segmentFileSizeMB) {
         if(segmentFileSizeMB < Segment.minSegmentFileSizeMB ||
            segmentFileSizeMB > Segment.maxSegmentFileSizeMB) {
             throw new IllegalArgumentException("Invalid argument: " + segmentFileSizeMB);
         }
-        
-        int bufferLength =
-            (segmentFileSizeMB < Segment.maxSegmentFileSizeMB) ?
-                (segmentFileSizeMB * 1024 * 1024) : Integer.MAX_VALUE;
-        
-        for (int i = 0; i < 3; i++) {
-            ByteBuffer buffer = ByteBuffer.wrap(new byte[bufferLength]);
-            _bufferQueue.add(buffer);
-        }
+        initializeBufferQueue(segmentFileSizeMB);
     }
     
     @Override
     public Segment createSegment(int segmentId, File segmentFile, int initialSizeMB, Segment.Mode mode) throws IOException {
+        // No need to synchronize since there is only one thread calling this method.
+        if(lazyCount == 0) {
+            initializeBufferQueue(initialSizeMB);
+        }
+        
         return new WriteBufferSegment(segmentId, segmentFile, initialSizeMB, mode, _bufferQueue);
+    }
+    
+    /**
+     * Initialize the buffer queue with three ByteBuffer(s).
+     * 
+     * @param segmentFileSizeMB - the segment file size in MB
+     */
+    private void initializeBufferQueue(int segmentFileSizeMB) {
+        int bufferLength = 
+            (segmentFileSizeMB < Segment.maxSegmentFileSizeMB) ?
+            (segmentFileSizeMB * 1024 * 1024) : Integer.MAX_VALUE;
+            
+        lazyCount = 3;
+        for (int i = 0; i < lazyCount; i++) {
+            ByteBuffer buffer = ByteBuffer.wrap(new byte[bufferLength]);
+            _bufferQueue.add(buffer);
+        }
     }
 }
