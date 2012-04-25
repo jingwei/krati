@@ -119,21 +119,21 @@ public class SimpleRetention<T> implements Retention<T> {
      * <p>
      * The constructed instance has the initial capacity of 10000 event batches
      * and synchronizes changes every 10 event batches. The default segment factory
-     * is {@link WriteBufferSegmentFactory}, which produces {@link Segment} of 32MB.
+     * is {@link WriteBufferSegmentFactory}, which produces {@link krati.core.segment.Segment Segment} of 32MB.
      * </p>
      * 
      * @param id                - the retention Id
      * @param homeDir           - the retention home directory
      * @param retentionPolicy   - the retention policy for purging event batches
      * @param batchSerializer   - the serializer of {@link EventBatch}
-     * @param eventBatchSize    - the size of {@link EventBatch} (number of events)
+     * @param batchSize         - the size of {@link EventBatch} (number of events)
      * @throws Exception if this retention cannot be created or instantiated for any reasons.
      */
     public SimpleRetention(int id, File homeDir,
                            RetentionPolicy retentionPolicy,
-                           EventBatchSerializer<T> batchSerializer, int eventBatchSize) throws Exception {
+                           EventBatchSerializer<T> batchSerializer, int batchSize) throws Exception {
         this(id, homeDir, 100000,
-             retentionPolicy, batchSerializer, eventBatchSize,
+             retentionPolicy, batchSerializer, batchSize,
              new WriteBufferSegmentFactory(), 32 /* storeSegmentFileSizeMB */);
     }
     
@@ -148,7 +148,7 @@ public class SimpleRetention<T> implements Retention<T> {
      * @param initialSize       - the retention initial size (number of event batches)
      * @param retentionPolicy   - the retention policy for purging event batches
      * @param batchSerializer   - the serializer of {@link EventBatch}
-     * @param eventBatchSize    - the size of {@link EventBatch} (number of events)
+     * @param batchSize         - the size of {@link EventBatch} (number of events)
      * @param segmentFactory    - the underlying store segment factory
      * @param segmentFileSizeMB - the underlying store segment file size in MB
      * @throws Exception if this retention cannot be created or instantiated for any reasons.
@@ -156,12 +156,12 @@ public class SimpleRetention<T> implements Retention<T> {
     public SimpleRetention(int id,
                            File homeDir, int initialSize,
                            RetentionPolicy retentionPolicy,
-                           EventBatchSerializer<T> batchSerializer, int eventBatchSize,
-                           SegmentFactory storeSegmentFactory, int storeSegmentFileSizeMB) throws Exception {
+                           EventBatchSerializer<T> batchSerializer, int batchSize,
+                           SegmentFactory segmentFactory, int segmentFileSizeMB) throws Exception {
         this(id, homeDir, initialSize,
              retentionPolicy, batchSerializer,
-             eventBatchSize, 10 /* numSyncBatches */,
-             storeSegmentFactory, storeSegmentFileSizeMB);
+             batchSize, 10 /* numSyncBatches */,
+             segmentFactory, segmentFileSizeMB);
     }
     
     /**
@@ -172,7 +172,7 @@ public class SimpleRetention<T> implements Retention<T> {
      * @param initialSize       - the retention initial size (number of event batches)
      * @param retentionPolicy   - the retention policy for purging event batches
      * @param batchSerializer   - the serializer of {@link EventBatch}
-     * @param eventBatchSize    - the size of {@link EventBatch} (number of events)
+     * @param batchSize         - the size of {@link EventBatch} (number of events)
      * @param numSyncBatches    - the number of event batches needed to sync changes 
      * @param segmentFactory    - the underlying store segment factory
      * @param segmentFileSizeMB - the underlying store segment file size in MB
@@ -182,13 +182,13 @@ public class SimpleRetention<T> implements Retention<T> {
                               File homeDir, int initialSize,
                               RetentionPolicy retentionPolicy,
                               EventBatchSerializer<T> batchSerializer,
-                              int eventBatchSize, int numSyncBatches,
+                              int batchSize, int numSyncBatches,
                               SegmentFactory segmentFactory, int segmentFileSizeMB) throws Exception {
         this._id = id;
         this._homeDir = homeDir;
         this._retentionPolicy = retentionPolicy;
         this._eventBatchSerializer = batchSerializer;
-        this._eventBatchSize = Math.max(EventBatch.MINIMUM_BATCH_SIZE, eventBatchSize);
+        this._eventBatchSize = Math.max(EventBatch.MINIMUM_BATCH_SIZE, batchSize);
         
         StoreConfig config = new StoreConfig(homeDir, initialSize);
         /********************************************************
