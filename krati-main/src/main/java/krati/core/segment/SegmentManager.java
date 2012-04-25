@@ -123,36 +123,65 @@ public final class SegmentManager implements Closeable {
         this._recycleLimit = computeRecycleLimit(segmentFileSizeMB);
         this.open();
     }
-
+    
+    /**
+     * Computes the recycle limit based on the segment file size in MB.
+     * 
+     * @param segmentFileSizeMB - the segment file size in MB
+     * @return the recycle limit
+     */
     private int computeRecycleLimit(int segmentFileSizeMB) {
         // Should always return an integer greater than zero.
         return (segmentFileSizeMB <= 64) ? 5 : ((segmentFileSizeMB <= 256) ? 3 : 2);
     }
-
+    
+    /**
+     * Gets the segment file size in MB.
+     */
     public int getSegmentFileSizeMB() {
         return _segFileSizeMB;
     }
-
+    
+    /**
+     * Gets the file path to segment home.
+     */
     public String getSegmentHomePath() {
         return _segHomePath;
     }
-
+    
+    /**
+     * Gets the segment factory.
+     */
     public SegmentFactory getSegmentFactory() {
         return _segFactory;
     }
-
+    
+    /**
+     * Gets the current segment.
+     */
     public Segment getCurrentSegment() {
         return _segCurrent;
     }
-
+    
+    /**
+     * Gets the segment at the specified <code>index</code>.
+     * 
+     * @param index - the segment index (i.e., segmentId)
+     */
     public Segment getSegment(int index) {
         return _segList.get(index);
     }
-
+    
+    /**
+     * Gets the count of segments managed by this SegmentManager.
+     */
     public int getSegmentCount() {
         return _segList.size();
     }
-
+    
+    /**
+     * Gets the count of live segments managed by this SegmentManager.
+     */
     public int getLiveSegmentCount() {
         int num = 0;
 
@@ -163,13 +192,16 @@ public final class SegmentManager implements Closeable {
 
         return num;
     }
-
+    
+    /**
+     * Clears this SegmentManger.
+     */
     public synchronized void clear() {
         clearInternal(true /* CLEAR META */);
     }
     
     /**
-     * Frees a segment.
+     * Frees the specified segment.
      */
     public synchronized boolean freeSegment(Segment seg) throws IOException {
         if (seg == null)
@@ -202,7 +234,7 @@ public final class SegmentManager implements Closeable {
         
         return false;
     }
-
+    
     /**
      * Gets the next segment available for read and write.
      */
@@ -210,7 +242,7 @@ public final class SegmentManager implements Closeable {
         _segCurrent = nextSegment(false);
         return _segCurrent;
     }
-
+    
     /**
      * Gets the next segment available for read and write.
      * 
@@ -253,11 +285,21 @@ public final class SegmentManager implements Closeable {
 
         return seg;
     }
-
+    
+    /**
+     * Initializes the segment meta file.
+     * 
+     * @throws IOException
+     */
     private void initMeta() throws IOException {
         _segMeta = new SegmentMeta(new File(_segHomePath, ".meta"));
     }
-
+    
+    /**
+     * Initializes the segments managed by this SegmentManager
+     * 
+     * @throws IOException
+     */
     private void initSegs() throws IOException {
         int loaded = 0;
         File[] segFiles = listSegmentFiles();
@@ -293,7 +335,12 @@ public final class SegmentManager implements Closeable {
 
         _log.info("loaded: " + loaded + "/" + segFiles.length);
     }
-
+    
+    /**
+     * Clears this SegmentManager.
+     * 
+     * @param clearMeta - whether to clear the segment meta file
+     */
     private void clearInternal(boolean clearMeta) {
         // Close all known segments
         for(int segId = 0, cnt = _segList.size(); segId < cnt; segId++) {
@@ -336,6 +383,9 @@ public final class SegmentManager implements Closeable {
         return false;
     }
     
+    /**
+     * Lists all the segment files managed by this SegmentManager. 
+     */
     protected File[] listSegmentFiles() {
         File segDir = new File(_segHomePath);
         File[] segFiles = segDir.listFiles(new FileFilter() {
@@ -364,15 +414,32 @@ public final class SegmentManager implements Closeable {
 
         return segFiles;
     }
-
+    
+    /**
+     * Gets the meta data of all the segments managed by this SegmentManager.
+     */
     public SegmentMeta getMeta() {
         return _segMeta;
     }
-
+    
+    /**
+     * Updates the meta data of all the segments accordingly.
+     * 
+     * @throws IOException
+     */
     public synchronized void updateMeta() throws IOException {
         _segMeta.wrap(this);
     }
-
+    
+    /**
+     * Gets the instance of SegmentManager for the specified <code>segmentHomePath</code>. 
+     * 
+     * @param segmentHomePath   - the file path to segment home.
+     * @param segmentFactory    - the segment factory
+     * @param segmentFileSizeMB - the segment file size in MB
+     * @return the instance of SegmentManager
+     * @throws IOException
+     */
     public synchronized static SegmentManager getInstance(String segmentHomePath, SegmentFactory segmentFactory, int segmentFileSizeMB) throws IOException {
         if (segmentFileSizeMB < Segment.minSegmentFileSizeMB) {
             throw new IllegalArgumentException("Invalid argument segmentFileSizeMB " + segmentFileSizeMB + ", smaller than " + Segment.minSegmentFileSizeMB);

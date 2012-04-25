@@ -6,7 +6,7 @@
   <artifactId>project</artifactId>
   <packaging>pom</packaging>
   <version>0.4.5-SNAPSHOT</version>
-  <name>projects</name>
+  <name>project</name>
   <description>A hash-based high-performance data store</description>
   <url>http://sna-projects.com/krati</url>
 
