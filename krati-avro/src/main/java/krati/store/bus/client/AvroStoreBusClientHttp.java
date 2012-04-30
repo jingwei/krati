@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2012 LinkedIn, Inc
+ * Copyright (c) 2011 LinkedIn, Inc
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -45,6 +45,7 @@ public class AvroStoreBusClientHttp<K> extends StoreBusClientHttp<K, GenericReco
         return ret;
     }
     
+
     /**
      * @return the Avro schema of a remote store.
      */
@@ -52,6 +53,8 @@ public class AvroStoreBusClientHttp<K> extends StoreBusClientHttp<K, GenericReco
         return ((LazyAvroGenericRecordSerializer)_valueSerializer).getSchema();
     }
     
+    
+
     /**
      * A {@link Serializer} implementation that will lazily negotiate an avro {@link Schema} with
      * the remote krati store.
@@ -62,18 +65,18 @@ public class AvroStoreBusClientHttp<K> extends StoreBusClientHttp<K, GenericReco
      * {@link IllegalStateException} if a {@link Schema} has not been negotiated yet.
      * 
      * @author dbuthay
-     * @since 04/16, 2012
+     *
      */
     private class LazyAvroGenericRecordSerializer implements Serializer<GenericRecord> {
         private AvroGenericRecordSerializer _delegate = null;
         private Schema _schema = null;
-        
+
         @Override
         public GenericRecord deserialize(byte[] bytes) throws SerializationException {
             checkSchema();
             return _delegate.deserialize(bytes);
+
         }
-        
         @Override
         public byte[] serialize(GenericRecord record) throws SerializationException {
             checkSchema();
@@ -81,21 +84,25 @@ public class AvroStoreBusClientHttp<K> extends StoreBusClientHttp<K, GenericReco
         }
 
         /**
-         * Returns the {@link Schema} negotiated with the remote server or {@code null}
-         * if negotiation never succeeded.
+         * Returns the {@link Schema} negotiated with the remote server, or throws an Exception if negotiation
+         * does not succeed.
          * 
          * Reasons for negotiation not succeeding include
          * <ul>
          *   <li>Network problems</li>
-         *   <li>Schema String representation retrieved over the network is not parseable</li>
+         *   <li>Schema String representation retrieved over the network is not parse-able</li>
          * <ul>
          * 
-         * NOTE: This method will NOT try to negotiate a Schema.
+         * 
          * @return the {@link Schema} negotiated with the remote server or {@code null} if negotiation never succeeded.
+         * @throws {@link IllegalStateException} if a {@link Schema} has not been negotiated yet, 
+         *          and there was a problem while negotiating the Schema, or if the Schema is invalid.
          */
         public Schema getSchema() {
+            checkSchema();
             return _schema;
         }
+        
         
         /**
          * Check if the {@link Schema} has already been negotiated.
@@ -117,5 +124,6 @@ public class AvroStoreBusClientHttp<K> extends StoreBusClientHttp<K, GenericReco
                 }
             }
         }
+        
     }
 }
