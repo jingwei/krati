@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 LinkedIn, Inc
+ * Copyright (c) 2010-2012 LinkedIn, Inc
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -65,7 +65,7 @@ public class AvroStoreBusClientHttp<K> extends StoreBusClientHttp<K, GenericReco
      * {@link IllegalStateException} if a {@link Schema} has not been negotiated yet.
      * 
      * @author dbuthay
-     *
+     * @since 04/16, 2012
      */
     private class LazyAvroGenericRecordSerializer implements Serializer<GenericRecord> {
         private AvroGenericRecordSerializer _delegate = null;
