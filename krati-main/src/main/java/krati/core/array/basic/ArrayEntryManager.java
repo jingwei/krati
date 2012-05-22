@@ -250,11 +250,11 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable {
     switchEntry(false);
   }
   
-  public void setEntryPersistListener(EntryPersistListener listener) {
+  public void setPersistListener(EntryPersistListener listener) {
     this._persistListener = listener;
   }
   
-  public EntryPersistListener getEntryPersistListener() {
+  public EntryPersistListener getPersistListener() {
     return _persistListener;
   }
   

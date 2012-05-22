@@ -141,12 +141,12 @@ public class DynamicLongArray extends AbstractRecoverableArray<EntryValueLong> i
     
     @Override
     public EntryPersistListener getPersistListener() {
-      return getEntryManager().getEntryPersistListener();
+      return getEntryManager().getPersistListener();
     }
     
     @Override
     public void setPersistListener(EntryPersistListener persistListener) {
-        getEntryManager().setEntryPersistListener(persistListener);
+        getEntryManager().setPersistListener(persistListener);
     }
     
     @Override

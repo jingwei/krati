@@ -401,7 +401,7 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
                 
                 long elapsedTime = System.currentTimeMillis() - startTime; 
                 if (elapsedTime >= totalWait) {
-                    _log.info("throttle " + elapsedTime + " ms");
+                    _log.trace("throttle " + elapsedTime + " ms");
                     return;
                 }
             }
@@ -808,7 +808,7 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
                             while(_compactor.isStarted()) {
                                 consumeCompactionBatch();
                                 
-                                _log.info("wait for compactor");
+                                _log.trace("wait for compactor");
                                 Thread.sleep(10);
                             }
                             
