@@ -638,7 +638,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
         if(0 < _split || _loadCountThreshold < _loadCount) {
             // The splitTo must NOT overflow Integer.MAX_VALUE
             int splitTo = _levelCapacity + _split;
-            if (Integer.MAX_VALUE > splitTo && splitTo >= _levelCapacity) {
+            if (splitTo < Integer.MAX_VALUE) {
                 return true;
             }
         }
@@ -647,9 +647,6 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
     }
     
     protected void split() throws Exception {
-        // Ensure address capacity
-        _addrArray.expandCapacity(_split + _levelCapacity);
-        
         // Read data from the _split index
         byte[] data = _dataArray.get(_split);
         
@@ -678,6 +675,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
             
             if(entries.size() != oldList.size()) {
                 byte[] newData = _dataHandler.assembleEntries(newList);
+                _addrArray.expandCapacity(toIndex);
                 _dataArray.set(toIndex, newData, nextScn());
                 
                 byte[] oldData = null;
@@ -685,13 +683,17 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
                     oldData = _dataHandler.assembleEntries(oldList);
                 }
                 _dataArray.set(_split, oldData, nextScn());
+                
+                if(oldData != null) {
+                    _loadCount++;
+                }
             }
         }
         
         _split++;
         
         if(_split % _unitCapacity == 0) {
-            _log.info("split " + getStatus());
+            _log.info("split-unit " + getStatus());
         }
         
         if(_split == _levelCapacity) {
@@ -702,12 +704,13 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
                 _level = nextLevel;
                 _levelCapacity = nextLevelCapacity;
                 _loadCountThreshold = (int)(capacity() * _loadThreshold);
-                _log.info(getStatus());
             } else {
                 /* NOT FEASIBLE!
                  * This because canSplit() and split() are paired together
                  */
             }
+            
+            _log.info("split-done " + getStatus());
         }
     }
     
@@ -724,7 +727,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
             while(canSplit()) {
                 split();
             }
-            sync();
+            _dataArray.sync();
         } else {
             throw new StoreClosedException();
         }
@@ -807,6 +810,15 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
     @Override
     public synchronized void close() throws IOException {
         if(_dataArray.isOpen()) {
+            try {
+                while(canSplit()) {
+                    split();
+                }
+                _dataArray.sync();
+            } catch(Exception e) {
+                _log.warn("linear hashing aborted", e);
+            }
+            
             _dataArray.close();
         }
     }
