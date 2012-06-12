@@ -40,6 +40,7 @@ import krati.core.array.entry.PreFillEntryShort;
  * 
  * <p>
  * 02/06, 2012 - Handle BufferUnderflowException or other Exceptions when loading entry files. <br/>
+ * 06/11, 2012 - Ensure the order of creating compaction redo before update redo to prevent data loss. <br/> 
  */
 public class ArrayEntryManager<V extends EntryValue> implements Persistable {
   private static final Logger _log = Logger.getLogger(ArrayEntryManager.class);
@@ -285,6 +286,23 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable {
    * @throws IOException
    */
   protected synchronized void switchEntry(boolean blocking) throws IOException {
+    /**
+     * Must create compaction redo before update redo to prevent data loss.
+     * 
+     * The "applyEntries" method will internally sort compaction redo and update redo
+     * entries using stable Arrays.sort. The following order of creating redo entries
+     * will ensure that compaction redo does NOT overwrite update redo.
+     */
+    if (!_entryCompaction.isEmpty()) {
+      // Create entry log and persist in-memory data
+      File file = new File(getDirectory(), getEntryLogName(_entryCompaction));
+      _entryCompaction.save(file);
+      _entryPool.addToServiceQueue(_entryCompaction);
+      _entryCompaction = _entryPool.next();
+      
+      _log.trace("switchEntry to " + _entryCompaction.getId() + " _lwmScn=" + _lwmScn + " _hwmScn=" + _hwmScn + " Compaction");
+    }
+    
     if (!_entry.isEmpty()) {
       if(_persistListener != null) {
         _persistListener.beforePersist(_entry);
@@ -304,16 +322,6 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable {
       _entry = _entryPool.next();
       
       _log.trace("switchEntry to " + _entry.getId() + " _lwmScn=" + _lwmScn + " _hwmScn=" + _hwmScn);
-    }
-    
-    if (!_entryCompaction.isEmpty()) {
-      // Create entry log and persist in-memory data
-      File file = new File(getDirectory(), getEntryLogName(_entryCompaction));
-      _entryCompaction.save(file);
-      _entryPool.addToServiceQueue(_entryCompaction);
-      _entryCompaction = _entryPool.next();
-      
-      _log.trace("switchEntry to " + _entryCompaction.getId() + " _lwmScn=" + _lwmScn + " _hwmScn=" + _hwmScn + " Compaction");
     }
     
     // Apply entry logs to array file
@@ -443,7 +451,7 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable {
       String fileName = file.getName();
       if (fileName.startsWith(prefix) && fileName.endsWith(suffix)) {
         if (file.delete()) {
-          _log.info("file " + file.getAbsolutePath() + " deleted");
+          _log.warn("file " + file.getAbsolutePath() + " deleted");
         } else {
           _log.warn("file " + file.getAbsolutePath() + " not deleted");
         }

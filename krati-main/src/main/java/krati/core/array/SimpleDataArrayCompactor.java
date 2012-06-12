@@ -32,7 +32,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 
 import krati.core.StoreParams;
 import org.apache.log4j.Logger;
@@ -64,6 +63,7 @@ import krati.util.Chronos;
  * 05/23, 2011 - Added method clear() to clean up compactor internal state <br/>
  * 06/21, 2011 - Added support for tolerating compaction failure <br/>
  * 02/14, 2012 - Removed the delay of compaction <br/>
+ * 06/11, 2012 - Simplified compaction update manager <br/>
  */
 class SimpleDataArrayCompactor implements Runnable {
     private final static Logger _log = Logger.getLogger(SimpleDataArrayCompactor.class);
@@ -74,11 +74,6 @@ class SimpleDataArrayCompactor implements Runnable {
      * Whether this compactor is enabled.
      */
     private volatile boolean _enabled = true;
-    
-    /**
-     * Compactor shutdown timeout in milliseconds (default 5000).
-     */
-    private long _shutdownTimeout = 5000;
     
     /**
      * The load factor of segment to determine the legibility of compaction.
@@ -188,7 +183,7 @@ class SimpleDataArrayCompactor implements Runnable {
         this._dataArray = dataArray;
         this._compactLoadFactor = compactLoadFactor;
         this._segSourceList = new ArrayList<Segment>();
-        this._updateManager = new CompactionUpdateManager(_dataArray, compactBatchSize);
+        this._updateManager = new CompactionUpdateManager(compactBatchSize);
     }
     
     /**
@@ -314,6 +309,16 @@ class SimpleDataArrayCompactor implements Runnable {
         try {
             _segTarget = _dataArray.getSegmentManager().nextSegment();
             for(Segment seg : _segSourceList) {
+                if(!_enabled) {
+                    try {
+                        _updateManager.endUpdate(_segTarget);
+                    } catch (Exception e) {
+                        _log.warn("compact abort", e);
+                    }
+                    _log.info("ignored Segment " + seg.getSegmentId());
+                    continue;
+                }
+                
                 try {
                     if(compact(seg, _segTarget)) {
                         _compactedQueue.add(seg);
@@ -332,6 +337,8 @@ class SimpleDataArrayCompactor implements Runnable {
         } catch(Exception e2) {
             _log.warn(e2.getMessage(), e2);
             return false;
+        } finally {
+            _segTarget.force();
         }
         
         _log.info("compact done");
@@ -394,7 +401,6 @@ class SimpleDataArrayCompactor implements Runnable {
             _updateManager.endUpdate(segTarget);
             _log.info("bytes transferred from " + segSource.getSegmentId() + ": " + bytesTransferred + " time: " + c.tick() + " ms");
             
-            segTarget.force();
             return succ;
         } finally {
             if(segSource.getClass() == BufferedSegment.class) {
@@ -464,19 +470,19 @@ class SimpleDataArrayCompactor implements Runnable {
         
         if(_executor != null && !_executor.isShutdown()) {
             try {
-                _executor.awaitTermination(_shutdownTimeout, TimeUnit.MILLISECONDS);
-                _log.info("compactor shutdown");
-            } catch (InterruptedException e) {
-                _log.warn("compactor shutdown interrupted");
-            }
-            
-            try {
-                _state = State.DONE;
                 _executor.shutdown();
             } catch (Exception e) {
-                _log.warn("compactor shutdown forced");
+                _log.warn("shutdown abort", e);
             } finally {
+                if(_segTarget != null) {
+                    try {
+                        _updateManager.endUpdate(_segTarget);
+                    } catch (Exception e) {
+                        _log.warn("shutdown abort", e);
+                    }
+                }
                 _executor = null;
+                _state = State.DONE;
             }
         }
     }
@@ -667,7 +673,6 @@ class SimpleDataArrayCompactor implements Runnable {
         Segment _segTarget = null;
         int _dataSizeTotal = 0;
         int _serviceId = 0;
-        long _lwMark = 0;
         
         /**
          * Creates a new instance of CompactionUpdateBatch.
@@ -688,7 +693,6 @@ class SimpleDataArrayCompactor implements Runnable {
             _segTarget = null;
             _dataSizeTotal = 0;
             _serviceId = 0;
-            _lwMark = 0;
         }
         
         /**
@@ -753,13 +757,6 @@ class SimpleDataArrayCompactor implements Runnable {
          */
         public String getDescriptiveId() {
             return ((_segTarget == null) ? "?[" : (_segTarget.getSegmentId() + "[")) + _serviceId + "]";
-        }
-        
-        /**
-         * Gets the low water mark of this batch.
-         */
-        public long getLWMark() {
-            return _lwMark;
         }
         
         /**
@@ -841,13 +838,6 @@ class SimpleDataArrayCompactor implements Runnable {
         }
         
         /**
-         * Sets the low water mark of this batch when it is filled up.
-         */
-        void setLWMark(long waterMark) {
-            _lwMark = waterMark;
-        }
-        
-        /**
          * Sets the target Segment of this batch.
          */
         void setTargetSegment(Segment seg) {
@@ -883,11 +873,6 @@ class SimpleDataArrayCompactor implements Runnable {
         private final ConcurrentLinkedQueue<CompactionUpdateBatch> _recycleBatchQueue;
         
         /**
-         * The data array to be compacted.
-         */
-        private final SimpleDataArray _dataArray;
-        
-        /**
          * The counter of batch service Id.
          */
         private int _batchServiceIdCounter = 0;
@@ -900,11 +885,9 @@ class SimpleDataArrayCompactor implements Runnable {
         /**
          * Creates a new instance of CompactionUpdateManager.
          * 
-         * @param dataArray - the data array to be compacted.
          * @param batchSize - the size of {@link CompactionUpdateBatch}.
          */
-        public CompactionUpdateManager(SimpleDataArray dataArray, int batchSize) {
-            _dataArray = dataArray;
+        public CompactionUpdateManager(int batchSize) {
             _batchSize = batchSize;
             _serviceBatchQueue = new ConcurrentLinkedQueue<CompactionUpdateBatch>();
             _recycleBatchQueue = new ConcurrentLinkedQueue<CompactionUpdateBatch>();
@@ -972,8 +955,7 @@ class SimpleDataArrayCompactor implements Runnable {
             } catch(BufferOverflowException e) {
                 segTarget.force();
                 _batch.setTargetSegment(segTarget);
-                _batch.setLWMark(_dataArray.getLWMark());
-                _log.trace("compaction batch " + _batch.getDescriptiveId() + " hwMark=" + _batch.getLWMark());
+                _log.trace("compaction batch " + _batch.getDescriptiveId());
                 
                 _serviceBatchQueue.add(_batch);
                 nextBatch();
@@ -991,13 +973,14 @@ class SimpleDataArrayCompactor implements Runnable {
          */
         public void endUpdate(Segment segTarget) throws IOException {
             segTarget.force();
-            _batch.setTargetSegment(segTarget);
-            _batch.setLWMark(_dataArray.getLWMark());
-            _log.trace("compaction batch " + _batch.getDescriptiveId() + " hwMark=" + _batch.getLWMark());
-            
-            _serviceBatchQueue.add(_batch);
-            _batchServiceIdCounter = 0;
-            nextBatch();
+            if(_batch.size() > 0) {
+                _batch.setTargetSegment(segTarget);
+                _log.trace("compaction batch " + _batch.getDescriptiveId());
+                
+                _serviceBatchQueue.add(_batch);
+                _batchServiceIdCounter = 0;
+                nextBatch();
+            }
         }
         
         /**
