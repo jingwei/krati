@@ -347,6 +347,9 @@ public final class SegmentManager implements Closeable {
             Segment seg = _segList.get(segId);
             if(seg != null) {
                 try {
+                    if(seg.getMode() == Segment.Mode.READ_WRITE) {
+                        seg.force();
+                    }
                     seg.close(false);
                 } catch (IOException e) {
                     _log.warn("failed to close segment " + seg.getSegmentId());

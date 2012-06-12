@@ -638,7 +638,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
         if(0 < _split || _loadCountThreshold < _loadCount) {
             // The splitTo must NOT overflow Integer.MAX_VALUE
             int splitTo = _levelCapacity + _split;
-            if (splitTo < Integer.MAX_VALUE) {
+            if (Integer.MAX_VALUE > splitTo && splitTo >= _levelCapacity) {
                 return true;
             }
         }
@@ -820,6 +820,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
             }
             
             _dataArray.close();
+            _log.info(getStatus());
         }
     }
 }

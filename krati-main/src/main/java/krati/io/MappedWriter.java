@@ -85,6 +85,7 @@ public class MappedWriter implements DataWriter, BasicIO {
     @Override
     public void force() throws IOException {
         _mmapBuffer.force();
+        _channel.force(true);
     }
     
     @Override
