@@ -23,6 +23,7 @@ import java.util.Random;
 import krati.core.StoreConfig;
 import krati.core.StoreFactory;
 import krati.core.segment.MemorySegmentFactory;
+import krati.io.Closeable;
 import krati.store.DataStore;
 
 /**
@@ -31,7 +32,7 @@ import krati.store.DataStore;
  * @author jwu
  * 
  */
-public class KratiDataStore {
+public class KratiDataStore implements Closeable {
     private final int _initialCapacity;
     private final DataStore<byte[], byte[]> _store;
     
@@ -109,7 +110,25 @@ public class KratiDataStore {
     }
     
     /**
-     * Close the underlying store.
+     * Checks if the <code>KratiDataStore</code> is open for operations.
+     */
+    @Override
+    public boolean isOpen() {
+        return _store.isOpen();
+    }
+    
+    /**
+     * Opens the store.
+     * 
+     * @throws IOException
+     */
+    @Override
+    public void open() throws IOException {
+        _store.open();
+    }
+    
+    /**
+     * Closes the store.
      * 
      * @throws IOException
      */

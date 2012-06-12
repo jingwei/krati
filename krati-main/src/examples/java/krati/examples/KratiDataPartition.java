@@ -23,6 +23,7 @@ import java.util.Random;
 import krati.core.StoreFactory;
 import krati.core.StorePartitionConfig;
 import krati.core.segment.MemorySegmentFactory;
+import krati.io.Closeable;
 import krati.store.ArrayStorePartition;
 
 /**
@@ -31,7 +32,7 @@ import krati.store.ArrayStorePartition;
  * @author jwu
  * 
  */
-public class KratiDataPartition {
+public class KratiDataPartition implements Closeable {
     private final ArrayStorePartition _partition;
     
     /**
@@ -94,10 +95,29 @@ public class KratiDataPartition {
     }
     
     /**
-     * Closes the underlying partition.
+     * Checks if this <code>KratiDataPartition</code> is open for operations.
+     */
+    @Override
+    public boolean isOpen() {
+        return _partition.isOpen();
+    }
+    
+    /**
+     * Opens this <code>KratiDataPartition</code>.
      * 
      * @throws IOException
      */
+    @Override
+    public void open() throws IOException {
+        _partition.open();
+    }
+    
+    /**
+     * Closes this <code>KratiDataPartition</code>.
+     * 
+     * @throws IOException
+     */
+    @Override
     public void close() throws IOException {
         _partition.close();
     }
