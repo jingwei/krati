@@ -67,11 +67,15 @@ public abstract class AbstractTestDataStoreApi extends TestCase {
         byte[] key = RandomBytes.getBytes(16);
         byte[] value = RandomBytes.getBytes();
         
+        assertEquals(-1, _store.getLength(key));
+        
         _store.put(key, value);
         assertTrue(Arrays.equals(value, _store.get(key)));
+        assertEquals(value.length, _store.getLength(key));
         
         _store.put(key, null);
         assertTrue(Arrays.equals(null, _store.get(key)));
+        assertEquals(-1, _store.getLength(key));
         
         _store.put(key, value);
         assertTrue(Arrays.equals(value, _store.get(key)));

@@ -42,6 +42,11 @@ public interface DataStore<K, V> extends Iterable<Entry<K, V>>, Closeable {
     public int capacity();
     
     /**
+     * @return the length (number of bytes) of the value to which the specified <code>key</code> is mapped in this store.  
+     */
+    public int getLength(K key);
+    
+    /**
      * Gets the value to which the specified <code>key</code> is mapped in this store.
      *  
      * @param key - store key

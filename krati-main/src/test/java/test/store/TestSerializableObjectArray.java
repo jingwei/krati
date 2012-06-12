@@ -82,6 +82,7 @@ public class TestSerializableObjectArray extends TestCase {
             int index = getRandomIndex();
             String value = "here is data  for " + index;
             _store.set(index, value);
+            assertEquals(_store.getValueSerializer().serialize(value).length, _store.getLength(index));
         }
         
         _store.set(randomIndex, randomValue);

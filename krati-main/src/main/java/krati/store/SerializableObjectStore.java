@@ -113,6 +113,16 @@ public class SerializableObjectStore<K, V> implements ObjectStore<K, V> {
         return bytes == null ? null : _valSerializer.deserialize(bytes);
     }
     
+    @Override
+    public int getLength(K key) {
+        if(key == null) {
+            return -1;
+        }
+        
+        byte[] keyBytes = _keySerializer.serialize(key);
+        return _store.getLength(keyBytes);
+    }
+    
     /**
      * Gets an object in the form of byte array from the store.
      * 

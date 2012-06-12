@@ -66,12 +66,16 @@ public abstract class AbstractTestArrayStoreApi extends TestCase {
         long scn = System.currentTimeMillis();
         byte[] value = RandomBytes.getBytes();
         
+        assertEquals(-1, _store.getLength(index));
+        
         // get/set/delete/clear
         _store.set(index, value, scn++);
         assertTrue(Arrays.equals(value, _store.get(index)));
+        assertEquals(value.length, _store.getLength(index));
         
         _store.set(index, null, scn++);
         assertTrue(Arrays.equals(null, _store.get(index)));
+        assertEquals(-1, _store.getLength(index));
         
         _store.set(index, value, scn++);
         assertTrue(Arrays.equals(value, _store.get(index)));

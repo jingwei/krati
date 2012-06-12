@@ -92,6 +92,7 @@ public class TestBytesDB extends TestCase {
         
         byte[] bytesRead1 = _bytesDB.get(index1);
         assertTrue(Arrays.equals(bytes1, bytesRead1));
+        assertEquals(bytes1.length, _bytesDB.getLength(index1));
         
         // Add the second bytes
         int index2 = _bytesDB.add(bytes2, scn++);
@@ -99,6 +100,7 @@ public class TestBytesDB extends TestCase {
         
         byte[] bytesRead2 = _bytesDB.get(index2);
         assertTrue(Arrays.equals(bytes2, bytesRead2));
+        assertEquals(bytes2.length, _bytesDB.getLength(index2));
         
         // Reset bytes
         byte[] bytes = RandomBytes.getBytes();

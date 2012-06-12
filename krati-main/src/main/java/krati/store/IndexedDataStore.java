@@ -245,6 +245,19 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
     }
     
     @Override
+    public int getLength(byte[] key) {
+        if(key == null) return -1;
+        
+        byte[] metaBytes = _index.lookup(key);
+        if(metaBytes == null) return -1;
+        
+        IndexMeta meta = IndexMeta.parse(metaBytes);
+        if(meta == null) return -1;
+        
+        return _bytesDB.getLength(meta.getDataAddr());
+    }
+    
+    @Override
     public byte[] get(byte[] key) {
         if(key == null) return null;
         

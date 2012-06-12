@@ -437,6 +437,12 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
     }
     
     @Override
+    public int getLength(byte[] key) {
+        byte[] value = get(key);
+        return value == null ? -1 : value.length;
+    }
+    
+    @Override
     public byte[] get(byte[] key) {
         byte[] existingData;
         long hashCode = hash(key);
@@ -647,6 +653,9 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
     }
     
     protected void split() throws Exception {
+        // Ensure address capacity
+        _addrArray.expandCapacity(_split + _levelCapacity);
+        
         // Read data from the _split index
         byte[] data = _dataArray.get(_split);
         

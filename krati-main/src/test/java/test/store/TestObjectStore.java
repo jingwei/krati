@@ -21,7 +21,6 @@ import java.util.Iterator;
 
 import krati.core.segment.SegmentFactory;
 import krati.store.DataStore;
-import krati.store.ObjectStore;
 import krati.store.SerializableObjectStore;
 import krati.store.StaticDataStore;
 
@@ -65,7 +64,7 @@ public class TestObjectStore extends AbstractTest {
         
         File objectStoreDir = new File(TEST_OUTPUT_DIR, "object_store");
         DataStore<byte[], byte[]> dataStore = getDataStore(objectStoreDir, capacity);
-        ObjectStore<String, MemberProtos.Member> memberStore =
+        SerializableObjectStore<String, MemberProtos.Member> memberStore =
             new SerializableObjectStore<String, MemberProtos.Member>(dataStore, new KeySerializer(), new MemberSerializer());
         
         MemberProtos.MemberBook book = MemberDataGen.generateMemberBook(memberCnt);
@@ -92,6 +91,7 @@ public class TestObjectStore extends AbstractTest {
         while (keyIter.hasNext()) {
             String key = keyIter.next();
             MemberProtos.Member m = memberStore.get(key);
+            assertEquals(memberStore.getValueSerializer().serialize(m).length, memberStore.getLength(key));
             assertTrue("Member " + m.getMemberId() + ": key=" + key + " email=" + m.getEmail(0), m.getEmail(0).equals(key));
         }
         

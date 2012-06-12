@@ -305,6 +305,12 @@ public class StaticDataStore implements DataStore<byte[], byte[]> {
     }
     
     @Override
+    public int getLength(byte[] key) {
+        byte[] value = get(key);
+        return value == null ? -1 : value.length;
+    }
+    
+    @Override
     public byte[] get(byte[] key) {
         long hashCode = hash(key);
         int index = (int)(hashCode % _dataArray.length());

@@ -111,6 +111,16 @@ public class SerializableObjectArray<V> implements ObjectStore<Integer, V> {
     }
     
     @Override
+    public int getLength(Integer key) {
+        if(key == null) {
+            return -1;
+        }
+        
+        int index = key.intValue();
+        return _store.getLength(index);
+    }
+    
+    @Override
     public V get(Integer key) {
         if(key == null) {
             return null;

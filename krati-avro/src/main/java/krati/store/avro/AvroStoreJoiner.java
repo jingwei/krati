@@ -281,6 +281,12 @@ public final class AvroStoreJoiner<K> implements AvroStore<K> {
     }
     
     @Override
+    public int getLength(K key) {
+        byte[] bytes = getBytes(key);
+        return bytes == null ? -1 : bytes.length;
+    }
+    
+    @Override
     public byte[] getBytes(K key) {
         GenericRecord record = get(key);
         return record == null ? null : _valSerializer.serialize(record);
