@@ -33,6 +33,7 @@ import krati.util.IndexedIterator;
  * <p>
  * 06/04, 2011 - Added support for Closeable <br/>
  * 12/05, 2011 - Added JavaDoc comment <br/>
+ * 06/11, 2012 - Added getLength(K) <br/>
  */
 public interface DataStore<K, V> extends Iterable<Entry<K, V>>, Closeable {
     
@@ -42,7 +43,9 @@ public interface DataStore<K, V> extends Iterable<Entry<K, V>>, Closeable {
     public int capacity();
     
     /**
-     * @return the length (number of bytes) of the value to which the specified <code>key</code> is mapped in this store.  
+     * Gets the length (number of bytes) of the value to which the specified <code>key</code> is mapped in this store.
+     * 
+     * @return <code>-1</code> if the specified <code>key</code> is <code>null</code> or no value is associated with the key.
      */
     public int getLength(K key);
     
