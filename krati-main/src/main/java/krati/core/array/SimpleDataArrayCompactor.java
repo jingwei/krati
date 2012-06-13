@@ -32,6 +32,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import krati.core.StoreParams;
 import org.apache.log4j.Logger;
@@ -74,6 +75,11 @@ class SimpleDataArrayCompactor implements Runnable {
      * Whether this compactor is enabled.
      */
     private volatile boolean _enabled = true;
+    
+    /**
+     * Compactor shutdown timeout in milliseconds (default 5000).
+     */
+    private long _shutdownTimeout = 5000;
     
     /**
      * The load factor of segment to determine the legibility of compaction.
@@ -324,8 +330,10 @@ class SimpleDataArrayCompactor implements Runnable {
                         _compactedQueue.add(seg);
                     }
                 } catch(Exception e) {
-                    _ignoredSegs.add(seg);
-                    _log.error("failed to compact Segment " + seg.getSegmentId(), e);
+                    if(_dataArray.isOpen()) {
+                        _ignoredSegs.add(seg);
+                        _log.error("failed to compact Segment " + seg.getSegmentId(), e);
+                    }
                 }
             }
             
@@ -468,7 +476,14 @@ class SimpleDataArrayCompactor implements Runnable {
         
         if(_executor != null && !_executor.isShutdown()) {
             try {
+                _executor.awaitTermination(_shutdownTimeout, TimeUnit.MILLISECONDS);
+            } catch (InterruptedException e) {
+                _log.warn("shutdown interrupted");
+            }
+            
+            try {
                 _executor.shutdown();
+                _log.info("shutdown");
             } catch (Exception e) {
                 _log.warn("shutdown abort", e);
             } finally {
