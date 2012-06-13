@@ -16,6 +16,8 @@
 
 package krati.store;
 
+import java.util.List;
+
 /**
  * DataSetHandler
  * 
@@ -35,4 +37,6 @@ public interface DataSetHandler extends DataHandler {
     public int remove(byte[] value, byte[] data);
     
     public boolean find(byte[] value, byte[] data);
+    
+    public List<byte[]> extractValues(byte[] data);
 }

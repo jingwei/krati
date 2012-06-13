@@ -235,7 +235,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
      * @param initLevel            the level for initializing DataSet
      * @param segmentFileSizeMB    the size of segment file in MB
      * @param segmentFactory       the segment factory
-     * @param hashLoadThreshold    the load factor of the underlying address array (hash table)
+     * @param hashLoadFactor       the load factor of the underlying address array (hash table)
      * @param hashFunction         the hash function for mapping values to indexes
      * @throws Exception           if this dynamic data set cannot be created.
      */
@@ -243,7 +243,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
                           int initLevel,
                           int segmentFileSizeMB,
                           SegmentFactory segmentFactory,
-                          double hashLoadThreshold,
+                          double hashLoadFactor,
                           HashFunction<byte[]> hashFunction) throws Exception {
         this(homeDir,
              initLevel,
@@ -252,7 +252,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
              segmentFileSizeMB,
              segmentFactory,
              StoreParams.SEGMENT_COMPACT_FACTOR_DEFAULT,
-             hashLoadThreshold,
+             hashLoadFactor,
              hashFunction);
     }
     

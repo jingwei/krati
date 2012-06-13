@@ -17,6 +17,8 @@
 package test.misc;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 
 import krati.core.StoreConfig;
 import krati.store.DataSetHandler;
@@ -46,6 +48,7 @@ public class TestSetDataHandler2 extends AbstractTest {
         byte[] value1 = str1.getBytes();
         byte[] value2 = str2.getBytes();
         byte[] value3 = str3.getBytes();
+        List<byte[]> valueList;
         
         // Add value1
         byte[] data1 = _dataHandler.assemble(value1);
@@ -57,6 +60,10 @@ public class TestSetDataHandler2 extends AbstractTest {
                 1, _dataHandler.countCollisions(value1, data1));
         assertEquals("Failed on countCollisions(byte[] value, byte[] data) collisions: ",
                 -1, _dataHandler.countCollisions(value2, data1));
+        
+        valueList = _dataHandler.extractValues(data1);
+        assertEquals(1, valueList.size());
+        assertTrue(Arrays.equals(value1, valueList.get(0)));
         
         // Add value2
         byte[] data2 = _dataHandler.assemble(value2, data1);
@@ -71,6 +78,9 @@ public class TestSetDataHandler2 extends AbstractTest {
                 2, _dataHandler.countCollisions(value2, data2));
         assertEquals("Failed on countCollisions(byte[] value, byte[] data) collisions: ",
                 -2, _dataHandler.countCollisions(value3, data2));
+        
+        valueList = _dataHandler.extractValues(data2);
+        assertEquals(2, valueList.size());
         
         // Add value3
         byte[] data3 = _dataHandler.assemble(value3, data2);
@@ -87,6 +97,9 @@ public class TestSetDataHandler2 extends AbstractTest {
         assertEquals("Failed on countCollisions(byte[] value, byte[] data) collisions: ",
                 3, _dataHandler.countCollisions(value3, data3));
         
+        valueList = _dataHandler.extractValues(data3);
+        assertEquals(3, valueList.size());
+        
         // Delete value2
         int len = _dataHandler.remove(value2, data3);
         byte[] data4 = new byte[len];
@@ -100,6 +113,9 @@ public class TestSetDataHandler2 extends AbstractTest {
         assertEquals("Failed on countCollisions(byte[] value, byte[] data) collisions: ",
                 -2, _dataHandler.countCollisions(value2, data4));
         
+        valueList = _dataHandler.extractValues(data4);
+        assertEquals(2, valueList.size());
+        
         // Delete value1
         len = _dataHandler.remove(value1, data4);
         byte[] data5 = new byte[len];
@@ -111,6 +127,10 @@ public class TestSetDataHandler2 extends AbstractTest {
         
         assertEquals("Failed on countCollisions(byte[] value, byte[] data) collisions: ",
                 -1, _dataHandler.countCollisions(value1, data5));
+        
+        valueList = _dataHandler.extractValues(data5);
+        assertEquals(1, valueList.size());
+        assertTrue(Arrays.equals(value3, valueList.get(0)));
         
         // Delete value3
         len = _dataHandler.remove(value3, data5);

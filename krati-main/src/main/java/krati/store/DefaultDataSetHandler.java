@@ -17,6 +17,10 @@
 package krati.store;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.log4j.Logger;
 
 import krati.store.DataSetHandler;
 
@@ -27,6 +31,10 @@ import krati.store.DataSetHandler;
  *
  */
 public final class DefaultDataSetHandler implements DataSetHandler {
+    /**
+     * The logger.
+     */
+    private final static Logger _log = Logger.getLogger(DefaultDataSetHandler.class);
     
     @Override
     public final byte[] assemble(byte[] value) {
@@ -163,6 +171,35 @@ public final class DefaultDataSetHandler implements DataSetHandler {
             return false;
         } catch(Exception e) {
             return false;
+        }
+    }
+    
+    @Override
+    public final List<byte[]> extractValues(byte[] data) {
+        try {
+            final List<byte[]> result = new ArrayList<byte[]>();
+            ByteBuffer bb = ByteBuffer.wrap(data);
+            int cnt = bb.getInt();
+            
+            while(cnt > 0) {
+                // Read value
+                int len = bb.getInt();
+                if (len <= bb.remaining()) {
+                    byte[] value = new byte[len];
+                    bb.get(value);
+                
+                    result.add(value);
+                } else {
+                    break;
+                }
+                
+                cnt--;
+            }
+            
+            return result;
+        } catch(Exception e) {
+            _log.error("Failed to extractValues", e);
+            return null;
         }
     }
     
