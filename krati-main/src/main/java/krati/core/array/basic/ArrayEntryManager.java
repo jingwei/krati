@@ -451,7 +451,7 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable {
       String fileName = file.getName();
       if (fileName.startsWith(prefix) && fileName.endsWith(suffix)) {
         if (file.delete()) {
-          _log.warn("file " + file.getAbsolutePath() + " deleted");
+          _log.info("file " + file.getAbsolutePath() + " deleted");
         } else {
           _log.warn("file " + file.getAbsolutePath() + " not deleted");
         }
