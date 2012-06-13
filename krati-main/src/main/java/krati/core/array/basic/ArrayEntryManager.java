@@ -396,8 +396,8 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable {
     public final synchronized void run() {
       try {
         _entryManager.applyEntries(_entryList);
-      } catch(IOException ioe) {
-        _log.error(ioe.getMessage());
+      } catch(Exception e) {
+        _log.error(e.getMessage());
       }
     }
   }
