@@ -337,8 +337,6 @@ class SimpleDataArrayCompactor implements Runnable {
         } catch(Exception e2) {
             _log.warn(e2.getMessage(), e2);
             return false;
-        } finally {
-            _segTarget.force();
         }
         
         _log.info("compact done");
