@@ -17,6 +17,7 @@
 package krati.store;
 
 import java.io.IOException;
+import java.util.Iterator;
 
 import krati.io.Closeable;
 
@@ -80,4 +81,9 @@ public interface DataSet<V> extends Closeable {
      * @throws IOException
      */
     public void clear() throws IOException;
+    
+    /**
+     * Gets an iterator of values in this DataSet.
+     */
+    public Iterator<V> iterator();
 }

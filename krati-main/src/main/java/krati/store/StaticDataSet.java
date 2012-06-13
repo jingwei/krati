@@ -33,6 +33,7 @@ import krati.store.DataSet;
 import krati.store.DataSetHandler;
 import krati.util.FnvHashFunction;
 import krati.util.HashFunction;
+import krati.util.IndexedIterator;
 
 /**
  * A simple implementation of data set with a fixed capacity.
@@ -436,5 +437,10 @@ public class StaticDataSet implements DataSet<byte[]> {
         if(_dataArray.isOpen()) {
             _dataArray.close();
         }
+    }
+    
+    @Override
+    public IndexedIterator<byte[]> iterator() {
+        return new DataSetIterator(_dataArray, _dataHandler);
     }
 }

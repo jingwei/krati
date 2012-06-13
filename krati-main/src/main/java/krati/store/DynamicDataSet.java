@@ -18,7 +18,7 @@ package krati.store;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.ByteBuffer;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
@@ -36,6 +36,7 @@ import krati.store.DataSet;
 import krati.store.DataSetHandler;
 import krati.util.FnvHashFunction;
 import krati.util.HashFunction;
+import krati.util.IndexedIterator;
 import krati.util.LinearHashing;
 
 /**
@@ -53,6 +54,7 @@ import krati.util.LinearHashing;
  * 06/06, 2011 - Added support for Closeable <br/>
  * 06/08, 2011 - Scale to the Integer.MAX_VALUE capacity <br/>
  * 06/25, 2011 - Added constructor using StoreConfig <br/>
+ * 06/12, 2012 - Code refactoring on the split method <br/>
  */
 public class DynamicDataSet implements DataSet<byte[]> {
     private final static Logger _log = Logger.getLogger(DynamicDataSet.class);
@@ -687,35 +689,33 @@ public class DynamicDataSet implements DataSet<byte[]> {
         
         // Process read data
         if (data != null && data.length > 0) {
-            ByteBuffer bb = ByteBuffer.wrap(data);
             long newCapacity = ((long)_levelCapacity) << 1;
+            List<byte[]> valueList = _dataHandler.extractValues(data);
             
-            int cnt = bb.getInt();
-            while(cnt > 0) {
-                // Read value
-                int len = bb.getInt();
-                byte[] value = new byte[len];
-                bb.get(value);
-                
-                int newIndex = (int)(hash(value) % newCapacity);
-                if (newIndex < 0) newIndex = -newIndex;
-                
-                if(newIndex != _split) {
-                    // Remove at the old index
-                    deleteInternal(_split, value);
+            if(valueList == null || valueList.size() == 0) {
+                _dataArray.set(_split, null, nextScn());
+                _loadCount--;
+            } else {
+                for(byte[] value : valueList) {
+                    int newIndex = (int)(hash(value) % newCapacity);
+                    if (newIndex < 0) newIndex = -newIndex;
                     
-                    // Update at the new index
-                    addInternal(newIndex, value);
+                    if(newIndex != _split) {
+                        // Remove at the old index
+                        deleteInternal(_split, value);
+                        
+                        // Update at the new index
+                        _addrArray.expandCapacity(newIndex);
+                        addInternal(newIndex, value);
+                    }
                 }
-                
-                cnt--;
             }
         }
         
         _split++;
 
         if(_split % _unitCapacity == 0) {
-            _log.info("split " + getStatus());
+            _log.info("split-unit " + getStatus());
         }
         
         if(_split == _levelCapacity) {
@@ -726,12 +726,13 @@ public class DynamicDataSet implements DataSet<byte[]> {
                 _level = nextLevel;
                 _levelCapacity = nextLevelCapacity;
                 _loadCountThreshold = (int)(getCapacity() * _loadThreshold);
-                _log.info(getStatus());
             } else {
                 /* NOT FEASIBLE!
                  * This because canSplit() and split() are paired together
                  */
             }
+            
+            _log.info("split-done " + getStatus());
         }
     }
     
@@ -748,7 +749,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
             while(canSplit()) {
                 split();
             }
-            sync();
+            _dataArray.sync();
         } else {
             throw new StoreClosedException();
         }
@@ -813,7 +814,22 @@ public class DynamicDataSet implements DataSet<byte[]> {
     @Override
     public synchronized void close() throws IOException {
         if(_dataArray.isOpen()) {
+            try {
+                while(canSplit()) {
+                    split();
+                }
+                _dataArray.sync();
+            } catch(Exception e) {
+                _log.warn("linear hashing aborted", e);
+            }
+            
             _dataArray.close();
+            _log.info(getStatus());
         }
+    }
+    
+    @Override
+    public IndexedIterator<byte[]> iterator() {
+        return new DataSetIterator(_dataArray, _dataHandler);
     }
 }

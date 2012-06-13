@@ -14,9 +14,10 @@
  * the License.
  */
 
-package test.store;
+package test.set;
 
 import java.io.File;
+import java.util.Iterator;
 import java.util.Random;
 
 import test.util.DirUtils;
@@ -26,25 +27,24 @@ import junit.framework.TestCase;
 import krati.core.StoreConfig;
 import krati.core.StoreFactory;
 import krati.core.segment.MemorySegmentFactory;
-import krati.store.DataStore;
-import krati.util.IndexedIterator;
+import krati.store.DataSet;
 
 /**
- * TestDataStoreOpenClose
+ * TestDataSetOpenClose
  * 
  * @author jwu
- * @since 06/10, 2012
+ * @since 06/12, 2012
  */
-public class TestDataStoreOpenClose extends TestCase {
+public class TestDataSetOpenClose extends TestCase {
     private Random _rand = new Random();
-    private DataStore<byte[], byte[]> _store;
+    private DataSet<byte[]> _set;
     
     @Override
     protected void setUp() {
         try {
-            File homeDir = DirUtils.getTestDir(TestDataStoreOpenClose.class);
+            File homeDir = DirUtils.getTestDir(TestDataSetOpenClose.class);
             int initialCapacity = 1000 + _rand.nextInt(1000);
-            _store = createDataStore(homeDir, initialCapacity);
+            _set = createDataSet(homeDir, initialCapacity);
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -53,30 +53,23 @@ public class TestDataStoreOpenClose extends TestCase {
     @Override
     protected void tearDown() {
         try {
-            if(_store != null) {
-                _store.close();
+            if(_set != null) {
+                _set.close();
             }
             
-            File homeDir = DirUtils.getTestDir(TestDataStoreOpenClose.class);
+            File homeDir = DirUtils.getTestDir(TestDataSetOpenClose.class);
             DirUtils.deleteDirectory(homeDir);
         } catch(Exception e) {
             e.printStackTrace();
         }
     }
     
-    protected DataStore<byte[], byte[]> createDataStore(File homeDir, int initialCapacity) throws Exception {
+    protected DataSet<byte[]> createDataSet(File homeDir, int initialCapacity) throws Exception {
         StoreConfig config = new StoreConfig(homeDir, initialCapacity);
         config.setSegmentFactory(new MemorySegmentFactory());
         config.setSegmentFileSizeMB(32);
         
-        return StoreFactory.createIndexedDataStore(config);
-    }
-    
-    /**
-     * Creates data for a given key.
-     */
-    protected byte[] createDataForKey(String key) {
-        return ("Here is your data for " + key).getBytes();
+        return StoreFactory.createDynamicDataSet(config);
     }
     
     /**
@@ -84,12 +77,11 @@ public class TestDataStoreOpenClose extends TestCase {
      */
     protected void populate(int num) throws Exception {
         for (int i = 0; i < num; i++) {
-            String str = "key." + i;
-            byte[] key = str.getBytes();
-            byte[] value = createDataForKey(str);
-            _store.put(key, value);
+            String str = "value." + i;
+            byte[] value = str.getBytes();
+            _set.add(value);
         }
-        _store.sync();
+        _set.sync();
     }
     
     /**
@@ -97,7 +89,7 @@ public class TestDataStoreOpenClose extends TestCase {
      */
     protected void count(int expected) {
         int count = 0;
-        IndexedIterator<byte[]> itr = _store.keyIterator();
+        Iterator<byte[]> itr = _set.iterator();
         
         while(itr.hasNext()) {
             itr.next();
@@ -122,18 +114,18 @@ public class TestDataStoreOpenClose extends TestCase {
         populate(num);
         count(num);
         
-        _store.close();
-        _store.open();
+        _set.close();
+        _set.open();
         count(num);
         
         num += 500000 + _rand.nextInt(100000);
         populate(num);
         count(num);
         
-        _store.close();
-        _store.open();
+        _set.close();
+        _set.open();
         count(num);
         
-        _store.close();
+        _set.close();
     }
 }
