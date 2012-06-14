@@ -19,7 +19,7 @@ Apache Public License (APL) 2.0
 
     groupId: com.sna-projects.krati
     artifactId: krati
-    version: 0.4.5
+    version: 0.4.6
 
 ### Code Examples:
 
