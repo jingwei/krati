@@ -77,9 +77,9 @@ class SimpleDataArrayCompactor implements Runnable {
     private volatile boolean _enabled = true;
     
     /**
-     * Compactor shutdown timeout in milliseconds (default 5000).
+     * Compactor shutdown timeout in seconds (default 10).
      */
-    private long _shutdownTimeout = 5000;
+    private long _shutdownTimeout = 10;
     
     /**
      * The load factor of segment to determine the legibility of compaction.
@@ -476,28 +476,29 @@ class SimpleDataArrayCompactor implements Runnable {
         
         if(_executor != null && !_executor.isShutdown()) {
             try {
-                _executor.awaitTermination(_shutdownTimeout, TimeUnit.MILLISECONDS);
-            } catch (InterruptedException e) {
-                _log.warn("shutdown interrupted");
-            }
-            
-            try {
                 _executor.shutdown();
                 _log.info("shutdown");
             } catch (Exception e) {
                 _log.warn("shutdown abort", e);
-            } finally {
-                if(_segTarget != null) {
-                    try {
-                        _updateManager.endUpdate(_segTarget);
-                    } catch (Exception e) {
-                        _log.warn("shutdown abort", e);
-                    }
+            }
+            
+            try {
+                _executor.awaitTermination(_shutdownTimeout, TimeUnit.SECONDS);
+            } catch (Exception e) {
+                _log.warn("shutdown abort", e);
+            }
+            
+            if(_segTarget != null) {
+                try {
+                    _updateManager.endUpdate(_segTarget);
+                } catch (Exception e) {
+                    _log.warn("shutdown abort", e);
                 }
-                _executor = null;
-                _state = State.DONE;
             }
         }
+        
+        _executor = null;
+        _state = State.DONE;
     }
     
     /**
