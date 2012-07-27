@@ -3,6 +3,7 @@ package krati.retention;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -45,8 +46,21 @@ public class CompositeRetentionStoreReader<K, V> extends RetentionStoreReader<K,
 
     @Override
     public Position get(Position pos, List<Event<K>> list) {
-        // TODO Auto-generated method stub
-        return null;
+        CompositePosition cp = (CompositePosition) pos;
+        //TODO: assert cp.dimension == stores.size
+        Position[] pp = cp.getPositions();
+        for (int i=0; i < stores.size(); i++) {
+            List<Event<K>> tList = new LinkedList<Event<K>>();
+            Position np = stores.get(i).get(pp[i], tList);
+            if (tList.size() > 0) {
+                list.addAll(tList);
+                pp[i] = np;
+                //TODO: assert pp[i] not equal np, or else we'll never finish.
+                return new CompositePosition(pp);
+            }
+        }
+        //if we're here, we don't have any updates.
+        return pos;
     }
 
     @Override

@@ -78,13 +78,23 @@ public class CompositePosition implements Position {
         return false;
     }
     
-    private int dimension() {
+    public int dimension() {
         int d = 0;
         for (Position p : positions){
             d += p.getClock().values().length;
         }
         return d;
     }
+    
+    public Position getPosition(int index) {
+        //TODO: validate index < dimension
+        return positions[index];
+    }
+    
+    public Position[] getPositions() {
+        return positions;
+    }
+    
     @Override
     public Clock getClock() {
         long[] values = new long[dimension()];
