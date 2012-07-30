@@ -41,7 +41,7 @@ import krati.util.IndexedIterator;
  * 02/08, 2012 - Update the clock of position upon finishing bootstrap <br/>
  * 02/22, 2012 - Update the initial index start for Clock.ZERO <br/>
  */
-public class SimpleRetentionStoreReader<K, V> extends RetentionStoreReader<K, V> {
+public class SimpleRetentionStoreReader<K, V> extends AbstractRetentionStoreReader<K, V> {
     private final static Logger _logger = Logger.getLogger(SimpleRetentionStoreReader.class);
     private final String _source;
     private final Retention<K> _retention;

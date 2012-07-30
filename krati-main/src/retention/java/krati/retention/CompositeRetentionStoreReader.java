@@ -10,7 +10,7 @@ import java.util.Set;
 
 import krati.retention.clock.Clock;
 
-public class CompositeRetentionStoreReader<K, V> extends RetentionStoreReader<K, Map<String, V>> {
+public class CompositeRetentionStoreReader<K, V> extends AbstractRetentionStoreReader<K, Map<String, V>> {
     private final ArrayList<RetentionStoreReader<K, V>> stores;
 
     public CompositeRetentionStoreReader(List<RetentionStoreReader<K, V>> stores) {
