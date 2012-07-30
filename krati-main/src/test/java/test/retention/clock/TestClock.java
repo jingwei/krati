@@ -35,6 +35,14 @@ import krati.retention.clock.Occurred;
  */
 public class TestClock extends TestCase {
     
+    public void testEquals() {
+        Clock c1 = new Clock(2, 12, 5);
+        Clock c2 = new Clock(2, 12, 5);
+        Clock c3 = new Clock(2, 12, 5, 0);
+        assertEquals(c1, c2);
+        assertFalse(c1.equals(c3));
+    }
+    
     public void testApiBasics() {
         RandomClockFactory f = new RandomClockFactory(3);
         

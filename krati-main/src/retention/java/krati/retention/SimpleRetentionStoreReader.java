@@ -41,7 +41,7 @@ import krati.util.IndexedIterator;
  * 02/08, 2012 - Update the clock of position upon finishing bootstrap <br/>
  * 02/22, 2012 - Update the initial index start for Clock.ZERO <br/>
  */
-public class SimpleRetentionStoreReader<K, V> implements RetentionStoreReader<K, V> {
+public class SimpleRetentionStoreReader<K, V> extends AbstractRetentionStoreReader<K, V> {
     private final static Logger _logger = Logger.getLogger(SimpleRetentionStoreReader.class);
     private final String _source;
     private final Retention<K> _retention;
@@ -88,26 +88,6 @@ public class SimpleRetentionStoreReader<K, V> implements RetentionStoreReader<K,
     @Override
     public V get(K key) throws Exception {
         return key == null ? null : _store.get(key);
-    }
-    
-    @Override
-    public Position get(Position pos, Map<K, Event<V>> map) {
-        ArrayList<Event<K>> list = new ArrayList<Event<K>>(1000);
-        Position nextPos = get(pos, list);
-        
-        for(Event<K> evt : list) {
-            K key = evt.getValue();
-            if(key != null) {
-                try {
-                    V value = _store.get(key);
-                    map.put(key, new SimpleEvent<V>(value, evt.getClock()));
-                } catch(Exception e) {
-                    _logger.warn(e.getMessage());
-                }
-            }
-        }
-        
-        return nextPos;
     }
     
     @Override
