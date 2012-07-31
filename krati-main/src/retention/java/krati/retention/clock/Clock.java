@@ -18,6 +18,7 @@ package krati.retention.clock;
 
 import java.io.Serializable;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 /**
  * Clock - A vector clock of long values.
@@ -32,6 +33,19 @@ import java.nio.ByteBuffer;
 public final class Clock implements Serializable {
     private final static long serialVersionUID = 1L;
     private final long[] _values;
+    
+    @Override
+    public boolean equals(Object o) {
+        if (null == o) return false;
+        if (o.getClass() != this.getClass()) return false;
+        Clock c = (Clock) o;
+        return Arrays.equals(this._values, c._values);
+    }
+    
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(_values);
+    }
     
     /**
      * The smallest Clock.

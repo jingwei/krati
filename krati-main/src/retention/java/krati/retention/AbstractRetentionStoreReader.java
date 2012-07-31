@@ -16,28 +16,22 @@
 
 package krati.retention;
 
+import java.util.ArrayList;
 import java.util.Map;
+
+import org.apache.log4j.Logger;
 
 import krati.store.StoreReader;
 
 /**
- * RetentionStoreReader
- * 
- * @param <K> Key
- * @param <V> Value
- * @version 0.4.2
- * @author jwu
- * 
- * <p>
- * 08/23, 2011 - Created <br/>
- * 09/21, 2011 - Added interface StoreReader <br/>
+ * Provides a trivial implementation of get(pos, map), that uses get(pos, list) and get
+ * @author spike(alperez)
+ *
+ * @param <K>
+ * @param <V>
  */
-public interface RetentionStoreReader<K, V> extends RetentionClient<K>, StoreReader<K, V> {
-    
-    /**
-     * @return the data source of this RetentionStoreReader.
-     */
-    public String getSource();
+public abstract class AbstractRetentionStoreReader<K, V> implements RetentionStoreReader<K, V> {
+    private final static Logger logger = Logger.getLogger(AbstractRetentionStoreReader.class);
     
     /**
      * Gets a number of value events starting from a give position in the Retention.
@@ -48,5 +42,22 @@ public interface RetentionStoreReader<K, V> extends RetentionClient<K>, StoreRea
      * @param map - the result map (keys to value events) to fill in 
      * @return the next position from where new events will be read.
      */
-    public Position get(Position pos, Map<K, Event<V>> map);
+    public Position get(Position pos, Map<K, Event<V>> map) {
+        ArrayList<Event<K>> list = new ArrayList<Event<K>>(1000);
+        Position nextPos = get(pos, list);
+        
+        for(Event<K> evt : list) {
+            K key = evt.getValue();
+            if(key != null) {
+                try {
+                    V value = get(key);
+                    map.put(key, new SimpleEvent<V>(value, evt.getClock()));
+                } catch(Exception e) {
+                    logger.warn(e.getMessage());
+                }
+            }
+        }
+        
+        return nextPos;
+    }
 }
