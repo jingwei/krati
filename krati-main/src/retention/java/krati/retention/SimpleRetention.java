@@ -749,4 +749,10 @@ public class SimpleRetention<T> implements Retention<T> {
         
         return false;
     }
+
+    @Override
+    public int getClockDimension() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
 }

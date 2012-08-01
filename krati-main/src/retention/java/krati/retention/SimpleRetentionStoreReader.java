@@ -16,9 +16,7 @@
 
 package krati.retention;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -179,5 +177,10 @@ public class SimpleRetentionStoreReader<K, V> extends AbstractRetentionStoreRead
      */
     protected int getStoreIndexStart() {
         return _store.keyIterator().index();
+    }
+
+    @Override
+    public int getClockDimension() {
+        return _retention.getClockDimension();
     }
 }

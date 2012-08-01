@@ -24,11 +24,21 @@ import krati.retention.CompositePosition;
 import krati.retention.Position;
 
 public class TestCompositePosition extends TestCase {
+    public void testClassInvariant() {
+        Position p1 = new SimplePosition(10, 5, -1, new Clock(11,17,23));
+        Position p2 = new SimplePosition(2, 4, 1000, new Clock(8,10,12));
+        try {
+            new CompositePosition(p1, p2);
+            assertTrue(false);
+        } catch (IllegalArgumentException e) {
+            assertTrue(true);
+        }
+    }
     
     public void testEquals() {
-        Position p1 = new SimplePosition(10, 5, 3, new Clock(11,17,23));
-        Position p2 = new SimplePosition(2, 4, 6, new Clock(8,10,12));
-        Position p3 = new SimplePosition(2, 4, 6, new Clock(8,10,12));
+        Position p1 = new SimplePosition(10, 5, -1, new Clock(11,17,23));
+        Position p2 = new SimplePosition(2, 4, -1, new Clock(8,10,12));
+        Position p3 = new SimplePosition(2, 4, -1, new Clock(8,10,12));
         CompositePosition c1 = new CompositePosition(p1, p2);
         CompositePosition c2 = new CompositePosition(p1, p3);
         CompositePosition c3 = new CompositePosition(p2, p3);
@@ -37,8 +47,8 @@ public class TestCompositePosition extends TestCase {
         
     }
     public void testStringSerialization() {
-        Position p1 = new SimplePosition(10, 5, 3, new Clock(11,17,23));
-        Position p2 = new SimplePosition(2, 4, 6, new Clock(8,10,12));
+        Position p1 = new SimplePosition(10, 5, -1, new Clock(11,17,23));
+        Position p2 = new SimplePosition(2, 4, -1, new Clock(8,10,12));
         CompositePosition cp = new CompositePosition(p1, p2);
         String foo = cp.toString();
         CompositePosition cp2 = CompositePosition.parsePosition(foo);

@@ -17,17 +17,20 @@
 package krati.retention;
 
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkArgument;
 import krati.retention.clock.Clock;
 
 /**
- * 
+ * A Position composed of a list of individual positions.
+ * @see CompositeRetentionStoreReader
+ * Class invariant: of the internal positions, only the first one can be indexed.
  * @author spike(alperez)
  *
  */
-public class CompositePosition implements Position {
+public final class CompositePosition implements Position {
     private static final long serialVersionUID = 1L;
     private final Position[] positions;
     
@@ -39,19 +42,33 @@ public class CompositePosition implements Position {
         return Arrays.equals(this.positions, p.positions);
     }
     
+    /**
+     * Checks that no internal position, except maybe the first one are indexed.
+     * @return
+     */
+    private boolean checkClassInvariant() {
+        for (int i = 1; i < positions.length; i++) {
+            if (positions[i].isIndexed())
+                return false;
+        }
+        return true;
+    }
+    
     @Override
     public int hashCode() {
-        return positions.hashCode();
+        return Arrays.hashCode(positions);
     }
     
     public CompositePosition(Position... positions) {
-        //TODO: verify size > 0
+        checkArgument(positions.length > 0);
         this.positions = positions;
+        checkArgument(checkClassInvariant());
     }
     
     public CompositePosition(List<Position> positions) {
-        //TODO: verify size > 0
-        this.positions = (Position []) positions.toArray();
+        checkArgument(positions.size() > 0);
+        this.positions = positions.toArray(new Position[0]);
+        checkArgument(checkClassInvariant());
     }
     
     @Override
@@ -71,11 +88,8 @@ public class CompositePosition implements Position {
     
     @Override
     public boolean isIndexed() {
-        //O solo el primero.
-        for (Position p : positions) {
-            if (p.isIndexed()) return true;
-        }
-        return false;
+        //Given the class invariant, this is equivalent to check all of them.
+        return positions[0].isIndexed();
     }
     
     public int dimension() {
@@ -87,14 +101,25 @@ public class CompositePosition implements Position {
     }
     
     public Position getPosition(int index) {
-        //TODO: validate index < dimension
+        checkArgument(index > 0 && index < positions.length);
         return positions[index];
     }
     
+    /**
+     * This method returns the component positions.
+     * It's equal to the list/array that was used for construction.
+     * Returns a copy, so modifications to the returned array won't change
+     * this instance of Position.
+     */
     public Position[] getPositions() {
-        return positions;
+        return positions.clone();
     }
     
+    /**
+     * Returns a Clock, composed of all the clocks of the underlying Positions.
+     * For example, if this CompositePositions contains 2 positions that return clocks
+     * (2:43) and (1:3:1), this method will return a Clock equal to (2:43:1:3:1) 
+     */
     @Override
     public Clock getClock() {
         long[] values = new long[dimension()];
@@ -121,7 +146,12 @@ public class CompositePosition implements Position {
         return b.toString();
     }
     
+    /**
+     * Parses the output of toString into a new CompositePosition instance.
+     * The behavior is undefined if string is of a different format.
+     */
     public static CompositePosition parsePosition(String s) {
+        checkNotNull(s);
         String[] parts = s.split("\\|");
         SimplePosition[] positions = new SimplePosition[parts.length];
         for (int i = 0; i < positions.length; i++) {

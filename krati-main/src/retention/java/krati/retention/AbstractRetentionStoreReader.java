@@ -42,7 +42,7 @@ public abstract class AbstractRetentionStoreReader<K, V> implements RetentionSto
      * @param map - the result map (keys to value events) to fill in 
      * @return the next position from where new events will be read.
      */
-    public Position get(Position pos, Map<K, Event<V>> map) {
+    public final Position get(Position pos, Map<K, Event<V>> map) {
         ArrayList<Event<K>> list = new ArrayList<Event<K>>(1000);
         Position nextPos = get(pos, list);
         

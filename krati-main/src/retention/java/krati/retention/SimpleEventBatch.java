@@ -20,6 +20,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkArgument;
+
 import krati.retention.clock.Clock;
 import krati.retention.clock.Occurred;
 
@@ -36,6 +39,7 @@ import krati.retention.clock.Occurred;
 public final class SimpleEventBatch<T> implements EventBatch<T>, Cloneable {
     private static final long serialVersionUID = 1L;
     private final long _origin;
+    private final int clockDimension;
     private final int _capacity;
     private volatile Clock _minClock;
     private volatile Clock _maxClock;
@@ -47,10 +51,14 @@ public final class SimpleEventBatch<T> implements EventBatch<T>, Cloneable {
         this(origin, initClock, EventBatch.DEFAULT_BATCH_SIZE);
     }
     
+    
     public SimpleEventBatch(long origin, Clock initClock, int capacity) {
+        checkArgument(capacity > 0);
+        checkArgument(!initClock.equals(Clock.ZERO));
         this._origin = origin;
         this._minClock = initClock;
         this._maxClock = initClock;
+        this.clockDimension = initClock.dimension();
         this._capacity = Math.max(EventBatch.MINIMUM_BATCH_SIZE, capacity);
         this._events = new ArrayList<Event<T>>(this._capacity);
         this._creationTime = System.currentTimeMillis();
@@ -224,5 +232,11 @@ public final class SimpleEventBatch<T> implements EventBatch<T>, Cloneable {
         batch._creationTime = _creationTime;
         batch._completionTime = _completionTime;
         return batch;
+    }
+
+
+    @Override
+    public int getClockDimension() {
+        return clockDimension;
     }
 }

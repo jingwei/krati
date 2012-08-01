@@ -58,4 +58,14 @@ public interface RetentionClient<T> {
      */
     public Position get(Position pos, List<Event<T>> list);
     
+    /**
+     * Although the clock class is generic in the number of values, only clocks with exactly
+     * the same number of values (aka clock dimension) are (trivially) comparable. Hence
+     * a RetentionClient can only deal with clocks of a particular and predefined dimension.
+     * 
+     * @return dimension of the clocks this RetentionClient accepts and returns.
+     */
+    public abstract int getClockDimension();
+    
+    
 }

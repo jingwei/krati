@@ -35,6 +35,16 @@ import krati.retention.clock.Occurred;
  */
 public class TestClock extends TestCase {
     
+    public void testDimensionZeroClock() {
+        assertEquals(Clock.ZERO.dimension(), 0);
+    }
+    
+    public void testDimension() {
+        Clock c1 = new Clock(1L);
+        Clock c3 = new Clock(1L, 0L, 5L);
+        assertEquals(c1.dimension(), 1);
+        assertEquals(c3.dimension(), 3);
+    }
     public void testEquals() {
         Clock c1 = new Clock(2, 12, 5);
         Clock c2 = new Clock(2, 12, 5);

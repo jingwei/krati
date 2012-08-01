@@ -53,6 +53,15 @@ public final class Clock implements Serializable {
     public static final Clock ZERO = new Clock();
     
     /**
+     * Returns the number of internal values.
+     * Corresponds with the number of parameters passed on the constructor.
+     * The ZERO clock will return 0;
+     */
+    public int dimension() {
+        return _values.length;
+    }
+    
+    /**
      * Constructs a new instance of Clock.
      * 
      * @param values - a long array representing this Clock.

@@ -39,7 +39,7 @@ public interface RetentionStoreReader<K, V> extends RetentionClient<K>, StoreRea
     /**
      * @return the data source of this RetentionStoreReader.
      */
-    public abstract String getSource();
+    public String getSource();
     
     /**
      * Convenience method. Composition of get(Position, List<Event>) and get.
