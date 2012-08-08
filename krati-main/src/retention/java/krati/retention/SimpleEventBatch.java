@@ -54,7 +54,7 @@ public final class SimpleEventBatch<T> implements EventBatch<T>, Cloneable {
     
     public SimpleEventBatch(long origin, Clock initClock, int capacity) {
         checkArgument(capacity > 0);
-        checkArgument(!initClock.equals(Clock.ZERO));
+        //checkArgument(!initClock.equals(Clock.ZERO));
         this._origin = origin;
         this._minClock = initClock;
         this._maxClock = initClock;

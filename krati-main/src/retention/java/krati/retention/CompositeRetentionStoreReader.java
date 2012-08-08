@@ -72,7 +72,7 @@ AbstractRetentionStoreReader<K, Map<String, V>> {
         ArrayList<Position> pos = new ArrayList<Position>(stores.size());
         int index = 0;
         boolean rewrite = false;
-        if (sinceClock.dimension() == 0) {
+        if (sinceClock.equals(Clock.ZERO)) {
             rewrite = true;
         } else {
             for (RetentionStoreReader<K, V> store : stores) {
