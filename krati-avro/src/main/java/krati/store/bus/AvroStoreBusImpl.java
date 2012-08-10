@@ -92,4 +92,9 @@ public class AvroStoreBusImpl<K> implements AvroStoreBus<K> {
     public Position get(Position pos, List<Event<K>> list) {
         return _reader.get(pos, list);
     }
+
+    @Override
+    public int getClockDimension() {
+      return _retention.getClockDimension();
+    }
 }

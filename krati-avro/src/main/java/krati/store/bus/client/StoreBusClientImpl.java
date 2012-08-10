@@ -30,6 +30,10 @@ import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.util.Utf8;
 
+import com.google.common.base.Preconditions;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import krati.io.Serializer;
 import krati.retention.Event;
 import krati.retention.Position;
@@ -81,9 +85,7 @@ public class StoreBusClientImpl<K, V> extends BaseClient<K, V> implements StoreB
     
     @Override
     public Position getPosition(Clock clock) {
-        if(clock == null) {
-            throw new NullPointerException("clock");
-        }
+        checkNotNull(clock);
         
         Schema schema = _protocol.getMessages().get(ProtocolConstants.MSG_META).getRequest();
         GenericRecord req = new GenericData.Record(schema);
@@ -108,9 +110,7 @@ public class StoreBusClientImpl<K, V> extends BaseClient<K, V> implements StoreB
     
     @Override
     public V get(K key) throws Exception {
-        if(key == null) {
-            throw new NullPointerException("key");
-        }
+        checkNotNull(key);
         
         Schema schema = _protocol.getMessages().get(ProtocolConstants.MSG_GET).getRequest();
         GenericRecord req = new GenericData.Record(schema);
@@ -123,9 +123,7 @@ public class StoreBusClientImpl<K, V> extends BaseClient<K, V> implements StoreB
     
     @Override @SuppressWarnings("unchecked")
     public Map<K, V> get(Collection<K> keys) throws Exception {
-        if(keys == null) {
-            throw new NullPointerException("keys");
-        }
+        checkNotNull(keys);
         if(keys.size() == 0) {
             return new HashMap<K, V>();
         }
@@ -161,12 +159,8 @@ public class StoreBusClientImpl<K, V> extends BaseClient<K, V> implements StoreB
     
     @Override
     public Position get(Position position, Map<K, Event<V>> map) {
-        if(position == null) {
-            throw new NullPointerException("position");
-        }
-        if(map == null) {
-            throw new NullPointerException("map");
-        }
+        checkNotNull(position);
+        checkNotNull(map);
         
         Schema schema = _protocol.getMessages().get(ProtocolConstants.MSG_SYNC).getRequest();
         GenericRecord req = new GenericData.Record(schema);
@@ -196,12 +190,8 @@ public class StoreBusClientImpl<K, V> extends BaseClient<K, V> implements StoreB
     
     @Override
     public Position get(Position position, List<Event<K>> list) {
-        if(position == null) {
-            throw new NullPointerException("position");
-        }
-        if(list == null) {
-            throw new NullPointerException("list");
-        }
+        checkNotNull(position);
+        checkNotNull(list);
         
         Schema schema = _protocol.getMessages().get(ProtocolConstants.MSG_SYNC).getRequest();
         GenericRecord req = new GenericData.Record(schema);
@@ -230,12 +220,8 @@ public class StoreBusClientImpl<K, V> extends BaseClient<K, V> implements StoreB
 
     @Override
     public Position syncUp(Position position, Map<K, V> map) {
-        if(position == null) {
-            throw new NullPointerException("position");
-        }
-        if(map == null) {
-            throw new NullPointerException("map");
-        }
+        checkNotNull(position);
+        checkNotNull(map);
         
         Schema schema = _protocol.getMessages().get(ProtocolConstants.MSG_SYNC).getRequest();
         GenericRecord req = new GenericData.Record(schema);
@@ -264,12 +250,8 @@ public class StoreBusClientImpl<K, V> extends BaseClient<K, V> implements StoreB
 
     @Override
     public Position syncUp(Position position, List<K> list) {
-        if(position == null) {
-            throw new NullPointerException("position");
-        }
-        if(list == null) {
-            throw new NullPointerException("list");
-        }
+        checkNotNull(position);
+        checkNotNull(list);
         
         Schema schema = _protocol.getMessages().get(ProtocolConstants.MSG_SYNC).getRequest();
         GenericRecord req = new GenericData.Record(schema);
@@ -297,9 +279,7 @@ public class StoreBusClientImpl<K, V> extends BaseClient<K, V> implements StoreB
     
     @Override
     public String getProperty(String key) throws Exception {
-        if(key == null) {
-            throw new NullPointerException("key");
-        }
+        checkNotNull(key);
         
         Schema schema = _protocol.getMessages().get(ProtocolConstants.MSG_META).getRequest();
         GenericRecord req = new GenericData.Record(schema);
@@ -314,9 +294,7 @@ public class StoreBusClientImpl<K, V> extends BaseClient<K, V> implements StoreB
     
     @Override
     public String setProperty(String key, String value) throws Exception {
-        if(key == null) {
-            throw new NullPointerException("key");
-        }
+        checkNotNull(key);
         
         Schema schema = _protocol.getMessages().get(ProtocolConstants.MSG_META).getRequest();
         GenericRecord req = new GenericData.Record(schema);
@@ -333,5 +311,10 @@ public class StoreBusClientImpl<K, V> extends BaseClient<K, V> implements StoreB
         
         Utf8 res = (Utf8)send(ProtocolConstants.MSG_META, req);
         return res == null ? null : res.toString();
+    }
+
+    @Override
+    public int getClockDimension() {
+        throw new UnsupportedOperationException();
     }
 }
