@@ -94,7 +94,7 @@ AbstractRetentionStoreReader<K, Map<String, V>> {
             pos = new ArrayList<Position>(stores.size());
             pos.add(stores.get(0).getPosition(Clock.ZERO)); // bootstrap from
             // the first store
-            for (index = 0; index < stores.size(); index++) {
+            for (index = 1; index < stores.size(); index++) {
                 pos.add(stores.get(index).getPosition());// current position all
                 // the rest
             }
