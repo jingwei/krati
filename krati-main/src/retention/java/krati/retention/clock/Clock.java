@@ -34,19 +34,6 @@ public final class Clock implements Serializable {
     private final static long serialVersionUID = 1L;
     private final long[] _values;
     
-    @Override
-    public boolean equals(Object o) {
-        if (null == o) return false;
-        if (o.getClass() != this.getClass()) return false;
-        Clock c = (Clock) o;
-        return Arrays.equals(this._values, c._values);
-    }
-    
-    @Override
-    public int hashCode() {
-        return Arrays.hashCode(_values);
-    }
-    
     /**
      * The smallest Clock.
      */
@@ -225,5 +212,18 @@ public final class Clock implements Serializable {
     public boolean afterEqual(Clock c) {
         Occurred o = compareTo(c);
         return o == Occurred.AFTER || o == Occurred.EQUICONCURRENTLY; 
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (null == o) return false;
+        if (o.getClass() != this.getClass()) return false;
+        Clock c = (Clock) o;
+        return Arrays.equals(this._values, c._values);
+    }
+    
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(_values);
     }
 }

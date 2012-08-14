@@ -34,26 +34,6 @@ public class SimplePosition implements Position {
     private int _index = -1;
     private Clock _clock;
     
-    @Override
-    public boolean equals(Object o) {
-        if (null == o) return false;
-        if (o.getClass() != this.getClass()) return false;
-        SimplePosition p = (SimplePosition) o;
-        return p._id == this._id
-            && p._offset == this._offset
-            && p._index == this._index
-            && p._clock.equals(this._clock);
-    }
-    
-    @Override
-    public int hashCode() {
-        int hash = 5;
-        hash = 97 * hash + _id;
-        hash = 97 * hash + (int)_offset;
-        hash = 97 * hash + _index;
-        hash = 97 * hash + _clock.hashCode();
-        return hash; 
-    }
     /**
      * Creates a SimplePosition for real-time update.
      * 
@@ -113,6 +93,27 @@ public class SimplePosition implements Position {
          .append(_index).append(':')
          .append(_clock);
         return b.toString();
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (null == o) return false;
+        if (o.getClass() != this.getClass()) return false;
+        SimplePosition p = (SimplePosition) o;
+        return p._id == this._id
+            && p._offset == this._offset
+            && p._index == this._index
+            && p._clock.equals(this._clock);
+    }
+    
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 97 * hash + _id;
+        hash = 97 * hash + (int)_offset;
+        hash = 97 * hash + _index;
+        hash = 97 * hash + _clock.hashCode();
+        return hash; 
     }
     
     /**

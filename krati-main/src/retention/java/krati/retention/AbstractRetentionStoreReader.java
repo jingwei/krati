@@ -21,8 +21,6 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import krati.store.StoreReader;
-
 /**
  * Provides a trivial implementation of get(pos, map), that uses get(pos, list) and get
  * @author spike(alperez)
