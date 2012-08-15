@@ -85,7 +85,7 @@ public final class Clock implements Serializable {
      * <code>Clock.ZERO</code> is returned <code>upon</code> null or zero-length string.  
      */
     public static Clock parseClock(String str) {
-        if(str == null || str.length() == 0) {
+        if(str == null || str.length() == 0 || str.trim().equals("ZERO")) {
             return Clock.ZERO;
         }
         
@@ -125,14 +125,18 @@ public final class Clock implements Serializable {
      */
     @Override
     public String toString() {
-        StringBuilder b = new StringBuilder();
-        if(_values != null && 1 <= _values.length) {
-            b.append(_values[0]);
-            for(int i = 1; i < _values.length; i++) {
-                b.append(':').append(_values[i]);
+        if (this.equals(ZERO)) {
+            return "ZERO";
+        } else {
+            StringBuilder b = new StringBuilder();
+            if(_values != null && 1 <= _values.length) {
+                b.append(_values[0]);
+                for(int i = 1; i < _values.length; i++) {
+                    b.append(':').append(_values[i]);
+                }
             }
+            return b.toString();
         }
-        return b.toString();
     }
     
     /**

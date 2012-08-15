@@ -26,13 +26,15 @@ import krati.retention.clock.Clock;
 /**
  * A Position composed of a list of individual positions.
  * @see CompositeRetentionStoreReader
- * Class invariant: of the internal positions, only the first one can be indexed.
+ * Class invariant: of the internal positions, only the first one can be indexed. Also, dimension is equal
+ * to the sum of all individual clocks, except when the first clock is zero.
  * @author spike(alperez)
  *
  */
 public final class CompositePosition implements Position {
     private static final long serialVersionUID = 1L;
     private final Position[] positions;
+    private final int dimension;
     
     @Override
     public boolean equals(Object o) {
@@ -51,7 +53,15 @@ public final class CompositePosition implements Position {
             if (positions[i].isIndexed())
                 return false;
         }
-        return true;
+        int count = 0;
+        for (Position p : positions) {
+            count += p.getClock().dimension();
+        }
+        if (positions[0].getClock().equals(Clock.ZERO)) {
+            return (dimension > count);
+        } else {
+            return (dimension == count);
+        }
     }
     
     @Override
@@ -59,15 +69,19 @@ public final class CompositePosition implements Position {
         return Arrays.hashCode(positions);
     }
     
-    public CompositePosition(Position... positions) {
+    public CompositePosition(int dimension, Position... positions) {
         checkArgument(positions.length > 0);
+        checkArgument(dimension > 0);
+        this.dimension = dimension;
         this.positions = positions;
         checkArgument(checkClassInvariant());
     }
     
-    public CompositePosition(List<Position> positions) {
+    public CompositePosition(int dimension, List<Position> positions) {
         checkArgument(positions.size() > 0);
+        checkArgument(dimension > 0);
         this.positions = positions.toArray(new Position[0]);
+        this.dimension = dimension;
         checkArgument(checkClassInvariant());
     }
     
@@ -93,11 +107,7 @@ public final class CompositePosition implements Position {
     }
     
     public int dimension() {
-        int d = 0;
-        for (Position p : positions){
-            d += p.getClock().values().length;
-        }
-        return d;
+        return dimension;
     }
     
     public Position getPosition(int index) {
@@ -136,6 +146,7 @@ public final class CompositePosition implements Position {
     @Override
     public final String toString() {
         StringBuilder b = new StringBuilder();
+        b.append("dimension= ").append(dimension).append(" | ");
         for (int i=0; i < positions.length; i++) {
             b.append("id= ").append(positions[i].getId())
             .append(", offset= ").append(positions[i].getOffset())
@@ -153,8 +164,9 @@ public final class CompositePosition implements Position {
     public static CompositePosition parsePosition(String s) {
         checkNotNull(s);
         String[] parts = s.split("\\|");
+        int dimension = Integer.parseInt(parts[0].split("=")[1].trim());
         SimplePosition[] positions = new SimplePosition[parts.length];
-        for (int i = 0; i < positions.length; i++) {
+        for (int i = 1; i < positions.length; i++) {
             String[] fields = parts[i].split("=|,");
             String[] clockParts = fields[7].split(":");
             long[] clockNumbers = new long[clockParts.length];
@@ -164,6 +176,6 @@ public final class CompositePosition implements Position {
             Clock clock = new Clock(clockNumbers);
             positions[i] = new SimplePosition(Integer.parseInt(fields[1].trim()), Long.parseLong(fields[3].trim()), Integer.parseInt(fields[5].trim()), clock);
         }
-        return new CompositePosition(positions);
+        return new CompositePosition(dimension, positions);
     }
 }

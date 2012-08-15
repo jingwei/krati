@@ -33,6 +33,9 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.log4j.Logger;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import krati.core.StoreConfig;
 import krati.core.segment.SegmentFactory;
 import krati.core.segment.WriteBufferSegmentFactory;
@@ -68,7 +71,7 @@ public class SimpleRetention<T> implements Retention<T> {
     private final RetentionPolicy _retentionPolicy;
     private final RetentionPolicyApply _retentionPolicyApply = new RetentionPolicyApply(); 
     private final ScheduledExecutorService _retentionPolicyExecutor = Executors.newSingleThreadScheduledExecutor(new DaemonThreadFactory());
-    
+    private final int clockSize;
     /**
      * The current batch, to which new events will be added.
      */
@@ -111,7 +114,8 @@ public class SimpleRetention<T> implements Retention<T> {
              config.getBatchSize(),
              config.getNumSyncBatchs(),
              config.getRetentionSegmentFactory(),
-             config.getRetentionSegmentFileSizeMB());
+             config.getRetentionSegmentFileSizeMB(),
+             config.getClockSize());
     }
     
     /**
@@ -131,10 +135,10 @@ public class SimpleRetention<T> implements Retention<T> {
      */
     public SimpleRetention(int id, File homeDir,
                            RetentionPolicy retentionPolicy,
-                           EventBatchSerializer<T> batchSerializer, int batchSize) throws Exception {
+                           EventBatchSerializer<T> batchSerializer, int batchSize, int clockSize) throws Exception {
         this(id, homeDir, 100000,
              retentionPolicy, batchSerializer, batchSize,
-             new WriteBufferSegmentFactory(), 32 /* storeSegmentFileSizeMB */);
+             new WriteBufferSegmentFactory(), 32 /* storeSegmentFileSizeMB */, clockSize);
     }
     
     /**
@@ -157,11 +161,11 @@ public class SimpleRetention<T> implements Retention<T> {
                            File homeDir, int initialSize,
                            RetentionPolicy retentionPolicy,
                            EventBatchSerializer<T> batchSerializer, int batchSize,
-                           SegmentFactory segmentFactory, int segmentFileSizeMB) throws Exception {
+                           SegmentFactory segmentFactory, int segmentFileSizeMB, int clockSize) throws Exception {
         this(id, homeDir, initialSize,
              retentionPolicy, batchSerializer,
              batchSize, 10 /* numSyncBatches */,
-             segmentFactory, segmentFileSizeMB);
+             segmentFactory, segmentFileSizeMB, clockSize);
     }
     
     /**
@@ -183,12 +187,14 @@ public class SimpleRetention<T> implements Retention<T> {
                               RetentionPolicy retentionPolicy,
                               EventBatchSerializer<T> batchSerializer,
                               int batchSize, int numSyncBatches,
-                              SegmentFactory segmentFactory, int segmentFileSizeMB) throws Exception {
+                              SegmentFactory segmentFactory, int segmentFileSizeMB, int clockSize) throws Exception {
+        checkArgument(clockSize > 0);
         this._id = id;
         this._homeDir = homeDir;
         this._retentionPolicy = retentionPolicy;
         this._eventBatchSerializer = batchSerializer;
         this._eventBatchSize = Math.max(EventBatch.MINIMUM_BATCH_SIZE, batchSize);
+        this.clockSize = clockSize;
         
         StoreConfig config = new StoreConfig(homeDir, initialSize);
         /********************************************************
@@ -256,6 +262,7 @@ public class SimpleRetention<T> implements Retention<T> {
     }
     
     protected EventBatch<T> nextEventBatch(long offset, Clock initClock) {
+        checkArgument(initClock.equals(Clock.ZERO) || initClock.dimension() == clockSize);
         EventBatch<T> b = new SimpleEventBatch<T>(offset, initClock, _eventBatchSize);
         _logger.info("Created EventBatch: " + b.getOrigin());
         return b;
@@ -393,6 +400,7 @@ public class SimpleRetention<T> implements Retention<T> {
     
     @Override
     public Position getPosition(Clock sinceClock) {
+        checkArgument(sinceClock.equals(Clock.ZERO) || sinceClock.dimension() == clockSize);
         long sinceOffset;
         
         Occurred occ = sinceClock.compareTo(getMinClock());
@@ -491,6 +499,7 @@ public class SimpleRetention<T> implements Retention<T> {
      */
     @Override
     public Position get(Position pos, List<Event<T>> list) {
+        checkArgument(pos.getClock().equals(Clock.ZERO) || pos.getClock().dimension() == clockSize);
         EventBatch<T> b;
         
         // Return null if the position is out of retention or in the indexed form.
@@ -547,6 +556,8 @@ public class SimpleRetention<T> implements Retention<T> {
     
     @Override
     public synchronized boolean put(Event<T> event) throws Exception {
+        checkNotNull(event);
+        checkArgument(event.getClock().dimension() == clockSize);
         if(_batch.isFull()) {
             _batch.setCompletionTime(System.currentTimeMillis());
             byte[] bytes = _eventBatchSerializer.serialize(_batch);
@@ -752,7 +763,6 @@ public class SimpleRetention<T> implements Retention<T> {
 
     @Override
     public int getClockDimension() {
-        // TODO Auto-generated method stub
-        return 0;
+        return clockSize;
     }
 }

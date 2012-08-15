@@ -62,7 +62,7 @@ AbstractRetentionStoreReader<K, Map<String, V>> {
         for (RetentionStoreReader<K, V> store : stores) {
             pos.add(store.getPosition());
         }
-        return new CompositePosition(pos);
+        return new CompositePosition(getClockDimension(), pos);
     }
 
     @Override
@@ -99,7 +99,7 @@ AbstractRetentionStoreReader<K, Map<String, V>> {
                 // the rest
             }
         }
-        return new CompositePosition(pos);
+        return new CompositePosition(getClockDimension(), pos);
     }
 
     @Override
@@ -116,7 +116,7 @@ AbstractRetentionStoreReader<K, Map<String, V>> {
                 list.addAll(tList);
                 pp[i] = np;
                 // TODO: assert pp[i] not equal np, or else we'll never finish.
-                return new CompositePosition(pp);
+                return new CompositePosition(getClockDimension(), pp);
             }
         }
         // if we're here, we don't have any updates.
