@@ -335,7 +335,7 @@ public class TestCompositeRetentionStoreReader<K,V> extends TestCase {
   }
   
   protected Retention<String> createRetention(int id) throws Exception {
-    RetentionConfig<String> config = new RetentionConfig<String>(id, getHomeDir());
+    RetentionConfig<String> config = new RetentionConfig<String>(id, new File(getHomeDir().getAbsolutePath()+"/retention"+id));
     config.setBatchSize(getEventBatchSize());
     config.setRetentionPolicy(createRetentionPolicy());
     config.setEventValueSerializer(createEventValueSerializer());
