@@ -51,9 +51,9 @@ public class LargeStore implements Closeable {
      * Constructs a new instance of LargeStore.
      * 
      * @param homeDir         - the home directory of LargeStore.
-     * @param initialCapacity - the initial capacity of LargeStore, which is expected to be 32 times smaller than the expected number of keys.
+     * @param initialCapacity - the initial capacity of LargeStore, which is expected to be 16 to 32 times smaller than the expected number of keys.
      * <ul>
-     * <li> This value should be significantly (e.g., 32 times) smaller than expected number of keys. </li>
+     * <li> This value should be significantly (e.g., 16 to 32 times) smaller than the expected number of keys. </li>
      * <li> This value should NOT be modified once the underlying store is created. </li>
      * </ul>
      * @throws Exception if a LargeStore instance can not be created.
@@ -77,7 +77,7 @@ public class LargeStore implements Closeable {
         StoreConfig config = new StoreConfig(homeDir, initialCapacity);
         
         config.setBatchSize(10000);
-        config.setNumSyncBatches(10);
+        config.setNumSyncBatches(100);
         
         // Configure store segments
         config.setSegmentFactory(new WriteBufferSegmentFactory());
@@ -164,23 +164,22 @@ public class LargeStore implements Closeable {
      * java -server -Xms12G -Xmx12G -XX:+UseConcMarkSweepGC krati.examples.LargeStore homeDir initialCapacity
      * 
      * <p>
-     * The Java JVM size can be calculated based the expected number of keys, N, using the following equation:
+     * The Java JVM size can be calculated based the expected number of keys, <code>N</code>, using the following equation:
      * <pre>
-     *   N * 2 * (keySize + 20) / 1024 / 1024 / 1024 plus 4G
+     *   N * (2 * keySize + 32) / 1024 / 1024 / 1024 plus 4
      * </pre>
      * 
      * <p>
      * For example, given that the expected number of keys is 200,000,000 and the size of keys is 10 bytes,
      * the required Java JVM size is approximately
      * <pre>
-     *   200000000 * 2 * 30 / 1024 / 1024 / 1024 + 4 = 16G
+     *   200000000 * (2 * 10 + 32) / 1024 / 1024 / 1024 + 4 = 14G
      * </pre>
      * 
      * <p>
-     * The <code>initialCapacity</code> can be calculated using the following.
-     * 
+     * The <code>initialCapacity</code> can be calculated using the following:
      * <pre>
-     *   initialCapacity = N / 32
+     *   N/32 or N/16
      * </pre>
      */
     public static void main(String[] args) {
