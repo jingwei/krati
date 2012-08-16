@@ -20,6 +20,7 @@ import java.io.File;
 
 import krati.core.StoreConfig;
 import krati.core.StoreFactory;
+import krati.core.StoreParams;
 import krati.store.DataStore;
 import test.StatsLog;
 
@@ -48,11 +49,12 @@ public class TestIndexedStoreSmallIndex extends EvalDataStore {
         config.setSegmentFileSizeMB(_segFileSizeMB);
         config.setSegmentCompactFactor(0.67);
         
-        // Disable Linear Hashing
-        config.setHashLoadFactor(1.0d);
+        // Disable linear hashing
+        config.setHashLoadFactor(1.0);
         
-        // Set Index Segment Size to 32 MB
-        config.setInt(StoreConfig.PARAM_INDEX_SEGMENT_FILE_SIZE_MB, 32);
+        // Configure index segments
+        config.setInt(StoreParams.PARAM_INDEX_SEGMENT_FILE_SIZE_MB, 32);
+        config.setDouble(StoreParams.PARAM_INDEX_SEGMENT_COMPACT_FACTOR, 0.5);
         
         return StoreFactory.createIndexedDataStore(config);
     }

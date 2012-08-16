@@ -18,7 +18,6 @@ package krati.store;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.AbstractMap;
 import java.util.Map.Entry;
 
@@ -32,6 +31,7 @@ import krati.store.DataStore;
 import krati.store.index.HashIndex;
 import krati.store.index.Index;
 import krati.util.IndexedIterator;
+import krati.util.Numbers;
 
 /**
  * IndexedDataStore.
@@ -92,13 +92,13 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
         _indexHome = new File(_homeDir, "index");
         int indexInitialCapacity = config.getInitialCapacity();
         int indexSegmentFileSizeMB =
-                config.getInt(StoreConfig.PARAM_INDEX_SEGMENT_FILE_SIZE_MB,
-                              StoreConfig.INDEX_SEGMENT_FILE_SIZE_MB_DEFAULT);
+                config.getInt(StoreParams.PARAM_INDEX_SEGMENT_FILE_SIZE_MB,
+                              StoreParams.INDEX_SEGMENT_FILE_SIZE_MB_DEFAULT);
         double indexSegmentCompactFactor =
-                config.getDouble(StoreConfig.PARAM_INDEX_SEGMENT_COMPACT_FACTOR,
+                config.getDouble(StoreParams.PARAM_INDEX_SEGMENT_COMPACT_FACTOR,
                                  config.getSegmentCompactFactor());
         SegmentFactory indexSegmentFactory =
-                config.getClass(StoreConfig.PARAM_INDEX_SEGMENT_FACTORY_CLASS, MemorySegmentFactory.class)
+                config.getClass(StoreParams.PARAM_INDEX_SEGMENT_FACTORY_CLASS, MemorySegmentFactory.class)
                 .asSubclass(SegmentFactory.class).newInstance();
         
         StoreConfig indexConfig = new StoreConfig(_indexHome, indexInitialCapacity);
@@ -372,15 +372,14 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
         }
         
         static byte[] build(int dataAddr) {
-            ByteBuffer bb = ByteBuffer.allocate(META_SIZE);
-            bb.putInt(dataAddr);
-            return bb.array();
+            byte[] bytes = new byte[META_SIZE];
+            Numbers.intBytesBE(dataAddr, bytes);
+            return bytes;
         }
         
         static IndexMeta parse(byte[] metaBytes) {
             if(metaBytes.length != META_SIZE) return null;
-            ByteBuffer bb = ByteBuffer.wrap(metaBytes);
-            int dataAddr = bb.getInt();
+            int dataAddr = Numbers.intValueBE(metaBytes);
             return new IndexMeta(dataAddr);
         }
         
