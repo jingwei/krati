@@ -69,6 +69,9 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
      * @throws Exception if the store cannot be created.
      */
     public IndexedDataStore(StoreConfig config) throws Exception {
+        config.validate();
+        config.save();
+        
         this._homeDir = config.getHomeDir();
         this._batchSize = config.getBatchSize();
         
@@ -87,15 +90,24 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
         
         // Create hash index
         _indexHome = new File(_homeDir, "index");
-        
         int indexInitialCapacity = config.getInitialCapacity();
+        int indexSegmentFileSizeMB =
+                config.getInt(StoreConfig.PARAM_INDEX_SEGMENT_FILE_SIZE_MB,
+                              StoreConfig.INDEX_SEGMENT_FILE_SIZE_MB_DEFAULT);
+        double indexSegmentCompactFactor =
+                config.getDouble(StoreConfig.PARAM_INDEX_SEGMENT_COMPACT_FACTOR,
+                                 config.getSegmentCompactFactor());
+        SegmentFactory indexSegmentFactory =
+                config.getClass(StoreConfig.PARAM_INDEX_SEGMENT_FACTORY_CLASS, MemorySegmentFactory.class)
+                .asSubclass(SegmentFactory.class).newInstance();
+        
         StoreConfig indexConfig = new StoreConfig(_indexHome, indexInitialCapacity);
         indexConfig.setBatchSize(config.getBatchSize());
         indexConfig.setNumSyncBatches(config.getNumSyncBatches());
-        indexConfig.setIndexesCached(true);                         // indexes.dat is cached
-        indexConfig.setSegmentFileSizeMB(8);                        // index segment size is 8 MB
-        indexConfig.setSegmentFactory(new MemorySegmentFactory());  // index segment is MemorySegment
-        indexConfig.setSegmentCompactFactor(config.getSegmentCompactFactor());
+        indexConfig.setIndexesCached(true);                         // indexes.dat is always cached
+        indexConfig.setSegmentFactory(indexSegmentFactory);
+        indexConfig.setSegmentFileSizeMB(indexSegmentFileSizeMB);
+        indexConfig.setSegmentCompactFactor(indexSegmentCompactFactor);
         indexConfig.setHashLoadFactor(config.getHashLoadFactor());
         indexConfig.setHashFunction(config.getHashFunction());
         indexConfig.setDataHandler(config.getDataHandler());

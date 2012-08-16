@@ -348,7 +348,7 @@ public class StoreConfig extends StoreParams {
     /**
      * Gets a property value via a string property name.
      * 
-     * @param pName - a property name
+     * @param pName - the property name
      * @return a string property value.
      */
     public String getProperty(String pName) {
@@ -358,8 +358,8 @@ public class StoreConfig extends StoreParams {
     /**
      * Sets a store configuration property via its name and value.
      *  
-     * @param pName  - a property name
-     * @param pValue - a property value
+     * @param pName  - the property name
+     * @param pValue - the property value
      * @return <code>true</code> if the property is set successfully.
      */
     public boolean setProperty(String pName, String pValue) {
@@ -368,13 +368,120 @@ public class StoreConfig extends StoreParams {
         return true;
     }
     
+    /**
+     * Sets an integer property via a string property name.
+     */ 
+    public boolean setInt(String pName, int pValue) {
+        if(pName == null) return false;
+        _properties.setProperty(pName, pValue + "");
+        return true;
+    }
+    
+    /**
+     * Sets a float property via a string property name.
+     */ 
+    public boolean setFloat(String pName, float pValue) {
+        if(pName == null) return false;
+        _properties.setProperty(pName, pValue + "");
+        return true;
+    }
+    
+    /**
+     * Sets a double property via a string property name.
+     */ 
+    public boolean setDouble(String pName, double pValue) {
+        if(pName == null) return false;
+        _properties.setProperty(pName, pValue + "");
+        return true;
+    }
+    
+    /**
+     * Sets a double property via a string property name.
+     */ 
+    public boolean setBoolean(String pName, boolean pValue) {
+        if(pName == null) return false;
+        _properties.setProperty(pName, pValue + "");
+        return true;
+    }
+    
+    /**
+     * Gets an integer property via a string property name.
+     * 
+     * @param pName        - the property name
+     * @param defaultValue - the default property value
+     * @return
+     */
+    public int getInt(String pName, int defaultValue) {
+        String pValue = _properties.getProperty(pName);
+        return parseInt(pName, pValue, defaultValue);
+    }
+    
+    /**
+     * Gets a float property via a string property name.
+     * 
+     * @param pName        - the property name
+     * @param defaultValue - the default property value
+     * @return
+     */
+    public float getFloat(String pName, float defaultValue) {
+        String pValue = _properties.getProperty(pName);
+        return parseFloat(pName, pValue, defaultValue);
+    }
+    
+    /**
+     * Gets a double property via a string property name.
+     * 
+     * @param pName        - the property name
+     * @param defaultValue - the default property value
+     * @return
+     */
+    public double getDouble(String pName, double defaultValue) {
+        String pValue = _properties.getProperty(pName);
+        return parseDouble(pName, pValue, defaultValue);
+    }
+    
+    /**
+     * Gets a boolean property via a string property name.
+     * 
+     * @param pName        - the property name
+     * @param defaultValue - the default property value
+     * @return
+     */
+    public boolean getBoolean(String pName, boolean defaultValue) {
+        String pValue = _properties.getProperty(pName);
+        return parseBoolean(pName, pValue, defaultValue);
+    }
+    
+    /**
+     * Gets a class property via a string property name.
+     * 
+     * @param pName        - the property name
+     * @param defaultValue - the default property value
+     * @return
+     */
+    public Class<?> getClass(String pName, Class<?> defaultValue) {
+        String pValue = _properties.getProperty(pName);
+        return parseClass(pName, pValue, defaultValue);
+    }
+    
     static int parseInt(String pName, String pValue, int defaultValue) {
         try {
             if(pValue != null) {
                 return Integer.parseInt(pValue);
             }
         } catch(Exception e) {
-            _logger.error("failed to parse " + pName + "=" + pValue);
+            _logger.warn("failed to parse " + pName + "=" + pValue + " default=" + defaultValue);
+        }
+        return defaultValue;
+    }
+    
+    static float parseFloat(String pName, String pValue, float defaultValue) {
+        try {
+            if(pValue != null) {
+                return Float.parseFloat(pValue);
+            }
+        } catch(Exception e) {
+            _logger.warn("failed to parse " + pName + "=" + pValue + " default=" + defaultValue);
         }
         return defaultValue;
     }
@@ -385,7 +492,7 @@ public class StoreConfig extends StoreParams {
                 return Double.parseDouble(pValue);
             }
         } catch(Exception e) {
-            _logger.error("failed to parse " + pName + "=" + pValue);
+            _logger.warn("failed to parse " + pName + "=" + pValue + " default=" + defaultValue);
         }
         return defaultValue;
     }
@@ -396,7 +503,19 @@ public class StoreConfig extends StoreParams {
                 return Boolean.parseBoolean(pValue);
             }
         } catch(Exception e) {
-            _logger.error("failed to parse " + pName + "=" + pValue);
+            _logger.warn("failed to parse " + pName + "=" + pValue + " default=" + defaultValue);
+        }
+        
+        return defaultValue;
+    }
+    
+    static Class<?> parseClass(String pName, String pValue, Class<?> defaultValue) {
+        try {
+            if(pValue != null) {
+                return Class.forName(pValue);
+            }
+        } catch(Exception e) {
+            _logger.warn("failed to parse " + pName + "=" + pValue  + " default=" + defaultValue);
         }
         
         return defaultValue;
