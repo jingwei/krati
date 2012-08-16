@@ -127,7 +127,7 @@ public class KratiDataPartition implements Closeable {
      */
     public static void main(String[] args) {
         try {
-            // Parse arguments: idStart idCount homeDir
+            // Parse arguments: homeDir idStart idCount
             File homeDir = new File(args[0]);
             int idStart = Integer.parseInt(args[1]);
             int idCount = Integer.parseInt(args[2]);

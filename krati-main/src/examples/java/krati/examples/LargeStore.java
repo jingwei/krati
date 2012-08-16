@@ -22,28 +22,43 @@ import java.util.Random;
 
 import krati.core.StoreConfig;
 import krati.core.StoreFactory;
-import krati.core.segment.MemorySegmentFactory;
+import krati.core.StoreParams;
+import krati.core.segment.WriteBufferSegmentFactory;
 import krati.io.Closeable;
 import krati.store.DataStore;
 
 /**
- * Sample code for Krati DataStore.
+ * This class provides a template for creating a very-large key-value store.
+ * 
+ * <ul>
+ *  <li>The store has hundreds of millions of keys. </li>
+ *  <li>The size of keys is significantly smaller than the size of values. </li>
+ * </ul>
+ * 
+ * <p>
+ * For example, the store has 200,000,000 keys; the size of keys is 8 to 16 bytes;
+ * the size of values is larger than 128 bytes.
+ * </p>
  * 
  * @author jwu
- * 
+ * @since 08/15, 2012
  */
-public class KratiDataStore implements Closeable {
+public class LargeStore implements Closeable {
     private final int _initialCapacity;
     private final DataStore<byte[], byte[]> _store;
     
     /**
-     * Constructs KratiDataStore.
+     * Constructs a new instance of LargeStore.
      * 
-     * @param homeDir           the home directory of DataStore.
-     * @param initialCapacity   the initial capacity of DataStore.
-     * @throws Exception if a DataStore instance can not be created.
+     * @param homeDir         - the home directory of LargeStore.
+     * @param initialCapacity - the initial capacity of LargeStore, which is expected to be 32 times smaller than the expected number of keys.
+     * <ul>
+     * <li> This value should be significantly (e.g., 32 times) smaller than expected number of keys. </li>
+     * <li> This value should NOT be modified once the underlying store is created. </li>
+     * </ul>
+     * @throws Exception if a LargeStore instance can not be created.
      */
-    public KratiDataStore(File homeDir, int initialCapacity) throws Exception {
+    public LargeStore(File homeDir, int initialCapacity) throws Exception {
         _initialCapacity = initialCapacity;
         _store = createDataStore(homeDir, initialCapacity);
     }
@@ -57,17 +72,26 @@ public class KratiDataStore implements Closeable {
     
     /**
      * Creates a DataStore instance.
-     * <p>
-     * Subclasses can override this method to provide a specific DataStore implementation
-     * such as DynamicDataStore and IndexedDataStore or provide a specific SegmentFactory
-     * such as ChannelSegmentFactory, MappedSegmentFactory and WriteBufferSegment.
      */
     protected DataStore<byte[], byte[]> createDataStore(File homeDir, int initialCapacity) throws Exception {
         StoreConfig config = new StoreConfig(homeDir, initialCapacity);
-        config.setSegmentFactory(new MemorySegmentFactory());
-        config.setSegmentFileSizeMB(64);
         
-        return StoreFactory.createStaticDataStore(config);
+        config.setBatchSize(10000);
+        config.setNumSyncBatches(10);
+        
+        // Configure store segments
+        config.setSegmentFactory(new WriteBufferSegmentFactory());
+        config.setSegmentFileSizeMB(128);
+        config.setSegmentCompactFactor(0.6);
+        
+        // Configure index segments
+        config.setInt(StoreParams.PARAM_INDEX_SEGMENT_FILE_SIZE_MB, 32);
+        config.setDouble(StoreParams.PARAM_INDEX_SEGMENT_COMPACT_FACTOR, 0.6);
+        
+        // Disable linear hashing
+        config.setHashLoadFactor(1.0);
+        
+        return StoreFactory.createIndexedDataStore(config);
     }
     
     /**
@@ -110,7 +134,7 @@ public class KratiDataStore implements Closeable {
     }
     
     /**
-     * Checks if the <code>KratiDataStore</code> is open for operations.
+     * Checks if the <code>LargeStore</code> is open for operations.
      */
     @Override
     public boolean isOpen() {
@@ -137,16 +161,36 @@ public class KratiDataStore implements Closeable {
     }
     
     /**
-     * java -Xmx4G krati.examples.KratiDataStore homeDir initialCapacity 
+     * java -server -Xms12G -Xmx12G -XX:+UseConcMarkSweepGC krati.examples.LargeStore homeDir initialCapacity
+     * 
+     * <p>
+     * The Java JVM size can be calculated based the expected number of keys, N, using the following equation:
+     * <pre>
+     *   N * 2 * (keySize + 20) / 1024 / 1024 / 1024 plus 4G
+     * </pre>
+     * 
+     * <p>
+     * For example, given that the expected number of keys is 200,000,000 and the size of keys is 10 bytes,
+     * the required Java JVM size is approximately
+     * <pre>
+     *   200000000 * 2 * 30 / 1024 / 1024 / 1024 + 4 = 16G
+     * </pre>
+     * 
+     * <p>
+     * The <code>initialCapacity</code> can be calculated using the following.
+     * 
+     * <pre>
+     *   initialCapacity = N / 32
+     * </pre>
      */
     public static void main(String[] args) {
         try {
-            // Parse arguments: homeDir keyCount
+            // Parse arguments: homeDir initialCapacity
             File homeDir = new File(args[0]);
             int initialCapacity = Integer.parseInt(args[1]);
             
-            // Create an instance of Krati DataStore
-            KratiDataStore store = new KratiDataStore(homeDir, initialCapacity);
+            // Create an instance of LargeStore
+            LargeStore store = new LargeStore(homeDir, initialCapacity);
             
             // Populate data store
             store.populate();
