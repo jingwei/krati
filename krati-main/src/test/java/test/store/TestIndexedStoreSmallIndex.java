@@ -44,7 +44,7 @@ public class TestIndexedStoreSmallIndex extends EvalDataStore {
     protected DataStore<byte[], byte[]> getDataStore(File storeDir) throws Exception {
         StoreConfig config = new StoreConfig(storeDir, getInitialCapacity());
         config.setBatchSize(10000);
-        config.setNumSyncBatches(10);
+        config.setNumSyncBatches(100);
         config.setSegmentFactory(new krati.core.segment.WriteBufferSegmentFactory());
         config.setSegmentFileSizeMB(_segFileSizeMB);
         config.setSegmentCompactFactor(0.67);
