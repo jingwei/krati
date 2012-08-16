@@ -82,11 +82,11 @@ public class LargeStore implements Closeable {
         // Configure store segments
         config.setSegmentFactory(new WriteBufferSegmentFactory());
         config.setSegmentFileSizeMB(128);
-        config.setSegmentCompactFactor(0.6);
+        config.setSegmentCompactFactor(0.67);
         
         // Configure index segments
         config.setInt(StoreParams.PARAM_INDEX_SEGMENT_FILE_SIZE_MB, 32);
-        config.setDouble(StoreParams.PARAM_INDEX_SEGMENT_COMPACT_FACTOR, 0.6);
+        config.setDouble(StoreParams.PARAM_INDEX_SEGMENT_COMPACT_FACTOR, 0.5);
         
         // Disable linear hashing
         config.setHashLoadFactor(1.0);
@@ -161,10 +161,14 @@ public class LargeStore implements Closeable {
     }
     
     /**
+     * Run this example using the command below:
+     * 
+     * <pre>
      * java -server -Xms12G -Xmx12G -XX:+UseConcMarkSweepGC krati.examples.LargeStore homeDir initialCapacity
+     * </pre>
      * 
      * <p>
-     * The Java JVM size can be calculated based the expected number of keys, <code>N</code>, using the following equation:
+     * The Java JVM size can be calculated based on the expected number of keys, <code>N</code>, using the following equation:
      * <pre>
      *   N * (2 * keySize + 32) / 1024 / 1024 / 1024 plus 4
      * </pre>
