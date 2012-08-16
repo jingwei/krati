@@ -23,10 +23,11 @@ import org.apache.log4j.Logger;
 
 /**
  * Provides a trivial implementation of get(pos, map), that uses get(pos, list) and get
+ * 
  * @author spike(alperez)
- *
- * @param <K>
- * @param <V>
+ * @since 07/31, 2012
+ * @param <K> Key
+ * @param <V> Value
  */
 public abstract class AbstractRetentionStoreReader<K, V> implements RetentionStoreReader<K, V> {
     private final static Logger logger = Logger.getLogger(AbstractRetentionStoreReader.class);

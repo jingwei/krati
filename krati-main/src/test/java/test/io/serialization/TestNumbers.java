@@ -16,6 +16,8 @@
 
 package test.io.serialization;
 
+import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Random;
 
 import junit.framework.TestCase;
@@ -207,6 +209,35 @@ public class TestNumbers extends TestCase {
             num1 = (short)_rand.nextInt();
             num2 = Numbers.shortValueBE(Numbers.shortBytesBE(num1));
             assertEquals(num1, num2);
+        }
+    }
+    
+    public void testByteBufferBE() {
+        for(int i = 0; i < 10; i++) {
+            int value = _rand.nextInt();
+            
+            ByteBuffer bb1 = ByteBuffer.allocate(4);
+            bb1.putInt(value);
+            byte[] bytesA = bb1.array();
+            
+            int value1 = Numbers.intValueBE(bytesA);
+            assertEquals(value, value1);
+            
+            ByteBuffer bb2 = ByteBuffer.wrap(bytesA);
+            int value2 = bb2.getInt();
+            assertEquals(value, value2);
+            
+            byte[] bytesB = new byte[4];
+            Numbers.intBytesBE(value, bytesB);
+            
+            value1 = Numbers.intValueBE(bytesB);
+            assertEquals(value, value1);
+            
+            bb2 = ByteBuffer.wrap(bytesB);
+            value2 = bb2.getInt();
+            assertEquals(value, value2);
+            
+            assertTrue(Arrays.equals(bytesA, bytesB));
         }
     }
 }
