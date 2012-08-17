@@ -51,9 +51,9 @@ public class LargeStore implements Closeable {
      * Constructs a new instance of LargeStore.
      * 
      * @param homeDir         - the home directory of LargeStore.
-     * @param initialCapacity - the initial capacity of LargeStore, which is expected to be 16 to 32 times smaller than the expected number of keys.
+     * @param initialCapacity - the initial capacity of LargeStore, which is expected to be 8 to 16 times smaller than the expected number of keys.
      * <ul>
-     * <li> This value should be significantly (e.g., 16 to 32 times) smaller than the expected number of keys. </li>
+     * <li> This value should be significantly (e.g., 8 to 16 times) smaller than the expected number of keys. </li>
      * <li> This value should NOT be modified once the underlying store is created. </li>
      * </ul>
      * @throws Exception if a LargeStore instance can not be created.
@@ -183,7 +183,7 @@ public class LargeStore implements Closeable {
      * <p>
      * The <code>initialCapacity</code> can be calculated using the following:
      * <pre>
-     *   N/32 or N/16
+     *   N/16 or N/8
      * </pre>
      */
     public static void main(String[] args) {

@@ -37,7 +37,7 @@ public class TestIndexedStoreSmallIndex extends EvalDataStore {
     }
     
     public int getInitialCapacity() {
-        return _keyCount / 32;
+        return _keyCount / 16;
     }
     
     @Override
