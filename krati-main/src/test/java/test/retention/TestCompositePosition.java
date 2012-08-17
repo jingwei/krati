@@ -28,7 +28,7 @@ public class TestCompositePosition extends TestCase {
         Position p1 = new SimplePosition(10, 5, -1, new Clock(11,17,23));
         Position p2 = new SimplePosition(2, 4, 1000, new Clock(8,10,12));
         try {
-            new CompositePosition(p1, p2);
+            new CompositePosition(2,p1, p2);
             assertTrue(false);
         } catch (IllegalArgumentException e) {
             assertTrue(true);
@@ -39,9 +39,9 @@ public class TestCompositePosition extends TestCase {
         Position p1 = new SimplePosition(10, 5, -1, new Clock(11,17,23));
         Position p2 = new SimplePosition(2, 4, -1, new Clock(8,10,12));
         Position p3 = new SimplePosition(2, 4, -1, new Clock(8,10,12));
-        CompositePosition c1 = new CompositePosition(p1, p2);
-        CompositePosition c2 = new CompositePosition(p1, p3);
-        CompositePosition c3 = new CompositePosition(p2, p3);
+        CompositePosition c1 = new CompositePosition(2,p1, p2);
+        CompositePosition c2 = new CompositePosition(2,p1, p3);
+        CompositePosition c3 = new CompositePosition(2,p2, p3);
         assertEquals(c1, c2);
         assertFalse(c1.equals(c3));
         
@@ -49,7 +49,7 @@ public class TestCompositePosition extends TestCase {
     public void testStringSerialization() {
         Position p1 = new SimplePosition(10, 5, -1, new Clock(11,17,23));
         Position p2 = new SimplePosition(2, 4, -1, new Clock(8,10,12));
-        CompositePosition cp = new CompositePosition(p1, p2);
+        CompositePosition cp = new CompositePosition(2,p1, p2);
         String foo = cp.toString();
         CompositePosition cp2 = CompositePosition.parsePosition(foo);
         assertEquals(cp, cp2);        

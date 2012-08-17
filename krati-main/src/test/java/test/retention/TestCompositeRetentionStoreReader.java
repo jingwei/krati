@@ -5,6 +5,8 @@ import com.google.common.collect.Lists;
 import junit.framework.TestCase;
 import krati.core.StoreConfig;
 import krati.io.Serializer;
+import krati.io.serializer.IntSerializer;
+import krati.io.serializer.StringSerializer;
 import krati.io.serializer.StringSerializerUtf8;
 import krati.retention.*;
 import krati.retention.clock.Clock;
@@ -12,9 +14,14 @@ import krati.retention.clock.ClockSerializer;
 import krati.retention.clock.SourceWaterMarksClock;
 import krati.retention.policy.RetentionPolicy;
 import krati.retention.policy.RetentionPolicyOnSize;
+import krati.store.ArrayStore;
 import krati.store.DataStore;
+import krati.store.ObjectStore;
+import krati.store.SerializableObjectArray;
+import krati.store.factory.ArrayStoreFactory;
 import krati.store.factory.DynamicObjectStoreFactory;
 import krati.store.factory.ObjectStoreFactory;
+import krati.store.factory.StaticArrayStoreFactory;
 import krati.util.SourceWaterMarks;
 import org.junit.After;
 import org.junit.Before;
@@ -34,13 +41,20 @@ public class TestCompositeRetentionStoreReader<K,V> extends TestCase {
   private final static String source1 = "source1";
   private final static String source2 = "source2";
   private final static String source3 = "source3";
+  private final static int storeSize = 10000;
   
   private SourceWaterMarksClock clock1; //clock for store1
   private SourceWaterMarksClock clock2; //clock for store2
   private SourceWaterMarksClock clock3; //clock for store2
 
-  private RetentionStoreWriter<String,String> writer1, writer2, wreter3;
-  private SimpleRetentionStoreReader<String,String> singleReader1, singleReader2, singleReader3;
+  private RetentionStoreWriter<Integer,String> writer1, writer2, wreter3;
+  private SimpleRetentionStoreReader<Integer,String> singleReader1, singleReader2, singleReader3;
+
+  private Retention<Integer> retention1;
+  private Retention<Integer> retention2;
+
+  private DataStore<Integer,String> store1;
+  private DataStore<Integer,String> store2;
 
   protected File getHomeDir() {
     return DirUtils.getTestDir(getClass());
@@ -51,241 +65,104 @@ public class TestCompositeRetentionStoreReader<K,V> extends TestCase {
     // Build a composite retention reader upon two retentions each with one store
     // Use two writer threads to update the underlying stores and the respected retentions
     // Let a compositeRetentionReader to read from the retention from
-    //  (1) Clock.ZERO: then all updates should be read by the client.
-
+    //  Clock.ZERO:
+    //   (1) all records in the store should be read by the client.
+    //   (2) the position becomes non-indexed (meaning it falls into the retention window)
     // Start the writers to populate the stores
-    //int cnt = getEventBatchSize() * getNumRetentionBatches();
     int cnt = 3;
+    long scn = 0;
 
-    long scn = System.currentTimeMillis();
-
-    HashSet<String> keySet = new HashSet<String>();
+    HashSet<Integer> keySet = new HashSet<Integer>();
     for(int i = 0; i < cnt; i++) {
-      String key = "key " + i;
       String value1 = "value 1" + i;
-      writer1.put(key,value1,scn++);
+      writer1.put(i,value1,scn++);
       value1 = "value 2" + i;
-      //writer2.put(key,value1,scn++);
-      keySet.add(key);
+      writer2.put(i,value1,scn++);
+      keySet.add(i);
     }
-    System.out.println("Records inserted: " + cnt);
-
     // Test the bootstrapping code
-    CompositeRetentionStoreReader<String, String> compositeRetentionStoreReader = new CompositeRetentionStoreReader<String, String>
-            (Lists.<RetentionStoreReader<String, String>>newArrayList(singleReader1,singleReader2));
-    List<Event<String>> list = new ArrayList<Event<String>>();
+    CompositeRetentionStoreReader<Integer, String> compositeRetentionStoreReader = new 
+            CompositeRetentionStoreReader<Integer, String>
+            (Lists.<RetentionStoreReader<Integer, String>>newArrayList(singleReader1,singleReader2));
+    List<Event<Integer>> list = new ArrayList<Event<Integer>>();
     
-    //Position pos = compositeRetentionStoreReader.getPosition(Clock.ZERO);
-    Position pos = singleReader1.getPosition(Clock.ZERO);
+    Position pos = compositeRetentionStoreReader.getPosition(Clock.ZERO);
     int resultCnt = 0;
     do {
       list.clear();
-      System.out.println("Position: " +  pos);
-      //pos = compositeRetentionStoreReader.get(pos,list);
-      pos = singleReader1.get(pos, list);
-      System.err.println("list: " + list);
+      pos = compositeRetentionStoreReader.get(pos,list);
       resultCnt += list.size();
-      System.out.println("Records read: " + resultCnt);
     } while(list.size() > 0);
-    System.err.println("------------------------");
-    System.err.println(keySet);
-    System.err.println("resultCnt: " + resultCnt);
-    System.err.println("------------------------");
-    assertEquals(keySet.size(),resultCnt);
+    
+    assertEquals(storeSize,resultCnt);
+    assertFalse(pos.isIndexed());
   }
 
-  public void XXtestCompositeRetentionStoreReaderStreaming() throws Exception {
-    // Build a composite retention reader upon two retentions each with one store
-    // Use two writer threads to update the underlying stores and the respected retentions
-    // Let a compositeRetentionReader to read from the retention from
-    //  (1) Clock.ZERO: then all updates should be read by the client.
+  public void testCompositeRetentionStoreReaderStreaming() throws Exception {
+    int cnt = 3;
+    long scn = 0;
 
-    Retention<String> retention1 = createRetention(1);
-    Retention<String> retention2 = createRetention(2);
-
-    DataStore<String,String> store1 = createStore("s1");
-    DataStore<String,String> store2 = createStore("s2");
-
-    clock1 = getClock("source1WaterMarks.scn", Lists.newArrayList(source1));
-    clock2 = getClock("source2WaterMarks.scn", Lists.newArrayList(source2));
-
-
-    RetentionStoreWriter<String,String> writer1 =
-            new SimpleRetentionStoreWriter<String,String>(source1,retention1,store1,clock1);
-    RetentionStoreWriter<String,String> writer2 =
-            new SimpleRetentionStoreWriter<String,String>(source2,retention2,store2,clock2);
-
-
-    SimpleRetentionStoreReader<String,String> singleReader1 =
-            new SimpleRetentionStoreReader<String,String>(source1,retention1,store1);
-
-    SimpleRetentionStoreReader<String,String> singleReader2 =
-            new SimpleRetentionStoreReader<String,String>(source2,retention2,store2);
-
-    // Start the writers to populate the stores
-    int cnt = getEventBatchSize() * getNumRetentionBatches();
-
-    long scn = System.currentTimeMillis();
-
-    HashSet<String> keySet = new HashSet<String>();
-    for(int i = 0; i < cnt; i++)
-    {
-      String key = nextKey();
-      String value1 = nextValue();
-      writer1.put(key,value1,scn++);
-      value1 = nextValue();
-      writer2.put(key,value1,scn++);
-      keySet.add(key);
+    HashSet<Integer> keySet = new HashSet<Integer>();
+    for(int i = 0; i < cnt; i++) {
+      String value1 = "value 1" + i;
+      writer1.put(i,value1,scn++);
+      value1 = "value 2" + i;
+      writer2.put(i,value1,scn++);
+      keySet.add(i);
     }
-    System.out.println("Records inserted: " + cnt);
-
     // Test the bootstrapping code
-    CompositeRetentionStoreReader compositeRetentionStoreReader = new CompositeRetentionStoreReader
-            (Lists.newArrayList(singleReader1,singleReader2));
-
-    List<Event<String>> list = new ArrayList<Event<String>>();
+    CompositeRetentionStoreReader<Integer, String> compositeRetentionStoreReader = new
+            CompositeRetentionStoreReader<Integer, String>
+            (Lists.<RetentionStoreReader<Integer, String>>newArrayList(singleReader1,singleReader2));
+    List<Event<Integer>> list = new ArrayList<Event<Integer>>();
 
     Position pos = compositeRetentionStoreReader.getPosition(Clock.ZERO);
-
     int resultCnt = 0;
     do {
       list.clear();
-      System.out.println("Position: " +  pos);
       pos = compositeRetentionStoreReader.get(pos,list);
-      resultCnt += list.size();
-      System.out.println("Records read: " + resultCnt);
-    }while(list.size() > 0);
+    } while(list.size() > 0);
 
-    /*
-      Now the reader should catch up and we will test the streaming read
-    */
     assertFalse(pos.isIndexed());
-    
-    HashMap<String,String> hashMap1 = new HashMap<String, String>();
-    HashMap<String,String> hashMap2 = new HashMap<String, String>();
-    
-    for(int i = 0; i < 5; i++)
-    {
-      String key = nextKey();
-      String value = nextValue();
-      writer1.put(key,value,scn++);
-      writer2.put(key,value,scn++);
-      hashMap1.put(key,value);
-      hashMap1.put(key,value);
+    cnt = 6;
+    for(int i = 0; i < cnt; i++) {
+      String value1 = "value 1" + i;
+      writer1.put(i,value1,scn++);
+      value1 = "value 2" + i;
+      writer2.put(i,value1,scn++);
     }
-    // Verify that the right number of updates is read;
-    list.clear();
-    pos = compositeRetentionStoreReader.get(pos,list);
-    assertEquals(5,list.size());
-    list.clear();
-    pos = compositeRetentionStoreReader.get(pos,list);
-    assertEquals(5,list.size());
 
-    // Verify that the retention reader returns the right value
-    for(String k : hashMap1.keySet())
-    {
-      assertEquals(hashMap1.get(k),compositeRetentionStoreReader.get(k).get(source1));
-    }
-    for(String k : hashMap2.keySet())
-    {
-      assertEquals(hashMap2.get(k),compositeRetentionStoreReader.get(k).get(source2));
-    }
-  }
-
-  /**
-   * This test checks if the client can correctly find itself fall out of the retention
-   * @throws Exception
-   */
-
-  public void XXtestCompositeRetentionStoreReaderFallOutOfRetention() throws Exception
-  {
-    // Build a composite retention reader upon three retentions each with one store
-    // Use three writer threads to update the underlying stores and the respected retentions
-    // Let a compositeRetentionReader to read from the retention 
-
-    Retention<String> retention1 = createRetention(1);
-    Retention<String> retention2 = createRetention(2);
-    Retention<String> retention3 = createRetention(3);
-    
-    DataStore<String,String> store1 = createStore("s1");
-    DataStore<String,String> store2 = createStore("s2");
-    DataStore<String,String> store3 = createStore("s3");
-
-    clock1 = getClock("source1WaterMarks.scn", Lists.newArrayList(source1));
-    clock2 = getClock("source2WaterMarks.scn", Lists.newArrayList(source2));
-    clock3 = getClock("source3WaterMarks.scn", Lists.newArrayList(source3));
-
-
-    RetentionStoreWriter<String,String> writer1 =
-            new SimpleRetentionStoreWriter<String,String>(source1,retention1,store1,clock1);
-    RetentionStoreWriter<String,String> writer2 =
-            new SimpleRetentionStoreWriter<String,String>(source2,retention2,store2,clock2);
-    RetentionStoreWriter<String,String> writer3 =
-            new SimpleRetentionStoreWriter<String,String>(source3,retention3,store3,clock3);
-
-
-    SimpleRetentionStoreReader<String,String> singleReader1 =
-            new SimpleRetentionStoreReader<String,String>(source1,retention1,store1);
-
-    SimpleRetentionStoreReader<String,String> singleReader2 =
-            new SimpleRetentionStoreReader<String,String>(source2,retention2,store2);
-
-    SimpleRetentionStoreReader<String,String> singleReader3 =
-            new SimpleRetentionStoreReader<String,String>(source3,retention3,store3);
-
-    
-    // Start the writers to populate the stores
-    int cnt = getEventBatchSize() * getNumRetentionBatches();
-
-    long scn = System.currentTimeMillis();
-
-    HashSet<String> keySet = new HashSet<String>();
-    for(int i = 0; i < cnt; i++)
-    {
-      String key = nextKey();
-      String value1 = nextValue();
-      writer1.put(key,value1,scn++);
-      value1 = nextValue();
-      writer2.put(key,value1,scn++);
-      value1 = nextValue();
-      writer3.put(key,value1,scn++);
-      keySet.add(key);
-    }
-    System.out.println("Records inserted: " + cnt);
-
-    // Test the bootstrapping code
-    CompositeRetentionStoreReader compositeRetentionStoreReader = new CompositeRetentionStoreReader
-            (ImmutableList.of(singleReader1,singleReader2,singleReader3));
-
-    List<Event<String>> list = new ArrayList<Event<String>>();
-
-    Position pos = compositeRetentionStoreReader.getPosition(Clock.ZERO);
-
-    int resultCnt = 0;
     do {
       list.clear();
-      System.out.println("Position: " +  pos);
       pos = compositeRetentionStoreReader.get(pos,list);
       resultCnt += list.size();
-      System.out.println("Records read: " + resultCnt);
-    }while(list.size() > 0);
-
-    /*
-      Now the reader should catch up and we will test the streaming read
-    */
-    assertFalse(pos.isIndexed());
+    } while(list.size() > 0);
+    assertEquals(cnt * 2,resultCnt);
     
-    // Insert another batch of records so that the client is out of retention again
-    for(int i = 0; i < getEventBatchSize() * getNumRetentionBatches();i++)
+    // Write more records util the retention1 is full
+    for(int i = 0; i < 2 * getNumRetentionBatches() * getEventBatchSize(); i++)
     {
-      writer1.put(nextKey(),nextValue(),scn++);
-      writer2.put(nextKey(),nextValue(),scn++);
+      writer1.put(i,"dummy",scn++);
     }
-
-    // Test if the client is out of retention
+    writer1.sync();
     pos = compositeRetentionStoreReader.getPosition(pos.getClock());
-    assertNull(pos);
+    System.err.println(pos);
+    assertEquals(true,pos.isIndexed());
+
+    // Bootstrap again
+    resultCnt = 0;
+    do {
+      list.clear();
+      pos = compositeRetentionStoreReader.get(pos,list);
+      resultCnt += list.size();
+    } while(list.size() > 0);
+
+    assertFalse(pos.isIndexed());
+    assertEquals(storeSize,resultCnt);
+
   }
+
+
 
   @Override
   @Before
@@ -297,23 +174,21 @@ public class TestCompositeRetentionStoreReader<K,V> extends TestCase {
     }
     // Build a composite retention reader upon two retentions each with one store
     // Use two writer threads to update the underlying stores and the respected retentions
-    // Let a compositeRetentionReader to read from the retention from
-    //  (1) Clock.ZERO: then all updates should be read by the client.
 
-    Retention<String> retention1 = createRetention(1);
-    Retention<String> retention2 = createRetention(2);
+    retention1 = createRetention(1);
+    retention2 = createRetention(2);
 
-    DataStore<String,String> store1 = createStore("s1");
-    DataStore<String,String> store2 = createStore("s2");
+    store1 = createStore("s1");
+    store2 = createStore("s2");
 
     clock1 = getClock("source1WaterMarks.scn", Lists.newArrayList(source1));
     clock2 = getClock("source2WaterMarks.scn", Lists.newArrayList(source2));
 
-    writer1 = new SimpleRetentionStoreWriter<String,String>(source1,retention1,store1,clock1);
-    writer2 = new SimpleRetentionStoreWriter<String,String>(source2,retention2,store2,clock2);
+    writer1 = new SimpleRetentionStoreWriter<Integer,String>(source1,retention1,store1,clock1);
+    writer2 = new SimpleRetentionStoreWriter<Integer,String>(source2,retention2,store2,clock2);
 
-    singleReader1 = new SimpleRetentionStoreReader<String,String>(source1,retention1,store1);
-    singleReader2 = new SimpleRetentionStoreReader<String,String>(source2,retention2,store2);
+    singleReader1 = new SimpleRetentionStoreReader<Integer,String>(source1,retention1,store1);
+    singleReader2 = new SimpleRetentionStoreReader<Integer,String>(source2,retention2,store2);
 
   }
 
@@ -334,8 +209,8 @@ public class TestCompositeRetentionStoreReader<K,V> extends TestCase {
     return new SourceWaterMarksClock(sources, sourceWaterMarks);
   }
   
-  protected Retention<String> createRetention(int id) throws Exception {
-    RetentionConfig<String> config = new RetentionConfig<String>(id, new File(getHomeDir().getAbsolutePath()+"/retention"+id));
+  protected Retention<Integer> createRetention(int id) throws Exception {
+    RetentionConfig<Integer> config = new RetentionConfig<Integer>(id, new File(getHomeDir().getAbsolutePath()+"/retention"+id));
     config.setBatchSize(getEventBatchSize());
     config.setRetentionPolicy(createRetentionPolicy());
     config.setEventValueSerializer(createEventValueSerializer());
@@ -343,7 +218,7 @@ public class TestCompositeRetentionStoreReader<K,V> extends TestCase {
     config.setRetentionSegmentFileSizeMB(16);
     config.setClockSize(1);
 
-    return new SimpleRetention<String>(config);
+    return new SimpleRetention<Integer>(config);
   }
 
   /**
@@ -352,14 +227,15 @@ public class TestCompositeRetentionStoreReader<K,V> extends TestCase {
    * @return a store of key type String mapping to value type String
    * @throws Exception
    */
-  protected DataStore<String, String> createStore(String storeName) throws Exception {
-    StoreConfig config = new StoreConfig(new File(getHomeDir(), storeName), 10000);
+  protected ObjectStore<Integer, String> createStore(String storeName) throws Exception {
+    StoreConfig config = new StoreConfig(new File(getHomeDir(), storeName), storeSize);
     config.setSegmentFileSizeMB(16);
     config.setNumSyncBatches(10);
     config.setBatchSize(100);
 
-    ObjectStoreFactory<String, String> factory = new DynamicObjectStoreFactory<String, String>();
-    return factory.create(config, new StringSerializerUtf8(), new StringSerializerUtf8());
+    ArrayStoreFactory factory = new StaticArrayStoreFactory();
+    ArrayStore store = factory.create(config);
+    return new SerializableObjectArray(store,new StringSerializer()) ;
   }
 
   protected int getEventBatchSize() {
@@ -374,16 +250,16 @@ public class TestCompositeRetentionStoreReader<K,V> extends TestCase {
     return new RetentionPolicyOnSize(getNumRetentionBatches());
   }
 
-  protected EventBatchSerializer<String> createBatchSerializer() {
-    return new SimpleEventBatchSerializer<String>(createEventValueSerializer(), createEventClockSerializer());
+  protected EventBatchSerializer<Integer> createBatchSerializer() {
+    return new SimpleEventBatchSerializer<Integer>(createEventValueSerializer(), createEventClockSerializer());
   }
 
   protected Serializer<Clock> createEventClockSerializer() {
     return new ClockSerializer();
   }
 
-  protected Serializer<String> createEventValueSerializer() {
-    return new StringSerializerUtf8();
+  protected Serializer<Integer> createEventValueSerializer() {
+    return new IntSerializer();
   }
 
   protected String nextKey() {

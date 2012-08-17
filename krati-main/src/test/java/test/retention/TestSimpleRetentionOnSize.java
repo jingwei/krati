@@ -60,7 +60,7 @@ public class TestSimpleRetentionOnSize extends AbstractTestRetention<String> {
                 getHomeDir(),
                 createRetentionPolicy(),
                 createBatchSerializer(),
-                getEventBatchSize());
+                getEventBatchSize(),1);
     }
     
     public void testRetentionPolicy() throws Exception {
