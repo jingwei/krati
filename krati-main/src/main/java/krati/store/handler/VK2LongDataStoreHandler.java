@@ -33,4 +33,3 @@ public final class VK2LongDataStoreHandler extends VKFVDataStoreHandler {
         super(Bytes.NUM_BYTES_IN_LONG);
     }
 }
-

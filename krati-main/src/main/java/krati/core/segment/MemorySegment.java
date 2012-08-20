@@ -209,6 +209,7 @@ public class MemorySegment extends AbstractSegment {
         System.arraycopy(_buffer.array(), pos, dst, offset, length);
     }
 
+    @Override
     public int transferTo(int pos, int length, Segment targetSegment) throws IOException {
         if ((pos + length) <= _buffer.position()) {
             targetSegment.append(_buffer.array(), pos, length);
