@@ -50,15 +50,15 @@ public class TestIndexedStoreSmallIndex extends EvalDataStore {
         config.setSegmentFileSizeMB(_segFileSizeMB);
         config.setSegmentCompactFactor(0.67);
         
-        // Disable linear hashing
-        config.setHashLoadFactor(1.0);
-        
         // Configure index segments
         config.setInt(StoreParams.PARAM_INDEX_SEGMENT_FILE_SIZE_MB, 32);
         config.setDouble(StoreParams.PARAM_INDEX_SEGMENT_COMPACT_FACTOR, 0.5);
         
-        // Configure for small memory footprint
+        // Configure to reduce memory footprint
         config.setDataHandler(new HashIndexDataHandler());
+        
+        // Disable linear hashing
+        config.setHashLoadFactor(1.0);
         
         return StoreFactory.createIndexedDataStore(config);
     }

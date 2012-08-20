@@ -26,6 +26,7 @@ import krati.core.StoreParams;
 import krati.core.segment.WriteBufferSegmentFactory;
 import krati.io.Closeable;
 import krati.store.DataStore;
+import krati.store.index.HashIndexDataHandler;
 
 /**
  * This class provides a template for creating a very-large key-value store.
@@ -87,6 +88,9 @@ public class LargeStore implements Closeable {
         // Configure index segments
         config.setInt(StoreParams.PARAM_INDEX_SEGMENT_FILE_SIZE_MB, 32);
         config.setDouble(StoreParams.PARAM_INDEX_SEGMENT_COMPACT_FACTOR, 0.5);
+        
+        // Configure to reduce memory footprint
+        config.setDataHandler(new HashIndexDataHandler());
         
         // Disable linear hashing
         config.setHashLoadFactor(1.0);

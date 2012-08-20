@@ -166,8 +166,7 @@ public abstract class AbstractTestDataStoreHandler extends TestCase {
         byte[] key, value;
         
         DataStoreHandler h = createDataStoreHandler();
-        Map<byte[], byte[]> kvMap1 = new HashMap<byte[], byte[]>();
-        Map<String, byte[]> kvMap2 = new HashMap<String, byte[]>();
+        Map<byte[], byte[]> kvMap = new HashMap<byte[], byte[]>();
         Set<String> keySet = new HashSet<String>();
         Set<String> valueSet = new HashSet<String>();
         
@@ -177,8 +176,7 @@ public abstract class AbstractTestDataStoreHandler extends TestCase {
             value = nextValue();
             data = h.assemble(key, value, data);
             
-            kvMap1.put(key, value);
-            kvMap2.put(new String(key), value);
+            kvMap.put(key, value);
             keySet.add(new String(key));
             valueSet.add(new String(value));
             
@@ -186,10 +184,10 @@ public abstract class AbstractTestDataStoreHandler extends TestCase {
             assertTrue(Arrays.equals(value, v));
         }
         
-        assertEquals(cnt, kvMap1.size());
-        for(byte[] k : kvMap1.keySet()) {
+        assertEquals(cnt, kvMap.size());
+        for(byte[] k : kvMap.keySet()) {
             byte[] v = h.extractByKey(k, data);
-            assertTrue(Arrays.equals(v, kvMap1.get(k)));
+            assertTrue(Arrays.equals(v, kvMap.get(k)));
         }
         
         byte[] aKey = nextKey();
@@ -221,16 +219,6 @@ public abstract class AbstractTestDataStoreHandler extends TestCase {
         }
         
         List<Entry<byte[], byte[]>> entries = h.extractEntries(data);
-        if(data != null) {
-            assertEquals(cnt, entries.size());
-            for(Entry<byte[], byte[]> e : entries) {
-                byte[] v = kvMap2.get(new String(e.getKey()));
-                assertTrue(Arrays.equals(v, e.getValue()));
-            }
-        } else {
-            assertTrue(entries == null);
-        }
-        
         if(data != null) {
             byte[] data2 = h.assembleEntries(entries);
             assertTrue(Arrays.equals(data, data2));
