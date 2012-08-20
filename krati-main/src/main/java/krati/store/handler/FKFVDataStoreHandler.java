@@ -14,45 +14,81 @@
  * the License.
  */
 
-package krati.store;
+package krati.store.handler;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.AbstractMap.SimpleEntry;
-
-import org.apache.log4j.Logger;
+import java.util.Map.Entry;
 
 import krati.store.DataStoreHandler;
 import krati.util.Bytes;
 
+import org.apache.log4j.Logger;
+
 /**
- * DefaultDataStoreHandler
+ * FKFVDataStoreHandler - The fixed-length key and fixed-length value {@link DataStoreHandler}.
  * 
  * @author jwu
- *
+ * @since 08/18, 2012
  */
-public final class DefaultDataStoreHandler implements DataStoreHandler {
-    private final static Logger _log = Logger.getLogger(DefaultDataStoreHandler.class);
+public class FKFVDataStoreHandler implements DataStoreHandler {
+    /**
+     * The logger.
+     */
+    private final static Logger _logger = Logger.getLogger(FKFVDataStoreHandler.class);
+    
+    /**
+     * The number of bytes required for fixed-length keys.
+     */
+    private final int _keyLength;
+    
+    /**
+     * The number of bytes required for fixed-length values.
+     */
+    private final int _valLength;
+    
+    /**
+     * Creates a new instance of FKFVDataStoreHandler.
+     * 
+     * @param keyLength   - the number of bytes required for fixed-length keys.
+     * @param valueLength - the number of bytes required for fixed-length values.
+     */
+    protected FKFVDataStoreHandler(int keyLength, int valueLength) {
+        this._keyLength = keyLength;
+        this._valLength = valueLength;
+    }
+    
+    /**
+     * Gets the number of bytes required for fixed-length keys.
+     */
+    public final int getKeyLength() {
+        return _keyLength;
+    }
+    
+    /**
+     * Gets the number of bytes required for fixed-length values.
+     */
+    public final int getValueLength() {
+        return _valLength;
+    }
     
     @Override
     public final byte[] assemble(byte[] key, byte[] value) {
         if(value == null) return null;
         
-        byte[] result = new byte[4 + 4 + key.length + 4 + value.length];
+        byte[] result = new byte[Bytes.NUM_BYTES_IN_INT + _keyLength + _valLength];
         ByteBuffer bb = ByteBuffer.wrap(result);
         
         // count
         bb.putInt(1);
         
         // add key
-        bb.putInt(key.length);
         bb.put(key);
         
         // add value
-        bb.putInt(value.length);
         bb.put(value);
         
         return result;
@@ -69,7 +105,7 @@ public final class DefaultDataStoreHandler implements DataStoreHandler {
         if(newLength == 0) return assemble(key, value);
         if(value == null) return Arrays.copyOf(data, newLength);
         
-        byte[] result = new byte[newLength + 4 + key.length + 4 + value.length];
+        byte[] result = new byte[newLength + _keyLength + _valLength];
         System.arraycopy(data, 0, result, 0, newLength);
         
         ByteBuffer bb = ByteBuffer.wrap(result);
@@ -82,11 +118,9 @@ public final class DefaultDataStoreHandler implements DataStoreHandler {
         
         // add key
         bb.position(newLength);
-        bb.putInt(key.length);
         bb.put(key);
         
         // add value
-        bb.putInt(value.length);
         bb.put(value);
         
         return result;
@@ -104,22 +138,17 @@ public final class DefaultDataStoreHandler implements DataStoreHandler {
             int cnt = originalCnt;
             while(cnt > 0) {
                 // Process key
-                int len = bb.getInt();
-                if(Bytes.equals(key, data, bb.position(), len)) {
+                if(Bytes.equals(key, data, bb.position(), _keyLength)) {
                     return originalCnt;
                 }
-                bb.position(bb.position() + len);
-                
-                // Process value
-                len = bb.getInt();
-                bb.position(bb.position() + len);
+                bb.position(bb.position() + _keyLength + _valLength);
                 
                 cnt--;
             }
             
             return -originalCnt;
         } catch (Exception e) {
-            _log.error("Failed to countCollisions", e);
+            _logger.error("Failed to countCollisions", e);
             return 0;
         }
     }
@@ -132,23 +161,17 @@ public final class DefaultDataStoreHandler implements DataStoreHandler {
         int cnt = bb.getInt();
         while(cnt > 0) {
             // Process key
-            int len = bb.getInt();
-            if(Bytes.equals(key, data, bb.position(), len)) {
-                // pass key data
-                bb.position(bb.position() + len);
+            if(Bytes.equals(key, data, bb.position(), _keyLength)) {
+                // Pass key data
+                bb.position(bb.position() + _keyLength);
                 
                 // Process value
-                len = bb.getInt();
-                byte[] result = new byte[len];
+                byte[] result = new byte[_valLength];
                 bb.get(result);
                 
                 return result;
             }
-            bb.position(bb.position() + len);
-            
-            // Process value
-            len = bb.getInt();
-            bb.position(bb.position() + len);
+            bb.position(bb.position() + _keyLength + _valLength);
             
             cnt--;
         }
@@ -169,22 +192,12 @@ public final class DefaultDataStoreHandler implements DataStoreHandler {
             offset1 = bb.position();
             
             // Process key
-            int len = bb.getInt();
-            if(Bytes.equals(key, data, bb.position(), len)) {
-                bb.position(bb.position() + len);
-                
-                // Process value
-                len = bb.getInt();
-                bb.position(bb.position() + len);
-                
+            if(Bytes.equals(key, data, bb.position(), _keyLength)) {
+                bb.position(bb.position() + _keyLength + _valLength);
                 offset2 = bb.position();
                 break;
             }
-            bb.position(bb.position() + len);
-            
-            // Process value
-            len = bb.getInt();
-            bb.position(bb.position() + len);
+            bb.position(bb.position() + _keyLength + _valLength);
             
             cnt--;
         }
@@ -227,23 +240,21 @@ public final class DefaultDataStoreHandler implements DataStoreHandler {
             
             while(cnt > 0) {
                 // Process key
-                int len = bb.getInt();
-                byte[] key = new byte[len];
+                byte[] key = new byte[_keyLength];
                 bb.get(key);
                 
                 // Add to result
                 result.add(key);
                 
                 // Process value
-                len = bb.getInt();
-                bb.position(bb.position() + len);
+                bb.position(bb.position() + _valLength);
                 
                 cnt--;
             }
             
             return result;
         } catch(Exception e) {
-            _log.error("Failed to extractKeys", e);
+            _logger.error("Failed to extractKeys", e);
             return null;
         }
     }
@@ -257,12 +268,10 @@ public final class DefaultDataStoreHandler implements DataStoreHandler {
             
             while(cnt > 0) {
                 // Process key
-                int len = bb.getInt();
-                bb.position(bb.position() + len);
+                bb.position(bb.position() + _keyLength);
                 
                 // Process value
-                len = bb.getInt();
-                byte[] value = new byte[len];
+                byte[] value = new byte[_valLength];
                 bb.get(value);
                 
                 // Add to result
@@ -273,7 +282,7 @@ public final class DefaultDataStoreHandler implements DataStoreHandler {
             
             return result;
         } catch (Exception e) {
-            _log.error("Failed to extractValues", e);
+            _logger.error("Failed to extractValues", e);
             return null;
         }
     }
@@ -287,13 +296,11 @@ public final class DefaultDataStoreHandler implements DataStoreHandler {
             
             while(cnt > 0) {
                 // Process key
-                int len = bb.getInt();
-                byte[] key = new byte[len];
+                byte[] key = new byte[_keyLength];
                 bb.get(key);
                 
                 // Process value
-                len = bb.getInt();
-                byte[] val = new byte[len];
+                byte[] val = new byte[_valLength];
                 bb.get(val);
                 
                 // Add to result
@@ -304,7 +311,7 @@ public final class DefaultDataStoreHandler implements DataStoreHandler {
             
             return result;
         } catch(Exception e) {
-            _log.error("Failed to extractEntries", e);
+            _logger.error("Failed to extractEntries", e);
             return null;
         }
     }
@@ -318,13 +325,8 @@ public final class DefaultDataStoreHandler implements DataStoreHandler {
         for(Entry<byte[], byte[]> e : entries) {
             b = e.getKey();
             if(b != null) {
-                len += Bytes.NUM_BYTES_IN_INT;
-                len += b.length;
-                
-                b = e.getValue();
-                len += Bytes.NUM_BYTES_IN_INT;
-                len += b == null ? 0 : e.getValue().length;
-                
+                len += _keyLength;
+                len += _valLength;
                 cnt++;
             }
         }
@@ -336,16 +338,10 @@ public final class DefaultDataStoreHandler implements DataStoreHandler {
         for(Entry<byte[], byte[]> e : entries) {
             b = e.getKey();
             if(b != null) {
-                bb.putInt(b.length);
                 bb.put(b);
                 
                 b = e.getValue();
-                if(b == null) {
-                    bb.putInt(0);
-                } else {
-                    bb.putInt(b.length);
-                    bb.put(b);
-                }
+                bb.put(b);
             }
         }
         

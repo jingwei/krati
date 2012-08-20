@@ -86,6 +86,14 @@ public interface DataStoreHandler extends DataHandler {
     public List<byte[]> extractKeys(byte[] data);
     
     /**
+     * Extracts the values from the specified <code>data</code>.
+     * 
+     * @param data - the assembled data
+     * @return a list of values.
+     */
+    public List<byte[]> extractValues(byte[] data);
+    
+    /**
      * Extracts the mappings from the specified <code>data</code>.
      * 
      * @param data - the assembled data

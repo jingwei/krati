@@ -14,7 +14,7 @@
  * the License.
  */
 
-package test.store;
+package test.store.handler;
 
 import java.io.File;
 import java.util.Arrays;
@@ -34,8 +34,7 @@ import krati.store.DynamicDataStore;
  * TestDataStoreHandler
  * 
  * @author jwu
- * 03/18, 2011
- *
+ * @since 03/18, 2011
  */
 public class TestDataStoreHandler extends TestCase {
     static Random rand = new Random();
@@ -157,7 +156,7 @@ public class TestDataStoreHandler extends TestCase {
         assertEquals(data1.length, h.removeByKey(key, data1));
     }
     
-    public void testDataStoreConfig() throws Exception {
+    public void testStoreConfig() throws Exception {
         File dir = FileUtils.getTestDir(getClass().getSimpleName());
         
         StoreConfig config;

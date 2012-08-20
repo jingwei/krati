@@ -22,6 +22,7 @@ import krati.core.StoreConfig;
 import krati.core.StoreFactory;
 import krati.core.StoreParams;
 import krati.store.DataStore;
+import krati.store.index.HashIndexDataHandler;
 import test.StatsLog;
 
 /**
@@ -55,6 +56,9 @@ public class TestIndexedStoreSmallIndex extends EvalDataStore {
         // Configure index segments
         config.setInt(StoreParams.PARAM_INDEX_SEGMENT_FILE_SIZE_MB, 32);
         config.setDouble(StoreParams.PARAM_INDEX_SEGMENT_COMPACT_FACTOR, 0.5);
+        
+        // Configure for small memory footprint
+        config.setDataHandler(new HashIndexDataHandler());
         
         return StoreFactory.createIndexedDataStore(config);
     }

@@ -405,6 +405,15 @@ public class StoreConfig extends StoreParams {
     }
     
     /**
+     * Sets a class property via a string property name.
+     */ 
+    public boolean setClass(String pName, Class<?> pValue) {
+        if(pName == null) return false;
+        _properties.setProperty(pName, pValue.getName() + "");
+        return true;
+    }
+    
+    /**
      * Gets an integer property via a string property name.
      * 
      * @param pName        - the property name
