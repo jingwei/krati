@@ -215,14 +215,14 @@ public final class BytesDB implements Persistable, Closeable {
             
             while(_enabled) {
                 if(index < _addrArray.length()) {
-                    long addr = _addrArray.get(index);
-                    if(addr < Segment.dataStartPosition) {
-                        try {
+                    try {
+                        long addr = _addrArray.get(index);
+                        if (addr < Segment.dataStartPosition) {
                             _nextIndexQueue.put(index);
                             lastPut = index;
-                        } catch (InterruptedException e) {
-                            _logger.warn("Failed to add to _nextIndexQueue", e);
                         }
+                    } catch (Exception e) {
+                        _logger.warn("Failed to add to _nextIndexQueue", e);
                     }
                     index++;
                 } else {
