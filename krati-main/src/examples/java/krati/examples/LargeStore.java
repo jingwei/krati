@@ -37,7 +37,7 @@ import krati.store.index.HashIndexDataHandler;
  * </ul>
  * 
  * <p>
- * For example, the store has 200,000,000 keys; the size of keys is 8 to 16 bytes;
+ * For example, a store has 200,000,000 keys; the size of keys is 8 to 16 bytes;
  * the size of values is larger than 128 bytes.
  * </p>
  * 
@@ -51,13 +51,10 @@ public class LargeStore implements Closeable {
     /**
      * Constructs a new instance of LargeStore.
      * 
-     * @param homeDir         - the home directory of LargeStore.
-     * @param initialCapacity - the initial capacity of LargeStore, which is expected to be 8 to 16 times smaller than the expected number of keys.
-     * <ul>
-     * <li> This value should be significantly (e.g., 8 to 16 times) smaller than the expected number of keys. </li>
-     * <li> This value should NOT be modified once the underlying store is created. </li>
-     * </ul>
-     * @throws Exception if a LargeStore instance can not be created.
+     * @param homeDir         - the store home directory.
+     * @param initialCapacity - the store initial capacity (i.e. the expected number of keys).
+     *                          This value should NOT be modified once the underlying store is created.
+     * @throws Exception if the store cannot be created.
      */
     public LargeStore(File homeDir, int initialCapacity) throws Exception {
         _initialCapacity = initialCapacity;
@@ -88,6 +85,10 @@ public class LargeStore implements Closeable {
         // Configure index segments
         config.setInt(StoreParams.PARAM_INDEX_SEGMENT_FILE_SIZE_MB, 32);
         config.setDouble(StoreParams.PARAM_INDEX_SEGMENT_COMPACT_FACTOR, 0.5);
+        
+        // Configure index initial capacity
+        int indexInitialCapacity = initialCapacity / 8;
+        config.setInt(StoreParams.PARAM_INDEX_INITIAL_CAPACITY, indexInitialCapacity);
         
         // Configure to reduce memory footprint
         config.setDataHandler(new HashIndexDataHandler());
@@ -174,20 +175,14 @@ public class LargeStore implements Closeable {
      * <p>
      * The Java JVM size can be calculated based on the expected number of keys, <code>N</code>, using the following equation:
      * <pre>
-     *   N * (2 * keySize + 32) / 1024 / 1024 / 1024 plus 4
+     *   N * (2 * keySize + 20) / 1024 / 1024 / 1024 plus 4
      * </pre>
      * 
      * <p>
      * For example, given that the expected number of keys is 200,000,000 and the size of keys is 10 bytes,
      * the required Java JVM size is approximately
      * <pre>
-     *   200000000 * (2 * 10 + 32) / 1024 / 1024 / 1024 + 4 = 14G
-     * </pre>
-     * 
-     * <p>
-     * The <code>initialCapacity</code> can be calculated using the following:
-     * <pre>
-     *   N/16 or N/8
+     *   200000000 * (2 * 10 + 20) / 1024 / 1024 / 1024 + 4 = 12G
      * </pre>
      */
     public static void main(String[] args) {

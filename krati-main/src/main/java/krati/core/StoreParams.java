@@ -301,6 +301,11 @@ public class StoreParams {
     public static final String PARAM_SEGMENT_FACTORY_CLASS  = "krati.store.segment.factory.class";
     
     /**
+     * Parameter for specifying the index initial capacity.
+     */
+    public static final String PARAM_INDEX_INITIAL_CAPACITY = "krati.index.initial.capacity";
+    
+    /**
      * Parameter for specifying the index segment file size in MB.
      */
     public static final String PARAM_INDEX_SEGMENT_FILE_SIZE_MB   = "krati.index.segment.file.size";

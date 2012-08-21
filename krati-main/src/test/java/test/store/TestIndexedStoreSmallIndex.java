@@ -37,15 +37,22 @@ public class TestIndexedStoreSmallIndex extends EvalDataStore {
         super(TestIndexedStore.class.getSimpleName());
     }
     
-    public int getInitialCapacity() {
-        return _keyCount / 8;
+    protected int getInitialCapacity() {
+        return _keyCount;
+    }
+    
+    protected int getIndexInitialCapacity() {
+        return getInitialCapacity() / 8;
     }
     
     @Override
     protected DataStore<byte[], byte[]> getDataStore(File storeDir) throws Exception {
         StoreConfig config = new StoreConfig(storeDir, getInitialCapacity());
+        
         config.setBatchSize(10000);
         config.setNumSyncBatches(100);
+        
+        // Configure store segments
         config.setSegmentFactory(new krati.core.segment.WriteBufferSegmentFactory());
         config.setSegmentFileSizeMB(_segFileSizeMB);
         config.setSegmentCompactFactor(0.67);
@@ -53,6 +60,9 @@ public class TestIndexedStoreSmallIndex extends EvalDataStore {
         // Configure index segments
         config.setInt(StoreParams.PARAM_INDEX_SEGMENT_FILE_SIZE_MB, 32);
         config.setDouble(StoreParams.PARAM_INDEX_SEGMENT_COMPACT_FACTOR, 0.5);
+        
+        // Configure index initial capacity
+        config.setInt(StoreParams.PARAM_INDEX_INITIAL_CAPACITY, getIndexInitialCapacity());
         
         // Configure to reduce memory footprint
         config.setDataHandler(new HashIndexDataHandler());

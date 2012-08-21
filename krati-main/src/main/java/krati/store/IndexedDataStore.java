@@ -90,7 +90,9 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
         
         // Create hash index
         _indexHome = new File(_homeDir, "index");
-        int indexInitialCapacity = config.getInitialCapacity();
+        int indexInitialCapacity =
+                config.getInt(StoreParams.PARAM_INDEX_INITIAL_CAPACITY,
+                              config.getInitialCapacity());
         int indexSegmentFileSizeMB =
                 config.getInt(StoreParams.PARAM_INDEX_SEGMENT_FILE_SIZE_MB,
                               StoreParams.INDEX_SEGMENT_FILE_SIZE_MB_DEFAULT);
