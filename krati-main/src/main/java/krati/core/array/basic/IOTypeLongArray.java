@@ -201,11 +201,11 @@ public class IOTypeLongArray extends AbstractRecoverableArray<EntryValueLong> im
         // Cap length to Integer.MAX_VALUE 
         int newLength = (capacity < Integer.MAX_VALUE) ? (int)capacity : Integer.MAX_VALUE;
         
-        // Reset _length
-        _length = newLength;
-        
         // Expand array file on disk
         _arrayFile.setArrayLength(newLength, null /* do not rename */);
+        
+        // Reset _length
+        _length = newLength;
         
         // Add to logging
         _logger.info("Expanded: _length=" + _length);

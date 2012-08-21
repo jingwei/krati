@@ -177,12 +177,12 @@ public class DynamicLongArray extends AbstractRecoverableArray<EntryValueLong> i
         // Cap length to Integer.MAX_VALUE 
         int newLength = (capacity < Integer.MAX_VALUE) ? (int)capacity : Integer.MAX_VALUE;
         
-        // Reset _length
-        _length = newLength;
-        
         // Expand internal array in memory 
         if(_internalArray.length() < newLength) {
-            _internalArray.expandCapacity(index);
+            _internalArray.expandCapacity(newLength - 1);
+            
+            // Reset _length
+            _length = newLength;
         }
         
         // Expand array file on disk
