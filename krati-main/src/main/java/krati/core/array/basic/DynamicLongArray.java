@@ -180,13 +180,13 @@ public class DynamicLongArray extends AbstractRecoverableArray<EntryValueLong> i
         // Expand internal array in memory 
         if(_internalArray.length() < newLength) {
             _internalArray.expandCapacity(newLength - 1);
-            
-            // Reset _length
-            _length = newLength;
         }
         
         // Expand array file on disk
         _arrayFile.setArrayLength(newLength, null /* do not rename */);
+        
+        // Reset _length
+        _length = newLength;
         
         // Add to logging
         _log.info("Expanded: _length=" + _length);
