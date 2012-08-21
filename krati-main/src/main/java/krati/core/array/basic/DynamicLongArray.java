@@ -43,6 +43,7 @@ public class DynamicLongArray extends AbstractRecoverableArray<EntryValueLong> i
     private final static int _subArraySize = DynamicConstants.SUB_ARRAY_SIZE;
     private final static Logger _log = Logger.getLogger(DynamicLongArray.class);
     private MemoryLongArray _internalArray;
+    private float _expandRate = 0;
     
     /**
      * The mode can only be <code>Mode.INIT</code>, <code>Mode.OPEN</code> and <code>Mode.CLOSED</code>.
@@ -150,10 +151,30 @@ public class DynamicLongArray extends AbstractRecoverableArray<EntryValueLong> i
     }
     
     @Override
+    public float getExpandRate() {
+        return _expandRate;
+    }
+    
+    @Override
+    public void setExpandRate(float rate) {
+        if(rate < 0 || rate > 1) {
+            throw new IllegalArgumentException("invalid value: " + rate);
+        }
+        this._expandRate = rate;
+    }
+    
+    @Override
     public void expandCapacity(int index) throws Exception {
         if(index < _length) return;
         
+        // Choose the larger capacity between linear growth and exponential growth
         long capacity = ((index >> _subArrayBits) + 1L) * _subArraySize;
+        long expandTo = ((_length + (long)(_length * getExpandRate())) >> _subArrayBits) * _subArraySize;
+        if(capacity < expandTo) {
+            capacity = expandTo;
+        }
+        
+        // Cap length to Integer.MAX_VALUE 
         int newLength = (capacity < Integer.MAX_VALUE) ? (int)capacity : Integer.MAX_VALUE;
         
         // Reset _length

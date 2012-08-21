@@ -44,6 +44,7 @@ import krati.util.DaemonThreadFactory;
  * <p>
  * 05/31, 2011 - Added support for Closeable <br/>
  * 06/28, 2011 - Added constructor using StoreConfig <br/>
+ * 08/21, 2012 - Grow capacity by approximately 20% upon auto expansion <br/>
  */
 public final class BytesDB implements Persistable, Closeable {
     final static Logger _logger = Logger.getLogger(BytesDB.class);
@@ -97,6 +98,9 @@ public final class BytesDB implements Persistable, Closeable {
         this._nextIndexExecutor = Executors.newSingleThreadExecutor(new DaemonThreadFactory());
         this._nextIndexExecutor.execute(_nextIndexLookup);
         
+        // Grow 20% upon auto expansion
+        this.setExpandRate(0.2f);
+        
         // Initialize mode
         this._mode = Mode.OPEN;
         _logger.info("mode=" + _mode);
@@ -114,6 +118,14 @@ public final class BytesDB implements Persistable, Closeable {
     
     public final File getHomeDir() {
         return _config.getHomeDir();
+    }
+    
+    public final float getExpandRate() {
+        return _addrArray.getExpandRate();
+    }
+    
+    public final void setExpandRate(float rate) {
+        _addrArray.setExpandRate(rate);
     }
     
     public final int capacity() {

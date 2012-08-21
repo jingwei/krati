@@ -153,6 +153,16 @@ public class StaticLongArray extends AbstractRecoverableArray<EntryValueLong> im
     }
     
     @Override
+    public float getExpandRate() {
+        return 0;
+    }
+    
+    @Override
+    public void setExpandRate(float rate) {
+        // Do nothing
+    }
+    
+    @Override
     public void expandCapacity(int index) throws Exception {
         // Do nothing
     }
