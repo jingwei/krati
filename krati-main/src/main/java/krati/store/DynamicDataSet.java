@@ -55,7 +55,7 @@ import krati.util.LinearHashing;
  * 06/08, 2011 - Scale to the Integer.MAX_VALUE capacity <br/>
  * 06/25, 2011 - Added constructor using StoreConfig <br/>
  * 06/12, 2012 - Code refactoring on the split method <br/>
- * 08/14, 2012 - Disable hashing at capacity 1^30 <br/>
+ * 08/24, 2012 - Disable full rehashing on open/close <br/>
  */
 public class DynamicDataSet implements DataSet<byte[]> {
     private final static Logger _log = Logger.getLogger(DynamicDataSet.class);
@@ -662,8 +662,8 @@ public class DynamicDataSet implements DataSet<byte[]> {
             _levelCapacity = getUnitCapacity() * (1 << _level);
             _loadCountThreshold = (int)(getCapacity() * _loadThreshold);
             
-            // Need to re-populate the last unit
-            while(canSplit()) {
+            // Need to re-populate the last unit. Do not perform full rehashing!
+            while(canSplitOnCapacity()) {
                 split();
             }
         }
@@ -674,6 +674,21 @@ public class DynamicDataSet implements DataSet<byte[]> {
             // The splitTo must NOT overflow Integer.MAX_VALUE
             int splitTo = _levelCapacity + _split;
             if (Integer.MAX_VALUE > splitTo && splitTo >= _levelCapacity) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Perform split on the current capacity.
+     */
+    protected boolean canSplitOnCapacity() {
+        if(0 < _split) {
+            // The splitTo must NOT overflow the current capacity
+            int splitTo = _levelCapacity + _split;
+            if (capacity() > splitTo && splitTo >= _levelCapacity) {
                 return true;
             }
         }
@@ -727,15 +742,13 @@ public class DynamicDataSet implements DataSet<byte[]> {
                 _level = nextLevel;
                 _levelCapacity = nextLevelCapacity;
                 _loadCountThreshold = (int)(getCapacity() * _loadThreshold);
+            } else {
+                /* NOT FEASIBLE!
+                 * This because canSplit() and split() are paired together
+                 */
             }
             
             _log.info("split-done " + getStatus());
-            
-            if (_level == _maxLevel) {
-                _split = 0;
-                _loadCountThreshold = Integer.MAX_VALUE;
-                _log.info("split-stop " + getStatus());
-            }
         }
     }
     
@@ -818,7 +831,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
     public synchronized void close() throws IOException {
         if(_dataArray.isOpen()) {
             try {
-                while(canSplit()) {
+                while(canSplitOnCapacity()) {
                     split();
                 }
                 _dataArray.sync();
