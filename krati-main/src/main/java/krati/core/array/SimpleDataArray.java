@@ -388,23 +388,21 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
         int writerLoadSize = writerSegment.getLoadSize();
         int targetLoadSize = compactorTarget.getLoadSize();
         if (targetLoadSize < writerLoadSize) {
-            final long totalWait = 1; // milliseconds
-            final long startTime = System.currentTimeMillis();
+            long wait = 100000; // 0.1 milliseconds
+            long endTime = System.nanoTime() + wait;
             targetLoadSize += (targetLoadSize == 0 ?
                                  (lastWriteSize * 2) :
                                  (int)((double)writerLoadSize / targetLoadSize * lastWriteSize));
             
             while(compactorTarget.getLoadSize() < targetLoadSize) {
-                // Sleep 0.2 milliseconds only if no compaction batch was consumed
+                // Sleep 0.02 milliseconds only if no compaction batch was consumed
                 if(!consumeCompactionBatch()) {
                     try {
-                        Thread.sleep(0 /* milliseconds */, 200000 /* nanoseconds */);
+                        Thread.sleep(0 /* milliseconds */, 20000 /* nanoseconds */);
                     } catch(Exception e) {}
                 }
                 
-                long elapsedTime = System.currentTimeMillis() - startTime; 
-                if (elapsedTime >= totalWait) {
-                    _log.trace("throttle " + elapsedTime + " ms");
+                if (System.nanoTime() > endTime) {
                     return;
                 }
             }
