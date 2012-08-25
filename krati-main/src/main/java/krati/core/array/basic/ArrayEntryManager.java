@@ -300,7 +300,7 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable {
       _entryPool.addToServiceQueue(_entryCompaction);
       _entryCompaction = _entryPool.next();
       
-      _log.trace("switchEntry to " + _entryCompaction.getId() + " _lwmScn=" + _lwmScn + " _hwmScn=" + _hwmScn + " Compaction");
+      //_log.trace("switchEntry to " + _entryCompaction.getId() + " _lwmScn=" + _lwmScn + " _hwmScn=" + _hwmScn + " Compaction");
     }
     
     if (!_entry.isEmpty()) {
@@ -321,7 +321,7 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable {
       _entryPool.addToServiceQueue(_entry);
       _entry = _entryPool.next();
       
-      _log.trace("switchEntry to " + _entry.getId() + " _lwmScn=" + _lwmScn + " _hwmScn=" + _hwmScn);
+      //_log.trace("switchEntry to " + _entry.getId() + " _lwmScn=" + _lwmScn + " _hwmScn=" + _hwmScn);
     }
     
     // Apply entry logs to array file
@@ -340,7 +340,7 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable {
       _entryPool.addToServiceQueue(_entryCompaction);
       _entryCompaction = _entryPool.next();
       
-      _log.trace("switchEntry to " + _entryCompaction.getId() + " _lwmScn=" + _lwmScn + " _hwmScn=" + _hwmScn + " Compaction");
+      //_log.trace("switchEntry to " + _entryCompaction.getId() + " _lwmScn=" + _lwmScn + " _hwmScn=" + _hwmScn + " Compaction");
     }
     
     // Apply entry logs to array file
