@@ -84,10 +84,16 @@ public class EntryPool<T extends EntryValue> {
         
         if (freeEntry == null) {
             freeEntry = _entryFactory.newEntry(_entryCapacity);
-            _log.trace("Entry " + freeEntry.getId() + " created: " + freeEntry.getClass().getSimpleName());
+            
+            if(_log.isTraceEnabled()) {
+                _log.trace("Entry " + freeEntry.getId() + " created: " + freeEntry.getClass().getSimpleName());
+            }
         }
         
-        _log.trace("Entry " + freeEntry.getId() + " serviceId " + _entryServiceIdCounter);
+        if(_log.isTraceEnabled()) {
+            _log.trace("Entry " + freeEntry.getId() + " serviceId " + _entryServiceIdCounter);
+        }
+        
         freeEntry.setServiceId(_entryServiceIdCounter++);
         return freeEntry;
     }

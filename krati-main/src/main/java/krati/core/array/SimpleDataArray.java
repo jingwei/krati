@@ -185,13 +185,15 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
         int consumeCount = updateCount - ignoreCount;
         int totalConsumeBytes = totalUpdateBytes - totalIgnoreBytes;
         
-        _log.trace("consumed compaction batch " + updateBatch.getDescriptiveId() +
-                  " updates " + consumeCount + "/" + updateCount +
-                  " bytes " + totalConsumeBytes + "/" + totalUpdateBytes);
+        if(_log.isTraceEnabled()) {
+            _log.trace("consumed compaction batch " +
+                       updateBatch.getDescriptiveId() +
+                       " updates " + consumeCount + "/" + updateCount +
+                       " bytes " + totalConsumeBytes + "/" + totalUpdateBytes);
+        }
         
         // Update segment load size
         segTarget.decrLoadSize(totalIgnoreBytes);
-        _log.trace("Segment " + segTarget.getSegmentId() + " catchup " + segTarget.getStatus());
     }
     
     /**
@@ -402,7 +404,7 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
                     } catch(Exception e) {}
                 }
                 
-                if (System.nanoTime() > endTime) {
+                if (System.nanoTime() >= endTime) {
                     return;
                 }
             }
@@ -807,10 +809,8 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
                             
                             // wait until compactor is done
                             while(_compactor.isStarted()) {
-                                consumeCompactionBatch();
-                                
+                                consumeCompactionBatches();
                                 _log.trace("wait for compactor");
-                                Thread.sleep(10);
                             }
                             
                             persist();

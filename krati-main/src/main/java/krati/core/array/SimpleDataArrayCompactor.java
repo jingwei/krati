@@ -696,7 +696,6 @@ class SimpleDataArrayCompactor implements Runnable {
             this._capacity = capacity;
             this._batchId = _counter++;
             this._buffer = ByteBuffer.allocate(_capacity * _unitSize);
-            _log.trace("CompactionUpdateBatch " + _batchId);
         }
         
         /**
@@ -969,7 +968,10 @@ class SimpleDataArrayCompactor implements Runnable {
             } catch(BufferOverflowException e) {
                 segTarget.force();
                 _batch.setTargetSegment(segTarget);
-                _log.trace("compaction batch " + _batch.getDescriptiveId());
+                
+                if(_log.isTraceEnabled()) {
+                    _log.trace("compaction batch " + _batch.getDescriptiveId());
+                }
                 
                 _serviceBatchQueue.add(_batch);
                 nextBatch();
@@ -989,7 +991,10 @@ class SimpleDataArrayCompactor implements Runnable {
             segTarget.force();
             if(_batch.size() > 0) {
                 _batch.setTargetSegment(segTarget);
-                _log.trace("compaction batch " + _batch.getDescriptiveId());
+                
+                if(_log.isTraceEnabled()) {
+                    _log.trace("compaction batch " + _batch.getDescriptiveId());
+                }
                 
                 _serviceBatchQueue.add(_batch);
                 _batchServiceIdCounter = 0;
