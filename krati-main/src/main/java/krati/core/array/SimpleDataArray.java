@@ -104,9 +104,9 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
     private volatile Mode _mode = Mode.INIT;
     
     /**
-     * Append position triggering segment meta data update
+     * The threshold to initialize throttling. 
      */
-    private volatile long _metaUpdatePosition = Segment.dataStartPosition;
+    protected long _throttleThreshold;
     
     /**
      * Constructs a DataArray with Segment Compact Factor default to 0.5. 
@@ -132,6 +132,9 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
         this._segmentManager = segmentManager;
         this._segmentCompactFactor = segmentCompactFactor;
         this._addressFormat = new AddressFormat();
+        
+        // Initialize the throttling threshold at 25% of the segment size
+        _throttleThreshold = (long)(segmentManager.getSegmentFileSizeMB() * 1024L * 1024L * 0.25);
         
         // Add segment persist listener
         addressArray.setPersistListener(new SegmentPersistListener());
@@ -258,7 +261,6 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
      */
     protected void init() {
         try {
-            _metaUpdatePosition = Segment.dataStartPosition;
             _segment = _segmentManager.nextSegment();
             _compactor.startsCycle();
             
@@ -761,12 +763,6 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
                 long address = _addressFormat.composeAddress((int)pos, _segment.getSegmentId(), length);
                 setAddress(index, address, scn);
                 
-                // update segment meta on first write
-                if (pos >= _metaUpdatePosition) {
-                    _segmentManager.updateMeta();
-                    _metaUpdatePosition = _segment.getInitialSize();
-                }
-                
                 if(_compactor.isStarted()) {
                     consumeCompactionBatch();
                     
@@ -774,7 +770,9 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
                      * Throttle the writer to average-out write latency.
                      * Give the compactor a chance to catch up with the writer.
                      */
-                    doThrottling(length + 4);
+                    if(_segment.getAppendPosition() > _throttleThreshold) {
+                        doThrottling(length + 4);
+                    }
                 }
                 
                 return;
@@ -788,7 +786,6 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
                     // get the next segment available for appending
                     _segment = nextSegment;
                     _compactor.pollTargetSegment();
-                    _metaUpdatePosition = _segment.getInitialSize();
                     
                     _log.info("nextSegment from compactor");
                     _log.info("Segment " + _segment.getSegmentId() + " online: " + _segment.getStatus());
@@ -800,7 +797,6 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
                             persist();
                             
                             // get the next segment available for appending
-                            _metaUpdatePosition = Segment.dataStartPosition;
                             _segment = _segmentManager.nextSegment();
                             
                             _log.info("Segment " + _segment.getSegmentId() + " online: " + _segment.getStatus());
@@ -819,9 +815,6 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
                             _segment = _compactor.pollTargetSegment();
                             if(_segment == null) {
                                 _segment = _segmentManager.nextSegment();
-                                _metaUpdatePosition = Segment.dataStartPosition;
-                            } else {
-                                _metaUpdatePosition = _segment.getInitialSize();
                             }
                             
                             _log.info("Segment " + _segment.getSegmentId() + " online: " + _segment.getStatus());
@@ -832,7 +825,6 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
                         persist();
                         
                         // get the next segment available for appending
-                        _metaUpdatePosition = Segment.dataStartPosition;
                         _segment = _segmentManager.nextSegment();
                         _compactor.startsCycle();
                         

@@ -101,14 +101,14 @@ public final class SegmentManager implements Closeable {
      */
     private volatile Mode _mode = Mode.INIT;
     
-    private SegmentManager(String segmentHomePath) throws IOException {
-        this(segmentHomePath, new MappedSegmentFactory());
-    }
-
-    private SegmentManager(String segmentHomePath, SegmentFactory segmentFactory) throws IOException {
-        this(segmentHomePath, segmentFactory, Segment.defaultSegmentFileSizeMB);
-    }
-
+    /**
+     * Creates an instance of SegmentManager.
+     * 
+     * @param segmentHomePath   - the file path to segment home
+     * @param segmentFactory    - the segment factory
+     * @param segmentFileSizeMB - the segment file size in MB
+     * @throws IOException
+     */
     private SegmentManager(String segmentHomePath, SegmentFactory segmentFactory, int segmentFileSizeMB) throws IOException {
         _log.info("init segHomePath=" + segmentHomePath + " segFileSizeMB=" + segmentFileSizeMB);
 
@@ -423,7 +423,7 @@ public final class SegmentManager implements Closeable {
     /**
      * Gets the instance of SegmentManager for the specified <code>segmentHomePath</code>. 
      * 
-     * @param segmentHomePath   - the file path to segment home.
+     * @param segmentHomePath   - the file path to segment home
      * @param segmentFactory    - the segment factory
      * @param segmentFileSizeMB - the segment file size in MB
      * @return the instance of SegmentManager
