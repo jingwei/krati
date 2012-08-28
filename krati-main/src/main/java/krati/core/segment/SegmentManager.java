@@ -97,11 +97,6 @@ public final class SegmentManager implements Closeable {
     private volatile SegmentMeta _segMeta = null;
     
     /**
-     * The current segment.
-     */
-    private volatile Segment _segCurrent = null;
-    
-    /**
      * The mode can only be <code>Mode.INIT</code>, <code>Mode.OPEN</code> and <code>Mode.CLOSED</code>.
      */
     private volatile Mode _mode = Mode.INIT;
@@ -154,13 +149,6 @@ public final class SegmentManager implements Closeable {
      */
     public SegmentFactory getSegmentFactory() {
         return _segFactory;
-    }
-    
-    /**
-     * Gets the current segment.
-     */
-    public Segment getCurrentSegment() {
-        return _segCurrent;
     }
     
     /**
@@ -239,8 +227,7 @@ public final class SegmentManager implements Closeable {
      * Gets the next segment available for read and write.
      */
     public synchronized Segment nextSegment() throws IOException {
-        _segCurrent = nextSegment(false);
-        return _segCurrent;
+        return nextSegment(false);
     }
     
     /**
@@ -252,7 +239,7 @@ public final class SegmentManager implements Closeable {
      * @return
      * @throws IOException
      */
-    private synchronized Segment nextSegment(boolean newOnly) throws IOException {
+    private Segment nextSegment(boolean newOnly) throws IOException {
         int index;
         Segment seg;
 
@@ -368,7 +355,6 @@ public final class SegmentManager implements Closeable {
         }
         
         _segList.clear();
-        _segCurrent = null;
         _recycleList.clear();
     }
     
