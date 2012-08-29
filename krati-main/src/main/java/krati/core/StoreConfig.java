@@ -418,7 +418,7 @@ public class StoreConfig extends StoreParams {
      * 
      * @param pName        - the property name
      * @param defaultValue - the default property value
-     * @return
+     * @return an integer property
      */
     public int getInt(String pName, int defaultValue) {
         String pValue = _properties.getProperty(pName);
@@ -430,7 +430,7 @@ public class StoreConfig extends StoreParams {
      * 
      * @param pName        - the property name
      * @param defaultValue - the default property value
-     * @return
+     * @return a float property
      */
     public float getFloat(String pName, float defaultValue) {
         String pValue = _properties.getProperty(pName);
@@ -442,7 +442,7 @@ public class StoreConfig extends StoreParams {
      * 
      * @param pName        - the property name
      * @param defaultValue - the default property value
-     * @return
+     * @return a double property
      */
     public double getDouble(String pName, double defaultValue) {
         String pValue = _properties.getProperty(pName);
@@ -454,7 +454,7 @@ public class StoreConfig extends StoreParams {
      * 
      * @param pName        - the property name
      * @param defaultValue - the default property value
-     * @return
+     * @return a boolean property
      */
     public boolean getBoolean(String pName, boolean defaultValue) {
         String pValue = _properties.getProperty(pName);
@@ -466,7 +466,7 @@ public class StoreConfig extends StoreParams {
      * 
      * @param pName        - the property name
      * @param defaultValue - the default property value
-     * @return
+     * @return a {@link Class} property
      */
     public Class<?> getClass(String pName, Class<?> defaultValue) {
         String pValue = _properties.getProperty(pName);

@@ -19,7 +19,7 @@ package krati.store.handler;
 import krati.util.Bytes;
 
 /**
- * Long2LongDataStoreHandler- the long key to long value {@link DataStoreHandler}.
+ * Long2LongDataStoreHandler- the long key to long value {@link krati.store.DataStoreHandler DataStoreHandler}.
  * 
  * @author jwu
  * @since 08/18, 2012

@@ -19,7 +19,7 @@ package krati.store.handler;
 import krati.util.Bytes;
 
 /**
- * Long2IntDataStoreHandler - the long key to integer value {@link DataStoreHandler}.
+ * Long2IntDataStoreHandler - the long key to integer value {@link krati.store.DataStoreHandler DataStoreHandler}.
  * 
  * @author jwu
  * @since 08/18, 2012

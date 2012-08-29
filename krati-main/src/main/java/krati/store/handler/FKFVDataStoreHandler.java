@@ -29,7 +29,7 @@ import krati.util.Bytes;
 import org.apache.log4j.Logger;
 
 /**
- * FKFVDataStoreHandler - The fixed-length key and fixed-length value {@link DataStoreHandler}.
+ * FKFVDataStoreHandler - The fixed-length key and fixed-length value {@link krati.store.DataStoreHandler DataStoreHandler}.
  * 
  * @author jwu
  * @since 08/18, 2012

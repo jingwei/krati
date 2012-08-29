@@ -29,7 +29,7 @@ import krati.util.Bytes;
 import org.apache.log4j.Logger;
 
 /**
- * VKFVDataStoreHandler - The varying-length key and fixed-length value {@link DataStoreHandler}.
+ * VKFVDataStoreHandler - The varying-length key and fixed-length value {@link krati.store.DataStoreHandler DataStoreHandler}.
  * 
  * <p>
  * VKFVDataStoreHandler only accepts keys with the length less than or equal to 65535.

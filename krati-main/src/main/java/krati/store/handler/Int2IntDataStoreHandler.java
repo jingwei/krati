@@ -19,7 +19,7 @@ package krati.store.handler;
 import krati.util.Bytes;
 
 /**
- * Int2IntDataStoreHandler - the integer key to integer value {@link DataStoreHandler}.
+ * Int2IntDataStoreHandler - the integer key to integer value {@link krati.store.DataStoreHandler DataStoreHandler}.
  * 
  * @author jwu
  * @since 08/18, 2012

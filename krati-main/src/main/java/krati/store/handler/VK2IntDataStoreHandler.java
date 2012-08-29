@@ -19,7 +19,7 @@ package krati.store.handler;
 import krati.util.Bytes;
 
 /**
- * VK2IntDataStoreHandler - the varying-length key to integer bytes {@link DataStoreHandler}.
+ * VK2IntDataStoreHandler - the varying-length key to integer bytes {@link krati.store.DataStoreHandler DataStoreHandler}.
  * 
  * @author jwu
  * @since 08/18, 2012
