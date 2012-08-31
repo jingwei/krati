@@ -476,7 +476,6 @@ class SimpleDataArrayCompactor implements Runnable {
         boolean succ = true;
         
         try {
-            _log.info("scanning " + segSourceId);
             AddressFormat addrFormat = _dataArray._addressFormat;
             SegmentIndexBuffer.IndexOffset reuse = new SegmentIndexBuffer.IndexOffset();
             
@@ -514,7 +513,7 @@ class SimpleDataArrayCompactor implements Runnable {
             
             // Push whatever left into update queue
             _updateManager.endUpdate(segTarget);
-            _log.info("bytes transferred from " + segSource.getSegmentId() + ": " + bytesTransferred + " time: " + c.tick() + " ms");
+            _log.info("bytes fastscanned from " + segSource.getSegmentId() + ": " + bytesTransferred + " time: " + c.tick() + " ms");
             
             return succ;
         } finally {
