@@ -102,6 +102,11 @@ public final class SegmentManager implements Closeable {
     private volatile Mode _mode = Mode.INIT;
     
     /**
+     * The SegmentIndexBuffer (SIB) manager.
+     */
+    private final SegmentIndexBufferManager _sibManager = new SegmentIndexBufferManager();
+    
+    /**
      * Creates an instance of SegmentManager.
      * 
      * @param segmentHomePath   - the file path to segment home
@@ -202,9 +207,15 @@ public final class SegmentManager implements Closeable {
             
             if(segId == (_segList.size() - 1)) {
                 try {
-                    // Delete the last segment.
+                    // Delete last segment.
                     _segList.remove(segId);
-                    seg.getSegmentFile().delete();
+                    
+                    File segFile = seg.getSegmentFile();
+                    if(segFile.exists()) segFile.delete();
+                    
+                    File sibFile = getSegmentIndexBufferFile(segId);
+                    if(sibFile.exists()) sibFile.delete();
+                    
                     _log.info("Segment " + seg.getSegmentId() + " deleted");
                 } catch(Exception e) {
                     _log.warn("Segment " + seg.getSegmentId() + " not deleted", e);
@@ -224,10 +235,96 @@ public final class SegmentManager implements Closeable {
     }
     
     /**
-     * Gets the next segment available for read and write.
+     * Opens the next segment available for read and write.
      */
     public synchronized Segment nextSegment() throws IOException {
-        return nextSegment(false);
+        Segment seg = nextSegment(false);
+        
+        // Remove the writer segment index buffer file.
+        File sibFile = getSegmentIndexBufferFile(seg.getSegmentId());
+        if(sibFile.exists()) {
+            sibFile.delete();
+        }
+        
+        return seg;
+    }
+    
+    /**
+     * Opens a {@link SegmentIndexBuffer} at the specified <code>segId</code>.
+     */
+    public synchronized SegmentIndexBuffer openSegmentIndexBuffer(int segId) {
+        return _sibManager.openSegmentIndexBuffer(segId);
+    }
+    
+    /**
+     * Loads the {@link SegmentIndexBuffer} file at the specified <code>segId</code>.
+     * 
+     * @return the {@link SegmentIndexBuffer} loaded successfully
+     * @throws IOException
+     */
+    public SegmentIndexBuffer loadSegmentIndexBuffer(int segId) {
+        File sibFile = getSegmentIndexBufferFile(segId);
+        if(sibFile.exists()) {
+            SegmentIndexBuffer sib = new SegmentIndexBuffer();
+            try {
+                _sibManager.getSegmentIndexBufferIO().read(sib, sibFile);
+                return sib;
+            } catch (Exception e) {
+                _log.warn(sibFile.getAbsolutePath() + " corrupted");
+                sibFile.delete();
+            }
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Flushes accumulated segment index buffers to disk.
+     */
+    public void flushSegmentIndexBuffers() {
+        SegmentIndexBuffer sib = null;
+        
+        while((sib = _sibManager.poll()) != null) {
+            File sibFile = getSegmentIndexBufferFile(sib.getSegmentId());
+            try {
+                _sibManager.getSegmentIndexBufferIO().write(sib, sibFile);
+            } catch (Exception e) {
+                _log.warn("failed to write " + sibFile.getAbsolutePath());
+                sibFile.delete();
+            }
+        }
+    }
+    
+    /**
+     * Removes the specified segment index buffer.
+     * 
+     * @return <code>true</code> if the operation is successful. Otherwise, <code>false</code>.
+     */
+    public boolean remove(SegmentIndexBuffer sib) {
+        return _sibManager.remove(sib);
+    }
+    
+    /**
+     * Submits the specified segment index buffer for flushing to disk.
+     * 
+     * @return <code>true</code> if the submission is successful. Otherwise, <code>false</code>.
+     */
+    public boolean submit(SegmentIndexBuffer sib) {
+        return _sibManager.submit(sib);
+    }
+    
+    /**
+     * Gets the segment index buffer file for the specified <code>segId</code>.
+     */
+    protected File getSegmentIndexBufferFile(int segId) {
+        return new File(_segHomePath, segId + ".sib");
+    }
+    
+    /**
+     * Gets the segment file for the specified <code>segId</code>.
+     */
+    protected File getSegmentFile(int segId) {
+        return new File(_segHomePath, segId + ".seg");
     }
     
     /**
@@ -262,7 +359,7 @@ public final class SegmentManager implements Closeable {
         }
 
         // Always create next segment as READ_WRITE
-        File segFile = new File(_segHomePath, index + ".seg");
+        File segFile = getSegmentFile(index);
         seg = getSegmentFactory().createSegment(index, segFile, _segFileSizeMB, Segment.Mode.READ_WRITE);
 
         if (index < _segList.size())

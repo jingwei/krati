@@ -66,6 +66,12 @@ public final class BytesDB implements Persistable, Closeable {
     private final LinkedBlockingQueue<Integer> _nextIndexQueue = new LinkedBlockingQueue<Integer>(_nextIndexQueueCapacity);
     private ExecutorService _nextIndexExecutor = null;
     
+    /**
+     * Creates a new BytesDB.
+     * 
+     * @param config - the BytesDB configuration
+     * @throws Exception if this BytesDB instance cannot be created.
+     */
     public BytesDB(StoreConfig config) throws Exception {
         config.validate();
         config.save();
@@ -88,7 +94,8 @@ public final class BytesDB implements Persistable, Closeable {
                 _config.getSegmentFileSizeMB());
         
         // Create simple data array
-        this._dataArray = new SimpleDataArray(_addrArray, segManager, _config.getSegmentCompactFactor());
+        _dataArray = new SimpleDataArray(_addrArray, segManager, _config.getSegmentCompactFactor());
+        _dataArray.setSibEnabled(true);  // Always enable segment index buffering for BytesDB.
         
         // Scan to count nextIndex
         this.initNextIndexCount();

@@ -35,6 +35,7 @@ import krati.core.array.entry.EntryValue;
 import krati.core.segment.AddressFormat;
 import krati.core.segment.Segment;
 import krati.core.segment.SegmentException;
+import krati.core.segment.SegmentIndexBuffer;
 import krati.core.segment.SegmentManager;
 import krati.core.segment.SegmentOverflowException;
 import krati.io.Closeable;
@@ -94,6 +95,11 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
     protected final double _segmentCompactFactor;
     
     /**
+     * The threshold to initialize throttling. 
+     */
+    protected final long _throttleThreshold;
+    
+    /**
      * Current working segment to append data to.
      */
     private volatile Segment _segment;
@@ -104,9 +110,14 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
     private volatile Mode _mode = Mode.INIT;
     
     /**
-     * The threshold to initialize throttling. 
+     * Current working segment index buffer.
      */
-    protected long _throttleThreshold;
+    private volatile SegmentIndexBuffer _sib;
+    
+    /**
+     * Whether segment index buffer is enabled.
+     */
+    private volatile boolean _sibEnabled = false;
     
     /**
      * Constructs a DataArray with Segment Compact Factor default to 0.5. 
@@ -262,7 +273,10 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
     protected void init() {
         try {
             _segment = _segmentManager.nextSegment();
-            _compactor.startsCycle();
+            
+            // Segment index buffer is not enabled by default! Calls are ordered!
+            _sib = _segmentManager.openSegmentIndexBuffer(_segment.getSegmentId());
+            setSibEnabled(false);
             
             _log.info("Segment " + _segment.getSegmentId() + " online: " + _segment.getStatus());
         } catch(IOException ioe) {
@@ -763,15 +777,21 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
                 long address = _addressFormat.composeAddress((int)pos, _segment.getSegmentId(), length);
                 setAddress(index, address, scn);
                 
+                // update segment index buffer
+                if(!_sib.isDirty()) {
+                    _sib.add(index, (int)pos);
+                }
+                
+                // consume one compaction batch
                 if(_compactor.isStarted()) {
-                    consumeCompactionBatch();
-                    
-                    /*
-                     * Throttle the writer to average-out write latency.
-                     * Give the compactor a chance to catch up with the writer.
-                     */
-                    if(_segment.getAppendPosition() > _throttleThreshold) {
-                        doThrottling(length + 4);
+                    if(!consumeCompactionBatch()) {
+                        /* 
+                         * Throttle the writer to average-out write latency if no compaction batch is consumed.
+                         * The compactor has a chance to catch up with the writer.
+                         */
+                        if(pos > _throttleThreshold) {
+                            doThrottling(length + 4);
+                        }
                     }
                 }
                 
@@ -779,45 +799,45 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
             } catch(SegmentException se) {
                 _log.info("Segment " + _segment.getSegmentId() + " filled: " + _segment.getStatus());
                 
+                // Submit current segment index buffer for asynchronous handling
+                if(_sibEnabled && !_sib.isDirty()) {
+                    _sib.setSegmentId(_segment.getSegmentId());
+                    _sib.setSegmentLastForcedTime(_segment.getLastForcedTime());
+                    _segmentManager.submit(_sib);
+                } else {
+                    _segmentManager.remove(_sib);
+                }
+                
                 Segment nextSegment = _compactor.peekTargetSegment();
                 if(nextSegment != null) {
                     persist();
                     
-                    // get the next segment available for appending
                     _segment = nextSegment;
                     _compactor.pollTargetSegment();
-                    
-                    _log.info("nextSegment from compactor");
-                    _log.info("Segment " + _segment.getSegmentId() + " online: " + _segment.getStatus());
+                    _log.trace("nextSegment from compactor");
                 } else {
                     if(_compactor.isStarted()) {
                         if(_compactor.getAndDecrementSegmentPermit()) {
-                            _log.trace("nextSegment permit granted");
-                            
                             persist();
                             
-                            // get the next segment available for appending
+                            _log.trace("nextSegment permit granted");
                             _segment = _segmentManager.nextSegment();
-                            
-                            _log.info("Segment " + _segment.getSegmentId() + " online: " + _segment.getStatus());
                         } else {
                             _log.trace("nextSegment permit refused");
                             
                             // wait until compactor is done
+                            long startTime = System.currentTimeMillis();
                             while(_compactor.isStarted()) {
                                 consumeCompactionBatches();
-                                _log.trace("wait for compactor");
                             }
+                            long elapsedTime = System.currentTimeMillis() - startTime;
+                            _log.info("nextSegment compaction wait " + elapsedTime + " ms");
                             
                             persist();
                             
                             // get the next segment available for appending
-                            _segment = _compactor.pollTargetSegment();
-                            if(_segment == null) {
-                                _segment = _segmentManager.nextSegment();
-                            }
-                            
-                            _log.info("Segment " + _segment.getSegmentId() + " online: " + _segment.getStatus());
+                            nextSegment = _compactor.pollTargetSegment();
+                            _segment = (nextSegment != null) ? nextSegment : _segmentManager.nextSegment();
                         }
                     } else {
                         _log.trace("nextSegment");
@@ -827,10 +847,18 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
                         // get the next segment available for appending
                         _segment = _segmentManager.nextSegment();
                         _compactor.startsCycle();
-                        
-                        _log.info("Segment " + _segment.getSegmentId() + " online: " + _segment.getStatus());
                     }
                 }
+                
+                if(_sibEnabled) {
+                    _sib = _segmentManager.openSegmentIndexBuffer(_segment.getSegmentId());
+                } else {
+                    _sib.clear();
+                    _sib.markAsDirty();
+                    _sib.setSegmentId(_segment.getSegmentId());
+                }
+                
+                _log.info("Segment " + _segment.getSegmentId() + " online: " + _segment.getStatus());
             } catch(Exception e) {
                 // restore append position 
                 _segment.setAppendPosition(pos);
@@ -1029,5 +1057,20 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
     @Override
     public final Array.Type getType() {
         return _addressArray.getType();
+    }
+    
+    /**
+     * Tests if the segment index buffer (SIB) is enabled.
+     */
+    public final boolean isSibEnabled() {
+        return _sibEnabled;
+    }
+    
+    /**
+     * Enables the segment index buffer (SIB).
+     */
+    public final void setSibEnabled(boolean b) {
+        _sibEnabled = b;
+        _sib.markAsDirty();
     }
 }
