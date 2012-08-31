@@ -563,6 +563,10 @@ public final class SegmentManager implements Closeable {
             return;
         }
         
+        // Flush segment index buffers
+        flushSegmentIndexBuffers();
+        _sibManager.clear();
+        
         try {
             clearInternal(false /* DO NOT CLEAR META */);
             if(_segMeta != null) {
