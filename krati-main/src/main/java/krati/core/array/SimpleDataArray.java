@@ -65,6 +65,7 @@ import krati.io.Closeable;
  * 06/22, 2011 - catch SegmentException in method set() for safety <br/>
  * 06/03, 2012 - fixed problematic sync upon calling method close() <br/>
  * 06/11, 2012 - Simplified compaction update <br/>
+ * 08/31, 2012 - Enabled segment index buffer <br/>
  */
 public class SimpleDataArray implements DataArray, Persistable, Closeable {
     private final static Logger _log = Logger.getLogger(SimpleDataArray.class);
@@ -115,9 +116,9 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
     private volatile SegmentIndexBuffer _sib;
     
     /**
-     * Whether segment index buffer is enabled.
+     * Segment index buffer is enabled by default.
      */
-    private volatile boolean _sibEnabled = false;
+    private volatile boolean _sibEnabled = true;
     
     /**
      * Constructs a DataArray with Segment Compact Factor default to 0.5. 
@@ -287,9 +288,9 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
         try {
             _segment = _segmentManager.nextSegment();
             
-            // Segment index buffer is not enabled by default! Calls are ordered!
+            // Segment index buffer is enabled by default!
             _sib = _segmentManager.openSegmentIndexBuffer(_segment.getSegmentId());
-            setSibEnabled(false);
+            if(!_sibEnabled) _sib.markAsDirty();
             
             _log.info("Segment " + _segment.getSegmentId() + " online: " + _segment.getStatus());
         } catch(IOException ioe) {
@@ -1084,7 +1085,9 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
      * Enables the segment index buffer (SIB).
      */
     public final void setSibEnabled(boolean b) {
+        if(_sibEnabled != b) {
+            _sib.markAsDirty();
+        }
         _sibEnabled = b;
-        _sib.markAsDirty();
     }
 }
