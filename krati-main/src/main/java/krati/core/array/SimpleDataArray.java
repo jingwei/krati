@@ -66,6 +66,7 @@ import krati.io.Closeable;
  * 06/03, 2012 - fixed problematic sync upon calling method close() <br/>
  * 06/11, 2012 - Simplified compaction update <br/>
  * 08/31, 2012 - Enabled segment index buffer <br/>
+ * 09/04, 2012 - Optimized persist - consuming one compaction batch <br/>
  */
 public class SimpleDataArray implements DataArray, Persistable, Closeable {
     private final static Logger _log = Logger.getLogger(SimpleDataArray.class);
@@ -933,7 +934,8 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
     @Override
     public synchronized void persist() throws IOException {
         if(isOpen()) {
-            syncCompactor();
+            // Consume one compaction batch if available
+            consumeCompactionBatch();
             
             /* CALLS ORDERED: Need force _segment first and then persist
              * _addressArray. During recovery, the _addressArray can always

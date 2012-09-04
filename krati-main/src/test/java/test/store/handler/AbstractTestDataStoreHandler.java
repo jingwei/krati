@@ -170,7 +170,7 @@ public abstract class AbstractTestDataStoreHandler extends TestCase {
         Set<String> keySet = new HashSet<String>();
         Set<String> valueSet = new HashSet<String>();
         
-        int cnt = rand.nextInt(100);
+        int cnt = rand.nextInt(100) + 1;
         for(int i = 0; i < cnt; i++) {
             key = nextKey();
             value = nextValue();
