@@ -41,6 +41,7 @@ import krati.core.segment.AddressFormat;
 import krati.core.segment.MemorySegment;
 import krati.core.segment.Segment;
 import krati.core.segment.SegmentIndexBuffer;
+import krati.core.segment.SegmentIndexBufferException;
 import krati.core.segment.SegmentManager;
 import krati.util.Chronos;
 
@@ -382,7 +383,9 @@ class SimpleDataArrayCompactor implements Runnable {
     private boolean compact(Segment segment, Segment segTarget, final boolean sibEnabled) throws IOException {
         // Optimization: use the source segment index buffer file if it is available for compaction.
         if(sibEnabled) {
-            SegmentIndexBuffer sibSource = _dataArray.getSegmentManager().loadSegmentIndexBuffer(segment.getSegmentId());
+            SegmentIndexBuffer sibSource =
+                    _dataArray.getSegmentManager()
+                    .loadSegmentIndexBuffer(segment.getSegmentId(), segment.getLastForcedTime());
             if(sibSource != null) {
                 return compact(segment, sibSource, segTarget);
             }

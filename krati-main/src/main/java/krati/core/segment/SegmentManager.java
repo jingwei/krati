@@ -56,6 +56,7 @@ import org.apache.log4j.Logger;
  * <p>
  * 05/24, 2010 - Always try to open the manager upon call to SegmentManager.getInstance(...) <br/>
  * 02/14, 2012 - Remove the last segment file after being freed <br/>
+ * 09/04, 2012 - Validate lastForcedTime upon loading segment index buffer <br/>
  */
 public final class SegmentManager implements Closeable {
     private final static Logger _log = Logger.getLogger(SegmentManager.class);
@@ -259,8 +260,7 @@ public final class SegmentManager implements Closeable {
     /**
      * Loads the {@link SegmentIndexBuffer} file at the specified <code>segId</code>.
      * 
-     * @return the {@link SegmentIndexBuffer} loaded successfully
-     * @throws IOException
+     * @return the {@link SegmentIndexBuffer} loaded successfully or <code>null</code> if the loading failed.
      */
     public SegmentIndexBuffer loadSegmentIndexBuffer(int segId) {
         File sibFile = getSegmentIndexBufferFile(segId);
@@ -269,6 +269,35 @@ public final class SegmentManager implements Closeable {
             try {
                 _sibManager.getSegmentIndexBufferIO().read(sib, sibFile);
                 return sib;
+            } catch (Exception e) {
+                _log.warn(sibFile.getAbsolutePath() + " corrupted");
+                sibFile.delete();
+            }
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Loads the {@link SegmentIndexBuffer} file at the specified <code>segId</code> and
+     * validates against the specified <code>segLastForcedTime</code>.
+     * 
+     * @param segId             - the segment Id
+     * @param segLastForcedTime - the segment lastForcedTime
+     * @return the {@link SegmentIndexBuffer} if loaded successfully, or <code>null</code> if the loading failed,
+     *         or <code>null</code> if the specified <code>segLastForcedTime</code> is different from
+     *         the value known to the target segment index buffer.
+     */
+    public SegmentIndexBuffer loadSegmentIndexBuffer(int segId, long segLastForcedTime) {
+        File sibFile = getSegmentIndexBufferFile(segId);
+        if(sibFile.exists()) {
+            SegmentIndexBuffer sib = new SegmentIndexBuffer();
+            try {
+                _sibManager.getSegmentIndexBufferIO().read(sib, sibFile, segLastForcedTime);
+                return sib;
+            } catch (SegmentIndexBufferException e) {
+                _log.info(sibFile.getAbsolutePath() + " obsolete");
+                sibFile.delete();
             } catch (Exception e) {
                 _log.warn(sibFile.getAbsolutePath() + " corrupted");
                 sibFile.delete();

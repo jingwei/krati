@@ -80,6 +80,38 @@ public class SegmentIndexBufferFileIO implements SegmentIndexBufferIO {
     }
     
     /**
+     * Reads from the specified segment index buffer file
+     * and validates against the specified <code>sibLastForcedTime</code>.
+     * 
+     * @param sib     - the segment index buffer
+     * @param sibFile - the segment index buffer file to read from
+     * @param sibLastForcedTime - the expected value of segment index buffer lastForcedTime
+     * 
+     * @throws IOException
+     * @throws SegmentIndexBufferException if the specified <code>sibLastForcedTime</code>
+     *         is different from the value known to the specified segment index buffer file.
+     */
+    @Override
+    public int read(SegmentIndexBuffer sib, File sibFile, long sibLastForcedTime) throws IOException, SegmentIndexBufferException {
+        check(sibFile);
+        
+        RandomAccessFile raf = new RandomAccessFile(sibFile, "r");
+        FileChannel channel = raf.getChannel();
+        
+        readVersion(channel);
+        int length = sib.read(channel, sibLastForcedTime);
+        length += STORAGE_VERSION_LENGTH;
+        
+        channel.close();
+        raf.close();
+        
+        if(_logger.isTraceEnabled()) {
+            _logger.trace("read " + sibFile.getAbsolutePath());
+        }
+        
+        return length;
+    }
+    /**
      * Writes to the specified segment index buffer file.
      * 
      * @param sib     - the segment index buffer

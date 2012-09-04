@@ -37,6 +37,20 @@ public interface SegmentIndexBufferIO {
     public int read(SegmentIndexBuffer sib, File sibFile) throws IOException;
     
     /**
+     * Reads from the specified segment index buffer file and validates against
+     * the specified <code>lastForcedTime</code> of segment index buffer.
+     *  
+     * @param sib               - the segment index buffer
+     * @param sibFile           - the segment index buffer file to read from
+     * @param sibLastForcedTime - the segment index buffer last forced time
+     * 
+     * @throws IOException
+     * @throws SegmentIndexBufferException if the specified <code>sibLastForcedTime</code> is different from
+     *         the value known to the specified segment index buffer file.
+     */
+    public int read(SegmentIndexBuffer sib, File sibFile, long sibLastForcedTime) throws IOException, SegmentIndexBufferException;
+    
+    /**
      * Writes to the specified segment index buffer file.
      * 
      * @param sib     - the segment index buffer

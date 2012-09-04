@@ -24,6 +24,7 @@ import test.util.FileUtils;
 
 import junit.framework.TestCase;
 import krati.core.segment.SegmentIndexBuffer;
+import krati.core.segment.SegmentIndexBufferException;
 import krati.core.segment.SegmentIndexBufferFileIO;
 import krati.core.segment.SegmentIndexBufferIO;
 
@@ -62,7 +63,7 @@ public class TestSegmentIndexBufferIO extends TestCase {
         }
     }
     
-    protected void runApi(int size) throws IOException {
+    protected void runApi(int size) throws IOException, SegmentIndexBufferException {
         int index = 0;
         int offset = 0;
         
@@ -86,6 +87,7 @@ public class TestSegmentIndexBufferIO extends TestCase {
         File sibFile = new File(FileUtils.getTestDir(getClass().getSimpleName()), segId + ".sib");
         int writeLength = _sibIO.write(_sib, sibFile);
         
+        // Read without validating lastForcedTime
         SegmentIndexBuffer sibRead = new SegmentIndexBuffer();
         int readLength = _sibIO.read(sibRead, sibFile);
         
@@ -100,14 +102,30 @@ public class TestSegmentIndexBufferIO extends TestCase {
             assertEquals(o1.getIndex(), o2.getIndex());
             assertEquals(o1.getOffset(), o2.getOffset());
         }
+
+        // Read with validating lastForcedTime
+        sibRead = new SegmentIndexBuffer();
+        readLength = _sibIO.read(sibRead, sibFile, lastForcedTime);
+        
+        assertEquals(writeLength, readLength);
+        assertEquals(_sib.getSegmentId(), sibRead.getSegmentId());
+        assertEquals(_sib.getSegmentLastForcedTime(), sibRead.getSegmentLastForcedTime());
+        assertEquals(_sib.size(), sibRead.size());
+        
+        for(int i = 0; i < size; i++) {
+            SegmentIndexBuffer.IndexOffset o1 = _sib.get(i);
+            SegmentIndexBuffer.IndexOffset o2 = sibRead.get(i);
+            assertEquals(o1.getIndex(), o2.getIndex());
+            assertEquals(o1.getOffset(), o2.getOffset());
+        }
     }
     
-    public void testApi() throws IOException {
+    public void testApi() throws Exception {
         runApi(_rand.nextInt(100000));
         runApi(0);
     }
     
-    public void testApi10Times() throws IOException {
+    public void testApi10Times() throws Exception {
         for(int i = 0; i < 10; i++) {
             testApi();
         }

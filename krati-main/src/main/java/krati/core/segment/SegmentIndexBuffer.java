@@ -233,6 +233,61 @@ public class SegmentIndexBuffer implements Cloneable {
     }
     
     /**
+     * Reads from the specified <code>channel</code> into this SegmentIndexBuffer
+     * and validates against the specified <code>sibLastForcedTime</code>.
+     * 
+     * @param channel           - the readable channel
+     * @param sibLastForcedTime - the expected segment index buffer lastForcedTime
+     * @return the number of bytes read from the specified channel.
+     * 
+     * @throws IOException
+     * @throws SegmentIndexBufferException if the specified <code>sibLastForcedTime</code>
+     *         is different from the value known to the specified segment index buffer file.
+     */
+    public int read(ReadableByteChannel channel, long sibLastForcedTime) throws IOException, SegmentIndexBufferException {
+        // Header: segId (4), lastForcedTime (8), size (4)
+        ByteBuffer header = ByteBuffer.allocate(HEADER_LENGTH);
+        read(channel, header, HEADER_LENGTH, "Invalid Header");
+        
+        int segmentId = header.getInt(0);
+        long lastForcedTime = header.getLong(4);
+        int size = header.getInt(12);
+        
+        // Validate the lastForcedTime
+        if(lastForcedTime != sibLastForcedTime) {
+            throw SegmentIndexBufferException.createObsolete(segmentId, lastForcedTime, sibLastForcedTime);
+        }
+        
+        // Data
+        int dataLength = size << 3;
+        ByteBuffer data = ByteBuffer.allocate(dataLength);
+        read(channel, data, dataLength, "Invalid Data");
+        
+        // Footer - MD5Digest (16)
+        ByteBuffer md5 = ByteBuffer.allocate(MD5_LENGTH);
+        read(channel, md5, MD5_LENGTH, "Invalid MD5");
+        
+        try {
+            MessageDigest m = MessageDigest.getInstance("MD5");
+            m.reset();
+            m.update(header.array());
+            m.update(data.array());
+            byte[] digest = ensure128BitMD5(m.digest());
+            
+            if(Arrays.equals(md5.array(), digest)) {
+                setSegmentId(segmentId);
+                setSegmentLastForcedTime(lastForcedTime);
+                data.flip();
+                put(data);
+            }
+        } catch (NoSuchAlgorithmException e) {
+            throw new IOException(e);
+        }
+        
+        return (dataLength + HEADER_FOOTER_LENGTH);
+    }
+    
+    /**
      * Writes this SegmentIndexBuffer to the specified <code>channel</code>.
      * 
      * @param channel - the writable channel
