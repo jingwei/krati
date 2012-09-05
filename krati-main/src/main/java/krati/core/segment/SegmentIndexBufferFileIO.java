@@ -111,6 +111,7 @@ public class SegmentIndexBufferFileIO implements SegmentIndexBufferIO {
         
         return length;
     }
+    
     /**
      * Writes to the specified segment index buffer file.
      * 
