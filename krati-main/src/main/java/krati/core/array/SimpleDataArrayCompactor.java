@@ -41,7 +41,6 @@ import krati.core.segment.AddressFormat;
 import krati.core.segment.MemorySegment;
 import krati.core.segment.Segment;
 import krati.core.segment.SegmentIndexBuffer;
-import krati.core.segment.SegmentIndexBufferException;
 import krati.core.segment.SegmentManager;
 import krati.util.Chronos;
 
