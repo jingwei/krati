@@ -20,19 +20,30 @@ package krati.core.segment;
  * SegmentModeEvent
  * 
  * @author jwu
- * 
+ * @since 09/05, 2012
  */
 public class SegmentModeEvent {
     private final Segment _segment;
-
+    
+    /**
+     * Creates a new SegmentModeEvent.
+     * 
+     * @param segment
+     */
     public SegmentModeEvent(Segment segment) {
         this._segment = segment;
     }
-
+    
+    /**
+     * @return the segment.
+     */
     public final Segment getSegment() {
         return _segment;
     }
-
+    
+    /**
+     * @return the segment mode.
+     */
     public final Segment.Mode getSegmentMode() {
         return _segment.getMode();
     }

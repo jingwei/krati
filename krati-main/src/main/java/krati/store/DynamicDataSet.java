@@ -56,6 +56,7 @@ import krati.util.LinearHashing;
  * 06/25, 2011 - Added constructor using StoreConfig <br/>
  * 06/12, 2012 - Code refactoring on the split method <br/>
  * 08/24, 2012 - Disable full rehashing on open/close <br/>
+ * 09/05, 2012 - Expand capacity on first-time creation <br/>
  */
 public class DynamicDataSet implements DataSet<byte[]> {
     private final static Logger _log = Logger.getLogger(DynamicDataSet.class);
@@ -93,6 +94,9 @@ public class DynamicDataSet implements DataSet<byte[]> {
         _dataHandler = (config.getDataHandler() == null) ?
                 new DefaultDataSetHandler() : (DataSetHandler)config.getDataHandler();
         
+        // Check if the address array file can be found on disk
+        boolean found = isAddressArrayFound(_config.getHomeDir());
+                
         // Create dynamic address array
         _addrArray = createAddressArray(
                 _config.getHomeDir(),
@@ -111,7 +115,12 @@ public class DynamicDataSet implements DataSet<byte[]> {
             _log.warn("initLevel reset from " + initLevel + " to " + _maxLevel);
             initLevel = _maxLevel;
         }
-        _addrArray.expandCapacity((_unitCapacity << initLevel) - 1);
+        
+        // Expand address array length upon first-time creation
+        if(!found) {
+            _addrArray.expandCapacity((_unitCapacity << initLevel) - 1);
+            _log.info("capacity initialized to " + _addrArray.length());
+        }
         
         // Create underlying segment manager
         String segmentHome = _homeDir.getCanonicalPath() + File.separator + "segs";
@@ -387,13 +396,22 @@ public class DynamicDataSet implements DataSet<byte[]> {
         // Create data set handler
         _dataHandler = new DefaultDataSetHandler();
         
+        // Check if the address array file can be found on disk
+        boolean found = isAddressArrayFound(_config.getHomeDir());
+        
         // Create dynamic address array
         _addrArray = createAddressArray(
                 _config.getHomeDir(),
                 _config.getBatchSize(),
                 _config.getNumSyncBatches(),
                 _config.getIndexesCached());
-        _addrArray.expandCapacity(initialCapacity - 1);
+        
+        // Expand address array length upon first-time creation
+        if(!found) {
+            _addrArray.expandCapacity(initialCapacity - 1);
+            _log.info("capacity initialized to " + _addrArray.length());
+        }
+        
         _unitCapacity = DynamicConstants.SUB_ARRAY_SIZE;
         
         // Create underlying segment manager
@@ -413,6 +431,26 @@ public class DynamicDataSet implements DataSet<byte[]> {
         _log.info(getStatus());
     }
     
+    /**
+     * Checks if there exists an address array file under the specified home directory.
+     * 
+     * @param homeDir
+     */
+    protected boolean isAddressArrayFound(File homeDir) {
+        File arrayFile = new File(homeDir, "indexes.dat");
+        return arrayFile.exists(); 
+    }
+    
+    /**
+     *  Creates an address array file under the specified home directory.
+     * 
+     * @param homeDir        - the home directory
+     * @param batchSize      - the update batch size
+     * @param numSyncBatches - the number of batches need to sync address array file
+     * @param indexesCached  - whether the indexes.dat is cached in memory.
+     * @return the created address array
+     * @throws Exception
+     */
     protected AddressArray createAddressArray(File homeDir,
                                               int batchSize,
                                               int numSyncBatches,
