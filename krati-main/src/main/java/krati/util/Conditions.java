@@ -68,6 +68,18 @@ public class Conditions {
     }
     
     /**
+     * Tests the specified <code>valueSize</code> is equal to the specified <code>expected</code>.
+     * 
+     * @param valueSize - the value size
+     * @param expected  - the expected size
+     */
+    public static void checkValueSize(int valueSize, int expected) {
+        if(valueSize != expected) {
+            throw new InvalidDataException("Invalid value size: " + valueSize  + " expected: " + expected);
+        }
+    }
+    
+    /**
      * Tests the specified <code>dataSize</code> is equal to the specified <code>expected</code>.
      * 
      * @param dataSize - the data size
@@ -100,6 +112,18 @@ public class Conditions {
     public static void checkMaxKeySize(int keySize, int maxKeySize) {
         if(keySize < 0 || keySize > maxKeySize) {
             throw new InvalidDataException("Invalid key size: " + keySize  + " max: " + maxKeySize);
+        }
+    }
+    
+    /**
+     * Tests the specified <code>valueSize</code> is less than or equal to the specified <code>maxValueSize</code>.
+     * 
+     * @param valueSize    - the value size
+     * @param maxValueSize - the max value size
+     */
+    public static void checkMaxValueSize(int valueSize, int maxValueSize) {
+        if(valueSize < 0 || valueSize > maxValueSize) {
+            throw new InvalidDataException("Invalid value size: " + valueSize  + " max: " + maxValueSize);
         }
     }
     

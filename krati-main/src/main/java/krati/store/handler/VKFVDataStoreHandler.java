@@ -25,6 +25,7 @@ import java.util.Map.Entry;
 
 import krati.store.DataStoreHandler;
 import krati.util.Bytes;
+import krati.util.Conditions;
 
 import org.apache.log4j.Logger;
 
@@ -79,6 +80,12 @@ public class VKFVDataStoreHandler implements DataStoreHandler {
     public final byte[] assemble(byte[] key, byte[] value) {
         if(value == null) return null;
         
+        // Validate the key size
+        Conditions.checkMaxKeySize(key.length, MAX_NUM_BYTES_IN_KEY);
+        
+        // Validate the value size
+        Conditions.checkValueSize(value.length, _valLength);
+        
         byte[] result = new byte[Bytes.NUM_BYTES_IN_INT + NUM_BYTES_KEY_LENGTH + key.length + _valLength];
         ByteBuffer bb = ByteBuffer.wrap(result);
         
@@ -101,10 +108,16 @@ public class VKFVDataStoreHandler implements DataStoreHandler {
             return assemble(key, value); 
         }
         
+        // Validate the key size
+        Conditions.checkMaxKeySize(key.length, MAX_NUM_BYTES_IN_KEY);
+        
         // Remove old data
         int newLength = removeByKey(key, data);
         if(newLength == 0) return assemble(key, value);
         if(value == null) return Arrays.copyOf(data, newLength);
+        
+        // Validate the value size
+        Conditions.checkValueSize(value.length, _valLength);
         
         byte[] result = new byte[newLength + NUM_BYTES_KEY_LENGTH + key.length + _valLength];
         System.arraycopy(data, 0, result, 0, newLength);
