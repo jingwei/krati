@@ -285,6 +285,23 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable {
    * @throws IOException
    */
   protected synchronized void switchEntry(boolean blocking) throws IOException {
+    /**
+     * Must create compaction redo before update redo to prevent data loss.
+     * 
+     * The "applyEntries" method will internally sort compaction redo and update redo
+     * entries using stable Arrays.sort. The following order of creating redo entries
+     * will ensure that compaction redo does NOT overwrite update redo.
+     */
+    if (!_entryCompaction.isEmpty()) {
+      // Create entry log and persist in-memory data
+      File file = new File(getDirectory(), getEntryLogName(_entryCompaction));
+      _entryCompaction.save(file);
+      _entryPool.addToServiceQueue(_entryCompaction);
+      _entryCompaction = _entryPool.next();
+      
+      //_log.info("switchEntry to " + _entryCompaction.getId() + " _lwmScn=" + _lwmScn + " _hwmScn=" + _hwmScn + " Compaction");
+    }
+    
     if (!_entry.isEmpty()) {
       if(_persistListener != null) {
         _persistListener.beforePersist(_entry);
@@ -303,17 +320,7 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable {
       _entryPool.addToServiceQueue(_entry);
       _entry = _entryPool.next();
       
-      _log.info("switchEntry to " + _entry.getId() + " _lwmScn=" + _lwmScn + " _hwmScn=" + _hwmScn);
-    }
-    
-    if (!_entryCompaction.isEmpty()) {
-      // Create entry log and persist in-memory data
-      File file = new File(getDirectory(), getEntryLogName(_entryCompaction));
-      _entryCompaction.save(file);
-      _entryPool.addToServiceQueue(_entryCompaction);
-      _entryCompaction = _entryPool.next();
-      
-      _log.info("switchEntry to " + _entryCompaction.getId() + " _lwmScn=" + _lwmScn + " _hwmScn=" + _hwmScn + " Compaction");
+      //_log.info("switchEntry to " + _entry.getId() + " _lwmScn=" + _lwmScn + " _hwmScn=" + _hwmScn);
     }
     
     // Apply entry logs to array file
