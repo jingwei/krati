@@ -62,10 +62,10 @@ public class StoreParams {
     public static final int NUM_SYNC_BATCHES_MIN = 1;
     
     /**
-     * The default number of update batches required for updating the underlying indexes is 5.
-     * A value in the range from 5 to 10 is recommended.
+     * The default number of update batches required for updating the underlying indexes is 10.
+     * A value in the range from 10 to 100 is recommended.
      */
-    public static final int NUM_SYNC_BATCHES_DEFAULT = 5;
+    public static final int NUM_SYNC_BATCHES_DEFAULT = 10;
     
     /**
      * The minimum segment file size in MB is 8.

@@ -144,7 +144,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
      * 
      * <pre>
      *    batchSize              : 10000
-     *    numSyncBatches         : 5
+     *    numSyncBatches         : 10
      *    segmentFileSizeMB      : 256
      *    segmentCompactFactor   : 0.5
      *    DataSet hashLoadFactor : 0.75
@@ -175,7 +175,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
      * 
      * <pre>
      *    batchSize              : 10000
-     *    numSyncBatches         : 5
+     *    numSyncBatches         : 10
      *    segmentFileSizeMB      : 256
      *    segmentCompactFactor   : 0.5
      *    DataSet hashLoadFactor : 0.75
@@ -207,7 +207,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
      * 
      * <pre>
      *    batchSize              : 10000
-     *    numSyncBatches         : 5
+     *    numSyncBatches         : 10
      *    segmentCompactFactor   : 0.5
      *    DataSet hashLoadFactor : 0.75
      *    DataSet hashFunction   : krati.util.FnvHashFunction
@@ -239,7 +239,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
      * 
      * <pre>
      *    batchSize              : 10000
-     *    numSyncBatches         : 5
+     *    numSyncBatches         : 10
      *    segmentCompactFactor   : 0.5
      * </pre>
      * 

@@ -108,7 +108,7 @@ public class StaticDataStore implements DataStore<byte[], byte[]> {
      * 
      * <pre>
      *    batchSize            : 10000
-     *    numSyncBatches       : 5
+     *    numSyncBatches       : 10
      *    segmentFileSizeMB    : 256
      *    segmentCompactFactor : 0.5
      *    hashFunction         : krati.util.FnvHashFunction
@@ -135,7 +135,7 @@ public class StaticDataStore implements DataStore<byte[], byte[]> {
      * 
      * <pre>
      *    batchSize            : 10000
-     *    numSyncBatches       : 5
+     *    numSyncBatches       : 10
      *    segmentCompactFactor : 0.5
      *    hashFunction         : krati.util.FnvHashFunction
      * </pre>

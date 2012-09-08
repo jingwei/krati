@@ -46,7 +46,7 @@ public class TestStaticStore extends EvalDataStore {
         return new StaticDataStore(storeDir,
                                    capacity, /* capacity */
                                    10000,    /* entrySize */
-                                   5,        /* maxEntries */
+                                   10,       /* maxEntries */
                                    _segFileSizeMB,
                                    getSegmentFactory());
     }

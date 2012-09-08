@@ -145,7 +145,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
      * 
      * <pre>
      *    batchSize            : 10000
-     *    numSyncBatches       : 5
+     *    numSyncBatches       : 10
      *    segmentFileSizeMB    : 256
      *    segmentCompactFactor : 0.5
      *    Store hashLoadFactor : 0.75
@@ -176,7 +176,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
      * 
      * <pre>
      *    batchSize            : 10000
-     *    numSyncBatches       : 5
+     *    numSyncBatches       : 10
      *    segmentFileSizeMB    : 256
      *    segmentCompactFactor : 0.5
      *    Store hashLoadFactor : 0.75
@@ -208,7 +208,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
      * 
      * <pre>
      *    batchSize            : 10000
-     *    numSyncBatches       : 5
+     *    numSyncBatches       : 10
      *    segmentCompactFactor : 0.5
      *    Store hashLoadFactor : 0.75
      *    Store hashFunction   : krati.util.FnvHashFunction
@@ -240,7 +240,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
      * 
      * <pre>
      *    batchSize            : 10000
-     *    numSyncBatches       : 5
+     *    numSyncBatches       : 10
      *    segmentCompactFactor : 0.5
      * </pre>
      * 

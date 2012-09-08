@@ -106,7 +106,7 @@ public class StaticDataSet implements DataSet<byte[]> {
      * 
      * <pre>
      *    batchSize            : 10000
-     *    numSyncBatche        : 5
+     *    numSyncBatche        : 10
      *    segmentFileSizeMB    : 256
      *    segmentCompactFactor : 0.5
      *    hashFunction         : krati.util.FnvHashFunction
@@ -133,7 +133,7 @@ public class StaticDataSet implements DataSet<byte[]> {
      * 
      * <pre>
      *    batchSize            : 10000
-     *    numSyncBatches       : 5
+     *    numSyncBatches       : 10
      *    segmentCompactFactor : 0.5
      *    hashFunction         : krati.util.FnvHashFunction
      * </pre>

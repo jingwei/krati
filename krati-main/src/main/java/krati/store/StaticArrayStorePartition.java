@@ -83,7 +83,7 @@ public class StaticArrayStorePartition implements ArrayStorePartition {
      * <pre>
      *    segmentCompactFactor : 0.5
      *    updateBatchSize      : 10000
-     *    numSyncBatches       : 5
+     *    numSyncBatches       : 10
      *    checked              : false
      *    segmentFactory       : MappedSegmentFactory
      * </pre>
@@ -103,7 +103,7 @@ public class StaticArrayStorePartition implements ArrayStorePartition {
      * <pre>
      *    segmentCompactFactor : 0.5
      *    updateBatchSize      : 10000
-     *    numSyncBatches       : 5
+     *    numSyncBatches       : 10
      *    checked              : false
      * </pre>
      * 
