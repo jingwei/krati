@@ -172,6 +172,11 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
         int totalIgnoreBytes = 0;
         int totalUpdateBytes = updateBatch.getDataSizeTotal();
         
+        /* Using lwMark is to guarantee that redo logs from compaction will not increase
+         * the hwMark of the underlying array file. If hwMark is being used, the current
+         * redo entry is discarded upon crash. Upon restart, the hwMark from the underlying
+         * array file may prevent updates in the lost redo entry from being resent.   
+         */
         long updateScn = _addressArray.getLWMark();
         Segment segTarget = updateBatch.getTargetSegment();
         

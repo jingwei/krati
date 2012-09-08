@@ -36,8 +36,6 @@ public class SimpleEntry<T extends EntryValue> extends AbstractEntry<T> {
     /**
      * Create a new entry to hold updates to an array.
      * 
-     * @param entryId
-     *            The Id of this Entry.
      * @param valFactory
      *            The factory for manufacturing EntryValue(s).
      * @param initialCapacity
