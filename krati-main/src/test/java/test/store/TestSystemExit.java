@@ -102,6 +102,5 @@ public class TestSystemExit extends TestCase {
         }
         
         System.out.println("randomput " + cnt + " keys");
-        System.exit(0);
     }
 }
