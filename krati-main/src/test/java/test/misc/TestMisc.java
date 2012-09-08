@@ -16,11 +16,19 @@
 
 package test.misc;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import test.util.DirUtils;
+
 import junit.framework.TestCase;
+import krati.core.array.entry.Entry;
+import krati.core.array.entry.EntryUtility;
+import krati.core.array.entry.EntryValueLong;
+import krati.core.array.entry.PreFillEntryLong;
 
 /**
  * TestMisc
@@ -49,5 +57,47 @@ public class TestMisc extends TestCase {
             assertEquals(size - 1, list.size());
             size = list.size();
         }
+    }
+    
+    public void testGetEntryId() {
+        int cnt = _rand.nextInt(1000) + 1;
+        for(int i = 0; i < cnt; i++) {
+            long entryId1 = _rand.nextInt(Integer.MAX_VALUE);
+            String fileName = getEntryFileName(entryId1);
+            long entryId2 = EntryUtility.getEntryId(fileName);
+            assertEquals(entryId1, entryId2);
+        }
+    }
+    
+    public void testSortEntriesById() throws IOException {
+        int cnt = _rand.nextInt(1000) + 1;
+        long startId = System.currentTimeMillis();
+        File testDir = DirUtils.getTestDir(getClass());
+        List<Entry<EntryValueLong>> entryList = new ArrayList<Entry<EntryValueLong>>();
+        
+        for(int i = cnt - 1; i >= 0; i--) {
+            String fileName = getEntryFileName(startId + i);
+            File file = new File(testDir, fileName);
+            PreFillEntryLong entry = new PreFillEntryLong(100);
+            entry.save(file);
+            entryList.add(entry);
+        }
+        
+        EntryUtility.sortEntriesById(entryList);
+        
+        for(int i = 0; i < cnt; i++) {
+            String fileName = entryList.get(i).getFile().getName();
+            long entryId = EntryUtility.getEntryId(fileName);
+            assertEquals(startId + i, entryId);
+        }
+        
+        DirUtils.deleteDirectory(testDir);
+    }
+    
+    protected String getEntryFileName(long entryId) {
+        long minScn = System.currentTimeMillis();
+        long maxScn = minScn + 100000;
+        String fileName = "entry" + "_" + entryId + "_" + minScn + "_" + maxScn + ".idx";
+        return fileName;
     }
 }

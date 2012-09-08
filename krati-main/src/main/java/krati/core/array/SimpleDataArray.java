@@ -172,7 +172,7 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
         int totalIgnoreBytes = 0;
         int totalUpdateBytes = updateBatch.getDataSizeTotal();
         
-        long updateScn = _addressArray.getHWMark();
+        long updateScn = _addressArray.getLWMark();
         Segment segTarget = updateBatch.getTargetSegment();
         
         for(int i = 0; i < updateCount; i++) {
@@ -286,6 +286,7 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
      */
     protected void init() {
         try {
+            // Initialize the current working segment
             _segment = _segmentManager.nextSegment();
             
             // Segment index buffer is enabled by default!

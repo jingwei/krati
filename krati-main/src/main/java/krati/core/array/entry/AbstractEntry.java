@@ -40,42 +40,22 @@ public abstract class AbstractEntry<T extends EntryValue> implements Entry<T> {
 
     protected long _minScn = 0;
     protected long _maxScn = 0;
-    protected final int _entryId;
     protected final EntryValueFactory<T> _valFactory;
     protected int _entryCapacity;
 
-    private int _entryServiceId = 0;
     private File _entryFile = null;
 
     /**
      * Create a new entry to hold updates to an array.
      * 
-     * @param entryId
-     *            The Id of this Entry.
      * @param valFactory
      *            The factory for manufacturing EntryValue(s).
      * @param initialCapacity
      *            The initial number of values this entry can hold.
      */
-    protected AbstractEntry(int entryId, EntryValueFactory<T> valFactory, int initialCapacity) {
-        this._entryId = entryId;
+    protected AbstractEntry(EntryValueFactory<T> valFactory, int initialCapacity) {
         this._valFactory = valFactory;
         this._entryCapacity = initialCapacity;
-    }
-
-    @Override
-    public final int getId() {
-        return _entryId;
-    }
-
-    @Override
-    public final int getServiceId() {
-        return _entryServiceId;
-    }
-
-    @Override
-    public final void setServiceId(int serviceId) {
-        _entryServiceId = serviceId;
     }
 
     /**
@@ -164,8 +144,10 @@ public abstract class AbstractEntry<T extends EntryValue> implements Entry<T> {
         } finally {
             out.close();
         }
-
-        _log.info("Saved entry: minScn=" + _minScn + " maxScn=" + _maxScn + " size=" + size() + " file=" + file.getName() + " in " + c.getElapsedTime());
+        
+        if(_log.isInfoEnabled()) {
+            _log.info("Saved entry: minScn=" + _minScn + " maxScn=" + _maxScn + " size=" + size() + " file=" + file.getName() + " in " + c.getElapsedTime());
+        }
     }
 
     /**
@@ -210,7 +192,9 @@ public abstract class AbstractEntry<T extends EntryValue> implements Entry<T> {
             _minScn = minScnHead;
             _maxScn = maxScnHead;
 
-            _log.info("loaded entry: minScn=" + _minScn + " maxScn=" + _maxScn + " size=" + size() + " file=" + file.getName() + " in " + c.getElapsedTime());
+            if(_log.isInfoEnabled()) {
+                _log.info("loaded entry: minScn=" + _minScn + " maxScn=" + _maxScn + " size=" + size() + " file=" + file.getName() + " in " + c.getElapsedTime());
+            }
         } finally {
             in.close();
         }

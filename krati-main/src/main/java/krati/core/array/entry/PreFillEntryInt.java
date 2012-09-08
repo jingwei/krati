@@ -24,8 +24,8 @@ package krati.core.array.entry;
  */
 public class PreFillEntryInt extends PreFillEntry<EntryValueInt> {
     
-    public PreFillEntryInt(int entryId, int capacity) {
-        super(entryId, new EntryValueIntFactory(), capacity);
+    public PreFillEntryInt(int capacity) {
+        super(new EntryValueIntFactory(), capacity);
     }
     
     @Override
@@ -45,7 +45,7 @@ public class PreFillEntryInt extends PreFillEntry<EntryValueInt> {
             _valArray.get(_index++).reinit(pos, val, scn);
             maintainScn(scn);
         } else {
-            throw new EntryOverflowException(this);
+            throw new EntryOverflowException();
         }
     }
 }

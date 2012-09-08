@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.log4j.Logger;
 
@@ -28,6 +29,7 @@ import krati.core.array.entry.Entry;
 import krati.core.array.entry.EntryFactory;
 import krati.core.array.entry.EntryPersistListener;
 import krati.core.array.entry.EntryPool;
+import krati.core.array.entry.EntryUtility;
 import krati.core.array.entry.EntryValue;
 import krati.core.array.entry.PreFillEntryInt;
 import krati.core.array.entry.PreFillEntryLong;
@@ -44,6 +46,11 @@ import krati.core.array.entry.PreFillEntryShort;
  */
 public class ArrayEntryManager<V extends EntryValue> implements Persistable {
   private static final Logger _log = Logger.getLogger(ArrayEntryManager.class);
+  
+  /**
+   * The redo entry Id generator.
+   */
+  private final AtomicLong _idGen = new AtomicLong(0);
   
   private final int _maxEntries;
   private final int _maxEntrySize;
@@ -263,7 +270,7 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable {
    * @return the name of entry log file.
    */
   protected final String getEntryLogName(Entry<V> entry) {
-    return getEntryLogPrefix() + "_" + entry.getServiceId() + "_" + entry.getMinScn() + "_" + entry.getMaxScn() + getEntryLogSuffix();
+    return getEntryLogPrefix() + "_" + _idGen.getAndIncrement() + "_" + entry.getMinScn() + "_" + entry.getMaxScn() + getEntryLogSuffix();
   }
   
   /**
@@ -281,7 +288,7 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable {
   }
   
   /**
-   * Switches to a new entry if _curEntry is not empty.
+   * Switches to a new entry if the current _entry is not empty.
    * 
    * @throws IOException
    */
@@ -299,8 +306,6 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable {
       _entryCompaction.save(file);
       _entryPool.addToServiceQueue(_entryCompaction);
       _entryCompaction = _entryPool.next();
-      
-      //_log.trace("switchEntry to " + _entryCompaction.getId() + " _lwmScn=" + _lwmScn + " _hwmScn=" + _hwmScn + " Compaction");
     }
     
     if (!_entry.isEmpty()) {
@@ -320,8 +325,6 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable {
       _lwmScn = Math.max(_lwmScn, _entry.getMaxScn());
       _entryPool.addToServiceQueue(_entry);
       _entry = _entryPool.next();
-      
-      //_log.trace("switchEntry to " + _entry.getId() + " _lwmScn=" + _lwmScn + " _hwmScn=" + _hwmScn);
     }
     
     // Apply entry logs to array file
@@ -339,8 +342,6 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable {
       _entryCompaction.save(file);
       _entryPool.addToServiceQueue(_entryCompaction);
       _entryCompaction = _entryPool.next();
-      
-      //_log.trace("switchEntry to " + _entryCompaction.getId() + " _lwmScn=" + _lwmScn + " _hwmScn=" + _hwmScn + " Compaction");
     }
     
     // Apply entry logs to array file
@@ -569,6 +570,14 @@ public class ArrayEntryManager<V extends EntryValue> implements Persistable {
     
     // Start recovery based on loaded entries.
     if (entryList.size() > 0) {
+      // Sort entries in ascending order of IDs to ensure apply order
+      EntryUtility.sortEntriesById(entryList);
+      
+      // Log redo entries to be applied in recovery
+      for(Entry<V> e : entryList) {
+          _log.info("recovery: apply " + e.getFile().getAbsolutePath());
+      }
+      
       applyEntries(entryList);
     }
     

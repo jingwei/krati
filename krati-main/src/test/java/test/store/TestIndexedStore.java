@@ -50,7 +50,7 @@ public class TestIndexedStore extends EvalDataStore {
                 storeDir,
                 initialCapacity,
                 10000,                       /* batchSize */
-                5,                           /* numSyncBatches */
+                10,                          /* numSyncBatches */
                 32,                          /* index segmentFileSizeMB */
                 createIndexSegmentFactory(), /* index segmentFactory */
                 _segFileSizeMB,              /* store segmentFileSizeMB */

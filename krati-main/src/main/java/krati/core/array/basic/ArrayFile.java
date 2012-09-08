@@ -551,7 +551,7 @@ public class ArrayFile implements Closeable {
     if (values == null || values.length == 0) return;
     
     // Obtain maxScn
-    long maxScn = 0;
+    long maxScn = _arrayHwmScn;
     for (Entry<?> e : entryList) {
       maxScn = Math.max(e.getMaxScn(), maxScn);
     }

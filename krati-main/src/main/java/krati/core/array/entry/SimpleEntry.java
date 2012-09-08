@@ -43,8 +43,8 @@ public class SimpleEntry<T extends EntryValue> extends AbstractEntry<T> {
      * @param initialCapacity
      *            The initial number of values this entry can hold.
      */
-    public SimpleEntry(int entryId, EntryValueFactory<T> valFactory, int initialCapacity) {
-        super(entryId, valFactory, initialCapacity);
+    public SimpleEntry(EntryValueFactory<T> valFactory, int initialCapacity) {
+        super(valFactory, initialCapacity);
         this._valArray = new ArrayList<T>(initialCapacity);
     }
     
