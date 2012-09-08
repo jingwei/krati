@@ -2,9 +2,8 @@
 
 mvn clean test -Dtest=TestSystemExit
 
-for i in {1..10000}
+for i in {1..1000}
 do
-  date
   mvn test -Dtest=TestSystemExit
   if [ -d target/test-output ]; then
     du -sh target/test-output
