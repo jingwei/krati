@@ -66,6 +66,7 @@ import krati.io.Closeable;
  * 06/03, 2012 - fixed problematic sync upon calling method close() <br/>
  * 06/11, 2012 - Simplified compaction update <br/>
  * 08/31, 2012 - Enabled segment index buffer <br/>
+ * 09/09, 2012 - Removed throttling as compaction is efficient with SIB <br/>
  */
 public class SimpleDataArray implements DataArray, Persistable, Closeable {
     private final static Logger _log = Logger.getLogger(SimpleDataArray.class);
@@ -396,55 +397,6 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
         }
         catch(IOException e1) {}
         catch(IndexOutOfBoundsException e2) {}
-    }
-    
-    /**
-     * Throttle the write traffic if the Segment compactor is falling behind.
-     * Throttling lasts for at most 1 millisecond per write operation.
-     * 
-     * <p>
-     * During each throttling cycle, if there are available {@link CompactionUpdateBatch}(es)
-     * produced by the Segment compactor, they will be consumed automatically until the cycle
-     * terminates.
-     * </p>
-     * @param lastWriteSize - the size of the last write, which is for estimating the throttling cycle.
-     */
-    private final void doThrottling(int lastWriteSize) {
-        Segment writerSegment = _segment;
-        if(writerSegment == null) {
-            return;
-        }
-        
-        Segment compactorTarget = _compactor.getTargetSegment();
-        if(compactorTarget == null || compactorTarget == writerSegment) {
-            return;
-        }
-        
-        /*
-         * Slow down the writer so that the compactor has a chance to catch up.
-         */
-        int writerLoadSize = writerSegment.getLoadSize();
-        int targetLoadSize = compactorTarget.getLoadSize();
-        if (targetLoadSize < writerLoadSize) {
-            long wait = 100000; // 0.1 milliseconds
-            long endTime = System.nanoTime() + wait;
-            targetLoadSize += (targetLoadSize == 0 ?
-                                 (lastWriteSize * 2) :
-                                 (int)((double)writerLoadSize / targetLoadSize * lastWriteSize));
-            
-            while(compactorTarget.getLoadSize() < targetLoadSize) {
-                // Sleep 0.02 milliseconds only if no compaction batch was consumed
-                if(!consumeCompactionBatch()) {
-                    try {
-                        Thread.sleep(0 /* milliseconds */, 20000 /* nanoseconds */);
-                    } catch(Exception e) {}
-                }
-                
-                if (System.nanoTime() >= endTime) {
-                    return;
-                }
-            }
-        }
     }
     
     /**
@@ -802,18 +754,8 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
                     _sib.add(index, (int)pos);
                 }
                 
-                // consume one compaction batch
-                if(_compactor.isStarted()) {
-                    if(!consumeCompactionBatch()) {
-                        /* 
-                         * Throttle the writer to average-out write latency if no compaction batch is consumed.
-                         * The compactor has a chance to catch up with the writer.
-                         */
-                        if(pos > _throttleThreshold) {
-                            doThrottling(length + 4);
-                        }
-                    }
-                }
+                // consume one compaction batch if available
+                consumeCompactionBatch();
                 
                 return;
             } catch(SegmentException se) {
