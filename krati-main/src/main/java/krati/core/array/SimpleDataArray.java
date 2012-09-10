@@ -97,11 +97,6 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
     protected final double _segmentCompactFactor;
     
     /**
-     * The threshold to initialize throttling. 
-     */
-    protected final long _throttleThreshold;
-    
-    /**
      * Current working segment to append data to.
      */
     private volatile Segment _segment;
@@ -145,9 +140,6 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
         this._segmentManager = segmentManager;
         this._segmentCompactFactor = segmentCompactFactor;
         this._addressFormat = new AddressFormat();
-        
-        // Initialize the throttling threshold at 25% of the segment size
-        _throttleThreshold = (long)(segmentManager.getSegmentFileSizeMB() * 1024L * 1024L * 0.25);
         
         // Add segment persist listener
         addressArray.setPersistListener(new SegmentPersistListener());
