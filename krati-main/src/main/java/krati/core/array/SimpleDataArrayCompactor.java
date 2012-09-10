@@ -31,7 +31,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import krati.core.StoreParams;
@@ -43,6 +42,7 @@ import krati.core.segment.Segment;
 import krati.core.segment.SegmentIndexBuffer;
 import krati.core.segment.SegmentManager;
 import krati.util.Chronos;
+import krati.util.DaemonThreadFactory;
 
 /**
  * SimpleDataArray Compactor.
@@ -69,7 +69,7 @@ import krati.util.Chronos;
  */
 class SimpleDataArrayCompactor implements Runnable {
     private final static Logger _log = Logger.getLogger(SimpleDataArrayCompactor.class);
-    private ExecutorService _executor = Executors.newSingleThreadExecutor(new CompactorThreadFactory());
+    private ExecutorService _executor = Executors.newSingleThreadExecutor(new DaemonThreadFactory());
     private SimpleDataArray _dataArray;
     
     /**
@@ -576,7 +576,7 @@ class SimpleDataArrayCompactor implements Runnable {
     final void start() {
         _enabled = true;
         _ignoredSegs.clear();
-        _executor = Executors.newSingleThreadExecutor(new CompactorThreadFactory());
+        _executor = Executors.newSingleThreadExecutor(new DaemonThreadFactory());
         _executor.execute(this);
     }
     
@@ -1154,18 +1154,6 @@ class SimpleDataArrayCompactor implements Runnable {
         protected ByteBuffer initByteBuffer() {
             _byteBuffer.clear();
             return _byteBuffer;
-        }
-    }
-    
-    /**
-     * CompactorThreadFactory produces daemon threads for running compaction.
-     */
-    static class CompactorThreadFactory implements ThreadFactory {
-        @Override
-        public Thread newThread(Runnable r) {
-            Thread t = new Thread(r);
-            t.setDaemon(true);
-            return t;
         }
     }
 }
