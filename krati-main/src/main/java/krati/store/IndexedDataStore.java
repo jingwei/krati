@@ -258,6 +258,24 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
         return _index.capacity();
     }
     
+    /**
+     * Gets the underlying DB index associated with the specified <code>key</code>.
+     * 
+     * @param key - the key
+     * @return <code>-1</code> if the specified <code>key</code> is <code>null</code> or not found.
+     */
+    public final int getDBIndex(byte[] key) {
+        if(key == null) return -1;
+        
+        byte[] metaBytes = _index.lookup(key);
+        if(metaBytes == null) return -1;
+        
+        IndexMeta meta = IndexMeta.parse(metaBytes);
+        if(meta == null) return -1;
+        
+        return meta.getDataAddr();
+    }
+    
     @Override
     public int getLength(byte[] key) {
         if(key == null) return -1;

@@ -5,7 +5,7 @@
   <groupId>com.sna-projects.krati</groupId>
   <artifactId>project</artifactId>
   <packaging>pom</packaging>
-  <version>0.4.7</version>
+  <version>0.4.7.1</version>
   <name>project</name>
   <description>A hash-based high-performance data store</description>
   <url>http://sna-projects.com/krati</url>
