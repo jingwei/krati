@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.channels.WritableByteChannel;
 
+import krati.PersistableListener;
 import krati.core.StoreParams;
 import org.apache.log4j.Logger;
 
@@ -398,5 +399,21 @@ public class StaticArrayStorePartition implements ArrayStorePartition {
     @Override
     public final Array.Type getType() {
         return Array.Type.STATIC;
+    }
+    
+    /**
+     * Gets the persistable event listener.
+     */
+    public final PersistableListener getPersistableListener() {
+        return _dataArray.getPersistableListener();
+    }
+    
+    /**
+     * Sets the persistable event listener.
+     * 
+     * @param listener
+     */
+    public final void setPersistableListener(PersistableListener listener) {
+        _dataArray.setPersistableListener(listener);
     }
 }

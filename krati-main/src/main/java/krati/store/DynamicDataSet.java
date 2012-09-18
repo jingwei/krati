@@ -23,6 +23,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import krati.Mode;
+import krati.PersistableListener;
 import krati.array.DataArray;
 import krati.core.StoreConfig;
 import krati.core.StoreParams;
@@ -885,5 +886,21 @@ public class DynamicDataSet implements DataSet<byte[]> {
     @Override
     public IndexedIterator<byte[]> iterator() {
         return new DataSetIterator(_dataArray, _dataHandler);
+    }
+    
+    /**
+     * Gets the persistable event listener.
+     */
+    public final PersistableListener getPersistableListener() {
+        return _dataArray.getPersistableListener();
+    }
+    
+    /**
+     * Sets the persistable event listener.
+     * 
+     * @param listener
+     */
+    public final void setPersistableListener(PersistableListener listener) {
+        _dataArray.setPersistableListener(listener);
     }
 }

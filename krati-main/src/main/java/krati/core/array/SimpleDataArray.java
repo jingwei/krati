@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
 
 import krati.Mode;
 import krati.Persistable;
+import krati.PersistableListener;
 import krati.array.Array;
 import krati.array.DataArray;
 import krati.array.LongArray;
@@ -115,6 +116,11 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
      * Segment index buffer is enabled by default.
      */
     private volatile boolean _sibEnabled = true;
+    
+    /**
+     * The Persistable event listener, default <code>null</code>.
+     */
+    private volatile PersistableListener _listener = null;
     
     /**
      * Constructs a DataArray with Segment Compact Factor default to 0.5. 
@@ -859,6 +865,7 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
      */
     private void syncInternal() throws IOException {
         syncCompactor();
+        fireBeforePersist();
         
         /* CALLS ORDERED: Need force _segment first and then persist
          * _addressArray. During recovery, the _addressArray can always
@@ -868,12 +875,15 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
         _segment.force();
         _addressArray.sync();
         _segmentManager.updateMeta();
+        
+        fireAfterPersist();
     }
     
     @Override
     public synchronized void persist() throws IOException {
         if(isOpen()) {
             syncCompactor();
+            fireBeforePersist();
             
             /* CALLS ORDERED: Need force _segment first and then persist
              * _addressArray. During recovery, the _addressArray can always
@@ -883,6 +893,8 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
             _segment.force();
             _addressArray.persist();
             _segmentManager.updateMeta();
+            
+            fireAfterPersist();
         }
     }
     
@@ -984,7 +996,7 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
     }
     
     /**
-     * SegmentPersistListener is being called back whenever an redo entry is being created.
+     * SegmentPersistListener is being called back whenever a redo entry is being created.
      * This listener does two things:
      * 
      * <ol>
@@ -996,6 +1008,8 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
         
         @Override
         public void beforePersist(Entry<? extends EntryValue> e) throws IOException {
+            fireBeforePersist();
+            
             if(_segment != null) {
                 _segment.force();
             }
@@ -1006,6 +1020,8 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
             if(_segmentManager != null) {
                 _segmentManager.updateMeta();
             }
+            
+            fireAfterPersist();
         }
     }
     
@@ -1029,5 +1045,51 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
             _sib.markAsDirty();
         }
         _sibEnabled = b;
+    }
+    
+    /**
+     * Gets the persistable event listener.
+     */
+    public final PersistableListener getPersistableListener() {
+        return _listener;
+    }
+    
+    /**
+     * Sets the persistable event listener.
+     * 
+     * @param listener
+     */
+    public final void setPersistableListener(PersistableListener listener) {
+        this._listener = listener;
+    }
+    
+    /**
+     * Fire beforePersist events to the PersistableListener.
+     */
+    protected void fireBeforePersist() {
+        PersistableListener l = _listener;
+        
+        if(l != null) {
+            try {
+                l.beforePersist();
+            } catch(Exception e) {
+                _log.error("failure on calling beforePersist", e);
+            }
+        }
+    }
+    
+    /**
+     * Fire afterPersist events to the PersistableListener.
+     */
+    protected void fireAfterPersist() {
+        PersistableListener l = _listener;
+        
+        if(l != null) {
+            try {
+                l.afterPersist();
+            } catch(Exception e) {
+                _log.error("failure on calling afterPersist", e);
+            }
+        }
     }
 }

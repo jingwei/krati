@@ -19,6 +19,7 @@ package krati.store.index;
 import java.io.IOException;
 import java.util.Map.Entry;
 
+import krati.PersistableListener;
 import krati.io.Closeable;
 import krati.util.IndexedIterator;
 
@@ -32,20 +33,65 @@ import krati.util.IndexedIterator;
  */
 public interface Index extends Iterable<Entry<byte[], byte[]>>, Closeable {
     
+    /**
+     * Gets the capacity of Index.
+     */
     public int capacity();
     
+    /**
+     * Looks up the meta bytes associated with the specified key bytes.
+     * 
+     * @param keyBytes
+     */
     public byte[] lookup(byte[] keyBytes);
     
+    /**
+     * Updates the mapping from the specified <code>keyBytes</code> to <code>metaBytes</code>.
+     * 
+     * @param keyBytes
+     * @param metaBytes
+     * @throws Exception
+     */
     public void update(byte[] keyBytes, byte[] metaBytes) throws Exception;
     
+    /**
+     * Gets the iterator of keys.
+     */
     public IndexedIterator<byte[]> keyIterator();
     
-    @Override
+    /**
+     * Gets the iterator of mappings from key bytes to meta bytes.
+     */
     public IndexedIterator<Entry<byte[], byte[]>> iterator();
     
+    /**
+     * Persist updates to this Index.
+     * 
+     * @throws IOException
+     */
     public void persist() throws IOException;
     
+    /**
+     * Sync updates to this Index.
+     * 
+     * @throws IOException
+     */
     public void sync() throws IOException;
     
+    /**
+     * Clears the entire Index.
+     * 
+     * @throws IOException
+     */
     public void clear() throws IOException;
+    
+    /**
+     * Gets the persistable listener.
+     */
+    public PersistableListener getPersistableListener();
+    
+    /**
+     * Sets the persistable listener.
+     */
+    public void setPersistableListener(PersistableListener listener);
 }

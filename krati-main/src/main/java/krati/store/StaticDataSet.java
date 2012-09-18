@@ -19,6 +19,7 @@ package krati.store;
 import java.io.File;
 import java.io.IOException;
 
+import krati.PersistableListener;
 import krati.core.StoreParams;
 import org.apache.log4j.Logger;
 
@@ -442,5 +443,21 @@ public class StaticDataSet implements DataSet<byte[]> {
     @Override
     public IndexedIterator<byte[]> iterator() {
         return new DataSetIterator(_dataArray, _dataHandler);
+    }
+    
+    /**
+     * Gets the persistable event listener.
+     */
+    public final PersistableListener getPersistableListener() {
+        return _dataArray.getPersistableListener();
+    }
+    
+    /**
+     * Sets the persistable event listener.
+     * 
+     * @param listener
+     */
+    public final void setPersistableListener(PersistableListener listener) {
+        _dataArray.setPersistableListener(listener);
     }
 }

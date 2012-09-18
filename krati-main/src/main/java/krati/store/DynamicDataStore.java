@@ -25,6 +25,7 @@ import java.util.Map.Entry;
 import org.apache.log4j.Logger;
 
 import krati.Mode;
+import krati.PersistableListener;
 import krati.array.DataArray;
 import krati.core.StoreConfig;
 import krati.core.StoreParams;
@@ -883,5 +884,21 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
             _dataArray.close();
             _log.info(getStatus());
         }
+    }
+    
+    /**
+     * Gets the persistable event listener.
+     */
+    public final PersistableListener getPersistableListener() {
+        return _dataArray.getPersistableListener();
+    }
+    
+    /**
+     * Sets the persistable event listener.
+     * 
+     * @param listener
+     */
+    public final void setPersistableListener(PersistableListener listener) {
+        _dataArray.setPersistableListener(listener);
     }
 }
