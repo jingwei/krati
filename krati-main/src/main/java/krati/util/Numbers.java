@@ -265,4 +265,104 @@ public class Numbers {
                 ((long) (bytes[6 + offset] & 0xFF) << 8) |
                 ((long) (bytes[7 + offset] & 0xFF)));
     }
+    
+    public static byte[] floatBytesLE(float val) {
+        int v = Float.floatToIntBits(val);
+        return intBytesLE(v);
+    }
+    
+    public static byte[] floatBytesBE(float val) {
+        int v = Float.floatToIntBits(val);
+        return intBytesBE(v);
+    }
+    
+    public static void floatBytesLE(float val, byte[] buffer) {
+        int v = Float.floatToIntBits(val);
+        intBytesLE(v, buffer);
+    }
+    
+    public static void floatBytesBE(float val, byte[] buffer) {
+        int v = Float.floatToIntBits(val);
+        intBytesBE(v, buffer);
+    }
+    
+    public static void floatBytesLE(float val, byte[] buffer, int offset) {
+        int v = Float.floatToIntBits(val);
+        intBytesLE(v, buffer, offset);
+    }
+    
+    public static void floatBytesBE(float val, byte[] buffer, int offset) {
+        int v = Float.floatToIntBits(val);
+        intBytesBE(v, buffer, offset);
+    }
+    
+    public static float floatValueLE(byte[] bytes) {
+        int bits = intValueLE(bytes);
+        return Float.intBitsToFloat(bits);
+    }
+    
+    public static float floatValueBE(byte[] bytes) {
+        int bits = intValueBE(bytes);
+        return Float.intBitsToFloat(bits);
+    }
+    
+    public static float floatValueLE(byte[] bytes, int offset) {
+        int bits = intValueLE(bytes, offset);
+        return Float.intBitsToFloat(bits);
+    }
+    
+    public static float floatValueBE(byte[] bytes, int offset) {
+        int bits = intValueBE(bytes, offset);
+        return Float.intBitsToFloat(bits);
+    }
+    
+    public static byte[] doubleBytesLE(double val) {
+        long v = Double.doubleToLongBits(val);
+        return longBytesLE(v);
+    }
+    
+    public static byte[] doubleBytesBE(double val) {
+        long v = Double.doubleToLongBits(val);
+        return longBytesBE(v);
+    }
+    
+    public static void doubleBytesLE(double val, byte[] buffer) {
+        long v = Double.doubleToLongBits(val);
+        longBytesLE(v, buffer);
+    }
+    
+    public static void doubleBytesBE(double val, byte[] buffer) {
+        long v = Double.doubleToLongBits(val);
+        longBytesBE(v, buffer);
+    }
+    
+    public static void doubleBytesLE(double val, byte[] buffer, int offset) {
+        long v = Double.doubleToLongBits(val);
+        longBytesLE(v, buffer, offset);
+    }
+    
+    public static void doubleBytesBE(double val, byte[] buffer, int offset) {
+        long v = Double.doubleToLongBits(val);
+        longBytesBE(v, buffer, offset);
+    }
+    
+    public static double doubleValueLE(byte[] bytes) {
+        long bits = longValueLE(bytes);
+        return Double.longBitsToDouble(bits);
+    }
+    
+    public static double doubleValueBE(byte[] bytes) {
+        long bits = longValueBE(bytes);
+        return Double.longBitsToDouble(bits);
+    }
+    
+    public static double doubleValueLE(byte[] bytes, int offset) {
+        long bits = longValueLE(bytes, offset);
+        return Double.longBitsToDouble(bits);
+    }
+    
+    public static double doubleValueBE(byte[] bytes, int offset) {
+        long bits = longValueBE(bytes, offset);
+        return Double.longBitsToDouble(bits);
+    }
 }
