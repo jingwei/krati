@@ -39,7 +39,7 @@ public class TestJavaSerializer extends AbstractTestSerializer<HashMap<String, O
         userData.put("name", nameStruct);
         userData.put("gender", "MALE");
         userData.put("verified", Boolean.FALSE);
-        userData.put("userImage", "Rm9vYmFyIQ==");
+        userData.put("userImage", "Rm9vYmFyIQ==" + _rand.nextInt());
         return userData;
     }
     

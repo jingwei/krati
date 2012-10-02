@@ -17,49 +17,39 @@
 package test.io.serialization;
 
 import java.util.Arrays;
-import java.util.Random;
 
-import junit.framework.TestCase;
 import krati.io.Serializer;
 
 /**
- * AbstractTestSerializer
+ * AbstractTestNumberSerializer
  * 
  * @author jwu
- * 07/18, 2011
- * 
- * @param <T> Object to serialize
+ * @since 10/02, 2012
  */
-public abstract class AbstractTestSerializer<T> extends TestCase {
-    protected Random _rand = new Random();
+public abstract class AbstractTestNumberSerializer<T> extends AbstractTestSerializer<T> {
     
-    protected abstract T createObject();
+    @Override
+    protected T createObject() {
+        return anyValue();
+    }
     
-    protected abstract Serializer<T> createSerializer();
+    protected abstract T anyValue();
     
-    public void testApiBasics() {
-        Serializer<T> serializer = createSerializer();
-        
-        T object1 = createObject();
+    protected abstract T minValue();
+    
+    protected abstract T maxValue();
+    
+    protected void checkSerialization(Serializer<T> serializer, T object1) {
         byte[] bytes1 = serializer.serialize(object1);
-        
         T object2 = serializer.deserialize(bytes1);
         byte[] bytes2 = serializer.serialize(object2);
         
         assertTrue(Arrays.equals(bytes1, bytes2));
     }
     
-    public void testRandom() {
+    public void testMinMaxValues() {
         Serializer<T> serializer = createSerializer();
-        
-        for(int i = 0, cnt = _rand.nextInt(1000); i < cnt; i++) {
-            T object1 = createObject();
-            byte[] bytes1 = serializer.serialize(object1);
-            
-            T object2 = serializer.deserialize(bytes1);
-            byte[] bytes2 = serializer.serialize(object2);
-            
-            assertTrue(Arrays.equals(bytes1, bytes2));
-        }
+        checkSerialization(serializer, minValue());
+        checkSerialization(serializer, maxValue());
     }
 }
