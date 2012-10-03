@@ -16,7 +16,6 @@
 
 package test.io.serialization;
 
-import krati.io.Serializer;
 import krati.io.serializer.IntSerializer;
 
 /**
