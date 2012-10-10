@@ -62,10 +62,10 @@ public class StoreParams {
     public static final int NUM_SYNC_BATCHES_MIN = 1;
     
     /**
-     * The default number of update batches required for updating the underlying indexes is 5.
-     * A value in the range from 5 to 10 is recommended.
+     * The default number of update batches required for updating the underlying indexes is 10.
+     * A value in the range from 10 to 100 is recommended.
      */
-    public static final int NUM_SYNC_BATCHES_DEFAULT = 5;
+    public static final int NUM_SYNC_BATCHES_DEFAULT = 10;
     
     /**
      * The minimum segment file size in MB is 8.
@@ -97,6 +97,16 @@ public class StoreParams {
      * The default segment load threshold is 0.5, below which a segment is eligible for compaction.
      */
     public static final double SEGMENT_COMPACT_FACTOR_DEFAULT = Segment.defaultSegmentCompactFactor;
+    
+    /**
+     * The default index segment file size in MB is 8.
+     */
+    public static final int INDEX_SEGMENT_FILE_SIZE_MB_DEFAULT = Segment.minSegmentFileSizeMB;
+    
+    /**
+     * The default index segment load threshold is 0.5, below which a segment is eligible for compaction.
+     */
+    public static final double INDEX_SEGMENT_COMPACT_FACTOR_DEFAULT = Segment.defaultSegmentCompactFactor;
     
     /**
      * The minimum load factor of the underlying hash table is 0.5.
@@ -202,7 +212,7 @@ public class StoreParams {
     }
     
     /**
-     * Sets the segment compaction factor (between 0 and 1),
+     * Sets the segment compaction factor (between 0 and 0.75),
      * below which a store segment is eligible for being compacted.
      *  
      * @param segmentCompactFactor - the segment compaction factor
@@ -289,6 +299,26 @@ public class StoreParams {
      * Parameter for specifying the store segment factory class.
      */
     public static final String PARAM_SEGMENT_FACTORY_CLASS  = "krati.store.segment.factory.class";
+    
+    /**
+     * Parameter for specifying the index initial capacity.
+     */
+    public static final String PARAM_INDEX_INITIAL_CAPACITY = "krati.index.initial.capacity";
+    
+    /**
+     * Parameter for specifying the index segment file size in MB.
+     */
+    public static final String PARAM_INDEX_SEGMENT_FILE_SIZE_MB   = "krati.index.segment.file.size";
+    
+    /**
+     * Parameter for specifying the index segment compactor factor between 0 and 0.75.
+     */
+    public static final String PARAM_INDEX_SEGMENT_COMPACT_FACTOR = "krati.index.segment.compact.factor";
+    
+    /**
+     * Parameter for specifying the index segment factory class.
+     */
+    public static final String PARAM_INDEX_SEGMENT_FACTORY_CLASS  = "krati.index.segment.factory.class";
     
     /**
      * Parameter for specifying the hash load factor of a dynamic store.

@@ -22,10 +22,10 @@ import java.util.concurrent.ThreadFactory;
  * DaemonThreadFactory
  * 
  * @author jwu
- * 05/31, 2011
+ * @since 05/31, 2011
  * 
  */
-public class DaemonThreadFactory implements ThreadFactory {
+public final class DaemonThreadFactory implements ThreadFactory {
 
     @Override
     public Thread newThread(Runnable r) {

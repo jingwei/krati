@@ -23,9 +23,6 @@ import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkArgument;
-
 import krati.core.StoreConfig;
 import krati.core.segment.SegmentFactory;
 import krati.io.Serializer;
@@ -195,7 +192,6 @@ class SimpleSnapshot<T> implements Retention<T>, RetentionFlushListener {
     
     @Override
     public synchronized boolean put(Event<T> event) throws Exception {
-        checkNotNull(event);
         if(_clockStore.put(event.getValue(), event.getClock())) {
             _maxClock = event.getClock();
             return true;
@@ -233,10 +229,5 @@ class SimpleSnapshot<T> implements Retention<T>, RetentionFlushListener {
     @Override
     public void flush() throws IOException {
         _clockStore.persist();
-    }
-
-    @Override
-    public int getClockDimension() {
-        return _maxClock.dimension();
     }
 }

@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map.Entry;
 
+import krati.PersistableListener;
 import krati.core.StoreParams;
 import org.apache.log4j.Logger;
 
@@ -108,7 +109,7 @@ public class StaticDataStore implements DataStore<byte[], byte[]> {
      * 
      * <pre>
      *    batchSize            : 10000
-     *    numSyncBatches       : 5
+     *    numSyncBatches       : 10
      *    segmentFileSizeMB    : 256
      *    segmentCompactFactor : 0.5
      *    hashFunction         : krati.util.FnvHashFunction
@@ -135,7 +136,7 @@ public class StaticDataStore implements DataStore<byte[], byte[]> {
      * 
      * <pre>
      *    batchSize            : 10000
-     *    numSyncBatches       : 5
+     *    numSyncBatches       : 10
      *    segmentCompactFactor : 0.5
      *    hashFunction         : krati.util.FnvHashFunction
      * </pre>
@@ -444,5 +445,21 @@ public class StaticDataStore implements DataStore<byte[], byte[]> {
         if(_dataArray.isOpen()) {
             _dataArray.close();
         }
+    }
+    
+    /**
+     * Gets the persistable event listener.
+     */
+    public final PersistableListener getPersistableListener() {
+        return _dataArray.getPersistableListener();
+    }
+    
+    /**
+     * Sets the persistable event listener.
+     * 
+     * @param listener
+     */
+    public final void setPersistableListener(PersistableListener listener) {
+        _dataArray.setPersistableListener(listener);
     }
 }

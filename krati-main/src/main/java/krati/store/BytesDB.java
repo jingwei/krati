@@ -44,6 +44,7 @@ import krati.util.DaemonThreadFactory;
  * <p>
  * 05/31, 2011 - Added support for Closeable <br/>
  * 06/28, 2011 - Added constructor using StoreConfig <br/>
+ * 08/21, 2012 - Grow capacity by approximately 20% upon auto expansion <br/>
  */
 public final class BytesDB implements Persistable, Closeable {
     final static Logger _logger = Logger.getLogger(BytesDB.class);
@@ -65,6 +66,12 @@ public final class BytesDB implements Persistable, Closeable {
     private final LinkedBlockingQueue<Integer> _nextIndexQueue = new LinkedBlockingQueue<Integer>(_nextIndexQueueCapacity);
     private ExecutorService _nextIndexExecutor = null;
     
+    /**
+     * Creates a new BytesDB.
+     * 
+     * @param config - the BytesDB configuration
+     * @throws Exception if this BytesDB instance cannot be created.
+     */
     public BytesDB(StoreConfig config) throws Exception {
         config.validate();
         config.save();
@@ -87,7 +94,8 @@ public final class BytesDB implements Persistable, Closeable {
                 _config.getSegmentFileSizeMB());
         
         // Create simple data array
-        this._dataArray = new SimpleDataArray(_addrArray, segManager, _config.getSegmentCompactFactor());
+        _dataArray = new SimpleDataArray(_addrArray, segManager, _config.getSegmentCompactFactor());
+        _dataArray.setSibEnabled(true);  // Always enable segment index buffering for BytesDB.
         
         // Scan to count nextIndex
         this.initNextIndexCount();
@@ -96,6 +104,9 @@ public final class BytesDB implements Persistable, Closeable {
         this._nextIndexLookup.setEnabled(true);
         this._nextIndexExecutor = Executors.newSingleThreadExecutor(new DaemonThreadFactory());
         this._nextIndexExecutor.execute(_nextIndexLookup);
+        
+        // Grow 20% upon auto expansion
+        this.setExpandRate(0.2f);
         
         // Initialize mode
         this._mode = Mode.OPEN;
@@ -114,6 +125,14 @@ public final class BytesDB implements Persistable, Closeable {
     
     public final File getHomeDir() {
         return _config.getHomeDir();
+    }
+    
+    public final float getExpandRate() {
+        return _addrArray.getExpandRate();
+    }
+    
+    public final void setExpandRate(float rate) {
+        _addrArray.setExpandRate(rate);
     }
     
     public final int capacity() {
@@ -203,14 +222,14 @@ public final class BytesDB implements Persistable, Closeable {
             
             while(_enabled) {
                 if(index < _addrArray.length()) {
-                    long addr = _addrArray.get(index);
-                    if(addr < Segment.dataStartPosition) {
-                        try {
+                    try {
+                        long addr = _addrArray.get(index);
+                        if (addr < Segment.dataStartPosition) {
                             _nextIndexQueue.put(index);
                             lastPut = index;
-                        } catch (InterruptedException e) {
-                            _logger.warn("Failed to add to _nextIndexQueue", e);
                         }
+                    } catch (Exception e) {
+                        _logger.warn("Failed to add to _nextIndexQueue", e);
                     }
                     index++;
                 } else {

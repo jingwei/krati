@@ -28,12 +28,7 @@ import java.util.List;
  */
 public interface Entry<T extends EntryValue> extends Comparable<Entry<T>> {
     public static final long STORAGE_VERSION = 0;
-
-    /**
-     * @return the Id of this Entry.
-     */
-    public int getId();
-
+    
     /**
      * @return the minimum SCN of updates maintained by this Entry.
      */
@@ -113,19 +108,4 @@ public interface Entry<T extends EntryValue> extends Comparable<Entry<T>> {
      * Clears this Entry.
      */
     public void clear();
-
-    /**
-     * Gets the service Id of this Entry.
-     * 
-     * @return the service Id of this Entry.
-     */
-    public int getServiceId();
-
-    /**
-     * Sets the service Id of this Entry.
-     * 
-     * @param serviceId
-     */
-    public void setServiceId(int serviceId);
-
 }

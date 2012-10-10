@@ -16,8 +16,6 @@
 
 package krati.retention;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import krati.retention.clock.Clock;
 
 /**
@@ -41,8 +39,6 @@ public class SimpleEvent<T> implements Event<T> {
      * @param clock - the event clock
      */
     public SimpleEvent(T value, Clock clock) {
-        checkNotNull(value);
-        checkNotNull(clock);
         this._value = value;
         this._clock = clock;
     }

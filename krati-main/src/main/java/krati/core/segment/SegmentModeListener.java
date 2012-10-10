@@ -20,10 +20,22 @@ package krati.core.segment;
  * SegmentModeListener.
  * 
  * @author jwu
- * 
+ * @since 09/05, 2012
  */
 public interface SegmentModeListener {
     
+    /**
+     * Fires a {@link SegmentModeEvent} right before a segment changes its mode.
+     * 
+     * @param event - the segment mode event
+     */
+    public void modeChange(SegmentModeEvent event);
+    
+    /**
+     * Fires a {@link SegmentModeEvent} right after a segment changed its mode.
+     *  
+     * @param event - the segment mode event
+     */
     public void modeChanged(SegmentModeEvent event);
     
 }

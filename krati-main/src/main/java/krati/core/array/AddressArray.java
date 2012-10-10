@@ -56,4 +56,16 @@ public interface AddressArray extends LongArray, Persistable, Closeable {
      * @throws Exception
      */
     public void expandCapacity(int index) throws Exception;
+    
+    /**
+     * Gets the rate of expanding AddressArray.
+     */
+    public float getExpandRate();
+    
+    /**
+     * Sets the rate of expanding AddressArray.
+     * 
+     * @param rate - the expansion rate, which is a value between 0 and 1.
+     */
+    public void setExpandRate(float rate);
 }

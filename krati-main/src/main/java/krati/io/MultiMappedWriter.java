@@ -28,7 +28,7 @@ import java.nio.channels.FileChannel;
  * This class uses more than one MappedByteBuffer of size 128 MB to write to files larger than 2 GB.
  * 
  * @author jwu
- * 02/27, 2011
+ * @since 02/27, 2011
  * 
  * <p>
  * 06/09, 2011 - flush via FileChannel.force to boost performance.
@@ -40,8 +40,8 @@ public class MultiMappedWriter implements DataWriter, BasicIO {
     private RandomAccessFile _raf;
     private MappedByteBuffer[] _mmapArray;
     
-    public final static int BUFFER_BITS = 27;
-    public final static int BUFFER_SIZE = 1 << BUFFER_BITS; // 128 MB
+    public final static int BUFFER_BITS = 30;
+    public final static int BUFFER_SIZE = 1 << BUFFER_BITS; // 1024 MB
     public final static long BUFFER_MASK = BUFFER_SIZE - 1;
     
     /**

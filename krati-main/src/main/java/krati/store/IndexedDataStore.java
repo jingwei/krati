@@ -18,12 +18,12 @@ package krati.store;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.AbstractMap;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
+import krati.PersistableListener;
 import krati.core.StoreConfig;
 import krati.core.StoreParams;
 import krati.core.segment.MemorySegmentFactory;
@@ -32,6 +32,7 @@ import krati.store.DataStore;
 import krati.store.index.HashIndex;
 import krati.store.index.Index;
 import krati.util.IndexedIterator;
+import krati.util.Numbers;
 
 /**
  * IndexedDataStore.
@@ -51,9 +52,11 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
     private final File _homeDir;
     private final File _indexHome;
     private final File _storeHome;
-    private final int _batchSize;
     
-    private volatile int _updateCnt;
+    /**
+     * The Persistable event listener, default <code>null</code>.
+     */
+    private volatile PersistableListener _listener = null;
     
     /**
      * Creates a new IndexedDataStore instance.
@@ -69,8 +72,10 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
      * @throws Exception if the store cannot be created.
      */
     public IndexedDataStore(StoreConfig config) throws Exception {
-        this._homeDir = config.getHomeDir();
-        this._batchSize = config.getBatchSize();
+        config.validate();
+        config.save();
+        
+        _homeDir = config.getHomeDir();
         
         // Create bytesDB
         _storeHome = new File(_homeDir, "store");
@@ -87,19 +92,31 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
         
         // Create hash index
         _indexHome = new File(_homeDir, "index");
+        int indexInitialCapacity =
+                config.getInt(StoreParams.PARAM_INDEX_INITIAL_CAPACITY,
+                              config.getInitialCapacity());
+        int indexSegmentFileSizeMB =
+                config.getInt(StoreParams.PARAM_INDEX_SEGMENT_FILE_SIZE_MB,
+                              StoreParams.INDEX_SEGMENT_FILE_SIZE_MB_DEFAULT);
+        double indexSegmentCompactFactor =
+                config.getDouble(StoreParams.PARAM_INDEX_SEGMENT_COMPACT_FACTOR,
+                                 config.getSegmentCompactFactor());
+        SegmentFactory indexSegmentFactory =
+                config.getClass(StoreParams.PARAM_INDEX_SEGMENT_FACTORY_CLASS, MemorySegmentFactory.class)
+                .asSubclass(SegmentFactory.class).newInstance();
         
-        int indexInitialCapacity = config.getInitialCapacity();
         StoreConfig indexConfig = new StoreConfig(_indexHome, indexInitialCapacity);
         indexConfig.setBatchSize(config.getBatchSize());
         indexConfig.setNumSyncBatches(config.getNumSyncBatches());
-        indexConfig.setIndexesCached(true);                         // indexes.dat is cached
-        indexConfig.setSegmentFileSizeMB(8);                        // index segment size is 8 MB
-        indexConfig.setSegmentFactory(new MemorySegmentFactory());  // index segment is MemorySegment
-        indexConfig.setSegmentCompactFactor(config.getSegmentCompactFactor());
+        indexConfig.setIndexesCached(true);                         // indexes.dat is always cached
+        indexConfig.setSegmentFactory(indexSegmentFactory);
+        indexConfig.setSegmentFileSizeMB(indexSegmentFileSizeMB);
+        indexConfig.setSegmentCompactFactor(indexSegmentCompactFactor);
         indexConfig.setHashLoadFactor(config.getHashLoadFactor());
         indexConfig.setHashFunction(config.getHashFunction());
         indexConfig.setDataHandler(config.getDataHandler());
         _index = new HashIndex(indexConfig);
+        initIndexPersistableListener();
         
         _logger.info("opened indexHome=" + _indexHome.getAbsolutePath() + " storeHome=" + _storeHome.getAbsolutePath());
     }
@@ -132,7 +149,6 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
                             int indexSegmentFileSizeMB, SegmentFactory indexSegmentFactory,
                             int storeSegmentFileSizeMB, SegmentFactory storeSegmentFactory) throws Exception {
         this._homeDir = homeDir;
-        this._batchSize = batchSize;
         
         // Create bytesDB
         _storeHome = new File(homeDir, "store");
@@ -155,6 +171,7 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
         indexConfig.setSegmentFileSizeMB(indexSegmentFileSizeMB);
         indexConfig.setSegmentFactory(indexSegmentFactory);
         _index = new HashIndex(indexConfig);
+        initIndexPersistableListener();
         
         _logger.info("opened indexHome=" + _indexHome.getAbsolutePath() + " storeHome=" + _storeHome.getAbsolutePath());
     }
@@ -191,7 +208,6 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
                             int storeSegmentFileSizeMB,
                             SegmentFactory storeSegmentFactory) throws Exception {
         this._homeDir = homeDir;
-        this._batchSize = batchSize;
         
         // Create bytesDB
         _storeHome = new File(homeDir, "store");
@@ -214,8 +230,42 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
         indexConfig.setSegmentFileSizeMB(indexSegmentFileSizeMB);
         indexConfig.setSegmentFactory(indexSegmentFactory);
         _index = new HashIndex(indexConfig);
+        initIndexPersistableListener();
         
         _logger.info("opened indexHome=" + _indexHome.getAbsolutePath() + " storeHome=" + _storeHome.getAbsolutePath());
+    }
+    
+    /**
+     * Initialize the Index persistable listener.
+     */
+    protected void initIndexPersistableListener() {
+        _index.setPersistableListener(new PersistableListener() {
+            @Override
+            public void beforePersist() {
+                try {
+                    PersistableListener l = _listener;
+                    if(l != null) l.beforePersist();
+                } catch (Exception e) {
+                    _logger.error("failed on calling beforePersist", e);
+                }
+                
+                try {
+                    _bytesDB.persist();
+                } catch (Exception e) {
+                    _logger.error("failed on calling beforePersist", e);
+                }
+            }
+            
+            @Override
+            public void afterPersist() {
+                try {
+                    PersistableListener l = _listener;
+                    if(l != null) l.afterPersist();
+                } catch(Exception e) {
+                    _logger.error("failed on calling afterPersist", e);
+                }
+            }
+        });
     }
     
     /**
@@ -242,6 +292,24 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
     @Override
     public final int capacity() {
         return _index.capacity();
+    }
+    
+    /**
+     * Gets the underlying DB index associated with the specified <code>key</code>.
+     * 
+     * @param key - the key
+     * @return <code>-1</code> if the specified <code>key</code> is <code>null</code> or not found.
+     */
+    public final int getDBIndex(byte[] key) {
+        if(key == null) return -1;
+        
+        byte[] metaBytes = _index.lookup(key);
+        if(metaBytes == null) return -1;
+        
+        IndexMeta meta = IndexMeta.parse(metaBytes);
+        if(meta == null) return -1;
+        
+        return meta.getDataAddr();
     }
     
     @Override
@@ -298,12 +366,6 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
             // No need to update hashIndex
         }
         
-        _updateCnt++;
-        if(_updateCnt >= _batchSize) { 
-            _updateCnt = 0;
-            persist();
-        }
-        
         return true;
     }
     
@@ -323,12 +385,6 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
         
         // Update index 
         _index.update(key, null);
-        
-        _updateCnt++;
-        if(_updateCnt >= _batchSize) { 
-            _updateCnt = 0;
-            persist();
-        }
         
         return true;
     }
@@ -360,15 +416,14 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
         }
         
         static byte[] build(int dataAddr) {
-            ByteBuffer bb = ByteBuffer.allocate(META_SIZE);
-            bb.putInt(dataAddr);
-            return bb.array();
+            byte[] bytes = new byte[META_SIZE];
+            Numbers.intBytesBE(dataAddr, bytes);
+            return bytes;
         }
         
         static IndexMeta parse(byte[] metaBytes) {
             if(metaBytes.length != META_SIZE) return null;
-            ByteBuffer bb = ByteBuffer.wrap(metaBytes);
-            int dataAddr = bb.getInt();
+            int dataAddr = Numbers.intValueBE(metaBytes);
             return new IndexMeta(dataAddr);
         }
         
@@ -458,11 +513,27 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
     @Override
     public synchronized void close() throws IOException {
         try {
+            _index.close();
             _bytesDB.close();
-            _index.close();
         } catch(IOException ioe) {
-            _index.close();
+            _bytesDB.close();
             throw ioe;
         }
+    }
+    
+    /**
+     * Gets the persistable event listener.
+     */
+    public final PersistableListener getPersistableListener() {
+        return _listener;
+    }
+    
+    /**
+     * Sets the persistable event listener.
+     * 
+     * @param listener
+     */
+    public final void setPersistableListener(PersistableListener listener) {
+        this._listener = listener;
     }
 }

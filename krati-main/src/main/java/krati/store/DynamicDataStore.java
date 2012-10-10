@@ -25,6 +25,7 @@ import java.util.Map.Entry;
 import org.apache.log4j.Logger;
 
 import krati.Mode;
+import krati.PersistableListener;
 import krati.array.DataArray;
 import krati.core.StoreConfig;
 import krati.core.StoreParams;
@@ -54,9 +55,10 @@ import krati.util.LinearHashing;
  * 
  * <p>
  * 06/04, 2011 - Added support for Closeable <br/>
- * 06/04, 2011 - Added getHomeDir <br/>
  * 06/08, 2011 - Scale to the Integer.MAX_VALUE capacity <br/>
  * 06/25, 2011 - Added constructor using StoreConfig <br/>
+ * 08/24, 2012 - Disable full rehashing on open/close <br/>
+ * 09/05, 2012 - Expand capacity on first-time creation <br/>
  */
 public class DynamicDataStore implements DataStore<byte[], byte[]> {
     private final static Logger _log = Logger.getLogger(DynamicDataStore.class);
@@ -94,6 +96,9 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
         _dataHandler = (config.getDataHandler() == null) ?
                 new DefaultDataStoreHandler() : (DataStoreHandler)config.getDataHandler();
         
+        // Check if the address array file can be found on disk
+        boolean found = isAddressArrayFound(_config.getHomeDir());
+        
         // Create dynamic address array
         _addrArray = createAddressArray(
                 _config.getHomeDir(),
@@ -112,7 +117,12 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
             _log.warn("initLevel reset from " + initLevel + " to " + _maxLevel);
             initLevel = _maxLevel;
         }
-        _addrArray.expandCapacity((_unitCapacity << initLevel) - 1);
+        
+        // Expand address array length upon first-time creation
+        if(!found) {
+            _addrArray.expandCapacity((_unitCapacity << initLevel) - 1);
+            _log.info("capacity initialized to " + _addrArray.length());
+        }
         
         // Create underlying segment manager
         String segmentHome = _homeDir.getCanonicalPath() + File.separator + "segs";
@@ -136,7 +146,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
      * 
      * <pre>
      *    batchSize            : 10000
-     *    numSyncBatches       : 5
+     *    numSyncBatches       : 10
      *    segmentFileSizeMB    : 256
      *    segmentCompactFactor : 0.5
      *    Store hashLoadFactor : 0.75
@@ -167,7 +177,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
      * 
      * <pre>
      *    batchSize            : 10000
-     *    numSyncBatches       : 5
+     *    numSyncBatches       : 10
      *    segmentFileSizeMB    : 256
      *    segmentCompactFactor : 0.5
      *    Store hashLoadFactor : 0.75
@@ -199,7 +209,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
      * 
      * <pre>
      *    batchSize            : 10000
-     *    numSyncBatches       : 5
+     *    numSyncBatches       : 10
      *    segmentCompactFactor : 0.5
      *    Store hashLoadFactor : 0.75
      *    Store hashFunction   : krati.util.FnvHashFunction
@@ -231,7 +241,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
      * 
      * <pre>
      *    batchSize            : 10000
-     *    numSyncBatches       : 5
+     *    numSyncBatches       : 10
      *    segmentCompactFactor : 0.5
      * </pre>
      * 
@@ -388,13 +398,21 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
         // Create data store handler
         _dataHandler = new DefaultDataStoreHandler();
         
+        // Check if the address array file can be found on disk
+        boolean found = isAddressArrayFound(_config.getHomeDir());
+        
         // Create dynamic address array
         _addrArray = createAddressArray(
                 _config.getHomeDir(),
                 _config.getBatchSize(),
                 _config.getNumSyncBatches(),
                 _config.getIndexesCached());
-        _addrArray.expandCapacity(initialCapacity - 1);
+        
+        // Expand address array length upon first-time creation
+        if(!found) {
+            _addrArray.expandCapacity(initialCapacity - 1);
+            _log.info("capacity initialized to " + _addrArray.length());
+        }
         _unitCapacity = DynamicConstants.SUB_ARRAY_SIZE;
         
         // Create underlying segment manager
@@ -414,6 +432,26 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
         _log.info(getStatus());
     }
     
+    /**
+     * Checks if there exists an address array file under the specified home directory.
+     * 
+     * @param homeDir
+     */
+    protected boolean isAddressArrayFound(File homeDir) {
+        File arrayFile = new File(homeDir, "indexes.dat");
+        return arrayFile.exists(); 
+    }
+    
+    /**
+     * Creates an address array file under the specified home directory.
+     * 
+     * @param homeDir        - the home directory
+     * @param batchSize      - the update batch size
+     * @param numSyncBatches - the number of batches need to sync address array file
+     * @param indexesCached  - whether the indexes.dat is cached in memory.
+     * @return the created address array
+     * @throws Exception
+     */
     protected AddressArray createAddressArray(File homeDir,
                                               int batchSize,
                                               int numSyncBatches,
@@ -633,8 +671,8 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
             _levelCapacity = getUnitCapacity() * (1 << _level);
             _loadCountThreshold = (int)(capacity() * _loadThreshold);
             
-            // Need to re-populate the last unit 
-            while(canSplit()) {
+            // Need to re-populate the last unit. Do not perform full rehashing!
+            while(canSplitOnCapacity()) {
                 split();
             }
         }
@@ -645,6 +683,21 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
             // The splitTo must NOT overflow Integer.MAX_VALUE
             int splitTo = _levelCapacity + _split;
             if (Integer.MAX_VALUE > splitTo && splitTo >= _levelCapacity) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Perform split on the current capacity.
+     */
+    protected boolean canSplitOnCapacity() {
+        if(0 < _split) {
+            // The splitTo must NOT overflow the current capacity
+            int splitTo = _levelCapacity + _split;
+            if (capacity() > splitTo && splitTo >= _levelCapacity) {
                 return true;
             }
         }
@@ -820,7 +873,7 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
     public synchronized void close() throws IOException {
         if(_dataArray.isOpen()) {
             try {
-                while(canSplit()) {
+                while(canSplitOnCapacity()) {
                     split();
                 }
                 _dataArray.sync();
@@ -831,5 +884,21 @@ public class DynamicDataStore implements DataStore<byte[], byte[]> {
             _dataArray.close();
             _log.info(getStatus());
         }
+    }
+    
+    /**
+     * Gets the persistable event listener.
+     */
+    public final PersistableListener getPersistableListener() {
+        return _dataArray.getPersistableListener();
+    }
+    
+    /**
+     * Sets the persistable event listener.
+     * 
+     * @param listener
+     */
+    public final void setPersistableListener(PersistableListener listener) {
+        _dataArray.setPersistableListener(listener);
     }
 }

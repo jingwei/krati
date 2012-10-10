@@ -33,7 +33,7 @@ import org.apache.log4j.Logger;
  */
 public class MemorySegment extends AbstractSegment {
     private final static Logger _log = Logger.getLogger(MemorySegment.class);
-    private ByteBuffer _buffer;
+    protected ByteBuffer _buffer;
 
     public MemorySegment(int segmentId, File segmentFile, int initialSizeMB, Segment.Mode mode) throws IOException {
         super(segmentId, segmentFile, initialSizeMB, mode);
@@ -47,7 +47,7 @@ public class MemorySegment extends AbstractSegment {
             if (!getSegmentFile().createNewFile()) {
                 String msg = "Failed to create " + getSegmentFile().getAbsolutePath();
 
-                _log.error(msg);
+                logger().error(msg);
                 throw new IOException(msg);
             }
 
@@ -69,7 +69,7 @@ public class MemorySegment extends AbstractSegment {
 
             loadHeader();
 
-            _log.info("Segment " + getSegmentId() + " loaded: " + getHeader());
+            logger().info("Segment " + getSegmentId() + " loaded: " + getHeader());
         } else {
             _raf = new RandomAccessFile(getSegmentFile(), "rw");
 
@@ -80,13 +80,17 @@ public class MemorySegment extends AbstractSegment {
 
             initHeader();
 
-            _log.info("Segment " + getSegmentId() + " initialized: " + getStatus());
+            logger().info("Segment " + getSegmentId() + " initialized: " + getStatus());
         }
     }
 
     protected ByteBuffer initByteBuffer() {
         int bufferLength = (int) ((_initSizeMB < Segment.maxSegmentFileSizeMB) ? _initSizeBytes : (_initSizeBytes - 1));
         return ByteBuffer.wrap(new byte[bufferLength]);
+    }
+
+    protected Logger logger() {
+        return _log;
     }
 
     @Override
@@ -209,6 +213,7 @@ public class MemorySegment extends AbstractSegment {
         System.arraycopy(_buffer.array(), pos, dst, offset, length);
     }
 
+    @Override
     public int transferTo(int pos, int length, Segment targetSegment) throws IOException {
         if ((pos + length) <= _buffer.position()) {
             targetSegment.append(_buffer.array(), pos, length);
@@ -257,7 +262,7 @@ public class MemorySegment extends AbstractSegment {
         if (getMode() == Segment.Mode.READ_WRITE) {
             force();
             _segMode = Segment.Mode.READ_ONLY;
-            _log.info("Segment " + getSegmentId() + " switched to " + getMode());
+            logger().info("Segment " + getSegmentId() + " switched to " + getMode());
         }
     }
 
@@ -280,7 +285,7 @@ public class MemorySegment extends AbstractSegment {
         }
 
         _channel.force(true);
-        _log.info("Segment " + getSegmentId() + " forced: " + getStatus());
+        logger().info("Segment " + getSegmentId() + " forced: " + getStatus());
     }
 
     @Override
@@ -309,7 +314,7 @@ public class MemorySegment extends AbstractSegment {
             if (!getSegmentFile().createNewFile()) {
                 String msg = "Failed to create " + getSegmentFile().getAbsolutePath();
 
-                _log.error(msg);
+                logger().error(msg);
                 throw new IOException(msg);
             }
 
@@ -327,7 +332,7 @@ public class MemorySegment extends AbstractSegment {
 
         initHeader();
 
-        _log.info("Segment " + getSegmentId() + " initialized: " + getStatus());
+        logger().info("Segment " + getSegmentId() + " initialized: " + getStatus());
     }
 
     @Override

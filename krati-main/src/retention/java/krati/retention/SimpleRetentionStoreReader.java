@@ -178,9 +178,4 @@ public class SimpleRetentionStoreReader<K, V> extends AbstractRetentionStoreRead
     protected int getStoreIndexStart() {
         return _store.keyIterator().index();
     }
-
-    @Override
-    public int getClockDimension() {
-        return _retention.getClockDimension();
-    }
 }

@@ -26,6 +26,7 @@ import java.util.AbstractMap.SimpleEntry;
 import org.apache.log4j.Logger;
 
 import krati.store.DataStoreHandler;
+import krati.util.Bytes;
 
 /**
  * DefaultDataStoreHandler
@@ -35,7 +36,6 @@ import krati.store.DataStoreHandler;
  */
 public final class DefaultDataStoreHandler implements DataStoreHandler {
     private final static Logger _log = Logger.getLogger(DefaultDataStoreHandler.class);
-    private final static int NUM_BYTES_IN_INT = 4;
     
     @Override
     public final byte[] assemble(byte[] key, byte[] value) {
@@ -105,7 +105,7 @@ public final class DefaultDataStoreHandler implements DataStoreHandler {
             while(cnt > 0) {
                 // Process key
                 int len = bb.getInt();
-                if(keysEqual(key, data, bb.position(), len)) {
+                if(Bytes.equals(key, data, bb.position(), len)) {
                     return originalCnt;
                 }
                 bb.position(bb.position() + len);
@@ -126,14 +126,14 @@ public final class DefaultDataStoreHandler implements DataStoreHandler {
     
     @Override
     public final byte[] extractByKey(byte[] key, byte[] data) {
-        if(data.length == 0) return null;
+        if(data == null || data.length == 0) return null;
         ByteBuffer bb = ByteBuffer.wrap(data);
         
         int cnt = bb.getInt();
         while(cnt > 0) {
             // Process key
             int len = bb.getInt();
-            if(keysEqual(key, data, bb.position(), len)) {
+            if(Bytes.equals(key, data, bb.position(), len)) {
                 // pass key data
                 bb.position(bb.position() + len);
                 
@@ -170,7 +170,7 @@ public final class DefaultDataStoreHandler implements DataStoreHandler {
             
             // Process key
             int len = bb.getInt();
-            if(keysEqual(key, data, bb.position(), len)) {
+            if(Bytes.equals(key, data, bb.position(), len)) {
                 bb.position(bb.position() + len);
                 
                 // Process value
@@ -218,18 +218,6 @@ public final class DefaultDataStoreHandler implements DataStoreHandler {
         return data.length;
     }
     
-    static boolean keysEqual(byte[] key, byte[] keySource, int offset, int length) {
-        if (key.length == length) {
-            for (int i = 0; i < length; i++) {
-                if (key[i] != keySource[offset + i])
-                    return false;
-            }
-            return true;
-        }
-        
-        return false;
-    }
-
     @Override
     public final List<byte[]> extractKeys(byte[] data) {
         try {
@@ -260,6 +248,7 @@ public final class DefaultDataStoreHandler implements DataStoreHandler {
         }
     }
     
+    @Override
     public final List<byte[]> extractValues(byte[] data) {
         try {
             ByteBuffer bb = ByteBuffer.wrap(data);
@@ -324,16 +313,16 @@ public final class DefaultDataStoreHandler implements DataStoreHandler {
     public final byte[] assembleEntries(List<Entry<byte[], byte[]>> entries) {
         byte[] b;
         int cnt = 0;
-        int len = NUM_BYTES_IN_INT;
+        int len = Bytes.NUM_BYTES_IN_INT;
         
         for(Entry<byte[], byte[]> e : entries) {
             b = e.getKey();
             if(b != null) {
-                len += NUM_BYTES_IN_INT;
+                len += Bytes.NUM_BYTES_IN_INT;
                 len += b.length;
                 
                 b = e.getValue();
-                len += NUM_BYTES_IN_INT;
+                len += Bytes.NUM_BYTES_IN_INT;
                 len += b == null ? 0 : e.getValue().length;
                 
                 cnt++;

@@ -49,14 +49,14 @@ public class TestEntry extends AbstractTest {
         
         for(int run = 1; run <= 10; run++) {
             File file = new File(TEST_OUTPUT_DIR, "entry_test" + run + ".dat");
-            Entry<EntryValueInt> entry = new SimpleEntry<EntryValueInt>(0, new EntryValueIntFactory(), 1000);
+            Entry<EntryValueInt> entry = new SimpleEntry<EntryValueInt>(new EntryValueIntFactory(), 1000);
             
             for(int i = 0; i < 1000; i++) {
                 entry.add(new EntryValueInt(i, random.nextInt(50000), i));
             }
             entry.save(file);
             
-            Entry<EntryValueInt> entryRead = new SimpleEntry<EntryValueInt>(1, new EntryValueIntFactory(), 1000);
+            Entry<EntryValueInt> entryRead = new SimpleEntry<EntryValueInt>(new EntryValueIntFactory(), 1000);
             entryRead.load(file);
             
             assertTrue("Entry minSCNs don't match at run " + run,
@@ -79,13 +79,13 @@ public class TestEntry extends AbstractTest {
         EntryValueIntFactory valFactory = new EntryValueIntFactory();
         
         c = 0;
-        Entry<EntryValueInt> e1 = new SimpleEntry<EntryValueInt>(0, valFactory, 10);
+        Entry<EntryValueInt> e1 = new SimpleEntry<EntryValueInt>(valFactory, 10);
         for (int i = 9; i >= 0; i--) {
             e1.add(new EntryValueInt(i, c, c++));
         }
         
         c = 0;
-        Entry<EntryValueInt> e2 = new SimpleEntry<EntryValueInt>(1, valFactory, 10);
+        Entry<EntryValueInt> e2 = new SimpleEntry<EntryValueInt>(valFactory, 10);
         for (int i = 19; i >= 10; i--) {
             e2.add(new EntryValueInt(i, c, c++));
         }

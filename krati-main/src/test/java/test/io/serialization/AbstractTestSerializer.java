@@ -17,6 +17,7 @@
 package test.io.serialization;
 
 import java.util.Arrays;
+import java.util.Random;
 
 import junit.framework.TestCase;
 import krati.io.Serializer;
@@ -30,6 +31,7 @@ import krati.io.Serializer;
  * @param <T> Object to serialize
  */
 public abstract class AbstractTestSerializer<T> extends TestCase {
+    protected Random _rand = new Random();
     
     protected abstract T createObject();
     
@@ -45,5 +47,19 @@ public abstract class AbstractTestSerializer<T> extends TestCase {
         byte[] bytes2 = serializer.serialize(object2);
         
         assertTrue(Arrays.equals(bytes1, bytes2));
+    }
+    
+    public void testRandom() {
+        Serializer<T> serializer = createSerializer();
+        
+        for(int i = 0, cnt = _rand.nextInt(1000); i < cnt; i++) {
+            T object1 = createObject();
+            byte[] bytes1 = serializer.serialize(object1);
+            
+            T object2 = serializer.deserialize(bytes1);
+            byte[] bytes2 = serializer.serialize(object2);
+            
+            assertTrue(Arrays.equals(bytes1, bytes2));
+        }
     }
 }

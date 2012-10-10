@@ -14,32 +14,22 @@
  * the License.
  */
 
-package krati.core;
+package test.io.serialization;
+
+import java.nio.ByteOrder;
+
+import krati.io.serializer.DoubleSerializer;
 
 /**
- * InvalidDataException.
+ * TestDoubleSerializer2
  * 
  * @author jwu
- * 
+ * @since 10/02, 2012
  */
-public class InvalidDataException extends RuntimeException {
-    private static final long serialVersionUID = 1L;
+public class TestDoubleSerializer2 extends TestDoubleSerializer {
     
-    /**
-     * Creates a new instance of InvalidDataException.
-     * 
-     * @param message - the message 
-     */
-    public InvalidDataException(String message) {
-        super(message);
-    }
-    
-    /**
-     * Creates a new instance of InvalidDataException.
-     * 
-     * @param index - the array index with which the data associated is invalid.
-     */
-    public InvalidDataException(int index) {
-        super("Invalid data at index " + index);
+    @Override
+    protected DoubleSerializer createSerializer() {
+        return new DoubleSerializer(ByteOrder.LITTLE_ENDIAN);
     }
 }

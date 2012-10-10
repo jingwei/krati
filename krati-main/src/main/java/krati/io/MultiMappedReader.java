@@ -28,7 +28,7 @@ import java.nio.channels.FileChannel;
  * This class uses more than one MappedByteBuffer of size 128 MB to read from files larger than 2 GB.
  * 
  * @author jwu
- * 02/26, 2011
+ * @since 02/26, 2011
  * 
  */
 public class MultiMappedReader implements DataReader {
@@ -37,8 +37,8 @@ public class MultiMappedReader implements DataReader {
     private RandomAccessFile _raf;
     private MappedByteBuffer[] _mmapArray;
     
-    public final static int BUFFER_BITS = 27;
-    public final static int BUFFER_SIZE = 1 << BUFFER_BITS; // 128 MB
+    public final static int BUFFER_BITS = 30;
+    public final static int BUFFER_SIZE = 1 << BUFFER_BITS; // 1024 MB
     public final static long BUFFER_MASK = BUFFER_SIZE - 1;
     
     /**

@@ -34,32 +34,10 @@ public final class Clock implements Serializable {
     private final static long serialVersionUID = 1L;
     private final long[] _values;
     
-    @Override
-    public boolean equals(Object o) {
-        if (null == o) return false;
-        if (o.getClass() != this.getClass()) return false;
-        Clock c = (Clock) o;
-        return Arrays.equals(this._values, c._values);
-    }
-    
-    @Override
-    public int hashCode() {
-        return Arrays.hashCode(_values);
-    }
-    
     /**
      * The smallest Clock.
      */
     public static final Clock ZERO = new Clock();
-    
-    /**
-     * Returns the number of internal values.
-     * Corresponds with the number of parameters passed on the constructor.
-     * The ZERO clock will return 0;
-     */
-    public int dimension() {
-        return _values.length;
-    }
     
     /**
      * Constructs a new instance of Clock.
@@ -85,7 +63,7 @@ public final class Clock implements Serializable {
      * <code>Clock.ZERO</code> is returned <code>upon</code> null or zero-length string.  
      */
     public static Clock parseClock(String str) {
-        if(str == null || str.length() == 0 || str.trim().equals("ZERO")) {
+        if(str == null || str.length() == 0) {
             return Clock.ZERO;
         }
         
@@ -125,18 +103,14 @@ public final class Clock implements Serializable {
      */
     @Override
     public String toString() {
-        if (this.equals(ZERO)) {
-            return "ZERO";
-        } else {
-            StringBuilder b = new StringBuilder();
-            if(_values != null && 1 <= _values.length) {
-                b.append(_values[0]);
-                for(int i = 1; i < _values.length; i++) {
-                    b.append(':').append(_values[i]);
-                }
+        StringBuilder b = new StringBuilder();
+        if(_values != null && 1 <= _values.length) {
+            b.append(_values[0]);
+            for(int i = 1; i < _values.length; i++) {
+                b.append(':').append(_values[i]);
             }
-            return b.toString();
         }
+        return b.toString();
     }
     
     /**
@@ -238,5 +212,18 @@ public final class Clock implements Serializable {
     public boolean afterEqual(Clock c) {
         Occurred o = compareTo(c);
         return o == Occurred.AFTER || o == Occurred.EQUICONCURRENTLY; 
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (null == o) return false;
+        if (o.getClass() != this.getClass()) return false;
+        Clock c = (Clock) o;
+        return Arrays.equals(this._values, c._values);
+    }
+    
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(_values);
     }
 }

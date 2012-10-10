@@ -18,8 +18,6 @@ package krati.core.array.entry;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import org.apache.log4j.Logger;
-
 /**
  * EntryPool
  * 
@@ -27,9 +25,6 @@ import org.apache.log4j.Logger;
  * 
  */
 public class EntryPool<T extends EntryValue> {
-    private static final Logger _log = Logger.getLogger(EntryPool.class);
-    
-    private int _entryServiceIdCounter = 0;
     private final int _entryCapacity;
     private final EntryFactory<T> _entryFactory;
     private final ConcurrentLinkedQueue<Entry<T>> _serviceQueue;
@@ -81,14 +76,10 @@ public class EntryPool<T extends EntryValue> {
     
     public Entry<T> next() {
         Entry<T> freeEntry = _recycleQueue.poll();
-        
         if (freeEntry == null) {
             freeEntry = _entryFactory.newEntry(_entryCapacity);
-            _log.trace("Entry " + freeEntry.getId() + " created: " + freeEntry.getClass().getSimpleName());
         }
         
-        _log.trace("Entry " + freeEntry.getId() + " serviceId " + _entryServiceIdCounter);
-        freeEntry.setServiceId(_entryServiceIdCounter++);
         return freeEntry;
     }
     

@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
 
 import krati.Mode;
 import krati.Persistable;
+import krati.PersistableListener;
 import krati.array.Array;
 import krati.array.DataArray;
 import krati.array.LongArray;
@@ -35,6 +36,7 @@ import krati.core.array.entry.EntryValue;
 import krati.core.segment.AddressFormat;
 import krati.core.segment.Segment;
 import krati.core.segment.SegmentException;
+import krati.core.segment.SegmentIndexBuffer;
 import krati.core.segment.SegmentManager;
 import krati.core.segment.SegmentOverflowException;
 import krati.io.Closeable;
@@ -64,6 +66,8 @@ import krati.io.Closeable;
  * 06/22, 2011 - catch SegmentException in method set() for safety <br/>
  * 06/03, 2012 - fixed problematic sync upon calling method close() <br/>
  * 06/11, 2012 - Simplified compaction update <br/>
+ * 08/31, 2012 - Enabled segment index buffer <br/>
+ * 09/09, 2012 - Removed throttling as compaction is efficient with SIB <br/>
  */
 public class SimpleDataArray implements DataArray, Persistable, Closeable {
     private final static Logger _log = Logger.getLogger(SimpleDataArray.class);
@@ -104,9 +108,19 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
     private volatile Mode _mode = Mode.INIT;
     
     /**
-     * Append position triggering segment meta data update
+     * Current working segment index buffer.
      */
-    private volatile long _metaUpdatePosition = Segment.dataStartPosition;
+    private volatile SegmentIndexBuffer _sib;
+    
+    /**
+     * Segment index buffer is enabled by default.
+     */
+    private volatile boolean _sibEnabled = true;
+    
+    /**
+     * The Persistable event listener, default <code>null</code>.
+     */
+    private volatile PersistableListener _listener = null;
     
     /**
      * Constructs a DataArray with Segment Compact Factor default to 0.5. 
@@ -157,7 +171,12 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
         int totalIgnoreBytes = 0;
         int totalUpdateBytes = updateBatch.getDataSizeTotal();
         
-        long updateScn = _addressArray.getHWMark();
+        /* Using lwMark is to guarantee that redo logs from compaction will not increase
+         * the hwMark of the underlying array file. If hwMark is being used, the current
+         * redo entry is discarded upon crash. Upon restart, the hwMark from the underlying
+         * array file may prevent updates in the lost redo entry from being resent.   
+         */
+        long updateScn = _addressArray.getLWMark();
         Segment segTarget = updateBatch.getTargetSegment();
         
         for(int i = 0; i < updateCount; i++) {
@@ -185,13 +204,15 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
         int consumeCount = updateCount - ignoreCount;
         int totalConsumeBytes = totalUpdateBytes - totalIgnoreBytes;
         
-        _log.trace("consumed compaction batch " + updateBatch.getDescriptiveId() +
-                  " updates " + consumeCount + "/" + updateCount +
-                  " bytes " + totalConsumeBytes + "/" + totalUpdateBytes);
+        if(_log.isTraceEnabled()) {
+            _log.trace("consumed compaction batch " +
+                       updateBatch.getDescriptiveId() +
+                       " updates " + consumeCount + "/" + updateCount +
+                       " bytes " + totalConsumeBytes + "/" + totalUpdateBytes);
+        }
         
         // Update segment load size
         segTarget.decrLoadSize(totalIgnoreBytes);
-        _log.trace("Segment " + segTarget.getSegmentId() + " catchup " + segTarget.getStatus());
     }
     
     /**
@@ -252,13 +273,29 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
     }
     
     /**
+     * Submit current segment index buffer for asynchronous handling.
+     */
+    protected void submitSegmentIndexBuffer() {
+        if(_sibEnabled && !_sib.isDirty()) {
+            _sib.setSegmentId(_segment.getSegmentId());
+            _sib.setSegmentLastForcedTime(_segment.getLastForcedTime());
+            _segmentManager.submit(_sib);
+        } else {
+            _segmentManager.remove(_sib);
+        }
+    }
+    
+    /**
      * Initialize this SimpleDataArray after it is instantiated. 
      */
     protected void init() {
         try {
-            _metaUpdatePosition = Segment.dataStartPosition;
+            // Initialize the current working segment
             _segment = _segmentManager.nextSegment();
-            _compactor.startsCycle();
+            
+            // Segment index buffer is enabled by default!
+            _sib = _segmentManager.openSegmentIndexBuffer(_segment.getSegmentId());
+            if(!_sibEnabled) _sib.markAsDirty();
             
             _log.info("Segment " + _segment.getSegmentId() + " online: " + _segment.getStatus());
         } catch(IOException ioe) {
@@ -358,57 +395,6 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
         }
         catch(IOException e1) {}
         catch(IndexOutOfBoundsException e2) {}
-    }
-    
-    /**
-     * Throttle the write traffic if the Segment compactor is falling behind.
-     * Throttling lasts for at most 1 millisecond per write operation.
-     * 
-     * <p>
-     * During each throttling cycle, if there are available {@link CompactionUpdateBatch}(es)
-     * produced by the Segment compactor, they will be consumed automatically until the cycle
-     * terminates.
-     * </p>
-     * @param lastWriteSize - the size of the last write, which is for estimating the throttling cycle.
-     */
-    private final void doThrottling(int lastWriteSize) {
-        Segment writerSegment = _segment;
-        if(writerSegment == null) {
-            return;
-        }
-        
-        Segment compactorTarget = _compactor.getTargetSegment();
-        if(compactorTarget == null || compactorTarget == writerSegment) {
-            return;
-        }
-        
-        /*
-         * Slow down the writer so that the compactor has a chance to catch up.
-         */
-        int writerLoadSize = writerSegment.getLoadSize();
-        int targetLoadSize = compactorTarget.getLoadSize();
-        if (targetLoadSize < writerLoadSize) {
-            final long totalWait = 1; // milliseconds
-            final long startTime = System.currentTimeMillis();
-            targetLoadSize += (targetLoadSize == 0 ?
-                                 (lastWriteSize * 2) :
-                                 (int)((double)writerLoadSize / targetLoadSize * lastWriteSize));
-            
-            while(compactorTarget.getLoadSize() < targetLoadSize) {
-                // Sleep 0.2 milliseconds only if no compaction batch was consumed
-                if(!consumeCompactionBatch()) {
-                    try {
-                        Thread.sleep(0 /* milliseconds */, 200000 /* nanoseconds */);
-                    } catch(Exception e) {}
-                }
-                
-                long elapsedTime = System.currentTimeMillis() - startTime; 
-                if (elapsedTime >= totalWait) {
-                    _log.trace("throttle " + elapsedTime + " ms");
-                    return;
-                }
-            }
-        }
     }
     
     /**
@@ -761,72 +747,52 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
                 long address = _addressFormat.composeAddress((int)pos, _segment.getSegmentId(), length);
                 setAddress(index, address, scn);
                 
-                // update segment meta on first write
-                if (pos >= _metaUpdatePosition) {
-                    _segmentManager.updateMeta();
-                    _metaUpdatePosition = _segment.getInitialSize();
+                // update segment index buffer
+                if(!_sib.isDirty()) {
+                    _sib.add(index, (int)pos);
                 }
                 
-                if(_compactor.isStarted()) {
-                    consumeCompactionBatch();
-                    
-                    /*
-                     * Throttle the writer to average-out write latency.
-                     * Give the compactor a chance to catch up with the writer.
-                     */
-                    doThrottling(length + 4);
-                }
+                // consume one compaction batch if available
+                consumeCompactionBatch();
                 
                 return;
             } catch(SegmentException se) {
                 _log.info("Segment " + _segment.getSegmentId() + " filled: " + _segment.getStatus());
                 
+                // submit current segment index buffer
+                submitSegmentIndexBuffer();
+                
+                // update next segment and segment index buffer
                 Segment nextSegment = _compactor.peekTargetSegment();
                 if(nextSegment != null) {
                     persist();
                     
-                    // get the next segment available for appending
                     _segment = nextSegment;
                     _compactor.pollTargetSegment();
-                    _metaUpdatePosition = _segment.getInitialSize();
-                    
-                    _log.info("nextSegment from compactor");
-                    _log.info("Segment " + _segment.getSegmentId() + " online: " + _segment.getStatus());
+                    _log.trace("nextSegment from compactor");
                 } else {
                     if(_compactor.isStarted()) {
                         if(_compactor.getAndDecrementSegmentPermit()) {
-                            _log.trace("nextSegment permit granted");
-                            
                             persist();
                             
-                            // get the next segment available for appending
-                            _metaUpdatePosition = Segment.dataStartPosition;
+                            _log.trace("nextSegment permit granted");
                             _segment = _segmentManager.nextSegment();
-                            
-                            _log.info("Segment " + _segment.getSegmentId() + " online: " + _segment.getStatus());
                         } else {
                             _log.trace("nextSegment permit refused");
                             
                             // wait until compactor is done
+                            long startTime = System.currentTimeMillis();
                             while(_compactor.isStarted()) {
-                                consumeCompactionBatch();
-                                
-                                _log.trace("wait for compactor");
-                                Thread.sleep(10);
+                                consumeCompactionBatches();
                             }
+                            long elapsedTime = System.currentTimeMillis() - startTime;
+                            _log.info("nextSegment compaction wait " + elapsedTime + " ms");
                             
                             persist();
                             
                             // get the next segment available for appending
-                            _segment = _compactor.pollTargetSegment();
-                            if(_segment == null) {
-                                _segment = _segmentManager.nextSegment();
-                                _metaUpdatePosition = Segment.dataStartPosition;
-                            } else {
-                                _metaUpdatePosition = _segment.getInitialSize();
-                            }
-                            
-                            _log.info("Segment " + _segment.getSegmentId() + " online: " + _segment.getStatus());
+                            nextSegment = _compactor.pollTargetSegment();
+                            _segment = (nextSegment != null) ? nextSegment : _segmentManager.nextSegment();
                         }
                     } else {
                         _log.trace("nextSegment");
@@ -834,13 +800,20 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
                         persist();
                         
                         // get the next segment available for appending
-                        _metaUpdatePosition = Segment.dataStartPosition;
                         _segment = _segmentManager.nextSegment();
                         _compactor.startsCycle();
-                        
-                        _log.info("Segment " + _segment.getSegmentId() + " online: " + _segment.getStatus());
                     }
                 }
+                
+                if(_sibEnabled) {
+                    _sib = _segmentManager.openSegmentIndexBuffer(_segment.getSegmentId());
+                } else {
+                    _sib.clear();
+                    _sib.markAsDirty();
+                    _sib.setSegmentId(_segment.getSegmentId());
+                }
+                
+                _log.info("Segment " + _segment.getSegmentId() + " online: " + _segment.getStatus());
             } catch(Exception e) {
                 // restore append position 
                 _segment.setAppendPosition(pos);
@@ -892,6 +865,7 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
      */
     private void syncInternal() throws IOException {
         syncCompactor();
+        fireBeforePersist();
         
         /* CALLS ORDERED: Need force _segment first and then persist
          * _addressArray. During recovery, the _addressArray can always
@@ -901,12 +875,15 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
         _segment.force();
         _addressArray.sync();
         _segmentManager.updateMeta();
+        
+        fireAfterPersist();
     }
     
     @Override
     public synchronized void persist() throws IOException {
         if(isOpen()) {
             syncCompactor();
+            fireBeforePersist();
             
             /* CALLS ORDERED: Need force _segment first and then persist
              * _addressArray. During recovery, the _addressArray can always
@@ -916,6 +893,8 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
             _segment.force();
             _addressArray.persist();
             _segmentManager.updateMeta();
+            
+            fireAfterPersist();
         }
     }
     
@@ -954,6 +933,12 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
              * the last update batch and those generated by data compaction.
              */
             syncInternal();          // consume compaction batches generated during shutdown
+            
+            /* Submit the current segment index buffer before closing _segmentManager
+             * so that the last writer segment index buffer can be flushed to disk
+             * when _segmentManager.close() is being invoked.
+             */
+            submitSegmentIndexBuffer();
             
             _compactor.clear();      // cleanup compactor internal state
             _addressArray.close();   // close address array
@@ -1011,7 +996,7 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
     }
     
     /**
-     * SegmentPersistListener is being called back whenever an redo entry is being created.
+     * SegmentPersistListener is being called back whenever a redo entry is being created.
      * This listener does two things:
      * 
      * <ol>
@@ -1023,6 +1008,8 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
         
         @Override
         public void beforePersist(Entry<? extends EntryValue> e) throws IOException {
+            fireBeforePersist();
+            
             if(_segment != null) {
                 _segment.force();
             }
@@ -1033,11 +1020,76 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
             if(_segmentManager != null) {
                 _segmentManager.updateMeta();
             }
+            
+            fireAfterPersist();
         }
     }
     
     @Override
     public final Array.Type getType() {
         return _addressArray.getType();
+    }
+    
+    /**
+     * Tests if the segment index buffer (SIB) is enabled.
+     */
+    public final boolean isSibEnabled() {
+        return _sibEnabled;
+    }
+    
+    /**
+     * Enables the segment index buffer (SIB).
+     */
+    public final void setSibEnabled(boolean b) {
+        if(_sibEnabled != b) {
+            _sib.markAsDirty();
+        }
+        _sibEnabled = b;
+    }
+    
+    /**
+     * Gets the persistable event listener.
+     */
+    public final PersistableListener getPersistableListener() {
+        return _listener;
+    }
+    
+    /**
+     * Sets the persistable event listener.
+     * 
+     * @param listener
+     */
+    public final void setPersistableListener(PersistableListener listener) {
+        this._listener = listener;
+    }
+    
+    /**
+     * Fire beforePersist events to the PersistableListener.
+     */
+    protected void fireBeforePersist() {
+        PersistableListener l = _listener;
+        
+        if(l != null) {
+            try {
+                l.beforePersist();
+            } catch(Exception e) {
+                _log.error("failure on calling beforePersist", e);
+            }
+        }
+    }
+    
+    /**
+     * Fire afterPersist events to the PersistableListener.
+     */
+    protected void fireAfterPersist() {
+        PersistableListener l = _listener;
+        
+        if(l != null) {
+            try {
+                l.afterPersist();
+            } catch(Exception e) {
+                _log.error("failure on calling afterPersist", e);
+            }
+        }
     }
 }

@@ -88,11 +88,6 @@ public class RetentionConfig<T> {
     private Serializer<Clock> _eventClockSerializer;                 // required
     
     /**
-     * The dimension of clocks the retention will handle.
-     */
-    private int _clockSize;
-    
-    /**
      * The min retention initial size (1000 event batches).
      */
     private final static int RETENTION_INITIAL_SIZE_MIN = 1000;
@@ -150,10 +145,6 @@ public class RetentionConfig<T> {
         this._batchSize = Math.max(EventBatch.MINIMUM_BATCH_SIZE, batchSize);
     }
     
-    public void setClockSize(int clockSize) {
-        this._clockSize = clockSize;
-    }
-    
     public int getBatchSize() {
         return _batchSize;
     }
@@ -164,10 +155,6 @@ public class RetentionConfig<T> {
     
     public int getNumSyncBatchs() {
         return _numSyncBatchs;
-    }
-    
-    public int getClockSize() {
-        return _clockSize;
     }
     
     public void setRetentionPolicy(RetentionPolicy retentionPolicy) {

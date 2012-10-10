@@ -141,7 +141,7 @@ public class KratiDataStore implements Closeable {
      */
     public static void main(String[] args) {
         try {
-            // Parse arguments: keyCount homeDir
+            // Parse arguments: homeDir keyCount
             File homeDir = new File(args[0]);
             int initialCapacity = Integer.parseInt(args[1]);
             

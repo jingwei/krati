@@ -101,4 +101,21 @@ public class FileUtils {
             throw new IOException("dir:" + dir.getAbsolutePath() + " not deleted");
         }
     }
+    
+    /**
+     * Counts the number of files with specified file extension under the specified directory.
+     */
+    public static int countFiles(File dir, String fileExtension) throws IOException {
+        int count = 0;
+        File[] files = dir.listFiles();
+        if(files != null) {
+            for (File f : files) {
+                if(f.getName().endsWith(fileExtension)) {
+                    count++;
+                }
+            }
+        }
+        
+        return count;
+    }
 }

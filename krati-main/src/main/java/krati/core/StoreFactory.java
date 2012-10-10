@@ -63,7 +63,7 @@ public class StoreFactory {
      * 
      * <pre>
      *   batchSize            : 10000
-     *   numSyncBatches       : 5
+     *   numSyncBatches       : 10
      *   segmentCompactFactor : 0.5
      * </pre>
      * 
@@ -186,7 +186,7 @@ public class StoreFactory {
      * 
      * <pre>
      *   batchSize            : 10000
-     *   numSyncBatches       : 5
+     *   numSyncBatches       : 10
      *   segmentCompactFactor : 0.5
      * </pre>
      * 
@@ -300,7 +300,7 @@ public class StoreFactory {
      * 
      * <pre>
      *   batchSize            : 10000
-     *   numSyncBatches       : 5
+     *   numSyncBatches       : 10
      *   segmentCompactFactor : 0.5
      * </pre>
      * 
@@ -414,7 +414,7 @@ public class StoreFactory {
      * 
      * <pre>
      *   batchSize            : 10000
-     *   numSyncBatches       : 5
+     *   numSyncBatches       : 10
      *   segmentCompactFactor : 0.5
      * </pre>
      * 
@@ -529,7 +529,7 @@ public class StoreFactory {
      * 
      * <pre>
      *   batchSize            : 10000
-     *   numSyncBatches       : 5
+     *   numSyncBatches       : 10
      *   segmentCompactFactor : 0.5
      *   hashLoadFactor       : 0.75
      * </pre>
@@ -709,7 +709,7 @@ public class StoreFactory {
      * 
      * <pre>
      *   batchSize            : 10000
-     *   numSyncBatches       : 5
+     *   numSyncBatches       : 10
      *   segmentCompactFactor : 0.5
      *   hashLoadFactor       : 0.75
      * </pre>
@@ -819,7 +819,7 @@ public class StoreFactory {
      * 
      * <pre>
      *   batchSize            : 10000
-     *   numSyncBatches       : 5
+     *   numSyncBatches       : 10
      *   segmentCompactFactor : 0.5
      * </pre>
      * 
@@ -934,7 +934,7 @@ public class StoreFactory {
      * 
      * <pre>
      *   batchSize            : 10000
-     *   numSyncBatches       : 5
+     *   numSyncBatches       : 10
      *   segmentCompactFactor : 0.5
      *   hashLoadFactor       : 0.75
      * </pre>

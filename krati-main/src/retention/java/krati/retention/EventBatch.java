@@ -113,9 +113,4 @@ public interface EventBatch<T> extends Iterable<Event<T>>, EventBatchHeader, Ser
      * @return <code>true</code> if this EventBatch is full. Otherwise, <code>false</code>.
      */
     public boolean isFull();
-    
-    /**
-     * @return the Clock.dimension() for the type of Clocks that this event Batch handles.
-     */
-    public int getClockDimension();
 }

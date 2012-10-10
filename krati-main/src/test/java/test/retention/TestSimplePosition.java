@@ -16,7 +16,6 @@
 
 package test.retention;
 
-
 import junit.framework.TestCase;
 import krati.retention.clock.Clock;
 import krati.retention.SimplePosition;

@@ -52,10 +52,12 @@ public class RetentionReaderThread<T> extends Thread {
         List<Event<T>> list = new ArrayList<Event<T>>();
         
         try {
-            while(pos.getOffset() < _stopOffset) {
-                pos = _retention.get(pos, list);
-                _readCount += list.size();
-                list.clear();
+            while(pos == null || pos.getOffset() < _stopOffset) {
+                if(pos != null) {
+                    pos = _retention.get(pos, list);
+                    _readCount += list.size();
+                    list.clear();
+                }
             }
         } catch(Exception e) {
             e.printStackTrace();

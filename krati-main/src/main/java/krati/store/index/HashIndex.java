@@ -21,6 +21,7 @@ import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
+import krati.PersistableListener;
 import krati.core.StoreConfig;
 import krati.store.DynamicDataStore;
 import krati.util.IndexedIterator;
@@ -105,5 +106,21 @@ public class HashIndex implements Index {
     @Override
     public void close() throws IOException {
         _store.close();
+    }
+    
+    /**
+     * Gets the persistable event listener.
+     */
+    public final PersistableListener getPersistableListener() {
+        return _store.getPersistableListener();
+    }
+    
+    /**
+     * Sets the persistable event listener.
+     * 
+     * @param listener
+     */
+    public final void setPersistableListener(PersistableListener listener) {
+        _store.setPersistableListener(listener);
     }
 }

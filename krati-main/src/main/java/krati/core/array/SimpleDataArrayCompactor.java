@@ -31,7 +31,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import krati.core.StoreParams;
@@ -40,8 +39,10 @@ import org.apache.log4j.Logger;
 import krati.core.segment.AddressFormat;
 import krati.core.segment.MemorySegment;
 import krati.core.segment.Segment;
+import krati.core.segment.SegmentIndexBuffer;
 import krati.core.segment.SegmentManager;
 import krati.util.Chronos;
+import krati.util.DaemonThreadFactory;
 
 /**
  * SimpleDataArray Compactor.
@@ -68,7 +69,7 @@ import krati.util.Chronos;
  */
 class SimpleDataArrayCompactor implements Runnable {
     private final static Logger _log = Logger.getLogger(SimpleDataArrayCompactor.class);
-    private ExecutorService _executor = Executors.newSingleThreadExecutor(new CompactorThreadFactory());
+    private ExecutorService _executor = Executors.newSingleThreadExecutor(new DaemonThreadFactory());
     private SimpleDataArray _dataArray;
     
     /**
@@ -212,6 +213,16 @@ class SimpleDataArrayCompactor implements Runnable {
     };
     
     /**
+     * Flushes accumulated segment index buffers to disk.
+     */
+    private void flushSegmentIndexBuffers() {
+        SegmentManager segManager = _dataArray.getSegmentManager();
+        if(segManager != null) {
+            segManager.flushSegmentIndexBuffers();
+        }
+    }
+    
+    /**
      * Frees segments that were compacted successfully.
      */
     private void freeCompactedSegments() {
@@ -313,7 +324,9 @@ class SimpleDataArrayCompactor implements Runnable {
      */
     private boolean compact() throws IOException {
         try {
+            final boolean sibEnabled = _dataArray.isSibEnabled();
             _segTarget = _dataArray.getSegmentManager().nextSegment();
+            
             for(Segment seg : _segSourceList) {
                 if(!_enabled) {
                     try {
@@ -326,7 +339,7 @@ class SimpleDataArrayCompactor implements Runnable {
                 }
                 
                 try {
-                    if(compact(seg, _segTarget)) {
+                    if(compact(seg, _segTarget, sibEnabled)) {
                         _compactedQueue.add(seg);
                     }
                 } catch(Exception e) {
@@ -335,6 +348,11 @@ class SimpleDataArrayCompactor implements Runnable {
                         _log.error("failed to compact Segment " + seg.getSegmentId(), e);
                     }
                 }
+            }
+            
+            // Mark target segment index buffer as dirty if sibEnabled is changed from true to false
+            if(sibEnabled && !_dataArray.isSibEnabled()) {
+                _dataArray.getSegmentManager().openSegmentIndexBuffer(_segTarget.getSegmentId()).markAsDirty();
             }
             
             _targetQueue.add(_segTarget);
@@ -354,13 +372,24 @@ class SimpleDataArrayCompactor implements Runnable {
     /**
      * Compacts data from the specified source Segment into the specified target Segment.
      * 
-     * @param segment   - the source Segment, from which data is read.
-     * @param segTarget - the target Segment, to which data is written.
+     * @param segment    - the source Segment, from which data is read.
+     * @param segTarget  - the target Segment, to which data is written.
+     * @param sibEnabled - whether segment index buffer is enabled or not
      * @return <code>true</code> if the source Segment is compacted successfully.
      *         Otherwise, <code>false</code>.
      * @throws IOException if this operation can not be finished properly.
      */
-    private boolean compact(Segment segment, Segment segTarget) throws IOException {
+    private boolean compact(Segment segment, Segment segTarget, final boolean sibEnabled) throws IOException {
+        // Optimization: use the source segment index buffer file if it is available for compaction.
+        if(sibEnabled) {
+            SegmentIndexBuffer sibSource =
+                    _dataArray.getSegmentManager()
+                    .loadSegmentIndexBuffer(segment.getSegmentId(), segment.getLastForcedTime());
+            if(sibSource != null) {
+                return compact(segment, sibSource, segTarget);
+            }
+        }
+        
         Segment segSource = segment; 
         int segSourceId = segSource.getSegmentId();
         int segTargetId = segTarget.getSegmentId();
@@ -368,8 +397,11 @@ class SimpleDataArrayCompactor implements Runnable {
         Chronos c = new Chronos();
         if(!segment.canReadFromBuffer() && segment.getLoadFactor() > 0.1) {
             segSource = new BufferedSegment(segment, getByteBuffer((int)segment.getInitialSize()));
-            _log.info("buffering time: " + c.tick() + " ms");
+            _log.info("buffering: " + c.tick() + " ms");
         }
+        
+        // Open the segment index buffer for the target segment
+        SegmentIndexBuffer sibTarget = sibEnabled ? _dataArray.getSegmentManager().openSegmentIndexBuffer(segTargetId) : null;
         
         long sizeLimit = segTarget.getInitialSize();
         long bytesTransferred = 0;
@@ -399,6 +431,7 @@ class SimpleDataArrayCompactor implements Runnable {
                     segSource.transferTo(oldSegPos, byteCnt, segTarget);
                     bytesTransferred += byteCnt;
                     
+                    if(sibTarget != null) sibTarget.add(index, (int)newSegPos);
                     _updateManager.addUpdate(index, byteCnt, newAddress, oldAddress, segTarget);
                 }
             }
@@ -406,6 +439,83 @@ class SimpleDataArrayCompactor implements Runnable {
             // Push whatever left into update queue
             _updateManager.endUpdate(segTarget);
             _log.info("bytes transferred from " + segSource.getSegmentId() + ": " + bytesTransferred + " time: " + c.tick() + " ms");
+            
+            return succ;
+        } finally {
+            if(segSource.getClass() == BufferedSegment.class) {
+                segSource.close(false);
+                segSource = null;
+            }
+        }
+    }
+    
+    /**
+     * Compacts data from the specified source Segment into the specified target Segment.
+     * 
+     * @param segment   - the source Segment, from which data is read.
+     * @param sibSource - the source Segment Index Buffer, from which address indexes are read. 
+     * @param segTarget - the target Segment, to which data is written.
+     * @return <code>true</code> if the source Segment is compacted successfully.
+     *         Otherwise, <code>false</code>.
+     * @throws IOException if this operation can not be finished properly.
+     */
+    private boolean compact(Segment segment, SegmentIndexBuffer sibSource, Segment segTarget) throws IOException {
+        Segment segSource = segment; 
+        int segSourceId = segSource.getSegmentId();
+        int segTargetId = segTarget.getSegmentId();
+        
+        Chronos c = new Chronos();
+        if(!segment.canReadFromBuffer() && segment.getLoadFactor() > 0.1) {
+            segSource = new BufferedSegment(segment, getByteBuffer((int)segment.getInitialSize()));
+            _log.info("buffering: " + c.tick() + " ms");
+        }
+        
+        // Open the segment index buffer for the target segment
+        SegmentIndexBuffer sibTarget = _dataArray.getSegmentManager().openSegmentIndexBuffer(segTargetId);
+        
+        long sizeLimit = segTarget.getInitialSize();
+        long bytesTransferred = 0;
+        boolean succ = true;
+        
+        try {
+            AddressFormat addrFormat = _dataArray._addressFormat;
+            SegmentIndexBuffer.IndexOffset reuse = new SegmentIndexBuffer.IndexOffset();
+            
+            for(int i = 0, cnt = sibSource.size(); i < cnt; i++) {
+                sibSource.get(i, reuse);
+                int index = reuse.getIndex();
+                int sibSegPos = reuse.getOffset();
+                long oldAddress = _dataArray.getAddress(index);
+                int oldSegPos = addrFormat.getOffset(oldAddress);
+                
+                if(sibSegPos != oldSegPos) continue;
+                
+                int oldSegInd = addrFormat.getSegment(oldAddress);
+                int length = addrFormat.getDataSize(oldAddress);
+                
+                if (oldSegInd == segSourceId && oldSegPos >= Segment.dataStartPosition) {
+                    if(length == 0) length = segSource.readInt(oldSegPos);
+                    int byteCnt = 4 + length;
+                    long newSegPos = segTarget.getAppendPosition();
+                    long newAddress = addrFormat.composeAddress((int)newSegPos, segTargetId, length);
+                    
+                    if(segTarget.getAppendPosition() + byteCnt >= sizeLimit) {
+                        succ = false;
+                        break;
+                    }
+                    
+                    // Transfer bytes from source to target
+                    segSource.transferTo(oldSegPos, byteCnt, segTarget);
+                    bytesTransferred += byteCnt;
+                    
+                    sibTarget.add(index, (int)newSegPos);
+                    _updateManager.addUpdate(index, byteCnt, newAddress, oldAddress, segTarget);
+                }
+            }
+            
+            // Push whatever left into update queue
+            _updateManager.endUpdate(segTarget);
+            _log.info("bytes fastscanned from " + segSource.getSegmentId() + ": " + bytesTransferred + " time: " + c.tick() + " ms");
             
             return succ;
         } finally {
@@ -430,6 +540,9 @@ class SimpleDataArrayCompactor implements Runnable {
                     reset();
                     _state = State.INIT;
                     _log.info("cycle init");
+                    
+                    // Flush segment index buffers
+                    flushSegmentIndexBuffers();
                     
                     // Free compacted segments
                     freeCompactedSegments();
@@ -463,7 +576,7 @@ class SimpleDataArrayCompactor implements Runnable {
     final void start() {
         _enabled = true;
         _ignoredSegs.clear();
-        _executor = Executors.newSingleThreadExecutor(new CompactorThreadFactory());
+        _executor = Executors.newSingleThreadExecutor(new DaemonThreadFactory());
         _executor.execute(this);
     }
     
@@ -696,7 +809,6 @@ class SimpleDataArrayCompactor implements Runnable {
             this._capacity = capacity;
             this._batchId = _counter++;
             this._buffer = ByteBuffer.allocate(_capacity * _unitSize);
-            _log.trace("CompactionUpdateBatch " + _batchId);
         }
         
         /**
@@ -969,7 +1081,10 @@ class SimpleDataArrayCompactor implements Runnable {
             } catch(BufferOverflowException e) {
                 segTarget.force();
                 _batch.setTargetSegment(segTarget);
-                _log.trace("compaction batch " + _batch.getDescriptiveId());
+                
+                if(_log.isTraceEnabled()) {
+                    _log.trace("compaction batch " + _batch.getDescriptiveId());
+                }
                 
                 _serviceBatchQueue.add(_batch);
                 nextBatch();
@@ -989,7 +1104,10 @@ class SimpleDataArrayCompactor implements Runnable {
             segTarget.force();
             if(_batch.size() > 0) {
                 _batch.setTargetSegment(segTarget);
-                _log.trace("compaction batch " + _batch.getDescriptiveId());
+                
+                if(_log.isTraceEnabled()) {
+                    _log.trace("compaction batch " + _batch.getDescriptiveId());
+                }
                 
                 _serviceBatchQueue.add(_batch);
                 _batchServiceIdCounter = 0;
@@ -1036,18 +1154,6 @@ class SimpleDataArrayCompactor implements Runnable {
         protected ByteBuffer initByteBuffer() {
             _byteBuffer.clear();
             return _byteBuffer;
-        }
-    }
-    
-    /**
-     * CompactorThreadFactory produces daemon threads for running compaction.
-     */
-    static class CompactorThreadFactory implements ThreadFactory {
-        @Override
-        public Thread newThread(Runnable r) {
-            Thread t = new Thread(r);
-            t.setDaemon(true);
-            return t;
         }
     }
 }

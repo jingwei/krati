@@ -16,10 +16,7 @@
 
 package krati.retention;
 
-import java.util.ArrayList;
 import java.util.Map;
-
-import org.apache.log4j.Logger;
 
 import krati.store.StoreReader;
 
@@ -36,14 +33,20 @@ import krati.store.StoreReader;
  * 09/21, 2011 - Added interface StoreReader <br/>
  */
 public interface RetentionStoreReader<K, V> extends RetentionClient<K>, StoreReader<K, V> {
+    
     /**
      * @return the data source of this RetentionStoreReader.
      */
     public String getSource();
     
     /**
-     * Convenience method. Composition of get(Position, List<Event>) and get.
-     * For a trivial implementation, look at extending AbstractRetentionStoreReader.
+     * Gets a number of value events starting from a give position in the Retention.
+     * The number of events is determined internally by the Retention and it is
+     * up to the batch size.   
+     * 
+     * @param pos - the retention position from where events will be read
+     * @param map - the result map (keys to value events) to fill in 
+     * @return the next position from where new events will be read.
      */
     public Position get(Position pos, Map<K, Event<V>> map);
 }

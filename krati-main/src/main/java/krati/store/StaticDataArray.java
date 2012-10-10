@@ -55,7 +55,7 @@ public final class StaticDataArray extends AbstractDataArray implements ArraySto
      * 
      * <pre>
      *   batchSize            : 10000
-     *   numSyncBatches       : 5
+     *   numSyncBatches       : 10
      *   segmentCompactFactor : 0.5
      *   segmentFileSizeMB    : 256
      * </pre>
@@ -82,7 +82,7 @@ public final class StaticDataArray extends AbstractDataArray implements ArraySto
      * 
      * <pre>
      *   batchSize            : 10000
-     *   numSyncBatches       : 5
+     *   numSyncBatches       : 10
      *   segmentCompactFactor : 0.5
      * </pre>
      * 

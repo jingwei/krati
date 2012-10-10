@@ -46,6 +46,7 @@ public class IOTypeLongArray extends AbstractRecoverableArray<EntryValueLong> im
     private final static int _subArraySize = DynamicConstants.SUB_ARRAY_SIZE;
     private final static Logger _logger = Logger.getLogger(IOTypeLongArray.class);
     private final Array.Type _type;
+    private float _expandRate = 0;
     
     /**
      * The mode can only be <code>Mode.INIT</code>, <code>Mode.OPEN</code> and <code>Mode.CLOSED</code>.
@@ -167,23 +168,44 @@ public class IOTypeLongArray extends AbstractRecoverableArray<EntryValueLong> im
     public void setPersistListener(EntryPersistListener persistListener) {
         getEntryManager().setPersistListener(persistListener);
     }
+
+    @Override
+    public float getExpandRate() {
+        return _expandRate;
+    }
+    
+    @Override
+    public void setExpandRate(float rate) {
+        if(rate < 0 || rate > 1) {
+            throw new IllegalArgumentException("invalid value: " + rate);
+        }
+        this._expandRate = rate;
+    }
     
     @Override
     public void expandCapacity(int index) throws Exception {
         if(index < _length) return;
         
+        // No expansion on static array
         if(_type == Array.Type.STATIC) {
             throw new UnsupportedOperationException("Array is of type " + _type);
         }
         
+        // Choose the larger capacity between linear growth and exponential growth
         long capacity = ((index >> _subArrayBits) + 1L) * _subArraySize;
-        int newLength = (capacity < Integer.MAX_VALUE) ? (int)capacity : Integer.MAX_VALUE;
+        long expandTo = ((_length + (long)(_length * getExpandRate())) >> _subArrayBits) * _subArraySize;
+        if(capacity < expandTo) {
+            capacity = expandTo;
+        }
         
-        // Reset _length
-        _length = newLength;
+        // Cap length to Integer.MAX_VALUE 
+        int newLength = (capacity < Integer.MAX_VALUE) ? (int)capacity : Integer.MAX_VALUE;
         
         // Expand array file on disk
         _arrayFile.setArrayLength(newLength, null /* do not rename */);
+        
+        // Reset _length
+        _length = newLength;
         
         // Add to logging
         _logger.info("Expanded: _length=" + _length);

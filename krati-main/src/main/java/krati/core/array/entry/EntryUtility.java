@@ -16,6 +16,8 @@
 
 package krati.core.array.entry;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Arrays;
 
@@ -120,5 +122,40 @@ public class EntryUtility {
         // Sort values in valArray
         Arrays.sort(valArray);
         return valArray;
+    }
+    
+    /**
+     * Sort entries in the ascending order of entry log IDs.
+     */
+    public static <T extends EntryValue> void sortEntriesById(List<Entry<T>> entryList) {
+        if (entryList.size() > 0) {
+            Collections.sort(entryList, new Comparator<Entry<?>>() {
+                @Override
+                public int compare(Entry<?> e1, Entry<?> e2) {
+                    long v1 = getEntryId(e1.getFile().getName());
+                    long v2 = getEntryId(e2.getFile().getName());
+                    return (v1 < v2) ? -1 : ((v1 == v2) ? 0 : 1);
+                }
+            });
+        }
+    }
+    
+    /**
+     * Gets the entry ID based on the specified entry file name.
+     */
+    public static long getEntryId(String entryFileName) {
+        int ind1 = entryFileName.indexOf("_") + 1;
+        if (ind1 > 0) {
+            int ind2 = entryFileName.indexOf("_", ind1);
+            if (ind2 > ind1) {
+                String str = entryFileName.substring(ind1, ind2);
+                try {
+                    return Long.parseLong(str);
+                } catch (Exception e) {
+                }
+            }
+        }
+        
+        return 0;
     }
 }
