@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
@@ -140,7 +141,7 @@ public final class SegmentMeta implements Closeable {
         return _mmapBuffer.getInt(pos);
     }
 
-    public File getMetaFile() {
+    public final File getMetaFile() {
         return _metaFile;
     }
 
@@ -181,26 +182,29 @@ public final class SegmentMeta implements Closeable {
     }
 
     /**
-     * Wrap a segment manager and persist its meta data into the .meta file.
+     * Wrap a list of segments and persist meta data into the .meta file.
      * 
-     * @param segmentManager
-     *            manager for segments
+     * @param segments - the segments managed by a {@linkplain SegmentManager}
      * @throws IOException
      */
-    public synchronized void wrap(SegmentManager segmentManager) throws IOException {
+    public synchronized void wrap(List<Segment> segments) throws IOException {
         int newWorkingGeneration = (_workingGeneration + 1) % Integer.MAX_VALUE;
         int newWorkingSectionOffset = (_workingSectionOffset + _bytesPerSection) % _bytesPerSegment;
-        int cnt = segmentManager.getSegmentCount();
+        int cnt = segments.size();
         int pos = _segmentDataStart + newWorkingSectionOffset;
 
         // Ensure buffer capacity
         ensureCapacity(cnt);
 
-        int newLiveSegmentCount = segmentManager.getLiveSegmentCount();
-
+        int newLiveSegmentCount = 0;
+        for (int index = 0; index < cnt; index++) {
+            if (segments.get(index) != null)
+                newLiveSegmentCount++;
+        }
+        
         // Update compact-section
         for (int index = 0; index < cnt; index++) {
-            Segment seg = segmentManager.getSegment(index);
+            Segment seg = segments.get(index);
             if (seg != null) {
                 if (seg.getLoadSize() > 0) {
                     // Segment populated with data

@@ -19,6 +19,7 @@ package krati.core.segment;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.Map;
@@ -139,21 +140,21 @@ public final class SegmentManager implements Closeable {
     /**
      * Gets the segment file size in MB.
      */
-    public int getSegmentFileSizeMB() {
+    public final int getSegmentFileSizeMB() {
         return _segFileSizeMB;
     }
     
     /**
      * Gets the file path to segment home.
      */
-    public String getSegmentHomePath() {
+    public final String getSegmentHomePath() {
         return _segHomePath;
     }
     
     /**
      * Gets the segment factory.
      */
-    public SegmentFactory getSegmentFactory() {
+    public final SegmentFactory getSegmentFactory() {
         return _segFactory;
     }
     
@@ -162,21 +163,21 @@ public final class SegmentManager implements Closeable {
      * 
      * @param index - the segment index (i.e., segmentId)
      */
-    public Segment getSegment(int index) {
+    public final Segment getSegment(int index) {
         return _segList.get(index);
     }
     
     /**
      * Gets the count of segments managed by this SegmentManager.
      */
-    public int getSegmentCount() {
+    public final int getSegmentCount() {
         return _segList.size();
     }
     
     /**
      * Gets the count of live segments managed by this SegmentManager.
      */
-    public int getLiveSegmentCount() {
+    public final int getLiveSegmentCount() {
         int num = 0;
 
         for (int i = 0; i < _segList.size(); i++) {
@@ -543,7 +544,7 @@ public final class SegmentManager implements Closeable {
      * @throws IOException
      */
     public synchronized void updateMeta() throws IOException {
-        _segMeta.wrap(this);
+        _segMeta.wrap(Collections.unmodifiableList(_segList));
     }
     
     /**

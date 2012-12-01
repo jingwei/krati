@@ -29,17 +29,17 @@ public class SegmentIndexBufferManager {
     /**
      * The queue to which segment index buffers are submitted for being flushed.
      */
-    protected ConcurrentLinkedQueue<SegmentIndexBuffer> _sibSubmit;
+    protected final ConcurrentLinkedQueue<SegmentIndexBuffer> _sibSubmit;
     
     /**
      * The map from which segment index buffers for writer/compactor are retrieved.
      */
-    protected ConcurrentHashMap<Integer, SegmentIndexBuffer> _sibLookup;
+    protected final ConcurrentHashMap<Integer, SegmentIndexBuffer> _sibLookup;
     
     /**
      * The segment index buffer IO utility. 
      */
-    private SegmentIndexBufferIO _sibIO;
+    private volatile SegmentIndexBufferIO _sibIO;
     
     /**
      * Creates a new SegmentIndexBufferManager. 

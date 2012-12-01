@@ -744,10 +744,10 @@ class SimpleDataArrayCompactor implements Runnable {
      * CompactionUpdate specifies how data is moved during compaction.
      */
     static class CompactionUpdate {
-        int _index;
-        int _dataSize;
-        long _dataAddr;
-        long _origAddr;
+        final int _index;
+        final int _dataSize;
+        final long _dataAddr;
+        final long _origAddr;
         
         /**
          * Creates a new instance of CompactionUpdate.
