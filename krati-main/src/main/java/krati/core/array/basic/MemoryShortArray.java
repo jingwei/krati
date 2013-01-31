@@ -23,7 +23,7 @@ import krati.array.DynamicArray;
 import krati.array.ShortArray;
 
 /**
- * MemoryShortArray
+ * MemoryShortArray is not thread safe.
  * 
  * @author jwu
  * 
@@ -109,7 +109,7 @@ public class MemoryShortArray implements ShortArray, DynamicArray {
     }
     
     @Override
-    public synchronized void expandCapacity(int index) {
+    public void expandCapacity(int index) {
         if(index < 0) return;
         
         int numSubArrays = (index >> _subArrayBits) + 1;
@@ -136,7 +136,7 @@ public class MemoryShortArray implements ShortArray, DynamicArray {
     }
     
     @Override
-    public synchronized short[] getInternalArray() {
+    public short[] getInternalArray() {
         int size = length();
         short[] result = new short[size];
         for (int i = 0; i < _subArrays.length; i++) {

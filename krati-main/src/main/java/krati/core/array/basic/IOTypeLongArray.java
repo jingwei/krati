@@ -36,7 +36,6 @@ import krati.core.array.entry.EntryValueLong;
  * IOTypeLongArray
  * 
  * @author jwu
- * 06/12, 2011
  * 
  * <p>
  * 06/24, 2011 - Fixed the water marks of underlying ArrayFile. <br/>
