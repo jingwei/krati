@@ -61,6 +61,11 @@ public class StaticDataStore implements DataStore<byte[], byte[]> {
     private final SimpleDataArray _dataArray;
     private final DataStoreHandler _dataHandler;
     private final HashFunction<byte[]> _hashFunction;
+
+    /**
+     * System change number is not volatile for it is used by synchronized write only.
+     */
+    private long _scn;
     
     /**
      * Constructs a static DataStore instance. 
@@ -100,6 +105,7 @@ public class StaticDataStore implements DataStore<byte[], byte[]> {
                 _config.getSegmentFactory(),
                 _config.getSegmentFileSizeMB());
         
+        this._scn = addressArray.getHWMark();
         this._dataArray = new SimpleDataArray(addressArray, segmentManager, _config.getSegmentCompactFactor());
         this._hashFunction = _config.getHashFunction();
     }
@@ -283,6 +289,7 @@ public class StaticDataStore implements DataStore<byte[], byte[]> {
                 _config.getSegmentFactory(),
                 _config.getSegmentFileSizeMB());
         
+        this._scn = addressArray.getHWMark();
         this._dataArray = new SimpleDataArray(addressArray, segmentManager, _config.getSegmentCompactFactor());
         this._hashFunction = _config.getHashFunction();
     }
@@ -302,7 +309,7 @@ public class StaticDataStore implements DataStore<byte[], byte[]> {
     }
     
     protected long nextScn() {
-        return System.currentTimeMillis();
+        return ++_scn;
     }
     
     @Override

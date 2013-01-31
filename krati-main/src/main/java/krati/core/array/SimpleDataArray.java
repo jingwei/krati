@@ -28,7 +28,6 @@ import krati.Persistable;
 import krati.PersistableListener;
 import krati.array.Array;
 import krati.array.DataArray;
-import krati.array.LongArray;
 import krati.core.array.SimpleDataArrayCompactor.CompactionUpdateBatch;
 import krati.core.array.entry.Entry;
 import krati.core.array.entry.EntryPersistAdapter;
@@ -121,6 +120,16 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
      * The Persistable event listener, default <code>null</code>.
      */
     private volatile PersistableListener _listener = null;
+    
+    /**
+     * The high water mark set so far.
+     */
+    volatile long _hwmSet = 0;
+    
+    /**
+     * The readers' view of high water mark for volatile piggyback.
+     */
+    volatile long _hwmGet = 0;
     
     /**
      * Constructs a DataArray with Segment Compact Factor default to 0.5. 
@@ -312,11 +321,19 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
     }
     
     /**
+     * Gets the address array.
+     */
+    public final AddressArray getAddressArray() {
+        return _addressArray;
+    }
+    
+    /**
      * Gets the address (long value) at the specified array index.
      * 
      * @param index - the array index.
      */
     public final long getAddress(int index) {
+        _hwmGet = _hwmSet;
         return _addressArray.get(index);
     }
     
@@ -330,6 +347,7 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
      */
     protected void setAddress(int index, long value, long scn) throws Exception {
         _addressArray.set(index, value, scn);
+        _hwmSet = Math.max(_hwmSet, scn);
     }
     
     /**
@@ -343,13 +361,7 @@ public class SimpleDataArray implements DataArray, Persistable, Closeable {
      */
     protected void setCompactionAddress(int index, long value, long scn) throws Exception {
         _addressArray.setCompactionAddress(index, value, scn);
-    }
-    
-    /**
-     * Gets the address array.
-     */
-    protected LongArray getAddressArray() {
-        return _addressArray;
+        _hwmSet = Math.max(_hwmSet, scn);
     }
     
     /**

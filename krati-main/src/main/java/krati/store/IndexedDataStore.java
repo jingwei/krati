@@ -54,6 +54,11 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
     private final File _storeHome;
     
     /**
+     * System change number is not volatile for it is used by synchronized write only.
+     */
+    private long _scn;
+    
+    /**
      * The Persistable event listener, default <code>null</code>.
      */
     private volatile PersistableListener _listener = null;
@@ -89,6 +94,7 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
         storeConfig.setSegmentFactory(config.getSegmentFactory());
         storeConfig.setSegmentCompactFactor(config.getSegmentCompactFactor());
         _bytesDB = new BytesDB(storeConfig);
+        _scn = _bytesDB.getHWMark();
         
         // Create hash index
         _indexHome = new File(_homeDir, "index");
@@ -160,6 +166,7 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
         storeConfig.setSegmentFileSizeMB(storeSegmentFileSizeMB);
         storeConfig.setSegmentFactory(storeSegmentFactory);
         _bytesDB = new BytesDB(storeConfig);
+        _scn = _bytesDB.getHWMark();
         
         // Create index
         _indexHome = new File(homeDir, "index");
@@ -219,6 +226,7 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
         storeConfig.setSegmentFileSizeMB(storeSegmentFileSizeMB);
         storeConfig.setSegmentFactory(storeSegmentFactory);
         _bytesDB = new BytesDB(storeConfig);
+        _scn = _bytesDB.getHWMark();
         
         // Create index
         _indexHome = new File(homeDir, "index");
@@ -266,6 +274,13 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
                 }
             }
         });
+    }
+    
+    /**
+     * Gets the next system change number.
+     */
+    protected long nextScn() {
+        return ++_scn;
     }
     
     /**
@@ -353,7 +368,7 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
         // Update index if needed
         if(meta == null) {
             // Add to bytes DB
-            int index = _bytesDB.add(value, System.currentTimeMillis());
+            int index = _bytesDB.add(value, nextScn());
             metaBytes = IndexMeta.build(index);
             
             // Update hashIndex
@@ -361,7 +376,7 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
         } else {
             // Update bytes DB
             int index = meta.getDataAddr();
-            _bytesDB.set(index, value, System.currentTimeMillis());
+            _bytesDB.set(index, value, nextScn());
             
             // No need to update hashIndex
         }
@@ -381,7 +396,7 @@ public class IndexedDataStore implements DataStore<byte[], byte[]> {
         if(meta == null) return false;
         
         // Delete from bytes DB
-        _bytesDB.set(meta.getDataAddr(), null, System.currentTimeMillis());
+        _bytesDB.set(meta.getDataAddr(), null, nextScn());
         
         // Update index 
         _index.update(key, null);

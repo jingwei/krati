@@ -61,6 +61,11 @@ public class StaticDataSet implements DataSet<byte[]> {
     private final HashFunction<byte[]> _hashFunction;
     
     /**
+     * System change number is not volatile for it is used by synchronized write only.
+     */
+    private long _scn;
+    
+    /**
      * Constructs a static DataStore instance. 
      * 
      * @param config - DataSet configuration
@@ -98,6 +103,7 @@ public class StaticDataSet implements DataSet<byte[]> {
                 _config.getSegmentFactory(),
                 _config.getSegmentFileSizeMB());
         
+        this._scn = addressArray.getHWMark();
         this._dataArray = new SimpleDataArray(addressArray, segmentManager, _config.getSegmentCompactFactor());
         this._hashFunction = _config.getHashFunction();
     }
@@ -281,6 +287,7 @@ public class StaticDataSet implements DataSet<byte[]> {
                 _config.getSegmentFactory(),
                 _config.getSegmentFileSizeMB());
         
+        this._scn = addressArray.getHWMark();
         this._dataArray = new SimpleDataArray(addressArray, segmentManager, _config.getSegmentCompactFactor());
         this._hashFunction = _config.getHashFunction();
     }
@@ -300,7 +307,7 @@ public class StaticDataSet implements DataSet<byte[]> {
     }
     
     protected long nextScn() {
-        return System.currentTimeMillis();
+        return ++_scn;
     }
     
     @Override

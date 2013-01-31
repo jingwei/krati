@@ -64,7 +64,6 @@ public class DynamicDataSet implements DataSet<byte[]> {
     
     private final File _homeDir;
     private final StoreConfig _config;
-    private final AddressArray _addrArray;
     private final SimpleDataArray _dataArray;
     private final DataSetHandler _dataHandler;
     private final HashFunction<byte[]> _hashFunction;
@@ -76,6 +75,11 @@ public class DynamicDataSet implements DataSet<byte[]> {
     private volatile int _levelCapacity;
     private volatile int _loadCount;
     private volatile int _loadCountThreshold;
+    
+    /**
+     * System change number is not volatile for it is used by synchronized write only.
+     */
+    private long _scn;
     
     /**
      * Creates a dynamic DataSet with growing capacity as needed.
@@ -99,7 +103,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
         boolean found = isAddressArrayFound(_config.getHomeDir());
                 
         // Create dynamic address array
-        _addrArray = createAddressArray(
+        AddressArray addrArray = createAddressArray(
                 _config.getHomeDir(),
                 _config.getBatchSize(),
                 _config.getNumSyncBatches(),
@@ -119,8 +123,8 @@ public class DynamicDataSet implements DataSet<byte[]> {
         
         // Expand address array length upon first-time creation
         if(!found) {
-            _addrArray.expandCapacity((_unitCapacity << initLevel) - 1);
-            _log.info("capacity initialized to " + _addrArray.length());
+            addrArray.expandCapacity((_unitCapacity << initLevel) - 1);
+            _log.info("capacity initialized to " + addrArray.length());
         }
         
         // Create underlying segment manager
@@ -131,7 +135,8 @@ public class DynamicDataSet implements DataSet<byte[]> {
                 _config.getSegmentFileSizeMB());
         
         // Create underlying simple data array
-        this._dataArray = new SimpleDataArray(_addrArray, segmentManager, _config.getSegmentCompactFactor());
+        this._scn = addrArray.getHWMark();
+        this._dataArray = new SimpleDataArray(addrArray, segmentManager, _config.getSegmentCompactFactor());
         this._hashFunction = _config.getHashFunction();
         this._loadThreshold = _config.getHashLoadFactor();
         this._loadCount = scan();
@@ -401,7 +406,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
         boolean found = isAddressArrayFound(_config.getHomeDir());
         
         // Create dynamic address array
-        _addrArray = createAddressArray(
+        AddressArray addrArray = createAddressArray(
                 _config.getHomeDir(),
                 _config.getBatchSize(),
                 _config.getNumSyncBatches(),
@@ -409,8 +414,8 @@ public class DynamicDataSet implements DataSet<byte[]> {
         
         // Expand address array length upon first-time creation
         if(!found) {
-            _addrArray.expandCapacity(initialCapacity - 1);
-            _log.info("capacity initialized to " + _addrArray.length());
+            addrArray.expandCapacity(initialCapacity - 1);
+            _log.info("capacity initialized to " + addrArray.length());
         }
         
         _unitCapacity = DynamicConstants.SUB_ARRAY_SIZE;
@@ -423,7 +428,8 @@ public class DynamicDataSet implements DataSet<byte[]> {
                 _config.getSegmentFileSizeMB());
         
         // Create underlying simple data array
-        this._dataArray = new SimpleDataArray(_addrArray, segmentManager, _config.getSegmentCompactFactor());
+        this._scn = addrArray.getHWMark();
+        this._dataArray = new SimpleDataArray(addrArray, segmentManager, _config.getSegmentCompactFactor());
         this._hashFunction = hashFunction;
         this._loadThreshold = hashLoadFactor;
         this._loadCount = scan();
@@ -466,7 +472,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
     }
     
     protected long nextScn() {
-        return System.currentTimeMillis();
+        return ++_scn;
     }
     
     @Override
@@ -737,7 +743,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
     
     protected void split() throws Exception {
         // Ensure address capacity
-        _addrArray.expandCapacity(_split + _levelCapacity);
+        _dataArray.getAddressArray().expandCapacity(_split + _levelCapacity);
         
         // Read data from the _split index
         byte[] data = _dataArray.get(_split);
@@ -760,7 +766,7 @@ public class DynamicDataSet implements DataSet<byte[]> {
                         deleteInternal(_split, value);
                         
                         // Update at the new index
-                        _addrArray.expandCapacity(newIndex);
+                        _dataArray.getAddressArray().expandCapacity(newIndex);
                         addInternal(newIndex, value);
                     }
                 }

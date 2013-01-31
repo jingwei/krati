@@ -19,6 +19,7 @@ package krati.store;
 import java.io.IOException;
 import java.nio.ByteOrder;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicLong;
 
 import krati.io.Serializer;
 import krati.io.serializer.IntSerializer;
@@ -48,6 +49,7 @@ public class SerializableObjectArray<V> implements ObjectStore<Integer, V> {
     protected final ArrayStore _store;
     protected final Serializer<Integer> _keySerializer;
     protected final Serializer<V> _valSerializer;
+    protected final AtomicLong _scn;
     
     /**
      * Creates a new instance of <code>SerializableObjectArray</code>.
@@ -70,13 +72,14 @@ public class SerializableObjectArray<V> implements ObjectStore<Integer, V> {
         this._store = store;
         this._keySerializer = keySerializer;
         this._valSerializer = valueSerializer;
+        this._scn = new AtomicLong(store.getHWMark());
     }
     
     /**
      * @return the next system change number for put/delete operations.
      */
     protected long nextScn() {
-        return System.currentTimeMillis();
+        return _scn.incrementAndGet();
     }
     
     /**
