@@ -23,7 +23,7 @@ import java.io.IOException;
  * BasicIO defines an interface for basic read/write IO operations. 
  * 
  * @author jwu
- * 06/12, 2011
+ * @since  06/12, 2011
  * 
  */
 public interface BasicIO {

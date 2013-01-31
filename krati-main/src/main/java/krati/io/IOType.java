@@ -20,7 +20,7 @@ package krati.io;
  * IOType
  * 
  * @author jwu
- * 03/17, 2011
+ * @since  03/17, 2011
  */
 public enum IOType {
     /**

@@ -20,7 +20,7 @@ package krati.io;
  * An interface for object serialization.
  * 
  * @author jwu
- * 06/29, 2011
+ * @since  06/29, 2011
  * 
  * @param <T> An object to serialize.
  */
