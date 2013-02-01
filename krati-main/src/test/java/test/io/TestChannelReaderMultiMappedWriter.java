@@ -32,7 +32,7 @@ import krati.io.MultiMappedWriter;
  * TestChannelReaderMultiMappedWriter
  * 
  * @author jwu
- * 02/27, 2011
+ * @since  02/27, 2011
  */
 public class TestChannelReaderMultiMappedWriter extends AbstractTestDataRW {
     

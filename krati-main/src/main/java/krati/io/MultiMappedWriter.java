@@ -31,7 +31,8 @@ import java.nio.channels.FileChannel;
  * @since 02/27, 2011
  * 
  * <p>
- * 06/09, 2011 - flush via FileChannel.force to boost performance.
+ * 06/09, 2011 - flush via FileChannel.force to boost performance. <br/>
+ * 01/31, 2013 - added support for re-mapping the underlying file. <br/> 
  */
 public class MultiMappedWriter implements DataWriter, BasicIO {
     private final File _file;
@@ -212,5 +213,69 @@ public class MultiMappedWriter implements DataWriter, BasicIO {
         int pos = (int)(position & BUFFER_MASK);
         int ind = (int)(position >> BUFFER_BITS);
         return _mmapArray[ind].getShort(pos);
+    }
+    
+    /**
+     * Performs re-mapping operation to synchronize with the underling file.
+     * 
+     * @throws IOException
+     */
+    public void remap() throws IOException {
+        if (_mmapArray == null) {
+            open();
+            return;
+        }
+        
+        long length = _raf.length();
+        long mappedLength = getMappedLength();
+        
+        if (length != mappedLength) {
+            for (int i = 0; i < _mmapArray.length; i++) {
+                _mmapArray[i].force();
+            }
+            
+            // Allocate mapped buffer array
+            int cnt = 0;
+            long position = 0;
+            
+            cnt = (int) (length >> BUFFER_BITS);
+            cnt += (length & BUFFER_MASK) > 0 ? 1 : 0;
+            MappedByteBuffer[] mmapArray = new MappedByteBuffer[cnt];
+            
+            int sharedCnt = Math.min(mmapArray.length, _mmapArray.length) - 1;
+            for (int i = 0; i < sharedCnt; i++) {
+                mmapArray[i] = _mmapArray[i];
+                position += BUFFER_SIZE;
+            }
+            
+            // Create individual mapped buffers
+            for (int i = sharedCnt; i < cnt; i++) {
+                long size = Math.min(length - position, BUFFER_SIZE);
+                mmapArray[i] = _channel.map(FileChannel.MapMode.READ_WRITE, position, size);
+                position += BUFFER_SIZE;
+            }
+
+            // Rest mapped buffer array
+            _mmapArray = mmapArray;
+            
+            // Set current position to 0
+            _currentPosition = 0;
+        }
+    }
+    
+    /**
+     * Gets the total number of bytes of all mapped buffers.
+     */
+    public final long getMappedLength() {
+        MappedByteBuffer[] mmapArray = _mmapArray;
+        long length = 0;
+        
+        if (mmapArray != null) {
+            for (MappedByteBuffer mmap : mmapArray) {
+                length += mmap.capacity();
+            }
+        }
+        
+        return length;
     }
 }
