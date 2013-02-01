@@ -18,11 +18,14 @@ package test.core.api;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Random;
 
 import test.util.FileUtils;
 
 import junit.framework.TestCase;
 import krati.core.array.basic.ArrayFile;
+import krati.io.MultiMappedWriter;
+import krati.util.Bytes;
 
 /**
  * TestArrayFile
@@ -34,6 +37,7 @@ import krati.core.array.basic.ArrayFile;
 public class TestArrayFile extends TestCase {
     protected File _homeDir;
     protected ArrayFile _arrayFile;
+    protected Random _rand = new Random();
     
     @Override
     protected void setUp() {
@@ -48,7 +52,7 @@ public class TestArrayFile extends TestCase {
     @Override
     protected void tearDown() {
         try {
-            // FileUtils.deleteDirectory(_homeDir);
+            FileUtils.deleteDirectory(_homeDir);
         } catch(Exception e) {
             e.printStackTrace();
         } finally {
@@ -59,7 +63,7 @@ public class TestArrayFile extends TestCase {
     
     protected ArrayFile createArrayFile(File homeDir) throws IOException {
         File file = new File(homeDir, "indexes.dat");
-        return new ArrayFile(file, 1 << 16, 8);
+        return new ArrayFile(file, 1 << 16, Bytes.NUM_BYTES_IN_LONG);
     }
     
     public void testArrayLength() throws IOException {
@@ -88,5 +92,27 @@ public class TestArrayFile extends TestCase {
         length = Integer.MAX_VALUE;
         _arrayFile.setArrayLength(length, null);
         assertEquals(length, _arrayFile.getArrayLength());
+    }
+    
+    public void testMultiMappedWriter() throws IOException {
+        int unit = MultiMappedWriter.BUFFER_SIZE / _arrayFile.getElementSize();
+        int length = _arrayFile.getArrayLength() + _rand.nextInt(unit);
+        
+        while(length > 0) {
+            _arrayFile.setArrayLength(length);
+            assertEquals(length, _arrayFile.getArrayLength());
+            writeRandomValues();
+
+            length += _rand.nextInt(unit);
+        }
+    }
+    
+    private void writeRandomValues() throws IOException {
+        int length = _arrayFile.getArrayLength();
+        for (int i = 0; i < 1000; i++) {
+            int index = _rand.nextInt(length);
+            long value = _rand.nextLong();
+            _arrayFile.writeLong(index, value);
+        }
     }
 }

@@ -33,6 +33,7 @@ import krati.io.DataReader;
 import krati.io.IOFactory;
 import krati.io.IOType;
 import krati.io.DataWriter;
+import krati.io.MultiMappedWriter;
 import krati.util.Chronos;
 
 /**
@@ -59,6 +60,7 @@ import krati.util.Chronos;
  * <p>
  * 05/09, 2011 - added support for java.io.Closeable <br/>
  * 06/24, 2011 - added setWaterMarks(lwmScn, hwmScn) <br/>
+ * 02/01, 2013 - optimize setArrayLength using remap <br/>
  */
 public class ArrayFile implements Closeable {
   public static final long STORAGE_VERSION  = 0;
@@ -142,7 +144,7 @@ public class ArrayFile implements Closeable {
     
     this.initCheck();
     
-    _log.info(_file.getName() + " header: " + getHeader());
+    _log.info(_file.getPath() + " header: " + getHeader());
   }
   
   /**
@@ -847,6 +849,16 @@ public class ArrayFile implements Closeable {
   /**
    * Updates the length of this ArrayFile to the specified value.
    * 
+   * @param arrayLength - the new array length
+   * @throws IOException
+   */
+  public final void setArrayLength(int arrayLength) throws IOException {
+      setArrayLength(arrayLength, null);
+  }
+  
+  /**
+   * Updates the length of this ArrayFile to the specified value.
+   * 
    * @param arrayLength  - the new array length
    * @param renameToFile - the copy of this ArrayFile. If <code>null</code>, no backup copy will be created.
    * @throws IOException
@@ -889,8 +901,13 @@ public class ArrayFile implements Closeable {
           }
       }
       
-      _writer.close();
-      _writer = IOFactory.createDataWriter(_file, _type);
-      _writer.open();
+      if(MultiMappedWriter.class.isInstance(_writer)) {
+          ((MultiMappedWriter)_writer).remap();
+          _log.info("remap " + _file.getPath() + " " + _file.length());
+      } else {
+          _writer.close();
+          _writer = IOFactory.createDataWriter(_file, _type);
+          _writer.open();
+      }
   }
 }
