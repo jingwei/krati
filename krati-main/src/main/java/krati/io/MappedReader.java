@@ -67,7 +67,9 @@ public class MappedReader implements DataReader {
     @Override
     public void close() throws IOException {
         try {
-            _raf.close();
+            if (_raf != null) {
+                _raf.close();
+            }
         } finally {
             _raf = null;
         }

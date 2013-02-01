@@ -99,12 +99,18 @@ public class MultiMappedWriter implements DataWriter, BasicIO {
     @Override
     public void close() throws IOException {
         try {
-            for(MappedByteBuffer b : _mmapArray) {
-                if(b != null) b.force();
+            if (_mmapArray != null) {
+                for (MappedByteBuffer b : _mmapArray) {
+                    if (b != null) b.force();
+                }
             }
-            _channel.force(true);
-            _channel.close();
-            _raf.close();
+            if (_channel != null) {
+                _channel.force(true);
+                _channel.close();
+            }
+            if (_raf != null) {
+                _raf.close();
+            }
         } finally {
             _currentPosition = 0;
             _mmapArray = null;

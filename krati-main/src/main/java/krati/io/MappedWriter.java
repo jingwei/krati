@@ -66,10 +66,16 @@ public class MappedWriter implements DataWriter, BasicIO {
     @Override
     public void close() throws IOException {
         try {
-            _mmapBuffer.force();
-            _channel.force(true);
-            _channel.close();
-            _raf.close();
+            if (_mmapBuffer != null) {
+                _mmapBuffer.force();
+            }
+            if (_channel != null) {
+                _channel.force(true);
+                _channel.close();
+            }
+            if (_raf != null) {
+                _raf.close();
+            }
         } finally {
             _mmapBuffer = null;
             _channel = null;
