@@ -47,4 +47,18 @@ public class TestJavaSerializer extends AbstractTestSerializer<HashMap<String, O
     protected Serializer<HashMap<String, Object>> createSerializer() {
         return new JavaSerializer<HashMap<String, Object>>();
     }
+
+    @Override
+    protected void checkBytes(byte[] bytes1, byte[] bytes2) {
+        assertEquals(bytes1.length, bytes2.length);
+
+        Serializer<HashMap<String, Object>> serializer = createSerializer();
+        HashMap<String, Object> o1 = serializer.deserialize(bytes1);
+        HashMap<String, Object> o2 = serializer.deserialize(bytes2);
+
+        assertEquals(o1.get("gender").toString(), o2.get("gender").toString());
+        assertEquals(o1.get("userImage").toString(), o2.get("userImage").toString());
+        assertEquals(((Boolean)o1.get("verified")).booleanValue(),
+                     ((Boolean)o2.get("verified")).booleanValue());
+    }
 }

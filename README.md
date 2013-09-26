@@ -3,10 +3,6 @@ What is Krati?
 
 Krati is a simple persistent data store with very low latency and high throughput. It is designed for easy integration with read-write-intensive applications with little effort in tuning configuration, performance and JVM garbage collection.
 
-### Homepage:
-
-Find out more about Krati at: http://sna-projects.com/krati
-
 ### License:
 
 Apache Public License (APL) 2.0

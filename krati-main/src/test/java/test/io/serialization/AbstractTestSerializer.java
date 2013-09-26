@@ -46,7 +46,7 @@ public abstract class AbstractTestSerializer<T> extends TestCase {
         T object2 = serializer.deserialize(bytes1);
         byte[] bytes2 = serializer.serialize(object2);
         
-        assertTrue(Arrays.equals(bytes1, bytes2));
+        checkBytes(bytes1, bytes2);
     }
     
     public void testRandom() {
@@ -59,7 +59,11 @@ public abstract class AbstractTestSerializer<T> extends TestCase {
             T object2 = serializer.deserialize(bytes1);
             byte[] bytes2 = serializer.serialize(object2);
             
-            assertTrue(Arrays.equals(bytes1, bytes2));
+            checkBytes(bytes1, bytes2);
         }
+    }
+    
+    protected void checkBytes(byte[] bytes1, byte[] bytes2) {
+        assertTrue(Arrays.equals(bytes1, bytes2));
     }
 }
